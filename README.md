@@ -53,6 +53,8 @@ crsData.bookingNumber1;
 crsData.bookingNumber2;
 crsData.multiFunctionLine;
 crsData.consultantNumber;
+crsData.remark;
+ 
 crsData.services[0].marker;
 crsData.services[0].serviceType;
 crsData.services[0].serviceCode;
@@ -65,21 +67,24 @@ crsData.services[0].toDate;
 crsData.services[0].travellerAssociation;
 crsData.services[0].status;
 crsData.services[0].price;
+ 
 crsData.messages[0];
+ 
 crsData.travellers[0].title;
 crsData.travellers[0].name;
 crsData.travellers[0].discount;
 crsData.travellers[0].pricePerPassenger;
-crsData.remark;
+ 
 crsData.customer.lastName;
 crsData.customer.firstName;
 crsData.customer.phone;
-crsData.customer.streetNumber;
+crsData.customer.streetAndNumber;
 crsData.customer.postalCode;
 crsData.customer.city;
 crsData.customer.mobilePhone;
 crsData.customer.additionalInfo;
 crsData.customer.email;
+ 
 crsData.marketing.transferToTV;
 crsData.marketing.costCenter;
 crsData.marketing.orderNumber;
@@ -91,6 +96,10 @@ crsData.marketing.duration;
 crsData.marketing.storeData;
 crsData.marketing.bookingChannel;
 crsData.marketing.insurancePolicy;
+ 
+// "markedServices" is a list of services where the marker property is set to "X"
+// the structure is the same like "crsData.services"
+crsData.markedServices[0].*
 ```
 
 ## Mappings to CRS mask
