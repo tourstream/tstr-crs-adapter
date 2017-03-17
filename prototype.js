@@ -87,10 +87,12 @@ window.ubpCrsAdapter = (function() {
                     customer: {
                         lastName: 'CustomerName',
                         firstName: 'CustFirstName',
-                        phone: 'PhoneNo',
                         streetAndNumber: 'StreetNo',
                         postalCode: 'PostalCode',
                         city: 'City',
+                        phone: 'PhoneNo',
+                        mobilePhone: 'MobileNo',
+                        email: 'EMail',
                         additionalInfo: 'AddInfo'
                     },
 
