@@ -375,27 +375,6 @@ window.ubpCrsAdapter = (function() {
                 xml = dom.xml;
             }
 
-            xml = cleanUpXmlString(xml);
-
-            return xml;
-        }
-
-        function cleanUpXmlString(xml) {
-            xml = xml.replace(/\b(kindofservice|servicecode|from|accommodation|to|remark)\b/g, function(match) {
-                var replacements = {
-                    kindofservice: 'KindOfService',
-                    servicecode: 'ServiceCode',
-                    from: 'From',
-                    to: 'To',
-                    accommodation: 'Accommodation',
-                    remark: 'Remark'
-                };
-
-                return replacements[match];
-            });
-
-            xml = xml.replace(/ xmlns="http:\/\/www.w3.org\/1999\/xhtml"/g, '');
-
             return xml;
         }
     }
