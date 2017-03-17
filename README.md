@@ -119,7 +119,7 @@ Following data model is used for the communication with every CRS:
 
 |   #  | property                    |   #  | property                         |   #  | property |
 | :--- | :---                        | :--- | :---                             | :--- | :---     |
-|   1  | errorLine                   |  21  | services[0].toDate               |  41* | mobilePhone.email |
+|   1  | errorLine                   |  21  | services[0].toDate               |  41* | customer.email |
 |   2  | action                      |  22  | services[0].travellerAssociation |  42  | n.a. | 
 |   3  | operator                    |  23  | services[0].status               |  43  | marketing.transferToTV | 
 |   4  | travelType                  |  24  | services[0].price                |  44  | marketing.costCenter | 
