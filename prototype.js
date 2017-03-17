@@ -159,7 +159,7 @@ window.ubpCrsAdapter = (function() {
             return mapDomToCrsModel(dom);
         }
 
-        function setData (crsModel) {
+        function setData(crsModel) {
             sendData(crsModel);
         }
 
@@ -311,35 +311,49 @@ window.ubpCrsAdapter = (function() {
         }
 
         function mapCrsModelToDom(crsModel) {
+            if (!crsModel) {
+                return;
+            }
+
             var dom = loadDom();
 
             Object.getOwnPropertyNames(config.crsModel.mapping.base).forEach(function(name) {
                 setDomValue(dom, config.crsModel.mapping.base[name], crsModel[name]);
             });
 
-            Object.getOwnPropertyNames(config.crsModel.mapping.customer).forEach(function(name) {
-                setDomValue(dom, config.crsModel.mapping.customer[name], crsModel.customer[name]);
-            });
-
-            Object.getOwnPropertyNames(config.crsModel.mapping.marketing).forEach(function(name) {
-                setDomValue(dom, config.crsModel.mapping.marketing[name], crsModel.marketing[name]);
-            });
-
-            crsModel.messages.forEach(function(message, index) {
-                setDomValue(dom, config.crsModel.mapping.messages + (index + 1), message);
-            });
-
-            crsModel.travellers.forEach(function(traveller, index) {
-                Object.getOwnPropertyNames(config.crsModel.mapping.travellers).forEach(function(name) {
-                    setDomValue(dom, config.crsModel.mapping.travellers[name] + (index + 1), traveller[name]);
+            if (crsModel.customer) {
+                Object.getOwnPropertyNames(config.crsModel.mapping.customer).forEach(function(name) {
+                        setDomValue(dom, config.crsModel.mapping.customer[name], crsModel.customer[name]);
                 });
-            });
+            }
 
-            crsModel.services.forEach(function(service, index) {
-                Object.getOwnPropertyNames(config.crsModel.mapping.services).forEach(function(name) {
-                    setDomValue(dom, config.crsModel.mapping.services[name] + (index + 1), service[name]);
+            if (crsModel.marketing) {
+                Object.getOwnPropertyNames(config.crsModel.mapping.marketing).forEach(function(name) {
+                        setDomValue(dom, config.crsModel.mapping.marketing[name], crsModel.marketing[name]);
                 });
-            });
+            }
+
+            if (crsModel.messages) {
+                crsModel.messages.forEach(function(message, index) {
+                    setDomValue(dom, config.crsModel.mapping.messages + (index + 1), message);
+                });
+            }
+
+            if (crsModel.travellers) {
+                crsModel.travellers.forEach(function(traveller, index) {
+                    Object.getOwnPropertyNames(config.crsModel.mapping.travellers).forEach(function(name) {
+                        setDomValue(dom, config.crsModel.mapping.travellers[name] + (index + 1), traveller[name]);
+                    });
+                });
+            }
+
+            if (crsModel.services) {
+                crsModel.services.forEach(function(service, index) {
+                    Object.getOwnPropertyNames(config.crsModel.mapping.services).forEach(function(name) {
+                        setDomValue(dom, config.crsModel.mapping.services[name] + (index + 1), service[name]);
+                    });
+                });
+            }
 
             return dom;
         }
