@@ -81,9 +81,7 @@ crsData.customer.phone;
 crsData.customer.streetAndNumber;
 crsData.customer.postalCode;
 crsData.customer.city;
-crsData.customer.mobilePhone;
 crsData.customer.additionalInfo;
-crsData.customer.email;
  
 crsData.marketing.transferToTV;
 crsData.marketing.costCenter;

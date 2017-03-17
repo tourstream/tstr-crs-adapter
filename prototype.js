@@ -90,8 +90,6 @@ window.ubpCrsAdapter = (function() {
                         streetAndNumber: 'StreetNo',
                         postalCode: 'PostalCode',
                         city: 'City',
-                        mobilePhone: 'MobileNo',
-                        email: 'EMail',
                         additionalInfo: 'AddInfo'
                     },
 
@@ -325,18 +323,18 @@ window.ubpCrsAdapter = (function() {
             });
 
             crsModel.messages.forEach(function(message, index) {
-                setDomValue(dom, config.crsModel.mapping.messages + index, message);
+                setDomValue(dom, config.crsModel.mapping.messages + (index + 1), message);
             });
 
             crsModel.travellers.forEach(function(traveller, index) {
                 Object.getOwnPropertyNames(config.crsModel.mapping.travellers).forEach(function(name) {
-                    setDomValue(dom, config.crsModel.mapping.travellers[name] + index, traveller[name]);
+                    setDomValue(dom, config.crsModel.mapping.travellers[name] + (index + 1), traveller[name]);
                 });
             });
 
             crsModel.services.forEach(function(service, index) {
                 Object.getOwnPropertyNames(config.crsModel.mapping.services).forEach(function(name) {
-                    setDomValue(dom, config.crsModel.mapping.services[name] + index, service[name]);
+                    setDomValue(dom, config.crsModel.mapping.services[name] + (index + 1), service[name]);
                 });
             });
 
