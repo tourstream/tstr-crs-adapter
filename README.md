@@ -7,99 +7,139 @@ This project provides a JS module to enable an web-application to communicate wi
 
 After loading the script into your application
 ```
-<script type="text/application" src="[path/to/module/ubp-crs-adapter.js]"></script>
+<script type="text/application" src="[path/to/script.js]"></script>
 ```
 
-your able to connect to a CRS.
+you are able to connect to a CRS via:
 ```
 ubpCrsAdapter.connect(crsType);
 ```
 
-After the connection you can get the data from the CRS
+When you are connected you can get the data from the CRS via:
 ```
 var crsData = ubpCrsAdapter.getData();
 ```
 
-or set the data to the CRS.
+or set data to the CRS via:
 ```
 ubpCrsAdapter.setData(crsData);
 ```
 
-And finally you can close the opened frame in the CRS.
+And also you can close the opened frame in the CRS:
 ```
 ubpCrsAdapter.exit()
 ```
+
 
 ### Supported CRS types
 
 Currently this module supports the connection to following CRS:
 
-| CRS | type | |
-| --- | --- | --- |
-| TOMA | toma | including TOMA SelCo | 
+| CRS  | type |
+| :--- | :--- |
+| TOMA | toma | 
 
 
 ### CRS data structure
 
-Following data structure is used for the communication with every CRS:
+Following data model is used for the communication with every CRS:
 
 ```
-crsData.action;
-crsData.operator;
-crsData.travelType;
-crsData.numTravellers;
-crsData.agencyNumber;
-crsData.bookingNumber1;
-crsData.bookingNumber2;
-crsData.multiFunctionLine;
-crsData.consultantNumber;
-crsData.remark;
+{
+    errorLine,
+    action,
+    operator,
+    travelType,
+    numTravellers,
+    agencyNumber,
+    bookingNumber1,
+    bookingNumber2,
+    multiFunctionLine,
+    consultantNumber,
+    remark,
  
-crsData.services[0].marker;
-crsData.services[0].serviceType;
-crsData.services[0].serviceCode;
-crsData.services[0].accommodation;
-crsData.services[0].boardAndLodging;
-crsData.services[0].occupancy;
-crsData.services[0].quantity;
-crsData.services[0].fromDate;
-crsData.services[0].toDate;
-crsData.services[0].travellerAssociation;
-crsData.services[0].status;
-crsData.services[0].price;
+    services[0-5]
+        .marker,
+        .serviceType,
+        .serviceCode,
+        .accommodation,
+        .boardAndLodging,
+        .occupancy,
+        .quantity,
+        .fromDate,
+        .toDate,
+        .travellerAssociation,
+        .status,
+        .price,
  
-crsData.messages[0];
+    messages[0-3],
  
-crsData.travellers[0].title;
-crsData.travellers[0].name;
-crsData.travellers[0].discount;
-crsData.travellers[0].pricePerPassenger;
+    travellers[0-5]
+        .title,
+        .name,
+        .discount,
+        .pricePerPassenger,
+    
+    customer
+        .lastName,
+        .firstName,
+        .phone,
+        .streetAndNumber,
+        .postalCode,
+        .city,
+        .additionalInfo,
+    
+    marketing
+        .transferToTV,
+        .costCenter,
+        .orderNumber,
+        .transport,
+        .travelType,
+        .numPassengers,
+        .destination,
+        .duration,
+        .storeData,
+        .bookingChannel,
+        .insurancePolicy,
  
-crsData.customer.lastName;
-crsData.customer.firstName;
-crsData.customer.phone;
-crsData.customer.streetAndNumber;
-crsData.customer.postalCode;
-crsData.customer.city;
-crsData.customer.additionalInfo;
- 
-crsData.marketing.transferToTV;
-crsData.marketing.costCenter;
-crsData.marketing.orderNumber;
-crsData.marketing.transport;
-crsData.marketing.travelType;
-crsData.marketing.numPassengers;
-crsData.marketing.destination;
-crsData.marketing.duration;
-crsData.marketing.storeData;
-crsData.marketing.bookingChannel;
-crsData.marketing.insurancePolicy;
- 
-// "markedServices" is a list of services where the marker property is set to "X"
-// the structure is the same like "crsData.services"
-crsData.markedServices[0].*
+    // "markedServices" is a list of services where the marker property is set to "X"
+    // the structure is the same like "services"
+    markedServices[0].*
+}
 ```
 
-## Mappings to CRS mask
 
-// todo - show nice images where the mapping to every CRS mask is shown
+## Adapter model mapping to CRS mask
+
+### Amadeus TOMA 
+
+![toma_mask](./docs/toma/tomaMask.png)
+
+|   #  | property                    |   #  | property                         |   #  | property |
+| :--- | :---                        | :--- | :---                             | :--- | :---     |
+|   1  | errorLine                   |  21  | services[0].toDate               |  41  | n.a. |
+|   2  | action                      |  22  | services[0].travellerAssociation |  42  | n.a. | 
+|   3  | operator                    |  23  | services[0].status               |  43  | marketing.transferToTV | 
+|   4  | travelType                  |  24  | services[0].price                |  44  | marketing.costCenter | 
+|   5  | numTravellers               |  25  | messages[0-3]                    |  45  | marketing.orderNumber |   
+|   6  | agencyNumber                |  26  | travellers[0].title              |  46  | marketing.transport |   
+|   7  | bookingNumber1              |  27  | travellers[0].name               |  47  | marketing.travelType | 
+|   8  | bookingNumber2              |  28  | travellers[0].discount           |  48  | marketing.numPassenger | 
+|   9  | multiFunctionLine           |  29  | travellers[0].pricePerPassenger  |  49  | marketing.destination | 
+|  10  | consultantNumber            |  30  | remark                           |  50  | marketing.duration | 
+|  11  | n.a.                        |  31  | n.a.                             |  51  | marketing.storeData |
+|  12  | n.a.                        |  32  | n.a.                             |  52  | marketing.bookingChannel | 
+|  13  | services[0].marker          |  33  | customer.lastName                |  53  | marketing.insurancePolicy | 
+|  14  | services[0].serviceType     |  34  | customer.firstName               |
+|  15  | services[0].serviceCode     |  35  | customer.phone                   |
+|  16  | services[0].accommodation   |  36  | customer.streetAndNumber         |
+|  17  | services[0].boardAndLodging |  37  | customer.postalCode              |
+|  18  | services[0].occupancy       |  38  | customer.city                    |
+|  19  | services[0].quantity        |  39  | n.a.                             |
+|  20  | services[0].fromDate        |  40  | customer.additionalInfo          |
+
+There are up to 6 (index 0-5) services possible.
+
+There are up to 4 (index 0-3) messages possible.
+
+There are up to 6 (index 0-5) travellers possible.

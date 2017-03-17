@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Envelope>
+    <Header>
+        <Service>
+            <Name />
+            <Version />
+        </Service>
+        <Sender>
+            <ExpCode />
+        </Sender>
+        <Application>
+            <Reset />
+        </Application>
+    </Header>
+    <Body>
+        <ADD Version="01">
+            <Data />
+            <EMail />
+            <MobileNo />
+            <SOS />
+        </ADD>
+        <AWK Version="01">
+            <ANR />
+            <LB />
+            <VB />
+        </AWK>
+        <MOE Version="01">
+            <FOSCode />
+            <CWI />
+            <FOSKey2 />
+            <FOSKey />
+            <TMRId />
+            <CSXLocator />
+            <SDId />
+            <FOSCode2 />
+        </MOE>
+        <CUR Version="01">
+            <Row />
+            <Col />
+        </CUR>
+        <FRN Version="01">
+            <FN />
+        </FRN>
+        <MFN Version="01">
+            <Display />
+        </MFN>
+        <TOM Version="04">
+            <Next />
+            <Page />
+            <Page.2 />
+
+            <Action />
+            <Operator />
+            <Traveltype />
+            <NoOfPersons />
+            <AgencyNumber />
+            <BookingNo1 />
+            <BookingNo2 />
+            <MultiFunctionLine />
+            <ConsultantNo />
+
+            <Position.1 />
+            <MarkerField.1 />
+            <KindOfService.1 />
+            <ServiceCode.1 />
+            <Accommodation.1 />
+            <BoardAndLodging.1 />
+            <Occupancy.1 />
+            <Count.1 />
+            <From.1 />
+            <To.1 />
+            <TravAssociation.1 />
+            <Status.1 />
+            <Price.1 />
+
+            <Message.1 />
+
+            <PassengerNo.1 />
+            <Title.1 />
+            <Name.1 />
+            <Reduction.1 />
+            <PricePerPass.1 />
+
+            <Remark />
+
+            <CustomerName />
+            <CustFirstName />
+            <PhoneNo />
+            <StreetNo />
+            <PostalCode />
+            <City />
+            <AddInfo />
+
+            <TransferToTV />
+            <CostCenter />
+            <OrderNo />
+            <Transport />
+            <TypeOfTravel />
+            <NumberOfPass />
+            <Destination />
+            <Duration />
+            <StoreData />
+            <BookByPhone />
+            <InsurancePolicy />
+
+            <Prepayment />
+            <Currency />
+            <Total />
+        </TOM>
+        <FEZ>
+            <Text />
+        </FEZ>
+    </Body>
+</Envelope>

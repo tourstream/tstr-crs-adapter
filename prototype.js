@@ -71,6 +71,7 @@ window.ubpCrsAdapter = (function() {
                 },
                 mapping: {
                     base: {
+                        errorLine: 'Text',
                         action: 'Action',
                         operator: 'Operator',
                         travelType: 'Traveltype',
