@@ -140,7 +140,7 @@ Following data model is used for the communication with every CRS:
 |  19  | services[0].quantity        |  39* | customer.mobilePhone             |
 |  20  | services[0].fromDate        |  40  | customer.additionalInfo          |
 
-`*` these properties are readonly 
+`*` these properties can currently only be set when they are provided by the mask before
 
 There are up to 6 (index 0-5) services possible.
 

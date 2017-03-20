@@ -70,6 +70,7 @@ window.ubpCrsAdapter = (function() {
                     travellers: 6
                 },
                 mapping: {
+                    appendTo: 'TOM',
                     base: {
                         errorLine: 'Text',
                         action: 'Action',
@@ -244,7 +245,7 @@ window.ubpCrsAdapter = (function() {
             for(var i = 1; i <= config.crsModel.counts.messages; i++) {
                 var domValue = getDomValue(dom, config.crsModel.mapping.messages + i);
 
-                if (domValue !== void 0 && domValue !== '') {
+                if (isDomValueValid(domValue)) {
                     model.messages.push(domValue);
                 }
             }
@@ -256,7 +257,7 @@ window.ubpCrsAdapter = (function() {
                 Object.getOwnPropertyNames(config.crsModel.mapping.travellers).forEach(function(name) {
                     var domValue = getDomValue(dom, config.crsModel.mapping.travellers[name] + j);
 
-                    if (domValue !== void 0 && domValue !== '') {
+                    if (isDomValueValid(domValue)) {
                         traveller[name] = domValue;
                     }
                 });
@@ -274,7 +275,7 @@ window.ubpCrsAdapter = (function() {
                 Object.getOwnPropertyNames(config.crsModel.mapping.services).forEach(function(name) {
                     var domValue = getDomValue(dom, config.crsModel.mapping.services[name] + k);
 
-                    if (domValue !== void 0 && domValue !== '') {
+                    if (isDomValueValid(domValue)) {
                         service[name] = domValue;
                     }
                 });
@@ -289,6 +290,10 @@ window.ubpCrsAdapter = (function() {
             }
 
             return model;
+        }
+
+        function isDomValueValid(domValue) {
+            return domValue !== void 0 && domValue !== '';
         }
 
         function getDomValue(dom, tagName) {
@@ -323,7 +328,7 @@ window.ubpCrsAdapter = (function() {
 
             if (crsModel.customer) {
                 Object.getOwnPropertyNames(config.crsModel.mapping.customer).forEach(function(name) {
-                        setDomValue(dom, config.crsModel.mapping.customer[name], crsModel.customer[name]);
+                    setDomValue(dom, config.crsModel.mapping.customer[name], crsModel.customer[name]);
                 });
             }
 
@@ -333,7 +338,7 @@ window.ubpCrsAdapter = (function() {
                 });
             }
 
-            if (crsModel.messages) {
+            if (crsModel.messages && crsModel.messages.length) {
                 crsModel.messages.forEach(function(message, index) {
                     setDomValue(dom, config.crsModel.mapping.messages + (index + 1), message);
                 });
@@ -375,7 +380,7 @@ window.ubpCrsAdapter = (function() {
 
             element.textContent = value;
 
-            dom.getElementsByTagName('TOM')[0].appendChild(element);
+            dom.getElementsByTagName(config.crsModel.mapping.appendTo)[0].appendChild(element);
         }
 
         function buildXmlFromDom(dom) {
