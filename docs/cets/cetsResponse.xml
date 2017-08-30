@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="windows-1252"?>
+<Request Version="2.5" From="cets" To="FTI" TermId="CC1937" Window="B" Date="14072017" Time="081600" Type="AVL" SubType="S" Confirm="NO" Agent="549870" Lang="DE" LayoutLang="EN" UserCode="pan" UserType="M" UserName="Pan" UserFirstName="Peter" UserMail="peter.pan@fti.com" Source="DPL" Mode="Test" DeepLinkURL="YES">
+	<Avl ServiceType="C" FabKey="08:15,38_ACHECK_____RESPONSE_001_SESSIONID_50D711512A3C3272_CC1937001084">
+		<TOCode>FTI</TOCode>
+		<Catalog>DCH</Catalog>
+		<StartDate>11082017</StartDate>
+		<Duration>3</Duration>
+		<Destination>VRN</Destination>
+		<Adults>1</Adults>
+	</Avl>
+	<Fah ServiceType="C" Key="B/MUC1-BER2" SegRef="000">
+		<StartDate>11082017</StartDate>
+		<Duration>11</Duration>
+		<Destination>MUC</Destination>
+		<Product>DEU81</Product>
+		<Room>B</Room>
+		<Norm>1</Norm>
+		<MaxAdults>1</MaxAdults>
+		<Meal>MIETW</Meal>
+		<Persons>1</Persons>
+		<CarDetails>
+			<PickUp Where="Walkin">
+				<Time>0940</Time>
+				<CarStation Code="MUC1"></CarStation>
+				<Info>WALK IN</Info>
+			</PickUp>
+			<DropOff>
+				<Time>0940</Time>
+				<CarStation Code="BER2"></CarStation>
+			</DropOff>
+		</CarDetails>
+	</Fah>
+	<Fap ID="1">
+		<PersonType>M</PersonType>
+		<Name>NTBAA</Name>
+		<FirstName>NN</FirstName>
+	</Fap>
+</Request>

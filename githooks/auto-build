@@ -1,0 +1,20 @@
+#!/bin/bash
+
+read -p "|?| Forgot to rebuild the application? [y]" -n 1 < /dev/tty
+echo
+
+if [[ $REPLY != [yY] ]]
+then
+    exit 0
+fi
+
+(npm run build:prod)
+
+echo "build done"
+
+branch_name=$(git symbolic-ref --short -q HEAD)
+
+(git add "./dist")
+(git commit -m "${branch_name} create new build")
+
+exit 0
