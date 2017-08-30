@@ -184,8 +184,15 @@ It will open an extra window for debug outputs.
 
 #### How to test ...
 
-We prepared a test file, which can be executed directly in the CRS systems.
+##### ... the code
+
+Write a test and execute `npm run test` - the unit tests will tell you, 
+if everything is fine.
+
+##### ... the adapter
+
+We prepared a test file, which can be opened directly in the CRS systems.
 The file is located in __test/manual__ folder: *[crsTest.html](tests/manual/crsTest.html)*
 
-You have to be in the step, where you have a "browser view" open - after executing an external search. 
-In that view you can drop the test file.
+In the CRS you have to be in the step, where you have a "browser view" open - after executing an external search. 
+In that view you can drop the test file and execute the functions of the adapter.
