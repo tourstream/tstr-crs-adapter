@@ -12,8 +12,13 @@ This issue should describe how to replay the bug and what is expected instead.
 Please create a test and a pull request and include a description of what your change is intended to do.
 Refer to the questions "What I want to reach with that change?"
 
-Finally: you have to create the dist files by executing `npm run build` and to commit them!
+Finally: you do not have to create the dist files!
 
 #### Do you have questions about the source code?
 
 Feel free to ask in the issue section.
+
+#### You are a release manager of this repository?
+
+You have to create new versions - the recommended way: `npm version ...`.
+We use semantic versioning - think about it before setting it!
