@@ -1,19 +1,21 @@
 {
   "name": "ubp-crs-adapter",
-  "version": "0.0.1",
+  "version": "0.0.0",
   "description": "This library provides connections to different travel CRSs. It also let you read and write data from/to them.",
   "main": "dist/ubpCrsAdapter.min.js",
   "directories": {
     "doc": "docs"
   },
   "scripts": {
-    "build": "npm run clean && npm run build:dev && npm run build:prod",
+    "build": "npm run clean && npm run build:prod",
     "build:dev": "webpack --config webpack.config.dev.js",
     "build:prod": "webpack --config webpack.config.prod.js",
     "clean": "rimraf dist build",
     "test": "karma start karma.config.js --single-run",
     "precommit": "./githooks/prevent-master-from-changes",
-    "prepush": "./githooks/auto-build"
+    "preversion": "npm test",
+    "version": "npm run build:prod && git add -A dist",
+    "postversion": "git push && git push --tags"
   },
   "repository": {
     "type": "git",
@@ -29,7 +31,7 @@
   ],
   "author": "Steve Reichenbach",
   "license": "MIT",
-  "homepage": "https://github.com/tourstream/tstr-crs-adapter",
+  "homepage": "https://github.com/tourstream/tstr-crs-adapter#readme",
   "devDependencies": {
     "babel-core": "^6.24.1",
     "babel-istanbul": "^0.12.2",
