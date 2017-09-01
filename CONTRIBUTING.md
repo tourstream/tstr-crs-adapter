@@ -20,5 +20,6 @@ Feel free to ask in the issue section.
 
 #### You are a release manager of this repository?
 
-You have to create new versions - the recommended way: `npm version ...`.
+You have to create new versions - the recommended way: `npm version <version-number>`!
+This process will create the dist files and update the version of the library.
 We use semantic versioning - think about it before setting it!
