@@ -100,7 +100,7 @@ service type | CETS  | TOMA (old) | TOMA (new) | Booking Manager
 |       | .pickUpDate              | '28122017' 
 |       | .pickUpTime              | '0915' 
 |       | .dropOffLocation         | 'MUC' 
-|       | .dropOffDate             | '04012018' 
+|       | .dropOffDate             | '04012018'
 |       | .dropOffTime             | '1720' 
 |       | .duration                | '9' 
 |       | .pickUpHotelName         | 'Best Hotel' 
@@ -110,6 +110,8 @@ service type | CETS  | TOMA (old) | TOMA (new) | Booking Manager
 |       | .dropOffHotelAddress     | 'hotel drive 34a, famous place' 
 |       | .dropOffHotelPhoneNumber | '04031989213' 
 |       | .extras                  | ['GPS', 'childCareSeat0', 'childCareSeat3'] 
+
+_note: if .dropOffDate is not set, it will be calculated with .pickUpDate + .duration_
 
 | type    | fields       | example
 | :---    | :---         | :---
@@ -195,8 +197,8 @@ It will open an extra window for debug outputs.
 
 ##### ... the code
 
-Write a test and execute `npm run test` - the unit tests will tell you, 
-if everything is fine.
+Write a test and execute `npm run test` - the unit tests will tell you, if everything is fine. 
+Personal goal: Try to increase the test coverage to ~100%.
 
 ##### ... the adapter
 
