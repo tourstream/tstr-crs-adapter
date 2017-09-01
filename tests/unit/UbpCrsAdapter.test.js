@@ -58,6 +58,13 @@ describe('UbpCrsAdapter', () => {
         });
     });
 
+    it('should return default connection options', () => {
+        expect(UbpCrsAdapter.DEFAULT_OPTIONS).toEqual({
+            debug: false,
+            useDateFormat: 'DDMMYYYY',
+        });
+    });
+
     it('connect() should throw exception if crsType not given', (done) => {
         adapter.connect().then(() => {
             done.fail('expectation error');
@@ -90,7 +97,11 @@ describe('UbpCrsAdapter', () => {
     it('connect() should throw nothing', () => {
         adapter.connect(UbpCrsAdapter.CRS_TYPES.cets, {option: 'value'});
 
-        expect(AnyCrsAdapter.connect).toHaveBeenCalledWith({option: 'value'});
+        expect(AnyCrsAdapter.connect).toHaveBeenCalledWith({
+            debug: false,
+            useDateFormat: 'DDMMYYYY',
+            option: 'value'
+        });
     });
 
     it('should throw exception if any method is used without crs-connection', (done) => {

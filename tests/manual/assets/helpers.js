@@ -77,6 +77,12 @@ document.getElementById('set-data-btn').addEventListener('click', function () {
         Object.keys(form).forEach(function (key) {
             if (form[key].name.indexOf('service.') === 0) {
                 service[form[key].name.split('.')[1]] = form[key].value;
+            } else if (form[key].name.indexOf('extra.') === 0) {
+                if (!service.extras) {
+                    service.extras = [];
+                }
+
+                service.extras.push(form[key].value);
             } else {
                 data[form[key].name] = form[key].value;
             }
