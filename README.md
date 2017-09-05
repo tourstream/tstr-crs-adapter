@@ -25,9 +25,30 @@ When you are connected you can get the data from the CRS via:
 ubpCrsAdapter.getData().then(data => {});
 ```
 
-or set data to the CRS via:
+The `data` will look like that:
+```
+{
+    agencyNumber,
+    operator,
+    numberOfTravellers,
+    travelType,
+    services,
+    remark,
+}
+```
+
+Or you can set data to the CRS via:
 ```
 ubpCrsAdapter.setData(data);
+```
+
+The data object can have the following structure:
+```
+{
+    numberOfTravellers,
+    services,
+    remark,
+}
 ```
 
 And also you can close the opened frame in the CRS:
@@ -61,28 +82,15 @@ For some connections you need credentials, which you can set in the `connectionO
 
 ### Data object structure
 
-Following data model is used for the communication with every CRS:
-
-```
-{
-    agencyNumber,
-    operator,
-    numberOfTravellers,
-    travelType,
-    services,
-    remark,
-}
-```
-
 Depending on the `services[*].type` the data structure of a service differs.
 
 
 #### Supported service types
 
-service type | CETS  | TOMA (old) | TOMA (new) 
----          | :---: | :---:      | :---:
-'car'        | X     | X          |
-'hotel'      |       | X          |
+service type | CETS  | TOMA (old) | TOMA (new) | Booking Manager
+---          | :---: | :---:      | :---:      | :---:
+'car'        | X     | X          |            | X
+'hotel'      |       | X          |            | X
 
 | type  | fields                   | example
 | :---  | :---                     | :---
@@ -92,7 +100,7 @@ service type | CETS  | TOMA (old) | TOMA (new)
 |       | .pickUpDate              | '28122017' 
 |       | .pickUpTime              | '0915' 
 |       | .dropOffLocation         | 'MUC' 
-|       | .dropOffDate             | '04012018' 
+|       | .dropOffDate             | '04012018'
 |       | .dropOffTime             | '1720' 
 |       | .duration                | '9' 
 |       | .pickUpHotelName         | 'Best Hotel' 
@@ -101,6 +109,9 @@ service type | CETS  | TOMA (old) | TOMA (new)
 |       | .dropOffHotelName        | 'Very Best Hotel' 
 |       | .dropOffHotelAddress     | 'hotel drive 34a, famous place' 
 |       | .dropOffHotelPhoneNumber | '04031989213' 
+|       | .extras                  | ['GPS', 'childCareSeat0', 'childCareSeat3'] 
+
+_note: if .dropOffDate is not set, it will be calculated with .pickUpDate + .duration_
 
 | type    | fields       | example
 | :---    | :---         | :---
@@ -186,8 +197,8 @@ It will open an extra window for debug outputs.
 
 ##### ... the code
 
-Write a test and execute `npm run test` - the unit tests will tell you, 
-if everything is fine.
+Write a test and execute `npm run test` - the unit tests will tell you, if everything is fine. 
+Personal goal: Try to increase the test coverage to ~100%.
 
 ##### ... the adapter
 

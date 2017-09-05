@@ -1,4 +1,5 @@
 import TomaAdapter from '../../../src/crsAdapter/TomaAdapter';
+import {DEFAULT_OPTIONS} from '../../../src/UbpCrsAdapter';
 
 describe('TomaAdapter', () => {
     let adapter;
@@ -6,7 +7,7 @@ describe('TomaAdapter', () => {
     beforeEach(() => {
         let logService = require('tests/unit/_mocks/LogService')();
 
-        adapter = new TomaAdapter(logService);
+        adapter = new TomaAdapter(logService, DEFAULT_OPTIONS);
     });
 
     it('connect() should throw error if ActiveX is not supported', () => {
@@ -66,7 +67,10 @@ describe('TomaAdapter', () => {
     });
 
     function createTomaXml(details = '') {
-        return '<Envelope>' +
+        let xml = '<?xml version="1.0" encoding="UTF-8"?>';
+
+        return xml +
+            '<Envelope>' +
             '<Body>' +
             '<TOM>' +
             details +
@@ -79,7 +83,6 @@ describe('TomaAdapter', () => {
         let TomaConnection;
 
         beforeEach(() => {
-            let options = {providerKey: 'key'};
             let xml = createTomaXml();
 
             TomaConnection = require('tests/unit/_mocks/TomaConnection')();
@@ -89,7 +92,7 @@ describe('TomaAdapter', () => {
             TomaConnection.GetXmlData.and.returnValue(xml);
             TomaConnection.CheckProviderKey.and.returnValue(true);
 
-            adapter.connect(options);
+            adapter.connect({providerKey: 'key'});
         });
 
         it('getData() should throw error if connection is not able to give data back', () => {
@@ -236,19 +239,7 @@ describe('TomaAdapter', () => {
 
                 adapter.setData({});
 
-                expect(TomaConnection.FIFramePutData).toHaveBeenCalledWith(jasmine.stringMatching(expectXml));
-            });
-
-            it('setData() should set operator', () => {
-                let expectXml = createTomaXml(
-                    '<Action>BA</Action>' +
-                    '<Operator>operator</Operator>' +
-                    '<NoOfPersons>1</NoOfPersons>'
-                );
-
-                adapter.setData({operator: 'operator'});
-
-                expect(TomaConnection.FIFramePutData).toHaveBeenCalledWith(jasmine.stringMatching(expectXml));
+                expect(TomaConnection.FIFramePutData).toHaveBeenCalledWith(expectXml);
             });
 
             it('setData() should set numTravellers', () => {
@@ -259,19 +250,7 @@ describe('TomaAdapter', () => {
 
                 adapter.setData({numberOfTravellers: 'num.travellers'});
 
-                expect(TomaConnection.FIFramePutData).toHaveBeenCalledWith(jasmine.stringMatching(expectXml));
-            });
-
-            it('setData() should set agencyNumber', () => {
-                let expectXml = createTomaXml(
-                    '<Action>BA</Action>' +
-                    '<AgencyNumber>agency.number</AgencyNumber>' +
-                    '<NoOfPersons>1</NoOfPersons>'
-                );
-
-                adapter.setData({agencyNumber: 'agency.number'});
-
-                expect(TomaConnection.FIFramePutData).toHaveBeenCalledWith(jasmine.stringMatching(expectXml));
+                expect(TomaConnection.FIFramePutData).toHaveBeenCalledWith(expectXml);
             });
 
             it('setData() should set remark', () => {
@@ -283,7 +262,7 @@ describe('TomaAdapter', () => {
 
                 adapter.setData({remark: 'remark'});
 
-                expect(TomaConnection.FIFramePutData).toHaveBeenCalledWith(jasmine.stringMatching(expectXml));
+                expect(TomaConnection.FIFramePutData).toHaveBeenCalledWith(expectXml);
             });
 
             it('setData() should set minimal car service', () => {
@@ -312,13 +291,13 @@ describe('TomaAdapter', () => {
                     ]
                 });
 
-                expect(TomaConnection.FIFramePutData).toHaveBeenCalledWith(jasmine.stringMatching(expectXml));
+                expect(TomaConnection.FIFramePutData).toHaveBeenCalledWith(expectXml);
             });
 
             it('setData() should set full car service', () => {
                 let expectXml = createTomaXml(
                     '<Action>BA</Action>' +
-                    '<Remark>remark,pu h.address pu h.number;do h.name;do h.address do h.number</Remark>' +
+                    '<Remark>remark,CS3YRS|GPS|BS,pu h.address pu h.number|do h.name|do h.address do h.number</Remark>' +
                     '<NoOfPersons>1</NoOfPersons>' +
                     '<KindOfService.1>MW</KindOfService.1>' +
                     '<ServiceCode.1>rent.codevehicle.type.code/from.loc-to.loc</ServiceCode.1>' +
@@ -351,6 +330,7 @@ describe('TomaAdapter', () => {
                             dropOffHotelPhoneNumber: 'do h.number',
                             rentalCode: 'rent.code',
                             vehicleTypeCode: 'vehicle.type.code',
+                            extras: ['childCareSeat3', 'GPS', 'childCareSeat0'],
                         },
                         {
                             type: 'unknown',
@@ -358,7 +338,7 @@ describe('TomaAdapter', () => {
                     ]
                 });
 
-                expect(TomaConnection.FIFramePutData).toHaveBeenCalledWith(jasmine.stringMatching(expectXml));
+                expect(TomaConnection.FIFramePutData).toHaveBeenCalledWith(expectXml);
             });
 
             it('setData() should set hotel service', () => {
@@ -390,7 +370,7 @@ describe('TomaAdapter', () => {
                     ]
                 });
 
-                expect(TomaConnection.FIFramePutData).toHaveBeenCalledWith(jasmine.stringMatching(expectXml));
+                expect(TomaConnection.FIFramePutData).toHaveBeenCalledWith(expectXml);
             });
 
             it('setData() should detect existing service and enhance it', () => {
@@ -426,13 +406,13 @@ describe('TomaAdapter', () => {
                     ],
                 });
 
-                expect(TomaConnection.FIFramePutData).toHaveBeenCalledWith(jasmine.stringMatching(expectXml));
+                expect(TomaConnection.FIFramePutData).toHaveBeenCalledWith(expectXml);
             });
 
             it('setData() should overwrite partially xml data and skip adding lines as there is no more line available', () => {
                 let expectXml = createTomaXml(
                     '<Action>BA</Action>' +
-                    '<Operator>new.operator</Operator>' +
+                    '<Operator>old.operator</Operator>' +
                     '<unknownElement>unknown</unknownElement>' +
                     '<Traveltype>old.travel.type</Traveltype>' +
                     '<NoOfPersons>3</NoOfPersons>' +
@@ -456,7 +436,6 @@ describe('TomaAdapter', () => {
                 adapter.serviceListEnumeration = [1];
 
                 adapter.setData({
-                    operator: 'new.operator',
                     remark: 'remark',
                     services: [
                         {
@@ -475,7 +454,7 @@ describe('TomaAdapter', () => {
                     ],
                 });
 
-                expect(TomaConnection.FIFramePutData).toHaveBeenCalledWith(jasmine.stringMatching(expectXml));
+                expect(TomaConnection.FIFramePutData).toHaveBeenCalledWith(expectXml);
             });
         });
 

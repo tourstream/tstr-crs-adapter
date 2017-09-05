@@ -77,6 +77,8 @@ class UbpCrsAdapter {
             }
 
             try {
+                options = Object.assign({}, DEFAULT_OPTIONS, options);
+
                 this.logger.info('Try to connect with options:');
                 this.logger.info(options);
 
@@ -188,5 +190,6 @@ class UbpCrsAdapter {
 export {
     SERVICE_TYPES,
     CRS_TYPES,
+    DEFAULT_OPTIONS,
     UbpCrsAdapter as default,
 };

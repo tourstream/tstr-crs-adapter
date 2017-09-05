@@ -11291,7 +11291,7 @@ process.umask = function() { return 0; };
 Object.defineProperty(exports, "__esModule", {
     value: true
 });
-exports.default = exports.CRS_TYPES = exports.SERVICE_TYPES = undefined;
+exports.default = exports.DEFAULT_OPTIONS = exports.CRS_TYPES = exports.SERVICE_TYPES = undefined;
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
@@ -11407,6 +11407,8 @@ var UbpCrsAdapter = function () {
                 }
 
                 try {
+                    options = Object.assign({}, DEFAULT_OPTIONS, options);
+
                     _this.logger.info('Try to connect with options:');
                     _this.logger.info(options);
 
@@ -11545,6 +11547,7 @@ var UbpCrsAdapter = function () {
 
 exports.SERVICE_TYPES = SERVICE_TYPES;
 exports.CRS_TYPES = CRS_TYPES;
+exports.DEFAULT_OPTIONS = DEFAULT_OPTIONS;
 exports.default = UbpCrsAdapter;
 
 /***/ }),
@@ -28007,10 +28010,6 @@ var CONFIG = {
     crsDateFormat: 'DDMMYYYY'
 };
 
-var DEFAULT_OPTIONS = {
-    useDateFormat: CONFIG.crsDateFormat
-};
-
 var CetsAdapter = function () {
     function CetsAdapter(logger) {
         var _this = this;
@@ -28019,7 +28018,7 @@ var CetsAdapter = function () {
 
         _classCallCheck(this, CetsAdapter);
 
-        this.options = Object.assign({}, DEFAULT_OPTIONS, options);
+        this.options = options;
         this.logger = logger;
 
         this.parserOptions = {
@@ -28320,8 +28319,6 @@ var CetsAdapter = function () {
 
             var xmlRequest = xmlObject.Request;
 
-            xmlRequest[this.parserOptions.attrPrefix].Agent = dataObject.agencyNumber || xmlRequest[this.parserOptions.attrPrefix].Agent;
-
             if (!xmlRequest.Fah) {
                 xmlRequest.Fah = [];
             }
@@ -28499,9 +28496,6 @@ var CONFIG = {
         headless: false,
         allowSurrogateChars: false,
         cdata: false
-    },
-    defaultOptions: {
-        useDateFormat: 'DDMMYYYY'
     }
 };
 
@@ -28511,7 +28505,7 @@ var MerlinAdapter = function () {
 
         _classCallCheck(this, MerlinAdapter);
 
-        this.options = Object.assign({}, CONFIG.defaultOptions, options);
+        this.options = options;
         this.logger = logger;
 
         this.xmlBuilder = {
@@ -28644,11 +28638,8 @@ var MerlinAdapter = function () {
             }
 
             xmlImport.TransactionCode = CONFIG.crs.defaultValues.action;
-            xmlImport.AgencyNoTouroperator = dataObject.agencyNumber;
-            xmlImport.TourOperator = dataObject.operator;
             xmlImport.Remarks = dataObject.remark;
             xmlImport.NoOfPersons = dataObject.numberOfTravellers || CONFIG.crs.defaultValues.numberOfTravellers;
-            xmlImport.TravelType = dataObject.travelType;
 
             (dataObject.services || []).forEach(function (service) {
                 var xmlService = _this.getMarkedServiceForServiceType(xmlImport.ServiceBlock.ServiceRow, service.type);
@@ -28948,9 +28939,6 @@ var CONFIG = {
         headless: false,
         allowSurrogateChars: false,
         cdata: false
-    },
-    defaultOptions: {
-        useDateFormat: 'DDMMYYYY'
     }
 };
 
@@ -28960,7 +28948,7 @@ var TomaAdapter = function () {
 
         _classCallCheck(this, TomaAdapter);
 
-        this.options = Object.assign({}, CONFIG.defaultOptions, options);
+        this.options = options;
         this.logger = logger;
 
         this.xmlParser = {
@@ -29286,11 +29274,8 @@ var TomaAdapter = function () {
             }
 
             xmlTom.Action = CONFIG.crs.defaultValues.action;
-            xmlTom.AgencyNumber = dataObject.agencyNumber || xmlTom.AgencyNumber;
-            xmlTom.Operator = dataObject.operator || xmlTom.Operator;
-            xmlTom.Remark = dataObject.remark;
+            xmlTom.Remark = [xmlTom.Remark, dataObject.remark].filter(Boolean).join(',') || void 0;
             xmlTom.NoOfPersons = dataObject.numberOfTravellers || xmlTom.NoOfPersons && xmlTom.NoOfPersons[CONFIG.parserOptions.textNodeName] || CONFIG.crs.defaultValues.numberOfTravellers;
-            xmlTom.Traveltype = dataObject.travelType || xmlTom.Traveltype;
 
             (dataObject.services || []).forEach(function (service) {
                 var lineNumber = _this3.getMarkedLineNumberForServiceType(xmlTom, service.type) || _this3.getNextEmptyLineNumber(xmlTom);
@@ -29365,6 +29350,10 @@ var TomaAdapter = function () {
                 return (0, _moment2.default)(service.pickUpDate, _this5.options.useDateFormat).add(service.duration, 'days').format(CONFIG.crs.dateFormat);
             };
 
+            var reduceExtrasList = function reduceExtrasList(extras) {
+                return (extras || []).join('|').replace(/childCareSeat0/g, 'BS').replace(/childCareSeat(\d)/g, 'CS$1YRS');
+            };
+
             var reduceHotelDataToRemarkString = function reduceHotelDataToRemarkString(service) {
                 var hotelData = [];
 
@@ -29380,7 +29369,7 @@ var TomaAdapter = function () {
                     hotelData.push([service.dropOffHotelAddress, service.dropOffHotelPhoneNumber].filter(Boolean).join(' '));
                 }
 
-                return hotelData.filter(Boolean).join(';');
+                return hotelData.filter(Boolean).join('|');
             };
 
             var pickUpDateFormatted = (0, _moment2.default)(service.pickUpDate, this.options.useDateFormat).format(CONFIG.crs.dateFormat);
@@ -29412,7 +29401,7 @@ var TomaAdapter = function () {
             xml['From.' + emptyLineNumber] = pickUpDateFormatted;
             xml['To.' + emptyLineNumber] = calculatedDropOffDate;
 
-            xml.Remark = [xml.Remark, reduceHotelDataToRemarkString(service)].filter(Boolean).join(',') || void 0;
+            xml.Remark = [xml.Remark, reduceExtrasList(service.extras), reduceHotelDataToRemarkString(service)].filter(Boolean).join(',') || void 0;
         }
     }, {
         key: 'assignHotelServiceFromAdapterObjectToXmlObject',

@@ -1,4 +1,5 @@
 import CetsAdapter from '../../../src/crsAdapter/CetsAdapter';
+import {DEFAULT_OPTIONS} from '../../../src/UbpCrsAdapter';
 
 describe('CetsAdapter', () => {
     let adapter;
@@ -6,7 +7,7 @@ describe('CetsAdapter', () => {
     beforeEach(() => {
         let logService = require('tests/unit/_mocks/LogService')();
 
-        adapter = new CetsAdapter(logService);
+        adapter = new CetsAdapter(logService, DEFAULT_OPTIONS);
     });
 
     it('should throw error if any method is used without crs-connection', () => {
@@ -125,6 +126,7 @@ describe('CetsAdapter', () => {
                 '<FirstName>NN</FirstName>' +
                 '</Fap>' +
                 '</Request>';
+
             let expectation = {
                 operator: 'FTI',
                 agencyNumber: '549870',
@@ -342,7 +344,6 @@ describe('CetsAdapter', () => {
 
             it('setData() without supported service', () => {
                 let data = {
-                    agencyNumber: 4242,
                     services: [
                         {
                             type: 'unknown'
@@ -367,7 +368,7 @@ describe('CetsAdapter', () => {
                     '</Request>';
 
                 let expectedXml = '<?xml version="1.0" encoding="windows-1252"?>';
-                expectedXml += '<Request Version="2.5" From="FTI" To="cets" TermId="CC1937" Window="A" Date="11052017" Time="081635" Type="AVL" SubType="S" Confirm="NO" Agent="4242" Lang="DE" LayoutLang="EN" UserCode="tourCH" UserType="M" UserName="Pan" UserFirstName="Peter" UserMail="peter.pan@tourstream.eu" Source="DPL" Mode="Test" DeepLinkURL="YES">' +
+                expectedXml += '<Request Version="2.5" From="FTI" To="cets" TermId="CC1937" Window="A" Date="11052017" Time="081635" Type="AVL" SubType="S" Confirm="NO" Agent="549870" Lang="DE" LayoutLang="EN" UserCode="tourCH" UserType="M" UserName="Pan" UserFirstName="Peter" UserMail="peter.pan@tourstream.eu" Source="DPL" Mode="Test" DeepLinkURL="YES">' +
                     '<Fab>' +
                     '<Fap ID="1">' +
                     '<PersonType>M</PersonType>' +

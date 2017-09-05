@@ -41,14 +41,11 @@ const CONFIG = {
         allowSurrogateChars: false,
         cdata: false,
     },
-    defaultOptions: {
-        useDateFormat: 'DDMMYYYY',
-    }
 };
 
 class MerlinAdapter {
     constructor(logger, options = {}) {
-        this.options = Object.assign({}, CONFIG.defaultOptions, options);
+        this.options = options;
         this.logger = logger;
 
         this.xmlBuilder = {
@@ -167,11 +164,8 @@ class MerlinAdapter {
         }
 
         xmlImport.TransactionCode = CONFIG.crs.defaultValues.action;
-        xmlImport.AgencyNoTouroperator = dataObject.agencyNumber;
-        xmlImport.TourOperator = dataObject.operator;
         xmlImport.Remarks = dataObject.remark;
         xmlImport.NoOfPersons = dataObject.numberOfTravellers || CONFIG.crs.defaultValues.numberOfTravellers;
-        xmlImport.TravelType = dataObject.travelType;
 
         (dataObject.services || []).forEach((service) => {
             let xmlService = this.getMarkedServiceForServiceType(xmlImport.ServiceBlock.ServiceRow, service.type);

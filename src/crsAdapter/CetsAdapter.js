@@ -8,13 +8,9 @@ const CONFIG = {
     crsDateFormat: 'DDMMYYYY',
 };
 
-const DEFAULT_OPTIONS = {
-    useDateFormat: CONFIG.crsDateFormat
-};
-
 class CetsAdapter {
     constructor(logger, options = {}) {
-        this.options = Object.assign({}, DEFAULT_OPTIONS, options);
+        this.options = options;
         this.logger = logger;
 
         this.parserOptions = {
@@ -295,8 +291,6 @@ class CetsAdapter {
 
     assignAdapterObjectToXmlObject(xmlObject, dataObject = {}) {
         let xmlRequest = xmlObject.Request;
-
-        xmlRequest[this.parserOptions.attrPrefix].Agent = dataObject.agencyNumber || xmlRequest[this.parserOptions.attrPrefix].Agent;
 
         if (!xmlRequest.Fah) {
             xmlRequest.Fah = [];

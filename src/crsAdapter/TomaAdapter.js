@@ -56,14 +56,11 @@ const CONFIG = {
         allowSurrogateChars: false,
         cdata: false,
     },
-    defaultOptions: {
-        useDateFormat: 'DDMMYYYY'
-    }
 };
 
 class TomaAdapter {
     constructor(logger, options = {}) {
-        this.options = Object.assign({}, CONFIG.defaultOptions, options);
+        this.options = options;
         this.logger = logger;
 
         this.xmlParser = {
@@ -346,11 +343,8 @@ class TomaAdapter {
         }
 
         xmlTom.Action = CONFIG.crs.defaultValues.action;
-        xmlTom.AgencyNumber = dataObject.agencyNumber || xmlTom.AgencyNumber;
-        xmlTom.Operator = dataObject.operator || xmlTom.Operator;
-        xmlTom.Remark = dataObject.remark;
+        xmlTom.Remark = [xmlTom.Remark, dataObject.remark].filter(Boolean).join(',') || void 0;
         xmlTom.NoOfPersons = dataObject.numberOfTravellers || (xmlTom.NoOfPersons && xmlTom.NoOfPersons[CONFIG.parserOptions.textNodeName]) || CONFIG.crs.defaultValues.numberOfTravellers;
-        xmlTom.Traveltype = dataObject.travelType || xmlTom.Traveltype;
 
         (dataObject.services || []).forEach((service) => {
             let lineNumber = this.getMarkedLineNumberForServiceType(xmlTom, service.type) || this.getNextEmptyLineNumber(xmlTom);
@@ -415,6 +409,12 @@ class TomaAdapter {
                 .format(CONFIG.crs.dateFormat);
         };
 
+        const reduceExtrasList = (extras) => {
+            return (extras || []).join('|')
+                .replace(/childCareSeat0/g, 'BS')
+                .replace(/childCareSeat(\d)/g, 'CS$1YRS');
+        };
+
         const reduceHotelDataToRemarkString = (service) => {
             let hotelData = [];
 
@@ -430,7 +430,7 @@ class TomaAdapter {
                 hotelData.push([service.dropOffHotelAddress, service.dropOffHotelPhoneNumber].filter(Boolean).join(' '));
             }
 
-            return hotelData.filter(Boolean).join(';');
+            return hotelData.filter(Boolean).join('|');
         };
 
         let pickUpDateFormatted = moment(service.pickUpDate, this.options.useDateFormat).format(CONFIG.crs.dateFormat);
@@ -469,7 +469,7 @@ class TomaAdapter {
         xml['From.' + emptyLineNumber] = pickUpDateFormatted;
         xml['To.' + emptyLineNumber] = calculatedDropOffDate;
 
-        xml.Remark = [xml.Remark, reduceHotelDataToRemarkString(service)].filter(Boolean).join(',') || void 0;
+        xml.Remark = [xml.Remark, reduceExtrasList(service.extras), reduceHotelDataToRemarkString(service)].filter(Boolean).join(',') || void 0;
     };
 
     /**

@@ -45,6 +45,11 @@
                     <label>dropOffHotelName: <input name="service.dropOffHotelName" value="do name"/></label>
                     <label>dropOffHotelAddress: <input name="service.dropOffHotelAddress" value="do address"/></label>
                     <label>dropOffHotelPhoneNumber: <input name="service.dropOffHotelPhoneNumber" value="do number"/></label>
+                    <label>extras:
+                        <input name="extra.0" value="childCareSeat0"/>
+                        <input name="extra.1" value="GPS"/>
+                        <input name="extra.2" value="childCareSeat3"/>
+                    </label>
                 </div>
 
                 <div id="hotel-service-template" class="column service">
@@ -60,10 +65,7 @@
 
             <form id="data-form">
                 <div class="column">
-                    <label>agencyNumber: <input name="agencyNumber" value="080215"/></label>
-                    <label>operator: <input name="operator" value="FTI"/></label>
                     <label>numberOfTravellers: <input name="numberOfTravellers" value="1"/></label>
-                    <label>travelType: <input name="travelType" value="BAUS"/></label>
                     <label>remark: <input name="remark" value="that is what i remark"/></label>
                 </div>
             </form>
@@ -71,7 +73,8 @@
 
         <div id="report"></div>
 
-		<script type="application/javascript" src="../../dist/ubpCrsAdapter.min.js"></script>
+		<script type="application/javascript" src="../../dist/ubpCrsAdapter.js"></script>
+		<script type="application/javascript" src="../../dist/ubpCrsAdapter.js.map"></script>
 		<script type="application/javascript" src="assets/helpers.js"></script>
 	</body>
 </html>
