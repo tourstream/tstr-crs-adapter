@@ -399,7 +399,7 @@ describe('TomaAdapter', () => {
                             dropOffHotelPhoneNumber: 'do h.number',
                             rentalCode: 'rent.code',
                             vehicleTypeCode: 'vehicle.type.code',
-                            extras: ['childCareSeat3', 'GPS', 'childCareSeat0'],
+                            extras: ['childCareSeat3', 'navigationSystem', 'childCareSeat0'],
                         },
                         {
                             type: 'unknown',

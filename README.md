@@ -110,7 +110,7 @@ service type | CETS  | TOMA (old) | TOMA (new) | Booking Manager
 |       | .dropOffHotelName        | 'Very Best Hotel' 
 |       | .dropOffHotelAddress     | 'hotel drive 34a, famous place' 
 |       | .dropOffHotelPhoneNumber | '04031989213' 
-|       | .extras                  | ['GPS', 'childCareSeat0', 'childCareSeat3'] 
+|       | .extras                  | ['navigationSystem', 'childCareSeat0', 'childCareSeat3'] 
 
 _note: if .dropOffDate is not set, it will be calculated with .pickUpDate + .duration_
 
@@ -202,21 +202,21 @@ CRS field | example  | adapter field           | example
 21        | '200917' | services[*].dateTo      | '20092017'
 
 
-### Debugging
+## Debugging
 
 Sadly the debugging in some CRS is not possible but the adapter nevertheless provides some debugging output - either 
 you set the adapter option `.debug` to `true` or you add the parameter "debug" to your URL.
 It will open an extra window for debug outputs.
 
 
-#### How to test ...
+### How to test ...
 
-##### ... the code
+#### ... the code
 
 Write a test and execute `npm run test` - the unit tests will tell you, if everything is fine. 
 Personal goal: Try to increase the test coverage to ~100%.
 
-##### ... the adapter
+#### ... the adapter
 
 We prepared a test file, which can be opened directly in the CRS systems.
 The file is located in __test/manual__: *[crsTest.html](tests/manual/crsTest.html)*
@@ -243,3 +243,8 @@ than you can drag'n'drop the test file directly into that view.
 _precondition:_ the Sabre portal "ShopHolidays" is open, the Merlin mask is visible and the import is enabled
 
 Open the test file in parallel to the Merlin mask in another Tab.
+
+
+## You have questions or problems with the implementation?
+
+Check the [FAQs](FAQ.md) first!

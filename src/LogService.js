@@ -49,26 +49,34 @@ class LogService {
             throw new Error(message);
         }
 
-        while (!this.debugWindow.document) {}
+        try {
+            while (!this.debugWindow.document) {}
 
-        if (this.debugWindow.document.body && this.debugWindow.document.body.innerHTML) {
-            this.debugWindow.document.writeln('<hr>');
+            if (this.debugWindow.document.body && this.debugWindow.document.body.innerHTML) {
+                this.debugWindow.document.writeln('<hr><hr>');
 
-            return;
+                return;
+            }
+
+            this.debugWindow.document.writeln(
+                '<style>' +
+                'pre { outline: 1px solid #ccc; padding: 5px; margin: 5px; }' +
+                '.string { color: green; }' +
+                '.number { color: darkorange; }' +
+                '.boolean { color: blue; }' +
+                '.null { color: magenta; }' +
+                '.key { color: gray; }' +
+                '</style>'
+            );
+
+            this.debugWindow.document.writeln('<h2>CRS Debug Mode</h2>');
+        } catch (error) {
+            let message = 'Can not access debug window - please close all debug windows first.';
+
+            window.alert(message);
+
+            throw new Error(message);
         }
-
-        this.debugWindow.document.writeln(
-            '<style>' +
-            'pre { outline: 1px solid #ccc; padding: 5px; margin: 5px; }' +
-            '.string { color: green; }' +
-            '.number { color: darkorange; }' +
-            '.boolean { color: blue; }' +
-            '.null { color: magenta; }' +
-            '.key { color: gray; }' +
-            '</style>'
-        );
-
-        this.debugWindow.document.writeln('<h2>CRS Debug Mode</h2>');
     }
 
     writeToExternalOutput(message, type) {

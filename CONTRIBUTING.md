@@ -14,10 +14,6 @@ Refer to the questions "What I want to reach with that change?"
 
 Finally: you do not have to create the dist files!
 
-#### Do you have questions about the source code?
-
-Feel free to ask in the issue section.
-
 #### You are a release manager of this repository?
 
 You have to create new versions - the recommended way: `npm version <version-number>`!

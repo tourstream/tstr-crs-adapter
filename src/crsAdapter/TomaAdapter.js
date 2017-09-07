@@ -450,6 +450,7 @@ class TomaAdapter {
 
         const reduceExtrasList = (extras) => {
             return (extras || []).join('|')
+                .replace(/navigationSystem/g, 'GPS')
                 .replace(/childCareSeat0/g, 'BS')
                 .replace(/childCareSeat(\d)/g, 'CS$1YRS');
         };
