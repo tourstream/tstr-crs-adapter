@@ -78,6 +78,9 @@ class TomaAdapter {
         this.serviceListEnumeration = [...Array(CONFIG.crs.maxServiceLinesCount)].map((v, i) => i + 1);
     }
 
+    /**
+     * @param options <{providerKey: string}>
+     */
     connect(options) {
         if (!options || !options.providerKey) {
             throw new Error('No providerKey found in options.');
