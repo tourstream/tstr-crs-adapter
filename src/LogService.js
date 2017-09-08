@@ -74,8 +74,9 @@ class LogService {
             let message = 'Can not access debug window - please close all debug windows first.';
 
             window.alert(message);
+            window.alert(error);
 
-            throw new Error(message);
+            throw error;
         }
     }
 
