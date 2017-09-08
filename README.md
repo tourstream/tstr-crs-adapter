@@ -7,7 +7,7 @@ This project provides a JS module to enable an web-application to communicate wi
 
 After loading the script into your application
 ```
-<script src="[path/to/script/ubpCrsAdapter.min.js]"></script>
+<script src="[path/to/script/ubpCrsAdapter.js]"></script>
 ```
 
 you are able to create a new adapter via:

@@ -1,12 +1,13 @@
 import es6shim from 'es6-shim';
+import es7shim from 'es7-shim';
 import moment from 'moment';
 import { SERVICE_TYPES } from '../UbpCrsAdapter';
 
 const CONFIG = {
     crs: {
-        baseUrl: {
-            prod: 'www.em1.sellingplatformconnect.amadeus.com',
-            test: 'acceptance.emea1.sellingplatformconnect.amadeus.com',
+        baseUrlMap: {
+            prod: 'https://www.em1.sellingplatformconnect.amadeus.com/',
+            test: 'https://acceptance.emea1.sellingplatformconnect.amadeus.com/',
         },
         catalogFileName: 'ExternalCatalog.js',
         dateFormat: 'DDMMYY',
@@ -31,11 +32,10 @@ class TomaSPCAdapter {
     constructor(logger, options = {}) {
         this.options = options;
         this.logger = logger;
-        this.popupId = void 0;
     }
 
     /**
-     * @param options <{popupId?: string, externalCatalogVersion?: string, crsReferrer?: string, test?: boolean}>
+     * @param options <{externalCatalogVersion?: string, crsUrl?: string, env?: 'test' || 'prod'}>
      * @returns {Promise}
      */
     connect(options) {
@@ -48,8 +48,9 @@ class TomaSPCAdapter {
             this.logger.info(crsObject);
 
             return this.mapCrsObjectToAdapterObject(crsObject);
-        }, (errorMessage) => {
-            throw new Error(errorMessage);
+        }).then(null, (error) => {
+            this.logger.error(error);
+            throw new Error('getData: ' + error.message);
         });
     }
 
@@ -61,19 +62,25 @@ class TomaSPCAdapter {
             this.logger.info(crsObject);
 
             return this.sendData(crsObject);
-        }, (errorMessage) => {
-            throw new Error(errorMessage);
+        }).then(null, (error) => {
+            this.logger.error(error);
+            throw new Error('setData: ' + error.message);
         });
     }
 
-    exit() {
-        if (window.catalog && window.catalog.requestService) {
-            window.catalog.requestService('popups.close', { id: this.popupId });
+    exit(options) {
+        let popupId = options.popupId || this.getUrlParameter('POPUP_ID');
 
-            return;
+        if (!popupId) {
+            throw new Error('can not exit - popupId is missing');
         }
 
-        this.logger.error('Can not exit anything. No connection available.');
+        try {
+            this.getConnection().requestService('popups.close', { id: popupId });
+        } catch (error) {
+            this.logger.error(error);
+            throw new Error('connection::popups.close: ' + error.message);
+        }
     }
 
     /**
@@ -81,29 +88,39 @@ class TomaSPCAdapter {
      * @param options object
      * @returns {Promise}
      */
-    createConnection(options) {
-        this.popupId = options.popupId || this.getUrlParameter('POPUP_ID');
-        let catalogVersion = options.externalCatalogVersion || this.getUrlParameter('EXTERNAL_CATALOG_VERSION');
-        let referrer = options.crsReferrer || this.getUrlParameter('crs_referrer');
-        let baseUrl = options.test ? CONFIG.crs.baseUrl.test : CONFIG.crs.baseUrl.prod;
-        let fileName = CONFIG.crs.catalogFileName + '?version=' + catalogVersion;
-        let script = document.createElement('script');
-
+    createConnection(options = {}) {
         return new Promise((resolve) => {
-            script.src = 'https://' + baseUrl + '/' + fileName;
-            script.onload = () => {
-                if (referrer) {
-                    window.catalog.dest = referrer;
-                }
-
+            const connectToSPC = () => {
+                window.catalog.dest = baseUrl;
                 window.catalog.connect({
                     scope: window,
                     fn: () => {
                         this.logger.log('connected to TOMA Selling Platform Connect');
+                        this.connection = window.catalog;
+
                         resolve();
                     }
                 });
             };
+
+            const getBaseUrlFromReferrer = () => {
+                let baseUrl = 'https://' + document.referrer.replace(/https?:\/\//, '').split('/')[0] + '/';
+
+                return (Object.values(CONFIG.crs.baseUrlMap).indexOf(baseUrl) > -1) ? baseUrl : void 0;
+            };
+
+            let baseUrl = (options.crsUrl
+                || CONFIG.crs.baseUrlMap[options.env]
+                || getBaseUrlFromReferrer()
+                || this.getUrlParameter('crs_url')
+                || CONFIG.crs.baseUrlMap.prod).replace(/https?:\/\//, '').split('/')[0];
+
+            let catalogVersion = options.externalCatalogVersion || this.getUrlParameter('EXTERNAL_CATALOG_VERSION');
+            let filePath = 'https://' + baseUrl + '/' + CONFIG.crs.catalogFileName + (catalogVersion ? '?version=' + catalogVersion : '');
+            let script = document.createElement('script');
+
+            script.src = filePath;
+            script.onload = connectToSPC;
 
             document.head.appendChild(script);
         });
@@ -120,54 +137,66 @@ class TomaSPCAdapter {
         let regex = new RegExp('[\\?&]' + name + '=([^&#]*)');
         let results = regex.exec(window.location.search);
 
-        return results === null ? '' : decodeURIComponent(results[1].replace(/\+/g, ' '));
+        return results === null ? void 0 : decodeURIComponent(results[1].replace(/\+/g, ' '));
     };
+
+    /**
+     * @private
+     * @returns {object}
+     */
+    getConnection() {
+        if (this.connection && this.connection.requestService) {
+            return this.connection;
+        }
+
+        throw new Error('No connection available - please connect to TOMA first.');
+    }
 
     /**
      * @private
      * @returns {Promise}
      */
     getCrsObject() {
-        return new Promise((resolve, reject) => {
-            if (!window.catalog || !window.catalog.requestService) {
-                let message = 'can not get data - catalog is not loaded - please connect first';
+        return this.requestCatalog('bookingfile.toma.getData', null, 'can not get data');
+    }
 
-                this.logger.error(message);
-
-                reject(message);
-
-                return;
-            }
-
-            window.catalog.requestService('bookingfile.toma.getData', [], { fn: {
+    /**
+     * @private
+     * @param command string
+     * @param data object
+     * @param errorMessage string
+     * @returns {Promise}
+     */
+    requestCatalog(command, data, errorMessage) {
+        return new Promise((resolve) => {
+            this.getConnection().requestService(command, [data], { fn: {
                 onSuccess: (response) => {
-                    try {
-                        if (this.hasResponseErrors(response)) {
-                            let message = 'can not get data - caused by faulty response';
+                    if (this.hasResponseErrors(response)) {
+                        let message = errorMessage + ' - caused by faulty response';
 
-                            this.logger.error(message);
-
-                            reject(message);
-                        }
-
-                        resolve(response.data);
-                    } catch (error) {
-                        this.logger.error('can not get data - something went wrong');
-                        this.logger.error(error);
-
-                        reject(error.message);
+                        this.logger.error(message);
+                        this.logger.error(response);
+                        throw new Error(message);
                     }
+
+                    resolve(response.data);
                 },
                 onError: (response) => {
-                    this.logger.error('can not get data - something went wrong');
-                    this.logger.error(response);
+                    let message = errorMessage + ' - something went wrong';
 
-                    reject(response);
+                    this.logger.error(message);
+                    this.logger.error(response);
+                    throw new Error(message);
                 }
             }});
         });
     }
 
+    /**
+     * @private
+     * @param response object
+     * @returns {boolean}
+     */
     hasResponseErrors(response) {
         if (response.error) {
             this.logger.error('response has errors');
@@ -358,30 +387,13 @@ class TomaSPCAdapter {
         });
     };
 
-    sendData() {
-        return new Promise((resolve, reject) => {
-            window.catalog.requestService('bookingfile.toma.setData', [crsObject], {
-                fn: {
-                    onSuccess: (response) => {
-                        if (this.hasResponseErrors(response)) {
-                            let message = 'sending data failed - caused by faulty response';
-
-                            this.logger.error(message);
-
-                            reject(message);
-                        }
-
-                        resolve();
-                    },
-                    onError: (response) => {
-                        this.logger.error('sending data failed - something went wrong');
-                        this.logger.error(response);
-
-                        reject(response);
-                    }
-                }
-            });
-        });
+    /**
+     * @private
+     * @param crsObject
+     * @returns {Promise}
+     */
+    sendData(crsObject) {
+        return this.requestCatalog('bookingfile.toma.setData', crsObject, 'sending data failed');
     }
 
     /**
