@@ -301,13 +301,15 @@ class TomaAdapter {
      */
     mapHotelServiceFromXmlObjectToAdapterObject(xml, lineNumber) {
         let serviceCodes = xml['Accommodation.' + lineNumber].split(' ');
+        let dateFrom = moment(xml['From.' + lineNumber], CONFIG.crs.dateFormat);
+        let dateTo = moment(xml['To.' + lineNumber], CONFIG.crs.dateFormat);
 
         return {
-            roomCode: serviceCodes[0],
-            mealCode: serviceCodes[1],
+            roomCode: serviceCodes[0] || void 0,
+            mealCode: serviceCodes[1] || void 0,
             destination: xml['ServiceCode.' + lineNumber],
-            dateFrom: moment(xml['From.' + lineNumber], CONFIG.crs.dateFormat).format(this.options.useDateFormat),
-            dateTo: moment(xml['To.' + lineNumber], CONFIG.crs.dateFormat).format(this.options.useDateFormat),
+            dateFrom: dateFrom.isValid() ? dateFrom.format(this.options.useDateFormat) : xml['From.' + lineNumber],
+            dateTo: dateTo.isValid() ? dateTo.format(this.options.useDateFormat) : xml['To.' + lineNumber],
             type: SERVICE_TYPES.hotel,
         };
     }
@@ -372,7 +374,7 @@ class TomaAdapter {
      * @param xmlObject object
      * @param dataObject object
      */
-    assignAdapterObjectToXmlObject(xmlObject, dataObject) {
+    assignAdapterObjectToXmlObject(xmlObject, dataObject = {}) {
         let xmlTom = xmlObject.Envelope.Body.TOM;
 
         if (!xmlTom) {
@@ -417,7 +419,7 @@ class TomaAdapter {
     getMarkedLineNumberForServiceType(xml, serviceType) {
         let markedLineNumber = void 0;
 
-        this.serviceListEnumeration.some((lineNumber) => {
+        this.serviceListEnumeration.forEach((lineNumber) => {
             if (xml['KindOfService.' + lineNumber] !== CONFIG.crs.serviceTypes[serviceType]) {
                 return;
             }
@@ -426,9 +428,7 @@ class TomaAdapter {
                 return;
             }
 
-            markedLineNumber = lineNumber;
-
-            return true;
+            markedLineNumber = xml['MarkerField.' + lineNumber] ? lineNumber : markedLineNumber || lineNumber;
         });
 
         return markedLineNumber;
@@ -497,20 +497,18 @@ class TomaAdapter {
 
         let hotelName = service.pickUpHotelName || service.dropOffHotelName;
 
-        if (!hotelName) {
-            return;
+        if (hotelName) {
+            let emptyLineNumber = this.getNextEmptyLineNumber(xml);
+
+            if (!emptyLineNumber) {
+                return;
+            }
+
+            xml['KindOfService.' + emptyLineNumber] = CONFIG.crs.serviceTypes.extras;
+            xml['ServiceCode.' + emptyLineNumber] = hotelName;
+            xml['From.' + emptyLineNumber] = pickUpDateFormatted;
+            xml['To.' + emptyLineNumber] = calculatedDropOffDate;
         }
-
-        let emptyLineNumber = this.getNextEmptyLineNumber(xml);
-
-        if (!emptyLineNumber) {
-            return;
-        }
-
-        xml['KindOfService.' + emptyLineNumber] = CONFIG.crs.serviceTypes.extras;
-        xml['ServiceCode.' + emptyLineNumber] = hotelName;
-        xml['From.' + emptyLineNumber] = pickUpDateFormatted;
-        xml['To.' + emptyLineNumber] = calculatedDropOffDate;
 
         xml.Remark = [xml.Remark, reduceExtrasList(service.extras), reduceHotelDataToRemarkString(service)].filter(Boolean).join(',') || void 0;
     };

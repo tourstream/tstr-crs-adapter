@@ -18,7 +18,7 @@ const CONFIG = {
         },
         defaultValues: {
             action: 'BA',
-            numberOfTravellers: '1',
+            numberOfTravellers: 1,
         },
     },
     services: {
@@ -50,13 +50,13 @@ class TomaSPCAdapter {
             return this.mapCrsObjectToAdapterObject(crsObject);
         }).then(null, (error) => {
             this.logger.error(error);
-            throw new Error('getData: ' + error.message);
+            throw new Error('[.getData] ' + error.message);
         });
     }
 
     setData(adapterObject) {
         return this.getCrsObject().then((crsObject) => {
-            this.assignAdapterObjectToCrsObject(crsObject, adapterObject);
+            crsObject = this.createCrsObjectFromAdapterObject(crsObject, adapterObject);
 
             this.logger.info('CRS OBJECT:');
             this.logger.info(crsObject);
@@ -64,23 +64,27 @@ class TomaSPCAdapter {
             return this.sendData(crsObject);
         }).then(null, (error) => {
             this.logger.error(error);
-            throw new Error('setData: ' + error.message);
+            throw new Error('[.setData] ' + error.message);
         });
     }
 
-    exit(options) {
-        let popupId = options.popupId || this.getUrlParameter('POPUP_ID');
+    exit(options = {}) {
+        return new Promise((resolve) => {
+            let popupId = options.popupId || this.getUrlParameter('POPUP_ID');
 
-        if (!popupId) {
-            throw new Error('can not exit - popupId is missing');
-        }
+            if (!popupId) {
+                throw new Error('can not exit - popupId is missing');
+            }
 
-        try {
-            this.getConnection().requestService('popups.close', { id: popupId });
-        } catch (error) {
-            this.logger.error(error);
-            throw new Error('connection::popups.close: ' + error.message);
-        }
+            try {
+                this.getConnection().requestService('popups.close', { id: popupId });
+
+                resolve();
+            } catch (error) {
+                this.logger.error(error);
+                throw new Error('connection::popups.close: ' + error.message);
+            }
+        });
     }
 
     /**
@@ -169,7 +173,7 @@ class TomaSPCAdapter {
      */
     requestCatalog(command, data, errorMessage) {
         return new Promise((resolve) => {
-            this.getConnection().requestService(command, [data], { fn: {
+            this.getConnection().requestService(command, data, { fn: {
                 onSuccess: (response) => {
                     if (this.hasResponseErrors(response)) {
                         let message = errorMessage + ' - caused by faulty response';
@@ -182,7 +186,7 @@ class TomaSPCAdapter {
                     resolve(response.data);
                 },
                 onError: (response) => {
-                    let message = errorMessage + ' - something went wrong';
+                    let message = errorMessage + ' - something went wrong with the request';
 
                     this.logger.error(message);
                     this.logger.error(response);
@@ -198,19 +202,19 @@ class TomaSPCAdapter {
      * @returns {boolean}
      */
     hasResponseErrors(response) {
+        if (response.warnings && response.warnings.length) {
+            this.logger.warn('response has warnings');
+
+            response.warnings.forEach((warning) => {
+                this.logger.warn(warning.code + ' ' + warning.message);
+            });
+        }
+
         if (response.error) {
             this.logger.error('response has errors');
             this.logger.error(response.error.code + ' ' + response.error.message);
 
             return true;
-        }
-
-        if (response.warnings && response.warnings.length) {
-            this.logger.warn('response has warnings');
-
-            response.warnings.forEach(function(warning) {
-                this.logger.warn(warning.code + ' ' + warning.message);
-            });
         }
     }
 
@@ -232,7 +236,7 @@ class TomaSPCAdapter {
             services: [],
         };
 
-        crsObject.services.forEach((crsService) => {
+        (crsObject.services || []).forEach((crsService) => {
             if (!crsService.serviceType) {
                 return;
             }
@@ -245,7 +249,7 @@ class TomaSPCAdapter {
                     break;
                 }
                 case CONFIG.crs.serviceTypes.hotel: {
-                    service = this.mapHotelServiceFromCrsObjectToAdapterObject(crsObject);
+                    service = this.mapHotelServiceFromCrsObjectToAdapterObject(crsService);
                     break;
                 }
             }
@@ -314,18 +318,20 @@ class TomaSPCAdapter {
 
     /**
      * @private
-     * @param crsObject object
+     * @param crsService object
      * @returns {object}
      */
-    mapHotelServiceFromCrsObjectToAdapterObject(crsObject) {
-        let serviceCodes = crsObject.accommodation.split(' ');
+    mapHotelServiceFromCrsObjectToAdapterObject(crsService) {
+        let serviceCodes = (crsService.accommodation || '').split(' ');
+        let dateFrom = moment(crsService.fromDate, CONFIG.crs.dateFormat);
+        let dateTo = moment(crsService.toDate, CONFIG.crs.dateFormat);
 
         return {
-            roomCode: serviceCodes[0],
-            mealCode: serviceCodes[1],
-            destination: crsObject.serviceCode,
-            dateFrom: moment(crsObject.fromDate, CONFIG.crs.dateFormat).format(this.options.useDateFormat),
-            dateTo: moment(crsObject.toDate, CONFIG.crs.dateFormat).format(this.options.useDateFormat),
+            roomCode: serviceCodes[0] || void 0,
+            mealCode: serviceCodes[1] || void 0,
+            destination: crsService.serviceCode,
+            dateFrom: dateFrom.isValid() ? dateFrom.format(this.options.useDateFormat) : crsService.fromDate,
+            dateTo: dateTo.isValid() ? dateTo.format(this.options.useDateFormat) : crsService.toDate,
             type: SERVICE_TYPES.hotel,
         };
     }
@@ -361,8 +367,9 @@ class TomaSPCAdapter {
      * @private
      * @param crsObject object
      * @param adapterObject object
+     * @returns {object}
      */
-    assignAdapterObjectToCrsObject(crsObject, adapterObject) {
+    createCrsObjectFromAdapterObject(crsObject, adapterObject = {}) {
         if (!crsObject) {
             crsObject = {};
         }
@@ -385,6 +392,8 @@ class TomaSPCAdapter {
                 }
             }
         });
+
+        return JSON.parse(JSON.stringify(crsObject));
     };
 
     /**
@@ -405,7 +414,7 @@ class TomaSPCAdapter {
     getMarkedServiceByServiceType(crsObject, serviceType) {
         let markedService = void 0;
 
-        crsObject.services.some((crsService) => {
+        (crsObject.services || []).forEach((crsService) => {
             if (crsService.serviceType !== CONFIG.crs.serviceTypes[serviceType]) {
                 return;
             }
@@ -414,9 +423,7 @@ class TomaSPCAdapter {
                 return;
             }
 
-            markedService = crsService;
-
-            return true;
+            markedService = crsService.marker ? crsService : markedService || crsService;
         });
 
         return markedService;
@@ -450,7 +457,7 @@ class TomaSPCAdapter {
             let hotelData = [];
 
             if (service.pickUpHotelName) {
-                hotelData.push([service.pickUpHotelAddress, service.pickUpHotelPhoneNumber].filter(Boolean).join(' '));
+                hotelData.push([service.pickUpHotelAddress, service.pickUpHotelPhoneNumber].filter(Boolean).join('|'));
             }
 
             if (service.dropOffHotelName) {
@@ -458,7 +465,7 @@ class TomaSPCAdapter {
                     hotelData.push(service.dropOffHotelName);
                 }
 
-                hotelData.push([service.dropOffHotelAddress, service.dropOffHotelPhoneNumber].filter(Boolean).join(' '));
+                hotelData.push([service.dropOffHotelAddress, service.dropOffHotelPhoneNumber].filter(Boolean).join('|'));
             }
 
             return hotelData.filter(Boolean).join('|');
@@ -485,18 +492,16 @@ class TomaSPCAdapter {
 
         let hotelName = adapterService.pickUpHotelName || adapterService.dropOffHotelName;
 
-        if (!hotelName) {
-            return;
+        if (hotelName) {
+            let emptyService = this.createAndAssignEmptyService(crsObject);
+
+            emptyService.serviceType = CONFIG.crs.serviceTypes.extras;
+            emptyService.serviceCode = hotelName;
+            emptyService.fromDate = pickUpDateFormatted;
+            emptyService.toDate = calculatedDropOffDate;
         }
 
-        let emptyService = this.createAndAssignEmptyService(crsObject);
-
-        emptyService.serviceType = CONFIG.crs.serviceTypes.extras;
-        emptyService.serviceCode = hotelName;
-        emptyService.fromDate = pickUpDateFormatted;
-        emptyService.toDate = calculatedDropOffDate;
-
-        crsService.remark = [crsService.remark, reduceExtrasList(adapterService.extras), reduceHotelDataToRemarkString(adapterService)].filter(Boolean).join(',') || void 0;
+        crsObject.remark = [crsObject.remark, reduceExtrasList(adapterService.extras), reduceHotelDataToRemarkString(adapterService)].filter(Boolean).join(',') || void 0;
     };
 
     /**
