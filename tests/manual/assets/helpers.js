@@ -45,7 +45,8 @@ var roundTripServiceTemplate = window.document.getElementById('round-trip-servic
 var form = document.getElementById('data-form');
 var adapter = new window.UbpCrsAdapter.default({debug: true});
 var config = {
-    toma: {providerKey: 'F1T'}
+    toma: {providerKey: 'F1T'},
+    toma2: {env: 'test'},
 };
 
 document.getElementById('crs-selector').addEventListener('change', function (event) {

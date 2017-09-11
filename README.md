@@ -85,6 +85,9 @@ Booking Manager | 'bm'             | -                                | -
 For some connections you need credentials or other connection data,
 which you can set in the `connectionOptions`.
 
+For TOMA SPC there is one crsUrl for each environment preconfigured. 
+If no environment is set, the production crsUrl is used.
+
 
 ### Data object structure
 
