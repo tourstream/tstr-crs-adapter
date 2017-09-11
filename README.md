@@ -22,38 +22,38 @@ ubpCrsAdapter.connect(connectionType, connectionOptions);
 
 When you are connected you can get the data from the CRS via:
 ```
-ubpCrsAdapter.getData().then(data => {});
+ubpCrsAdapter.getData().then(inputData => {});
 ```
 
-The `data` will look like that:
+The `inputData` you get will look like that:
 ```
 {
-    agencyNumber,
-    operator,
-    numberOfTravellers,
-    travelType,
-    services,
-    remark,
+    agencyNumber: string,
+    operator: string,
+    numberOfTravellers: string,
+    travelType: string,
+    services: Array<ServiceObject>,
+    remark: string,
 }
 ```
 
 Or you can set data to the CRS via:
 ```
-ubpCrsAdapter.setData(data);
+ubpCrsAdapter.setData(outputData);
 ```
 
-The data object can have the following structure:
+The outputData object can have the following structure:
 ```
 {
-    numberOfTravellers,
-    services,
-    remark,
+    numberOfTravellers: string,
+    services: Array<ServiceObject>,
+    remark: string,
 }
 ```
 
 And also you can close the opened frame in the CRS:
 ```
-ubpCrsAdapter.exit()
+ubpCrsAdapter.exit(exitOptions)
 ```
 
 _note: every method returns a promise_
@@ -61,37 +61,45 @@ _note: every method returns a promise_
 
 ### Supported adapterOptions
 
+This options will be applied on every underlying adapter.
+
 name          | default value  
 :---          | :---           
 debug         | false
 useDateFormat | 'DDMMYYYY' (according to [momentjs date format](https://momentjs.com/docs/#/displaying/))
 
 
-### Supported connections
+### Supported options
 
 Currently this module supports the connection to following CRS:
 
-CRS             | connectionType   | connectionOptions
-:---            | :---             | :---
-CETS            | 'cets'           | -
-TOMA (old)      | 'toma'           | .providerKey 
-Booking Manager | 'bm'             | -
+CRS             | connectionType   | connectionOptions                | exitOptions
+:---            | :---             | :---                             | :---
+CETS            | 'cets'           | -                                | -
+TOMA (old)      | 'toma'           | .providerKey: string             | -
+TOMA SPC (new)  | 'toma2'          | .externalCatalogVersion?: string | .popupId?: string
+|               |                  | .crsUrl?: string                 |
+|               |                  | .env?: ['test' OR 'prod']        |
+Booking Manager | 'bm'             | -                                | -
 
-For some connections you need credentials, which you can set in the `connectionOptions`.
+For some connections you need credentials or other connection data,
+which you can set in the `connectionOptions`.
 
 
 ### Data object structure
 
-Depending on the `services[*].type` the data structure of a service differs.
+Depending on the `services[*].type` the structure of a ServiceObject differs.
 
 
 #### Supported service types
 
-service type | CETS  | TOMA (old) | TOMA (new) | Booking Manager
----          | :---: | :---:      | :---:      | :---:
-'car'        | X     | X          |            | X
-'hotel'      |       | X          |            | X
-'roundTrip'  |       | X          |            | 
+service type | CETS  | TOMA (old) | TOMA (new) | Booking Manager | Merlin | TBM   | NEO
+---          | :---: | :---:      | :---:      | :---:           | :---:  | :---: | :---:
+'car'        | X     | X          | X          | X               |        |       |
+'hotel'      |       | X          | X          | X               |        |       |
+'roundtrip'  |       | X          |            |                 |        |       |
+'camper'     |       |            |            |                 |        |       |
+'flight'     |       |            |            |                 |        |       |
 
 | type  | fields                   | example
 | :---  | :---                     | :---
@@ -143,7 +151,7 @@ But if this service is either "marked" in the crs or detected as "marked" (depen
 
 ### Field mapping
 
-#### Amadeus Toma (old)
+#### Amadeus Toma (old) & Amadeus Toma SPC (new)
 
 ![toma mask](docs/toma/tomaMask.png)
 

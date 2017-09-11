@@ -36,3 +36,9 @@ Open your application in the IE - there a dialog will popup and you can allow Ac
 #### I get the error "... Error: Permission denied" What can I do?
 
 Close all debug windows and try again.
+
+
+#### How does the data look like for the Booking Manager?
+
+The Booking Manager is a special "CRS" because the output data needs no mapping. 
+It gets the data directly as "raw" format.
