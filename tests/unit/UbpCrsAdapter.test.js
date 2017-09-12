@@ -54,7 +54,7 @@ describe('UbpCrsAdapter', () => {
     it('should be initialized with supported CRS', () => {
         expect(UbpCrsAdapter.CRS_TYPES).toEqual({
             toma: jasmine.anything(),
-            toma2: jasmine.anything(),
+            tomaSPC: jasmine.anything(),
             cets: jasmine.anything(),
             bookingManager: jasmine.anything(),
             merlin: jasmine.anything(),

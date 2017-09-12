@@ -14,7 +14,7 @@ const SERVICE_TYPES = {
 
 const CRS_TYPES = {
     toma: 'toma',
-    toma2: 'tomaSPC',
+    tomaSPC: 'toma2',
     cets: 'cets',
     bookingManager: 'bm',
     merlin: 'merlin',
@@ -22,7 +22,7 @@ const CRS_TYPES = {
 
 const CRS_TYPE_TO_ADAPTER = {
     toma: TomaAdapter,
-    tomaSPC: TomaSPCAdapter,
+    toma2: TomaSPCAdapter,
     cets: CetsAdapter,
     bm: BmAdapter,
     merlin: MerlinAdapter,
