@@ -234,13 +234,21 @@ The file is located in __test/manual__: *[crsTest.html](tests/manual/crsTest.htm
 
 It depends on the CRS how to use the test file.
 
-###### ... in TOMA
+###### ... in (old) TOMA
 
 _precondition:_ the Amadeus application is started and the TOMA mask is visible
 
 If you already have an "browser view" open (basically after an external search), 
 you can drag'n'drop the test file directly into that view.
 Alternatively you can open the test file in parallel to the TOMA mask in an IE and use the test file from there.
+
+###### ... in (new) TOMA SPC
+
+_precondition:_ the Amadeus portal is open, the TOMA mask is visible and the test file is served under localhost:1337
+
+You have to request an already embedded IBE (like the drive IBE) 
+and replace the iFrame URL with the URL of the test file (localhost:1337). 
+This is because Amadeus whitelist the domains which have access to the CRS.
 
 ###### ... in CETS
 
