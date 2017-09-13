@@ -1,6 +1,7 @@
 import es6shim from 'es6-shim';
 import xml2js from 'xml2js';
 import moment from 'moment';
+import axios from 'axios';
 import { SERVICE_TYPES } from '../UbpCrsAdapter';
 
 const CONFIG = {
@@ -54,40 +55,26 @@ class MerlinAdapter {
     }
 
     connect() {
-        this.createConnection();
+        let connection = this.createConnection();
+        this.connection = connection;
 
-        // do a dummy POST request with empty data?
-        this.logger.warn('Merlin has no connection mechanism');
+        return connection.post({}).then(() => {
+            this.logger.log('Merlin connection available');
+        }, (error) => {
+            this.logger.info(error);
+            this.logger.error('Instantiate connection error - but nevertheless transfer could work');
+            throw error;
+        });
     }
 
     getData() {
-        let message = 'Merlin has no mechanism for getting the data';
+        this.logger.warn('Merlin has no mechanism for getting the data');
 
-        this.logger.warn(message);
-
-        throw new Error(message);
+        return Promise.resolve();
     }
 
-    setData(dataObject) {
-        let xmlObject = {
-            GATE2MX: {
-                SendRequest: {
-                    [CONFIG.builderOptions.attrkey]: {
-                        application: 'Merlin',
-                        source: 'FTI',
-                    },
-                    Import: {
-                        [CONFIG.builderOptions.attrkey]: {
-                            autoSend: false,
-                            clearScreen: false,
-                        },
-                        ServiceBlock: {
-                            ServiceRow: [],
-                        },
-                    },
-                },
-            },
-        };
+    setData(dataObject = {}) {
+        let xmlObject = this.createBaseXmlObject();
 
         this.assignAdapterObjectToXmlObject(xmlObject, dataObject);
 
@@ -100,41 +87,29 @@ class MerlinAdapter {
         this.logger.info(xml);
 
         try {
-            this.getConnection().post(xml);
+            return this.getConnection().post(xml).catch((error) => {
+                this.logger.info(error);
+                this.logger.error('error during transfer - please check the result');
+                throw error;
+            });
         } catch (error) {
-            this.logger.error(error);
-            throw new Error('connection::post: ' + error.message);
+            return Promise.reject(error);
         }
     }
 
     exit() {
         this.logger.warn('Merlin has no exit mechanism');
+
+        return Promise.resolve();
     }
 
     /**
      * @private
+     * @returns {{post: (function(*=): AxiosPromise)}}
      */
     createConnection() {
-        const xhr = new XMLHttpRequest();
-        const async = true;
-
-        const postData = (data) => {
-            xhr.open('POST', CONFIG.crs.connectionUrl, async);
-            xhr.onload = () => {
-                if (xhr.status !== 200) {
-                    throw new Error('[code]: ' + xhr.status + ' [message]: ' + xhr.statusText);
-                }
-            };
-
-            xhr.onerror = (error) => {
-                throw new Error(error.message);
-            };
-
-            xhr.send(data);
-        };
-
-        this.connection = {
-            post: postData,
+        return {
+            post: (data) => axios.post(CONFIG.crs.connectionUrl, data),
         };
     }
 
@@ -147,7 +122,26 @@ class MerlinAdapter {
             return this.connection;
         }
 
-        throw new Error('No connection available - please connect to MERLIN first.');
+        throw new Error('No connection available - please connect to Merlin first.');
+    }
+
+    createBaseXmlObject() {
+        return {
+            GATE2MX: {
+                SendRequest: {
+                    [CONFIG.builderOptions.attrkey]: {
+                        application: 'Merlin',
+                        source: 'FTI',
+                    },
+                    Import: {
+                        [CONFIG.builderOptions.attrkey]: {
+                            autoSend: false,
+                            clearScreen: false,
+                        },
+                    },
+                },
+            },
+        };
     }
 
     /**
@@ -155,19 +149,16 @@ class MerlinAdapter {
      * @param xmlObject object
      * @param dataObject object
      */
-    assignAdapterObjectToXmlObject(xmlObject, dataObject) {
+    assignAdapterObjectToXmlObject(xmlObject, dataObject = {}) {
         let xmlImport = xmlObject.GATE2MX.SendRequest.Import;
-
-        if (!xmlImport) {
-            xmlImport = {};
-            xmlObject.GATE2MX.SendRequest.Import = xmlImport;
-        }
 
         xmlImport.TransactionCode = CONFIG.crs.defaultValues.action;
         xmlImport.Remarks = dataObject.remark;
         xmlImport.NoOfPersons = dataObject.numberOfTravellers || CONFIG.crs.defaultValues.numberOfTravellers;
 
         (dataObject.services || []).forEach((service) => {
+            xmlImport.ServiceBlock = xmlImport.ServiceBlock || { ServiceRow: [] };
+
             let xmlService = this.getMarkedServiceForServiceType(xmlImport.ServiceBlock.ServiceRow, service.type);
 
             if (!xmlService) {
@@ -206,7 +197,7 @@ class MerlinAdapter {
     getMarkedServiceForServiceType(xmlServices, serviceType) {
         let markedService = void 0;
 
-        xmlServices.some((xmlService) => {
+        xmlServices.forEach((xmlService) => {
             if (xmlService.KindOfService !== CONFIG.crs.serviceTypes[serviceType]) {
                 return;
             }
@@ -215,9 +206,7 @@ class MerlinAdapter {
                 return;
             }
 
-            markedService = xmlService;
-
-            return true;
+            markedService = xmlService.MarkField ? xmlService : markedService || xmlService;
         });
 
         return markedService;
@@ -267,6 +256,12 @@ class MerlinAdapter {
                 .format(CONFIG.crs.dateFormat);
         };
 
+        const reduceExtrasList = (extras) => {
+            return (extras || []).join('|')
+                .replace(/childCareSeat0/g, 'BS')
+                .replace(/childCareSeat(\d)/g, 'CS$1YRS');
+        };
+
         const reduceHotelDataToRemarkString = (service) => {
             let hotelData = [];
 
@@ -306,24 +301,22 @@ class MerlinAdapter {
 
         let hotelName = service.pickUpHotelName || service.dropOffHotelName;
 
-        if (!hotelName) {
-            return;
+        if (hotelName) {
+            let emptyService = this.createEmptyService(xml.ServiceBlock.ServiceRow);
+
+            if (!emptyService) {
+                return;
+            }
+
+            xml.ServiceBlock.ServiceRow.push(emptyService);
+
+            emptyService.KindOfService = CONFIG.crs.serviceTypes.extras;
+            emptyService.Service = hotelName;
+            emptyService.FromDate = pickUpDateFormatted;
+            emptyService.EndDate = calculatedDropOffDate;
         }
 
-        let emptyService = this.createEmptyService(xml.ServiceBlock.ServiceRow);
-
-        if (!emptyService) {
-            return;
-        }
-
-        xml.ServiceBlock.ServiceRow.push(emptyService);
-
-        emptyService.KindOfService = CONFIG.crs.serviceTypes.extras;
-        emptyService.Service = hotelName;
-        emptyService.FromDate = pickUpDateFormatted;
-        emptyService.EndDate = calculatedDropOffDate;
-
-        xml.Remarks = [xml.Remarks, reduceHotelDataToRemarkString(service)].filter(Boolean).join(',') || void 0;
+        xml.Remarks = [xml.Remarks, reduceExtrasList(service.extras), reduceHotelDataToRemarkString(service)].filter(Boolean).join(',') || void 0;
     };
 
     /**
