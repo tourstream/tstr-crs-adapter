@@ -215,8 +215,8 @@ CRS field | example  | adapter field           | example
 
 ## Debugging
 
-Sadly the debugging in some CRS is not possible but the adapter nevertheless provides some debugging output - either 
-you set the adapter option `.debug` to `true` or you add the parameter "debug" to your URL.
+Sadly the debugging in some CRS is not possible but the adapter nevertheless provides some debugging output - 
+either you set the adapter option `.debug` to `true` or you add the parameter "debug" to your URL.
 It will open an extra window for debug outputs.
 
 

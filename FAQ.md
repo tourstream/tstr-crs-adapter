@@ -42,3 +42,11 @@ Close all debug windows and try again.
 
 The Booking Manager is a special "CRS" because the output data needs no mapping. 
 It gets the data directly as "raw" format.
+
+
+#### Is there a way to execute the test file in a modern CRS?
+
+Yes, for that case we provide a command for serving the test file locally: `npm run serve`. 
+The file is than available via https://localhost:1337 and already whitelisted by the providers. 
+But you should open this URL in your browser first to accept any unknown certificates!
+Then you have to replace the iframe URL in the CRS with this served URL.

@@ -13,7 +13,7 @@ describe('TomaSPCAdapter', () => {
         documentHeadAppendChildSpy.and.callFake((script) => script.onload());
 
         TomaSPCConnection = require('tests/unit/_mocks/TomaSPCConnection')();
-        TomaSPCConnection.connect.and.callFake((paramObject) => paramObject.fn());
+        TomaSPCConnection.connect.and.callFake((paramObject) => paramObject.fn.onSuccess());
 
         window.catalog = TomaSPCConnection;
     });
@@ -24,11 +24,13 @@ describe('TomaSPCAdapter', () => {
 
     it('connect() should result in correct script.src', (done) => {
         let expectedSrc = 'https://www.em1.sellingplatformconnect.amadeus.com/ExternalCatalog.js';
+        let expectedDest = 'https://www.em1.sellingplatformconnect.amadeus.com';
 
         adapter.connect().then(() => {
             let scriptElement = documentHeadAppendChildSpy.calls.mostRecent().args[0];
 
             expect(scriptElement.src).toBe(expectedSrc);
+            expect(TomaSPCConnection.dest).toBe(expectedDest);
             done();
         }, (error) => {
             done.fail(error);
@@ -37,11 +39,13 @@ describe('TomaSPCAdapter', () => {
 
     it('connect() with option.crsUrl should result in correct script.src', (done) => {
         let expectedSrc = 'https://crsurl/ExternalCatalog.js';
+        let expectedDest = 'https://crsUrl';
 
         adapter.connect({crsUrl: 'http://crsUrl'}).then(() => {
             let scriptElement = documentHeadAppendChildSpy.calls.mostRecent().args[0];
 
             expect(scriptElement.src).toBe(expectedSrc);
+            expect(TomaSPCConnection.dest).toBe(expectedDest);
             done();
         }, (error) => {
             done.fail(error);
@@ -50,11 +54,13 @@ describe('TomaSPCAdapter', () => {
 
     it('connect() with option.env "test" should result in correct script.src', (done) => {
         let expectedSrc = 'https://acceptance.emea1.sellingplatformconnect.amadeus.com/ExternalCatalog.js';
+        let expectedDest = 'https://acceptance.emea1.sellingplatformconnect.amadeus.com';
 
         adapter.connect({env: 'test'}).then(() => {
             let scriptElement = documentHeadAppendChildSpy.calls.mostRecent().args[0];
 
             expect(scriptElement.src).toBe(expectedSrc);
+            expect(TomaSPCConnection.dest).toBe(expectedDest);
             done();
         }, (error) => {
             done.fail(error);
@@ -63,11 +69,13 @@ describe('TomaSPCAdapter', () => {
 
     it('connect() with option.env "prod" should result in correct script.src', (done) => {
         let expectedSrc = 'https://www.em1.sellingplatformconnect.amadeus.com/ExternalCatalog.js';
+        let expectedDest = 'https://www.em1.sellingplatformconnect.amadeus.com';
 
         adapter.connect({env: 'prod'}).then(() => {
             let scriptElement = documentHeadAppendChildSpy.calls.mostRecent().args[0];
 
             expect(scriptElement.src).toBe(expectedSrc);
+            expect(TomaSPCConnection.dest).toBe(expectedDest);
             done();
         }, (error) => {
             done.fail(error);
@@ -76,6 +84,7 @@ describe('TomaSPCAdapter', () => {
 
     it('connect() with URL parameter crs_url should result in correct script.src', (done) => {
         let expectedSrc = 'https://crsurl/ExternalCatalog.js';
+        let expectedDest = 'https://crsUrl';
 
         window.history.replaceState({}, '', '?crs_url=http://crsUrl');
 
@@ -83,6 +92,7 @@ describe('TomaSPCAdapter', () => {
             let scriptElement = documentHeadAppendChildSpy.calls.mostRecent().args[0];
 
             expect(scriptElement.src).toBe(expectedSrc);
+            expect(TomaSPCConnection.dest).toBe(expectedDest);
             done();
         }, (error) => {
             done.fail(error);
@@ -91,11 +101,13 @@ describe('TomaSPCAdapter', () => {
 
     it('connect() with option.externalCatalogVersion should result in correct script.src', (done) => {
         let expectedSrc = 'https://www.em1.sellingplatformconnect.amadeus.com/ExternalCatalog.js?version=externalCatalogVersion';
+        let expectedDest = 'https://www.em1.sellingplatformconnect.amadeus.com';
 
         adapter.connect({externalCatalogVersion: 'externalCatalogVersion'}).then(() => {
             let scriptElement = documentHeadAppendChildSpy.calls.mostRecent().args[0];
 
             expect(scriptElement.src).toBe(expectedSrc);
+            expect(TomaSPCConnection.dest).toBe(expectedDest);
             done();
         }, (error) => {
             done.fail(error);
@@ -104,6 +116,7 @@ describe('TomaSPCAdapter', () => {
 
     it('connect() with URL parameter EXTERNAL_CATALOG_VERSION should result in correct script.src', (done) => {
         let expectedSrc = 'https://www.em1.sellingplatformconnect.amadeus.com/ExternalCatalog.js?version=url.catalogVersion';
+        let expectedDest = 'https://www.em1.sellingplatformconnect.amadeus.com';
 
         window.history.replaceState({}, '', '?EXTERNAL_CATALOG_VERSION=url.catalogVersion');
 
@@ -111,6 +124,7 @@ describe('TomaSPCAdapter', () => {
             let scriptElement = documentHeadAppendChildSpy.calls.mostRecent().args[0];
 
             expect(scriptElement.src).toBe(expectedSrc);
+            expect(TomaSPCConnection.dest).toBe(expectedDest);
             done();
         }, (error) => {
             done.fail(error);
@@ -505,7 +519,7 @@ describe('TomaSPCAdapter', () => {
             };
 
             adapter.setData().then(() => {
-                expect(requestData).toEqual(expected);
+                expect(requestData).toEqual([expected]);
                 done();
             }, (error) => {
                 done.fail(error);
@@ -520,7 +534,7 @@ describe('TomaSPCAdapter', () => {
             };
 
             adapter.setData(adapterObject).then(() => {
-                expect(requestData).toEqual(expected);
+                expect(requestData).toEqual([expected]);
                 done();
             }, (error) => {
                 done.fail(error);
@@ -540,7 +554,7 @@ describe('TomaSPCAdapter', () => {
             };
 
             adapter.setData(adapterObject).then(() => {
-                expect(requestData).toEqual(expected);
+                expect(requestData).toEqual([expected]);
                 done();
             }, (error) => {
                 done.fail(error);
@@ -593,7 +607,7 @@ describe('TomaSPCAdapter', () => {
             };
 
             adapter.setData(adapterObject).then(() => {
-                expect(requestData).toEqual(expected);
+                expect(requestData).toEqual([expected]);
                 done();
             }, (error) => {
                 done.fail(error);
@@ -631,7 +645,7 @@ describe('TomaSPCAdapter', () => {
             };
 
             adapter.setData(adapterObject).then(() => {
-                expect(requestData).toEqual(expected);
+                expect(requestData).toEqual([expected]);
                 done();
             }, (error) => {
                 done.fail(error);
@@ -679,7 +693,7 @@ describe('TomaSPCAdapter', () => {
             };
 
             adapter.setData(adapterObject).then(() => {
-                expect(requestData).toEqual(expected);
+                expect(requestData).toEqual([expected]);
                 done();
             }, (error) => {
                 done.fail(error);
@@ -715,7 +729,7 @@ describe('TomaSPCAdapter', () => {
             };
 
             adapter.setData(adapterObject).then(() => {
-                expect(requestData).toEqual(expected);
+                expect(requestData).toEqual([expected]);
                 done();
             }, (error) => {
                 done.fail(error);
@@ -784,7 +798,7 @@ describe('TomaSPCAdapter', () => {
             };
 
             adapter.setData(adapterObject).then(() => {
-                expect(requestData).toEqual(expected);
+                expect(requestData).toEqual([expected]);
                 done();
             }, (error) => {
                 done.fail(error);

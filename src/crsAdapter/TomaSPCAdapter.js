@@ -6,8 +6,8 @@ import { SERVICE_TYPES } from '../UbpCrsAdapter';
 const CONFIG = {
     crs: {
         baseUrlMap: {
-            prod: 'https://www.em1.sellingplatformconnect.amadeus.com/',
-            test: 'https://acceptance.emea1.sellingplatformconnect.amadeus.com/',
+            prod: 'www.em1.sellingplatformconnect.amadeus.com',
+            test: 'acceptance.emea1.sellingplatformconnect.amadeus.com',
         },
         catalogFileName: 'ExternalCatalog.js',
         dateFormat: 'DDMMYY',
@@ -95,32 +95,35 @@ class TomaSPCAdapter {
     createConnection(options = {}) {
         return new Promise((resolve) => {
             const connectToSPC = () => {
-                window.catalog.dest = baseUrl;
-                window.catalog.connect({
-                    scope: window,
-                    fn: () => {
+                let callbackObject = this.createCallbackObject(
+                    resolve,
+                    () => {
                         this.logger.log('connected to TOMA Selling Platform Connect');
                         this.connection = window.catalog;
+                    },
+                    'connection not possible'
+                );
 
-                        resolve();
-                    }
-                });
+                callbackObject.scope = window;
+
+                window.catalog.dest = baseUrl;
+                window.catalog.connect(callbackObject);
             };
 
             const getBaseUrlFromReferrer = () => {
-                let baseUrl = 'https://' + document.referrer.replace(/https?:\/\//, '').split('/')[0] + '/';
+                let url = document.referrer.replace(/https?:\/\//, '').split('/')[0];
 
-                return (Object.values(CONFIG.crs.baseUrlMap).indexOf(baseUrl) > -1) ? baseUrl : void 0;
+                return (Object.values(CONFIG.crs.baseUrlMap).indexOf(url) > -1) ? url : void 0;
             };
 
-            let baseUrl = (options.crsUrl
+            let baseUrl = 'https://' + (options.crsUrl
                 || CONFIG.crs.baseUrlMap[options.env]
-                || getBaseUrlFromReferrer()
                 || this.getUrlParameter('crs_url')
+                || getBaseUrlFromReferrer()
                 || CONFIG.crs.baseUrlMap.prod).replace(/https?:\/\//, '').split('/')[0];
 
             let catalogVersion = options.externalCatalogVersion || this.getUrlParameter('EXTERNAL_CATALOG_VERSION');
-            let filePath = 'https://' + baseUrl + '/' + CONFIG.crs.catalogFileName + (catalogVersion ? '?version=' + catalogVersion : '');
+            let filePath = baseUrl + '/' + CONFIG.crs.catalogFileName + (catalogVersion ? '?version=' + catalogVersion : '');
             let script = document.createElement('script');
 
             script.src = filePath;
@@ -161,39 +164,55 @@ class TomaSPCAdapter {
      * @returns {Promise}
      */
     getCrsObject() {
-        return this.requestCatalog('bookingfile.toma.getData', null, 'can not get data');
+        return new Promise((resolve) => {
+            this.getConnection().requestService('bookingfile.toma.getData', [], this.createCallbackObject(resolve, null, 'can not get data'));
+        });
+    }
+
+
+    /**
+     * @private
+     * @param crsObject
+     * @returns {Promise}
+     */
+    sendData(crsObject) {
+        return new Promise((resolve) => {
+            this.getConnection().requestService('bookingfile.toma.setData', [crsObject], this.createCallbackObject(resolve, null, 'sending data failed'));
+        });
     }
 
     /**
      * @private
-     * @param command string
-     * @param data object
+     * @param resolve Function
+     * @param callback Function
      * @param errorMessage string
-     * @returns {Promise}
+     * @returns {{fn: {onSuccess: (function(*=)), onError: (function(*=))}}}
      */
-    requestCatalog(command, data, errorMessage) {
-        return new Promise((resolve) => {
-            this.getConnection().requestService(command, data, { fn: {
-                onSuccess: (response) => {
-                    if (this.hasResponseErrors(response)) {
-                        let message = errorMessage + ' - caused by faulty response';
-
-                        this.logger.error(message);
-                        this.logger.error(response);
-                        throw new Error(message);
-                    }
-
-                    resolve(response.data);
-                },
-                onError: (response) => {
-                    let message = errorMessage + ' - something went wrong with the request';
+    createCallbackObject(resolve, callback, errorMessage = 'Error') {
+        return { fn: {
+            onSuccess: (response = {}) => {
+                if (this.hasResponseErrors(response)) {
+                    let message = errorMessage + ' - caused by faulty response';
 
                     this.logger.error(message);
                     this.logger.error(response);
                     throw new Error(message);
                 }
-            }});
-        });
+
+                if (callback) {
+                    callback(response);
+                }
+
+                resolve(response.data);
+            },
+            onError: (response) => {
+                let message = errorMessage + ' - something went wrong with the request';
+
+                this.logger.error(message);
+                this.logger.error(response);
+                throw new Error(message);
+            }
+        }};
     }
 
     /**
@@ -201,7 +220,7 @@ class TomaSPCAdapter {
      * @param response object
      * @returns {boolean}
      */
-    hasResponseErrors(response) {
+    hasResponseErrors(response = {}) {
         if (response.warnings && response.warnings.length) {
             this.logger.warn('response has warnings');
 
@@ -395,15 +414,6 @@ class TomaSPCAdapter {
 
         return JSON.parse(JSON.stringify(crsObject));
     };
-
-    /**
-     * @private
-     * @param crsObject
-     * @returns {Promise}
-     */
-    sendData(crsObject) {
-        return this.requestCatalog('bookingfile.toma.setData', crsObject, 'sending data failed');
-    }
 
     /**
      * @private
