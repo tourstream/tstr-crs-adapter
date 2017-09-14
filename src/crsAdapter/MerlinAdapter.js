@@ -156,22 +156,24 @@ class MerlinAdapter {
         xmlImport.Remarks = dataObject.remark;
         xmlImport.NoOfPersons = dataObject.numberOfTravellers || CONFIG.crs.defaultValues.numberOfTravellers;
 
-        (dataObject.services || []).forEach((service) => {
-            xmlImport.ServiceBlock = xmlImport.ServiceBlock || { ServiceRow: [] };
+        if ((dataObject.services || []).length) {
+            xmlImport.ServiceBlock = { ServiceRow: [] };
+        }
 
+        (dataObject.services || []).forEach((service) => {
             let xmlService = this.getMarkedServiceForServiceType(xmlImport.ServiceBlock.ServiceRow, service.type);
 
             if (!xmlService) {
                 xmlService = this.createEmptyService(xmlImport.ServiceBlock.ServiceRow);
 
-                if (!xmlService) {
-                    return;
+                if (xmlService) {
+                    xmlImport.ServiceBlock.ServiceRow.push(xmlService);
                 }
-
-                xmlImport.ServiceBlock.ServiceRow.push(xmlService);
             }
 
             if (!xmlService) {
+                this.logger.info('service not parsed because no CRS service is marked or no space left for more services');
+                this.logger.info(service);
                 return;
             }
 
@@ -184,6 +186,10 @@ class MerlinAdapter {
                     this.assignHotelServiceFromAdapterObjectToXmlObject(service, xmlService);
                     break;
                 }
+            }
+
+            if (service.marked) {
+                xmlService.MarkField = 'X';
             }
         });
     };
@@ -325,11 +331,14 @@ class MerlinAdapter {
      * @param xmlService object
      */
     assignHotelServiceFromAdapterObjectToXmlObject(service, xmlService) {
+        let dateFrom = moment(service.dateFrom, this.options.useDateFormat);
+        let dateTo = moment(service.dateTo, this.options.useDateFormat);
+
         xmlService.KindOfService = CONFIG.crs.serviceTypes.hotel;
         xmlService.Service = service.destination;
-        xmlService.Accommodation = [service.roomCode, service.mealCode].join(' ');
-        xmlService.FromDate = moment(service.dateFrom, this.options.useDateFormat).format(CONFIG.crs.dateFormat);
-        xmlService.EndDate = moment(service.dateTo, this.options.useDateFormat).format(CONFIG.crs.dateFormat);
+        xmlService.Accommodation = [service.roomCode, service.mealCode].filter(Boolean).join(' ');
+        xmlService.FromDate = dateFrom.isValid() ? dateFrom.format(CONFIG.crs.dateFormat) : service.dateFrom;
+        xmlService.EndDate = dateTo.isValid() ? dateTo.format(CONFIG.crs.dateFormat) : service.dateTo;
     }
 
     /**
