@@ -204,13 +204,8 @@ class MerlinAdapter {
         let markedService = void 0;
 
         xmlServices.forEach((xmlService) => {
-            if (xmlService.KindOfService !== CONFIG.crs.serviceTypes[serviceType]) {
-                return;
-            }
-
-            if (!this.isServiceMarked(xmlService, serviceType)) {
-                return;
-            }
+            if (xmlService.KindOfService !== CONFIG.crs.serviceTypes[serviceType]) return;
+            if (!this.isServiceMarked(xmlService, serviceType)) return;
 
             markedService = xmlService.MarkField ? xmlService : markedService || xmlService;
         });
@@ -310,9 +305,7 @@ class MerlinAdapter {
         if (hotelName) {
             let emptyService = this.createEmptyService(xml.ServiceBlock.ServiceRow);
 
-            if (!emptyService) {
-                return;
-            }
+            if (!emptyService) return;
 
             xml.ServiceBlock.ServiceRow.push(emptyService);
 
