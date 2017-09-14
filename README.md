@@ -203,7 +203,27 @@ Personal goal: Try to increase the test coverage to ~100%.
 ##### ... the adapter
 
 We prepared a test file, which can be opened directly in the CRS systems.
-The file is located in __test/manual__ folder: *[crsTest.html](tests/manual/crsTest.html)*
+The file is located in __test/manual__: *[crsTest.html](tests/manual/crsTest.html)*
 
-In the CRS you have to be in the step, where you have a "browser view" open - after executing an external search. 
-In that view you can drop the test file and execute the functions of the adapter.
+It depends on the CRS how to use the test file.
+
+###### ... in TOMA
+
+_precondition:_ the Amadeus application is started and the TOMA mask is visible
+
+If you already have an "browser view" open (basically after an external search), 
+you can drag'n'drop the test file directly into that view.
+Alternatively you can open the test file in parallel to the TOMA mask in an IE and use the test file from there.
+
+###### ... in CETS
+
+_precondition:_ the CETS application is started
+
+You have to open the "browser view" (basically via an external search) -
+than you can drag'n'drop the test file directly into that view.
+
+###### ... in Merlin
+
+_precondition:_ the Sabre portal "ShopHolidays" is open, the Merlin mask is visible and the import is enabled
+
+Open the test file in parallel to the Merlin mask in another Tab.
