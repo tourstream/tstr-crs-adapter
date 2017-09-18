@@ -61,6 +61,7 @@ _note: every method returns a promise_
 
 ### Supported adapterOptions
 
+You can check the default options with `UbpCrsAdapter.DEFAULT_OPTIONS`.
 This options will be applied on every underlying adapter.
 
 name          | default value  
@@ -69,9 +70,10 @@ debug         | false
 useDateFormat | 'DDMMYYYY' (according to [momentjs date format](https://momentjs.com/docs/#/displaying/))
 
 
-### Supported options
+### Supported CRS
 
-Currently this module supports the connection to following CRS:
+You can check the currently supported CRSs with `UbpCrsAdapter.CRS_TYPES`.
+Currently this module supports the connection to following CRS masks:
 
 CRS             | connectionType   | connectionOptions                | exitOptions
 :---            | :---             | :---                             | :---
@@ -81,6 +83,7 @@ TOMA SPC (new)  | 'toma2'          | .externalCatalogVersion?: string | .popupId
 |               |                  | .crsUrl?: string                 |
 |               |                  | .env?: ['test' OR 'prod']        |
 Booking Manager | 'bm'             | -                                | -
+Merlin          | 'merlin'         | -                                | -
 
 For some connections you need credentials or other connection data,
 which you can set in the `connectionOptions`.
@@ -96,10 +99,12 @@ Depending on the `services[*].type` the structure of a ServiceObject differs.
 
 #### Supported service types
 
+You can check the currently supported service types with `UbpCrsAdapter.SERVICE_TYPES`.
+
 service type | CETS  | TOMA (old) | TOMA (new) | Booking Manager | Merlin | TBM   | NEO
 ---          | :---: | :---:      | :---:      | :---:           | :---:  | :---: | :---:
-'car'        | X     | X          | X          | X               |        |       |
-'hotel'      |       | X          | X          | X               |        |       |
+'car'        | X     | X          | X          | X               | X      |       |
+'hotel'      |       | X          | X          | X               | X      |       |
 'roundtrip'  |       | X          |            |                 |        |       |
 'camper'     |       |            |            |                 |        |       |
 'flight'     |       |            |            |                 |        |       |
@@ -244,10 +249,14 @@ Alternatively you can open the test file in parallel to the TOMA mask in an IE a
 
 ###### ... in (new) TOMA SPC
 
-_precondition:_ the Amadeus portal is open, the TOMA mask is visible and the test file is served under localhost:1337
+_precondition:_ the Amadeus portal is open, the TOMA mask is visible and the test file is served under a whitelisted domain
 
-You have to request an already embedded IBE (like the drive IBE) 
-and replace the iFrame URL with the URL of the test file (localhost:1337). 
+For serving the test file locally we provide a command for it: `npm run serve`
+The file is than available via https://localhost:1337 and already whitelisted by Amadeus for their test system. 
+But you should open this URL in your browser first to accept any unknown certificates!
+
+Then you have to request an already embedded IBE (like the drive IBE) 
+and replace the iFrame URL with the URL of the test file. 
 This is because Amadeus whitelist the domains which have access to the CRS.
 
 ###### ... in CETS

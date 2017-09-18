@@ -2,7 +2,7 @@
 
 #### Is it possible to update the adapter version on Windows OS?
 
-_No unfortunately not. Because we use husky for our git-hooks._
+No unfortunately not. Because we use husky for our git-hooks.
 
 
 #### I try to connect via the adapter to my CRS but nothing happened. What can I do?
@@ -33,6 +33,11 @@ It seems like you have no ActiveX enabled.
 Open your application in the IE - there a dialog will popup and you can allow ActiveX execution.
 
 
+#### I get the error "... automation server could not create object" What can I do?
+
+See section above.
+
+
 #### I get the error "... Error: Permission denied" What can I do?
 
 Close all debug windows and try again.
@@ -46,7 +51,3 @@ It gets the data directly as "raw" format.
 
 #### Is there a way to execute the test file in a modern CRS?
 
-Yes, for that case we provide a command for serving the test file locally: `npm run serve`. 
-The file is than available via https://localhost:1337 and already whitelisted by the providers. 
-But you should open this URL in your browser first to accept any unknown certificates!
-Then you have to replace the iframe URL in the CRS with this served URL.
