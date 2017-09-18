@@ -8,6 +8,7 @@ import LogService from 'LogService';
 const SERVICE_TYPES = {
     car: 'car',
     hotel: 'hotel',
+    roundTrip: 'roundTrip',
 };
 
 const CRS_TYPES = {

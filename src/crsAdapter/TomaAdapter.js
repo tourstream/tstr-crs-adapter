@@ -2,7 +2,7 @@ import es6shim from 'es6-shim';
 import xml2js from 'xml2js';
 import fastXmlParser from 'fast-xml-parser';
 import moment from 'moment';
-import { SERVICE_TYPES } from '../UbpCrsAdapter';
+import {SERVICE_TYPES} from '../UbpCrsAdapter';
 
 /**
  * need to be true:
@@ -16,6 +16,7 @@ const CONFIG = {
             car: 'MW',
             extras: 'E',
             hotel: 'H',
+            roundTrip: 'R'
         },
         activeXObjectName: 'Spice.Start',
         defaultValues: {
@@ -208,13 +209,17 @@ class TomaAdapter {
 
             let service;
 
-            switch(serviceType) {
+            switch (serviceType) {
                 case CONFIG.crs.serviceTypes.car: {
                     service = this.mapCarServiceFromXmlObjectToAdapterObject(xmlTom, lineNumber);
                     break;
                 }
                 case CONFIG.crs.serviceTypes.hotel: {
                     service = this.mapHotelServiceFromXmlObjectToAdapterObject(xmlTom, lineNumber);
+                    break;
+                }
+                case CONFIG.crs.serviceTypes.roundTrip: {
+                    service = this.mapRoundTripServiceFromXmlObjectToAdapterObject(xmlTom, lineNumber);
                     break;
                 }
             }
@@ -305,6 +310,26 @@ class TomaAdapter {
      * @private
      * @param xml object
      * @param lineNumber number
+     * @returns {object}
+     */
+    mapRoundTripServiceFromXmlObjectToAdapterObject(xml, lineNumber) {
+        return {
+            type: SERVICE_TYPES.roundTrip,
+            bookingId: xml['ServiceCode.' + lineNumber],
+            destination: xml['Accommodation.' + lineNumber],
+            no: xml['Count.' + lineNumber],
+            startDate: moment(xml['From.' + lineNumber], CONFIG.crs.dateFormat).format(this.options.useDateFormat),
+            endDate: moment(xml['To.' + lineNumber], CONFIG.crs.dateFormat).format(this.options.useDateFormat),
+            title: xml['Title.' + lineNumber],
+            name: xml['Name.' + lineNumber],
+            age: xml['Reduction.' + lineNumber],
+        };
+    }
+
+    /**
+     * @private
+     * @param xml object
+     * @param lineNumber number
      * @param serviceType string
      * @returns {boolean}
      */
@@ -313,7 +338,7 @@ class TomaAdapter {
             return true;
         }
 
-        switch(serviceType) {
+        switch (serviceType) {
             case SERVICE_TYPES.car: {
                 let serviceCode = xml['ServiceCode.' + lineNumber];
 
@@ -360,6 +385,10 @@ class TomaAdapter {
                 }
                 case SERVICE_TYPES.hotel: {
                     this.assignHotelServiceFromAdapterObjectToXmlObject(service, xmlTom, lineNumber);
+                    break;
+                }
+                case SERVICE_TYPES.roundTrip: {
+                    this.assignRoundTripServiceFromAdapterObjectToXmlObject(service, xmlTom, lineNumber);
                     break;
                 }
             }
@@ -485,6 +514,25 @@ class TomaAdapter {
         xml['From.' + lineNumber] = moment(service.dateFrom, this.options.useDateFormat).format(CONFIG.crs.dateFormat);
         xml['To.' + lineNumber] = moment(service.dateTo, this.options.useDateFormat).format(CONFIG.crs.dateFormat);
     }
+
+    /**
+     * @private
+     * @param service object
+     * @param xml object
+     * @param lineNumber number
+     */
+    assignRoundTripServiceFromAdapterObjectToXmlObject(service, xml, lineNumber) {
+        xml['KindOfService.' + lineNumber] = CONFIG.crs.serviceTypes.roundTrip;
+        xml['ServiceCode.' + lineNumber] = service.bookingId;
+        xml['Accommodation.' + lineNumber] = service.destination;
+        xml['Count.' + lineNumber] = service.no;
+        xml['From.' + lineNumber] = moment(service.startDate, this.options.useDateFormat).format(CONFIG.crs.dateFormat);
+        xml['To.' + lineNumber] = moment(service.endDate, this.options.useDateFormat).format(CONFIG.crs.dateFormat);
+        xml['Title.' + lineNumber] = service.title;
+        xml['Name.' + lineNumber] = service.name;
+        xml['Reduction.' + lineNumber] = service.age;
+    }
+
 
     /**
      * @private
