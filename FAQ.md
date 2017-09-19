@@ -33,7 +33,7 @@ It seems like you have no ActiveX enabled.
 Open your application in the IE - there a dialog will popup and you can allow ActiveX execution.
 
 
-#### I get the error "... automation server could not create object" What can I do?
+#### I get the error "... automation server can not create object" What can I do?
 
 See section above.
 
@@ -47,7 +47,3 @@ Close all debug windows and try again.
 
 The Booking Manager is a special "CRS" because the output data needs no mapping. 
 It gets the data directly as "raw" format.
-
-
-#### Is there a way to execute the test file in a modern CRS?
-
