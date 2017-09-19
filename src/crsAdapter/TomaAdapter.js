@@ -29,6 +29,9 @@ const CONFIG = {
         car: {
             serviceCodeRegEx: /([A-Z]*[0-9]*)?([A-Z]*[0-9]*)?(\/)?([A-Z]*[0-9]*)?(-)?([A-Z]*[0-9]*)?/,
         },
+        roundTrip: {
+            ageRegEx: /^\d{2,3}$/g
+        }
     },
     parserOptions: {
         attrPrefix: '__attributes',
@@ -313,7 +316,7 @@ class TomaAdapter {
      * @returns {object}
      */
     mapRoundTripServiceFromXmlObjectToAdapterObject(xml, lineNumber) {
-        return {
+        let service = {
             type: SERVICE_TYPES.roundTrip,
             bookingId: xml['ServiceCode.' + lineNumber],
             destination: xml['Accommodation.' + lineNumber],
@@ -322,8 +325,15 @@ class TomaAdapter {
             endDate: moment(xml['To.' + lineNumber], CONFIG.crs.dateFormat).format(this.options.useDateFormat),
             title: xml['Title.' + lineNumber],
             name: xml['Name.' + lineNumber],
-            age: xml['Reduction.' + lineNumber],
         };
+
+        if(xml['Reduction.' + lineNumber].match(CONFIG.services.roundTrip.ageRegEx)){
+            service.age = xml['Reduction.' + lineNumber]
+        } else {
+            service.birthdate = xml['Reduction.' + lineNumber];
+        }
+
+        return service;
     }
 
     /**
@@ -530,7 +540,7 @@ class TomaAdapter {
         xml['To.' + lineNumber] = moment(service.endDate, this.options.useDateFormat).format(CONFIG.crs.dateFormat);
         xml['Title.' + lineNumber] = service.title;
         xml['Name.' + lineNumber] = service.name;
-        xml['Reduction.' + lineNumber] = service.age;
+        xml['Reduction.' + lineNumber] = service.birthday ? service.birthday : service.age;
     }
 
 
