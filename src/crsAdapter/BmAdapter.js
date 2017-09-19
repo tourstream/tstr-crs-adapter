@@ -1,7 +1,15 @@
 import Penpal from 'penpal';
+import {SERVICE_TYPES} from '../UbpCrsAdapter';
+import moment from 'moment';
+
+const CONFIG = {
+    crs: {
+        dateFormat: 'YYYYMMDD',
+    },
+};
 
 class BmAdapter {
-    constructor(logger, options = {}) {
+    constructor(logger, options) {
         this.options = options;
         this.logger = logger;
 
@@ -14,19 +22,15 @@ class BmAdapter {
 
     getData() {
         return this.getConnection().promise.then(parent => {
-            return parent.getSearchParameters().then(rawObject => {
-                this.logger.log('RAW DATA');
-                this.logger.log(rawObject);
-
-                return this.mapRawDataToDataObject(rawObject);
-            });
+            this.logger.warn('booking manager has no "read" interface');
+            this.logger.info(parent);
         });
     }
 
     setData(dataObject) {
-        let rawObject = this.mapDataObjectToRawObject(dataObject);
-
         this.getConnection().promise.then(parent => {
+            let rawObject = this.mapDataObjectToRawObject(dataObject);
+
             this.logger.log('RAW DATA');
             this.logger.log(rawObject);
 
@@ -65,15 +69,36 @@ class BmAdapter {
     /**
      * @private
      */
-    mapRawDataToDataObject(rawData) {
-        return rawData;
+    mapDataObjectToRawObject(dataObject) {
+        (dataObject.services || []).forEach((service) => {
+            switch (service.type) {
+                case SERVICE_TYPES.car: {
+                    this.convertRawCarService(service);
+                    break;
+                }
+            }
+        });
+
+        return dataObject;
     }
 
     /**
      * @private
+     * @param service object
      */
-    mapDataObjectToRawObject(dataObject) {
-        return dataObject;
+    convertRawCarService(service) {
+        if (!service.dropOffDate) {
+            service.dropOffDate = moment(service.pickUpDate, this.options.useDateFormat)
+                .add(service.duration, 'days')
+                .format(this.options.useDateFormat);
+        }
+
+        if (!service.dropOffTime) {
+            service.dropOffTime = service.pickUpTime;
+        }
+
+        service.pickUpDate = moment(service.pickUpDate, this.options.useDateFormat).format(CONFIG.crs.dateFormat);
+        service.dropOffDate = moment(service.dropOffDate, this.options.useDateFormat).format(CONFIG.crs.dateFormat);
     }
 }
 

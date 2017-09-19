@@ -1,4 +1,5 @@
 import injector from 'inject!../../../src/crsAdapter/BmAdapter';
+import {DEFAULT_OPTIONS} from '../../../src/UbpCrsAdapter';
 
 describe('BmAdapter', () => {
     let adapter, BmAdapter, penpal;
@@ -12,22 +13,22 @@ describe('BmAdapter', () => {
             'penpal': penpal,
         });
 
-        adapter = new BmAdapter(logService);
+        adapter = new BmAdapter(logService, DEFAULT_OPTIONS);
     });
 
-    it('should connect', () => {
+    it('connect() should connect', () => {
         adapter.connect();
 
         expect(penpal.connectToParent).toHaveBeenCalledWith({});
     });
 
-    it('should throw error on connect', () => {
+    it('connect() should throw error', () => {
         penpal.connectToParent.and.throwError('connection.error');
 
         expect(adapter.connect.bind(adapter)).toThrowError('Instantiate connection error: connection.error');
     });
 
-    it('should throw error if no connection is available', () => {
+    it('connect() should throw error if no connection is available', () => {
         let message = 'No connection available - please connect to Booking Manager first.';
 
         expect(adapter.getData.bind(adapter)).toThrowError(message);
@@ -49,29 +50,72 @@ describe('BmAdapter', () => {
             adapter.connect();
         });
 
-        it('should get data', (done) => {
-            let searchData = { my: 'data' };
-
-            bmApi.getSearchParameters.and.returnValue(Promise.resolve(searchData));
-
+        it('getData() should do nothing', (done) => {
             adapter.getData().then((data) => {
-                expect(data).toBe(searchData);
+                expect(data).toBeUndefined();
                 done();
             });
         });
 
-        it('should set data', (done) => {
-            let searchData = { my: 'data' };
+        it('setData() should set data correct', (done) => {
+            let data = {
+                services: [{
+                    type: 'car',
+                    pickUpDate: '12072018',
+                    pickUpTime: '0945',
+                    dropOffDate: '16072018',
+                    dropOffTime: '1720',
+                }],
+            };
+
+            let expected = {
+                services: [{
+                    type: 'car',
+                    pickUpDate: '20180712',
+                    pickUpTime: '0945',
+                    dropOffDate: '20180716',
+                    dropOffTime: '1720'
+                }],
+            };
 
             bmApi.addToBasket.and.callFake((data) => {
-                expect(data).toBe(searchData);
+                expect(data).toEqual(expected);
                 done();
             });
 
-            adapter.setData(searchData);
+            adapter.setData(data);
         });
 
-        it('should exit', () => {
+        it('setData() should enhance data and set data correct', (done) => {
+            let data = {
+                services: [{
+                    type: 'car',
+                    pickUpDate: '12072018',
+                    pickUpTime: '0945',
+                    duration: 4,
+                }],
+            };
+
+            let expected = {
+                services: [{
+                    type: 'car',
+                    duration: 4,
+                    pickUpDate: '20180712',
+                    pickUpTime: '0945',
+                    dropOffDate: '20180716',
+                    dropOffTime: '0945'
+                }],
+            };
+
+            bmApi.addToBasket.and.callFake((data) => {
+                expect(data).toEqual(expected);
+                done();
+            });
+
+            adapter.setData(data);
+        });
+
+        it('exit() should destroy connection', () => {
             adapter.exit();
 
             expect(connection.destroy).toHaveBeenCalled();
