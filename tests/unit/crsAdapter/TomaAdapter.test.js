@@ -237,7 +237,29 @@ describe('TomaAdapter', () => {
                 '<To.1>161217</To.1>'
             );
 
-            let xml2 = createTomaXml(
+            let roundTripService = {
+                type: 'roundTrip',
+                bookingId: 'NEZE2784NQXTHEN',
+                destination: 'YYZ',
+                no: '1',
+                startDate: '05122017',
+                endDate: '16122017',
+                salutation: 'H',
+                name: 'DOE/JOHN',
+                birthdate: '040485'
+            };
+
+            TomaConnection.GetXmlData.and.returnValue(xml);
+
+            expect(adapter.getData()).toEqual({
+                services: [
+                    roundTripService,
+                ]
+            });
+        });
+
+        it('getData() should parse round-trip services and returns age field instead of birthDate', () => {
+            let xml = createTomaXml(
                 '<KindOfService.1>R</KindOfService.1>' +
                 '<Accommodation.1>YYZ</Accommodation.1>' +
                 '<ServiceCode.1>NEZE2784NQXTHEN</ServiceCode.1>' +
@@ -249,26 +271,14 @@ describe('TomaAdapter', () => {
                 '<To.1>161217</To.1>'
             );
 
-            let roundTripService1 = {
+            let roundTripService = {
                 type: 'roundTrip',
                 bookingId: 'NEZE2784NQXTHEN',
                 destination: 'YYZ',
                 no: '1',
                 startDate: '05122017',
                 endDate: '16122017',
-                title: 'H',
-                name: 'DOE/JOHN',
-                birthdate: '040485'
-            };
-
-            let roundTripService2 = {
-                type: 'roundTrip',
-                bookingId: 'NEZE2784NQXTHEN',
-                destination: 'YYZ',
-                no: '1',
-                startDate: '05122017',
-                endDate: '16122017',
-                title: 'H',
+                salutation: 'H',
                 name: 'DOE/JOHN',
                 age: '32'
             };
@@ -277,15 +287,7 @@ describe('TomaAdapter', () => {
 
             expect(adapter.getData()).toEqual({
                 services: [
-                    roundTripService1,
-                ]
-            });
-
-            TomaConnection.GetXmlData.and.returnValue(xml2);
-
-            expect(adapter.getData()).toEqual({
-                services: [
-                    roundTripService2,
+                    roundTripService,
                 ]
             });
         });
@@ -470,7 +472,7 @@ describe('TomaAdapter', () => {
                             no: "1",
                             startDate: "05122017",
                             endDate: "16122017",
-                            title: "H",
+                            salutation: "H",
                             name: "DOE/JOHN",
                             age: "32",
                             birthday: "040485"

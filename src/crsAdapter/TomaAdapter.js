@@ -323,7 +323,7 @@ class TomaAdapter {
             no: xml['Count.' + lineNumber],
             startDate: moment(xml['From.' + lineNumber], CONFIG.crs.dateFormat).format(this.options.useDateFormat),
             endDate: moment(xml['To.' + lineNumber], CONFIG.crs.dateFormat).format(this.options.useDateFormat),
-            title: xml['Title.' + lineNumber],
+            salutation: xml['Title.' + lineNumber],
             name: xml['Name.' + lineNumber],
         };
 
@@ -538,9 +538,9 @@ class TomaAdapter {
         xml['Count.' + lineNumber] = service.no;
         xml['From.' + lineNumber] = moment(service.startDate, this.options.useDateFormat).format(CONFIG.crs.dateFormat);
         xml['To.' + lineNumber] = moment(service.endDate, this.options.useDateFormat).format(CONFIG.crs.dateFormat);
-        xml['Title.' + lineNumber] = service.title;
+        xml['Title.' + lineNumber] = service.salutation;
         xml['Name.' + lineNumber] = service.name;
-        xml['Reduction.' + lineNumber] = service.birthday ? service.birthday : service.age;
+        xml['Reduction.' + lineNumber] = service.birthday || service.age;
     }
 
 
