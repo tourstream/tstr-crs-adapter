@@ -224,6 +224,75 @@ describe('TomaAdapter', () => {
             });
         });
 
+        it('getData() should parse round-trip services', () => {
+            let xml = createTomaXml(
+                '<KindOfService.1>R</KindOfService.1>' +
+                '<Accommodation.1>YYZ</Accommodation.1>' +
+                '<ServiceCode.1>NEZE2784NQXTHEN</ServiceCode.1>' +
+                '<Name.1>DOE/JOHN</Name.1>' +
+                '<Reduction.1>040485</Reduction.1>' +
+                '<Title.1>H</Title.1>' +
+                '<From.1>051217</From.1>' +
+                '<Count.1>1</Count.1>' +
+                '<To.1>161217</To.1>'
+            );
+
+            let roundTripService = {
+                type: 'roundTrip',
+                bookingId: 'NEZE2784NQXTHEN',
+                destination: 'YYZ',
+                numberOfPassengers: '1',
+                startDate: '05122017',
+                endDate: '16122017',
+                salutation: 'H',
+                name: 'DOE/JOHN',
+                birthdate: '040485'
+            };
+
+            TomaConnection.GetXmlData.and.returnValue(xml);
+
+            expect(adapter.getData()).toEqual({
+                services: [
+                    roundTripService,
+                ]
+            });
+        });
+
+        it('getData() should parse round-trip services and returns age field instead of birthDate', () => {
+            let xml = createTomaXml(
+                '<KindOfService.1>R</KindOfService.1>' +
+                '<Accommodation.1>YYZ</Accommodation.1>' +
+                '<ServiceCode.1>NEZE2784NQXTHEN</ServiceCode.1>' +
+                '<Name.1>DOE/JOHN</Name.1>' +
+                '<Reduction.1>32</Reduction.1>' +
+                '<Title.1>H</Title.1>' +
+                '<From.1>051217</From.1>' +
+                '<Count.1>1</Count.1>' +
+                '<To.1>161217</To.1>'
+            );
+
+            let roundTripService = {
+                type: 'roundTrip',
+                bookingId: 'NEZE2784NQXTHEN',
+                destination: 'YYZ',
+                numberOfPassengers: '1',
+                startDate: '05122017',
+                endDate: '16122017',
+                salutation: 'H',
+                name: 'DOE/JOHN',
+                age: '32'
+            };
+
+            TomaConnection.GetXmlData.and.returnValue(xml);
+
+            expect(adapter.getData()).toEqual({
+                services: [
+                    roundTripService,
+                ]
+            });
+        });
+
+
         it('setData() should throw error if connection can not put data', () => {
             TomaConnection.FIFramePutData.and.throwError('error');
 
@@ -366,6 +435,47 @@ describe('TomaAdapter', () => {
                             mealCode: 'meal.code',
                             dateFrom: '10022018',
                             dateTo: '15022018',
+                        },
+                    ]
+                });
+
+                expect(TomaConnection.FIFramePutData).toHaveBeenCalledWith(expectXml);
+            });
+
+            it('setData() should set round-trip service', () => {
+                let expectXml = createTomaXml(
+                    '<Action>BA</Action>' +
+                    '<NoOfPersons>1</NoOfPersons>' +
+                    '<KindOfService.1>R</KindOfService.1>' +
+                    '<ServiceCode.1>NEZE2784NQXTHEN</ServiceCode.1>' +
+                    '<Accommodation.1>YYZ</Accommodation.1>' +
+                    '<Count.1>1</Count.1>' +
+                    '<From.1>051217</From.1>' +
+                    '<To.1>161217</To.1>' +
+                    '<Title.1>H</Title.1>' +
+                    '<Name.1>DOE/JOHN</Name.1>' +
+                    '<Reduction.1>040485</Reduction.1>'
+                );
+
+                let xml = createTomaXml();
+
+                TomaConnection.GetXmlData.and.returnValue(xml);
+
+                adapter.setData({
+                    numberOfTravellers: 1,
+                    services: [
+                        {
+                            type: "roundTrip",
+                            marked: "",
+                            bookingId: "NEZE2784NQXTHEN",
+                            destination: "YYZ",
+                            numberOfPassengers: "1",
+                            startDate: "05122017",
+                            endDate: "16122017",
+                            salutation: "H",
+                            name: "DOE/JOHN",
+                            age: "32",
+                            birthday: "040485"
                         },
                     ]
                 });

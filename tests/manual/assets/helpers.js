@@ -41,10 +41,11 @@ function log(text) {
 var reportBlock = window.document.getElementById('report');
 var carServiceTemplate = window.document.getElementById('car-service-template');
 var hotelServiceTemplate = window.document.getElementById('hotel-service-template');
+var roundTripServiceTemplate = window.document.getElementById('round-trip-service-template');
 var form = document.getElementById('data-form');
 var adapter = new window.UbpCrsAdapter.default({debug: true});
 var config = {
-    toma: { providerKey: 'F1T' }
+    toma: {providerKey: 'F1T'}
 };
 
 document.getElementById('crs-selector').addEventListener('change', function (event) {
@@ -114,4 +115,9 @@ document.getElementById('add-car-service-btn').addEventListener('click', functio
 document.getElementById('add-hotel-service-btn').addEventListener('click', function () {
     removeServicesFromForm();
     form.appendChild(hotelServiceTemplate.cloneNode(true));
+});
+
+document.getElementById('add-round-trip-service-btn').addEventListener('click', function () {
+    removeServicesFromForm();
+    form.appendChild(roundTripServiceTemplate.cloneNode(true));
 });

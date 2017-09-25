@@ -46,6 +46,7 @@ describe('UbpCrsAdapter', () => {
         expect(UbpCrsAdapter.SERVICE_TYPES).toEqual({
             car: jasmine.anything(),
             hotel: jasmine.anything(),
+            roundTrip: jasmine.anything(),
         });
     });
 
