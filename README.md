@@ -123,17 +123,17 @@ _note: if .dropOffDate is not set, it will be calculated with .pickUpDate + .dur
 |         | .dateTo      | '20092017' 
 
 
-| type      | fields       | example
-| :---      | :---         | :---
-|'roundTrip'| .bookingId   | 'NEZE2784NQXTHEN' 
-|           | .destination | 'YYZ' 
-|           | .no          | '1' 
-|           | .startDate   | '05122017' 
-|           | .endDate     | '16122017'
-|           | .title       | 'H'
-|           | .name        | 'GEIGER/MARTIN'
-|           | .age         | '32'
-|           | .birthday*   | '040485'
+| type      | fields              | example
+| :---      | :---                | :---
+|'roundTrip'| .bookingId          | 'NEZE2784NQXTHEN' 
+|           | .destination        | 'YYZ' 
+|           | .numberOfPassengers | '1' 
+|           | .startDate          | '05122017' 
+|           | .endDate            | '16122017'
+|           | .title              | 'H'
+|           | .name               | 'DOE/JOHN'
+|           | .age                | '32'
+|           | .birthday*          | '040485'
 
 *In case "age" and "birthday" are set "birthday" is preferred.
 
