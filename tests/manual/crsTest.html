@@ -12,7 +12,8 @@
 
     <select id="crs-selector">
         <option>--- select a crs first ---</option>
-        <option value="toma">TOMA</option>
+        <option value="toma">TOMA (old)</option>
+        <option value="toma2">TOMA SPC (new)</option>
         <option value="cets">CETS</option>
         <option value="bm">Booking Manager</option>
         <option value="merlin">Merlin</option>
@@ -31,12 +32,12 @@
         <div id="car-service-template" class="column service">
             <input type="hidden" name="service.type" value="car"/>
             <label>marked: <input name="service.marked"/></label>
-            <label>vehicleTypeCode: <input name="service.vehicleTypeCode" value="B"/></label>
-            <label>rentalCode: <input name="service.rentalCode" value="DEU81"/></label>
-            <label>pickUpLocation: <input name="service.pickUpLocation" value="MUC1"/></label>
-            <label>dropOffLocation: <input name="service.dropOffLocation" value="BER2"/></label>
+            <label>vehicleTypeCode: <input name="service.vehicleTypeCode" value="I2"/></label>
+            <label>rentalCode: <input name="service.rentalCode" value="USA81"/></label>
+            <label>pickUpLocation: <input name="service.pickUpLocation" value="MIA"/></label>
+            <label>dropOffLocation: <input name="service.dropOffLocation" value="MIA"/></label>
             <label>pickUpTime: <input name="service.pickUpTime" value="0940"/></label>
-            <label>pickUpDate: <input name="service.pickUpDate" value="08112017"/></label>
+            <label>pickUpDate: <input name="service.pickUpDate" value="08122017"/></label>
             <label>duration: <input name="service.duration" value="4"/></label>
 
             <label>pickUpHotelName: <input name="service.pickUpHotelName" value="pu name"/></label>
@@ -48,7 +49,7 @@
             <label>dropOffHotelPhoneNumber: <input name="service.dropOffHotelPhoneNumber" value="do number"/></label>
             <label>extras:
                 <input name="extra.0" value="childCareSeat0"/>
-                <input name="extra.1" value="GPS"/>
+                <input name="extra.1" value="navigationSystem"/>
                 <input name="extra.2" value="childCareSeat3"/>
             </label>
         </div>
@@ -87,8 +88,7 @@
 
 <div id="report"></div>
 
-<script type="application/javascript" src="../../dist/ubpCrsAdapter.js"></script>
-<script type="application/javascript" src="../../dist/ubpCrsAdapter.js.map"></script>
-<script type="application/javascript" src="assets/helpers.js"></script>
-</body>
+		<script type="application/javascript" src="assets/ubpCrsAdapter.js"></script>
+		<script type="application/javascript" src="assets/helpers.js"></script>
+	</body>
 </html>

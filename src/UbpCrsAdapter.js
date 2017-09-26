@@ -1,5 +1,6 @@
 import es6shim from 'es6-shim';
 import TomaAdapter from 'crsAdapter/TomaAdapter';
+import TomaSPCAdapter from 'crsAdapter/TomaSPCAdapter';
 import CetsAdapter from 'crsAdapter/CetsAdapter';
 import BmAdapter from 'crsAdapter/BmAdapter';
 import MerlinAdapter from 'crsAdapter/MerlinAdapter';
@@ -13,6 +14,7 @@ const SERVICE_TYPES = {
 
 const CRS_TYPES = {
     toma: 'toma',
+    tomaSPC: 'toma2',
     cets: 'cets',
     bookingManager: 'bm',
     merlin: 'merlin',
@@ -20,6 +22,7 @@ const CRS_TYPES = {
 
 const CRS_TYPE_TO_ADAPTER = {
     toma: TomaAdapter,
+    toma2: TomaSPCAdapter,
     cets: CetsAdapter,
     bm: BmAdapter,
     merlin: MerlinAdapter,
@@ -83,9 +86,7 @@ class UbpCrsAdapter {
                 this.logger.info('Try to connect with options:');
                 this.logger.info(options);
 
-                this.getAdapterInstance().connect(options);
-
-                resolve();
+                Promise.resolve(this.getAdapterInstance().connect(options)).then(resolve);
             } catch (error) {
                 this.logAndThrow('connection error:', error);
             }

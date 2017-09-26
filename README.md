@@ -7,7 +7,7 @@ This project provides a JS module to enable an web-application to communicate wi
 
 After loading the script into your application
 ```
-<script src="[path/to/script/ubpCrsAdapter.min.js]"></script>
+<script src="[path/to/script/ubpCrsAdapter.js]"></script>
 ```
 
 you are able to create a new adapter via:
@@ -22,38 +22,38 @@ ubpCrsAdapter.connect(connectionType, connectionOptions);
 
 When you are connected you can get the data from the CRS via:
 ```
-ubpCrsAdapter.getData().then(data => {});
+ubpCrsAdapter.getData().then(inputData => {});
 ```
 
-The `data` will look like that:
+The `inputData` you get will look like that:
 ```
 {
-    agencyNumber,
-    operator,
-    numberOfTravellers,
-    travelType,
-    services,
-    remark,
+    agencyNumber: string,
+    operator: string,
+    numberOfTravellers: string,
+    travelType: string,
+    services: Array<ServiceObject>,
+    remark: string,
 }
 ```
 
 Or you can set data to the CRS via:
 ```
-ubpCrsAdapter.setData(data);
+ubpCrsAdapter.setData(outputData);
 ```
 
-The data object can have the following structure:
+The outputData object can have the following structure:
 ```
 {
-    numberOfTravellers,
-    services,
-    remark,
+    numberOfTravellers: string,
+    services: Array<ServiceObject>,
+    remark: string,
 }
 ```
 
 And also you can close the opened frame in the CRS:
 ```
-ubpCrsAdapter.exit()
+ubpCrsAdapter.exit(exitOptions)
 ```
 
 _note: every method returns a promise_
@@ -61,37 +61,53 @@ _note: every method returns a promise_
 
 ### Supported adapterOptions
 
+You can check the default options with `UbpCrsAdapter.DEFAULT_OPTIONS`.
+This options will be applied on every underlying adapter.
+
 name          | default value  
 :---          | :---           
 debug         | false
 useDateFormat | 'DDMMYYYY' (according to [momentjs date format](https://momentjs.com/docs/#/displaying/))
 
 
-### Supported connections
+### Supported CRS
 
-Currently this module supports the connection to following CRS:
+You can check the currently supported CRSs with `UbpCrsAdapter.CRS_TYPES`.
+Currently this module supports the connection to following CRS masks:
 
-CRS             | connectionType   | connectionOptions
-:---            | :---             | :---
-CETS            | 'cets'           | -
-TOMA (old)      | 'toma'           | .providerKey 
-Booking Manager | 'bm'             | -
+CRS             | connectionType   | connectionOptions                | exitOptions
+:---            | :---             | :---                             | :---
+CETS            | 'cets'           | -                                | -
+TOMA (old)      | 'toma'           | .providerKey: string             | -
+TOMA SPC (new)  | 'toma2'          | .externalCatalogVersion?: string | .popupId?: string
+|               |                  | .crsUrl?: string                 |
+|               |                  | .env?: ['test' OR 'prod']        |
+Booking Manager | 'bm'             | -                                | -
+Merlin          | 'merlin'         | -                                | -
 
-For some connections you need credentials, which you can set in the `connectionOptions`.
+For some connections you need credentials or other connection data,
+which you can set in the `connectionOptions`.
+
+For TOMA SPC there is one crsUrl for each environment preconfigured. 
+If no environment is set, the production crsUrl is used.
 
 
 ### Data object structure
 
-Depending on the `services[*].type` the data structure of a service differs.
+Depending on the `services[*].type` the structure of a ServiceObject differs.
 
 
 #### Supported service types
 
-service type | CETS  | TOMA (old) | TOMA (new) | Booking Manager
----          | :---: | :---:      | :---:      | :---:
-'car'        | X     | X          |            | X
-'hotel'      |       | X          |            | X
-'roundTrip'  |       | X          |            | 
+You can check the currently supported service types with `UbpCrsAdapter.SERVICE_TYPES`.
+
+service type | CETS  | TOMA (old) | TOMA (new) | Booking Manager | Merlin | TBM   | NEO
+---          | :---: | :---:      | :---:      | :---:           | :---:  | :---: | :---:
+'car'        | X     | X          | X          | X               | X      |       |
+'hotel'      |       | X          | X          | X               | X      |       |
+'roundtrip'  |       | X          |            |                 |        |       |
+'camper'     |       |            |            |                 |        |       |
+'flight'     |       |            |            |                 |        |       |
 
 | type  | fields                   | example
 | :---  | :---                     | :---
@@ -110,7 +126,7 @@ service type | CETS  | TOMA (old) | TOMA (new) | Booking Manager
 |       | .dropOffHotelName        | 'Very Best Hotel' 
 |       | .dropOffHotelAddress     | 'hotel drive 34a, famous place' 
 |       | .dropOffHotelPhoneNumber | '04031989213' 
-|       | .extras                  | ['GPS', 'childCareSeat0', 'childCareSeat3'] 
+|       | .extras                  | ['navigationSystem', 'childCareSeat0', 'childCareSeat3'] 
 
 _note: if .dropOffDate is not set, it will be calculated with .pickUpDate + .duration_
 
@@ -143,7 +159,7 @@ But if this service is either "marked" in the crs or detected as "marked" (depen
 
 ### Field mapping
 
-#### Amadeus Toma (old)
+#### Amadeus Toma (old) & Amadeus Toma SPC (new)
 
 ![toma mask](docs/toma/tomaMask.png)
 
@@ -202,34 +218,46 @@ CRS field | example  | adapter field           | example
 21        | '200917' | services[*].dateTo      | '20092017'
 
 
-### Debugging
+## Debugging
 
-Sadly the debugging in some CRS is not possible but the adapter nevertheless provides some debugging output - either 
-you set the adapter option `.debug` to `true` or you add the parameter "debug" to your URL.
+Sadly the debugging in some CRS is not possible but the adapter nevertheless provides some debugging output - 
+either you set the adapter option `.debug` to `true` or you add the parameter "debug" to your URL.
 It will open an extra window for debug outputs.
 
 
-#### How to test ...
+### How to test ...
 
-##### ... the code
+#### ... the code
 
 Write a test and execute `npm run test` - the unit tests will tell you, if everything is fine. 
 Personal goal: Try to increase the test coverage to ~100%.
 
-##### ... the adapter
+#### ... the adapter
 
 We prepared a test file, which can be opened directly in the CRS systems.
 The file is located in __test/manual__: *[crsTest.html](tests/manual/crsTest.html)*
 
 It depends on the CRS how to use the test file.
 
-###### ... in TOMA
+###### ... in (old) TOMA
 
 _precondition:_ the Amadeus application is started and the TOMA mask is visible
 
 If you already have an "browser view" open (basically after an external search), 
 you can drag'n'drop the test file directly into that view.
 Alternatively you can open the test file in parallel to the TOMA mask in an IE and use the test file from there.
+
+###### ... in (new) TOMA SPC
+
+_precondition:_ the Amadeus portal is open, the TOMA mask is visible and the test file is served under a whitelisted domain
+
+For serving the test file locally we provide a command for it: `npm run serve`
+The file is than available via https://localhost:1337 and already whitelisted by Amadeus for their test system. 
+But you should open this URL in your browser first to accept any unknown certificates!
+
+Then you have to request an already embedded IBE (like the drive IBE) 
+and replace the iFrame URL with the URL of the test file. 
+This is because Amadeus whitelist the domains which have access to the CRS.
 
 ###### ... in CETS
 
@@ -243,3 +271,8 @@ than you can drag'n'drop the test file directly into that view.
 _precondition:_ the Sabre portal "ShopHolidays" is open, the Merlin mask is visible and the import is enabled
 
 Open the test file in parallel to the Merlin mask in another Tab.
+
+
+## You have questions or problems with the implementation?
+
+Check the [FAQs](FAQ.md) first!

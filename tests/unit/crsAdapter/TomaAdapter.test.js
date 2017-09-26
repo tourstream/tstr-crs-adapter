@@ -399,10 +399,42 @@ describe('TomaAdapter', () => {
                             dropOffHotelPhoneNumber: 'do h.number',
                             rentalCode: 'rent.code',
                             vehicleTypeCode: 'vehicle.type.code',
-                            extras: ['childCareSeat3', 'GPS', 'childCareSeat0'],
+                            extras: ['childCareSeat3', 'navigationSystem', 'childCareSeat0'],
                         },
                         {
                             type: 'unknown',
+                        },
+                    ]
+                });
+
+                expect(TomaConnection.FIFramePutData).toHaveBeenCalledWith(expectXml);
+            });
+
+            it('setData() should set extras of car service', () => {
+                let expectXml = createTomaXml(
+                    '<Action>BA</Action>' +
+                    '<Remark>CS3YRS|GPS|BS</Remark>' +
+                    '<NoOfPersons>1</NoOfPersons>' +
+                    '<KindOfService.1>MW</KindOfService.1>' +
+                    '<ServiceCode.1>rent.codevehicle.type.code/from.loc-to.loc</ServiceCode.1>' +
+                    '<From.1>231218</From.1>' +
+                    '<To.1>040119</To.1>' +
+                    '<Accommodation.1>from.time</Accommodation.1>'
+                );
+
+                adapter.setData({
+                    services: [
+                        {
+                            type: 'car',
+                            pickUpDate: '23122018',
+                            pickUpTime: 'from.time',
+                            pickUpLocation: 'from.loc',
+                            dropOffDate: '04012019',
+                            dropOffTime: 'to.time',
+                            dropOffLocation: 'to.loc',
+                            rentalCode: 'rent.code',
+                            vehicleTypeCode: 'vehicle.type.code',
+                            extras: ['childCareSeat3', 'navigationSystem', 'childCareSeat0'],
                         },
                     ]
                 });

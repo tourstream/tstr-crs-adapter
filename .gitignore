@@ -4,4 +4,4 @@
 /coverage/
 
 /npm-debug.log
-/dist/
+/tests/manual/assets/ubpCrsAdapter.js
