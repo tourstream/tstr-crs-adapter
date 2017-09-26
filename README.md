@@ -105,8 +105,8 @@ service type | CETS  | TOMA (old) | TOMA (new) | Booking Manager | Merlin | TBM 
 ---          | :---: | :---:      | :---:      | :---:           | :---:  | :---: | :---:
 'car'        | X     | X          | X          | X               | X      |       |
 'hotel'      |       | X          | X          | X               | X      |       |
-'roundtrip'  |       | X          |            |                 |        |       |
-'camper'     |       |            |            |                 |        |       |
+'roundtrip'  |       | X          |            | X               |        |       |
+'camper'     |       | X          | X          | X               |        |       |
 'flight'     |       |            |            |                 |        |       |
 
 | type  | fields                   | example
@@ -152,6 +152,22 @@ _note: if .dropOffDate is not set, it will be calculated with .pickUpDate + .dur
 |           | .birthday*          | '040485'
 
 *In case "age" and "birthday" are set "birthday" is preferred.
+
+| type     | fields                 | example
+| :---     | :---                   | :---
+| 'camper' | .renterCode            | 'PRT02' 
+|          | .camperCode            | 'FS' 
+|          | .pickUpLocation        | 'LIS1' 
+|          | .pickUpDate            | '10102017' 
+|          | .pickUpTime            | '0940' 
+|          | .dropOffLocation       | 'LIS2' 
+|          | .dropOffDate           | '17102017' 
+|          | .duration              | '7' 
+|          | .milesIncludedPerDay   | '300' 
+|          | .milesPackagesIncluded | '3' 
+|          | .extras                | ['extra.2', 'special', 'extra.4']
+
+_note: if .dropOffDate is not set, it will be calculated with .pickUpDate + .duration_
 
 Additionally every service has a `marked` field which is by default falsy.
 But if this service is either "marked" in the crs or detected as "marked" (depends on the type) it will be true.

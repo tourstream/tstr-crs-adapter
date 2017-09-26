@@ -42,6 +42,7 @@ var reportBlock = window.document.getElementById('report');
 var carServiceTemplate = window.document.getElementById('car-service-template');
 var hotelServiceTemplate = window.document.getElementById('hotel-service-template');
 var roundTripServiceTemplate = window.document.getElementById('round-trip-service-template');
+var camperServiceTemplate = window.document.getElementById('camper-service-template');
 var form = document.getElementById('data-form');
 var adapter = new window.UbpCrsAdapter.default({debug: true});
 var config = {
@@ -121,4 +122,9 @@ document.getElementById('add-hotel-service-btn').addEventListener('click', funct
 document.getElementById('add-round-trip-service-btn').addEventListener('click', function () {
     removeServicesFromForm();
     form.appendChild(roundTripServiceTemplate.cloneNode(true));
+});
+
+document.getElementById('add-camper-service-btn').addEventListener('click', function () {
+    removeServicesFromForm();
+    form.appendChild(camperServiceTemplate.cloneNode(true));
 });

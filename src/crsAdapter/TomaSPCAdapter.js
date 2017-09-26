@@ -13,8 +13,10 @@ const CONFIG = {
         dateFormat: 'DDMMYY',
         serviceTypes: {
             car: 'MW',
-            extras: 'E',
+            carExtra: 'E',
             hotel: 'H',
+            camper: 'WM',
+            camperExtra: 'TA',
         },
         defaultValues: {
             action: 'BA',
@@ -244,9 +246,7 @@ class TomaSPCAdapter {
      * @param crsObject object
      */
     mapCrsObjectToAdapterObject(crsObject) {
-        if (!crsObject) {
-            return;
-        }
+        if (!crsObject) return;
 
         let dataObject = {
             agencyNumber: crsObject.agencyNumber,
@@ -258,9 +258,7 @@ class TomaSPCAdapter {
         };
 
         (crsObject.services || []).forEach((crsService) => {
-            if (!crsService.serviceType) {
-                return;
-            }
+            if (!crsService.serviceType) return;
 
             let service;
 
@@ -271,6 +269,10 @@ class TomaSPCAdapter {
                 }
                 case CONFIG.crs.serviceTypes.hotel: {
                     service = this.mapHotelServiceFromCrsObjectToAdapterObject(crsService);
+                    break;
+                }
+                case CONFIG.crs.serviceTypes.camper: {
+                    service = this.mapCamperServiceFromCrsObjectToAdapterObject(crsService);
                     break;
                 }
             }
@@ -292,9 +294,7 @@ class TomaSPCAdapter {
      */
     mapCarServiceFromCrsObjectToAdapterObject(crsService) {
         const mapServiceCodeToService = (code, service) => {
-            if (!code) {
-                return;
-            }
+            if (!code) return;
 
             const keyRentalCode = 1;
             const keyVehicleTypeCode = 2;
@@ -360,6 +360,58 @@ class TomaSPCAdapter {
     /**
      * @private
      * @param crsService object
+     * @returns {{pickUpDate: string, dropOffDate: string, pickUpTime: string, duration: number, milesIncludedPerDay: string, milesPackagesIncluded: string, type: string}}
+     */
+    mapCamperServiceFromCrsObjectToAdapterObject(crsService) {
+        const mapServiceCodeToService = (code, service) => {
+            if (!code) return;
+
+            const keyRentalCode = 1;
+            const keyVehicleTypeCode = 2;
+            const keySeparator = 3;
+            const keyPickUpLoc = 4;
+            const keyLocDash = 5;
+            const keyDropOffLoc = 6;
+
+            let codeParts = code.match(CONFIG.services.car.serviceCodeRegEx);
+
+            // i.e. MIA or MIA1 or MIA1-TPA
+            if (!codeParts[keySeparator]) {
+                service.pickUpLocation = codeParts[keyRentalCode];
+                service.dropOffLocation = codeParts[keyDropOffLoc];
+
+                return;
+            }
+
+            // i.e USA96/MIA1 or USA96A4/MIA1-TPA
+            service.renterCode = codeParts[keyRentalCode];
+            service.camperCode = codeParts[keyVehicleTypeCode];
+            service.pickUpLocation = codeParts[keyPickUpLoc];
+            service.dropOffLocation = codeParts[keyDropOffLoc];
+        };
+
+        let pickUpDate = moment(crsService.fromDate, CONFIG.crs.dateFormat);
+        let dropOffDate = moment(crsService.toDate, CONFIG.crs.dateFormat);
+        let service = {
+            pickUpDate: pickUpDate.isValid() ? pickUpDate.format(this.options.useDateFormat) : crsService.fromDate,
+            dropOffDate: dropOffDate.isValid() ? dropOffDate.format(this.options.useDateFormat) : crsService.toDate,
+            pickUpTime: crsService.accommodation,
+            duration: pickUpDate.isValid() && dropOffDate.isValid()
+                ? Math.ceil(dropOffDate.diff(pickUpDate, 'days', true))
+                : void 0,
+            milesIncludedPerDay: crsService.quantity,
+            milesPackagesIncluded: crsService.occupancy,
+            type: SERVICE_TYPES.camper,
+        };
+
+        mapServiceCodeToService(crsService.serviceCode, service);
+
+        return service;
+    }
+
+    /**
+     * @private
+     * @param crsService object
      * @param serviceType string
      * @returns {boolean}
      */
@@ -380,6 +432,12 @@ class TomaSPCAdapter {
                 let accommodation = crsService.accommodation;
 
                 return !serviceCode || !accommodation;
+            }
+            case SERVICE_TYPES.camper: {
+                let serviceCode = crsService.serviceCode;
+
+                // gaps in the regEx result array will result in lined up "." after the join
+                return !serviceCode || serviceCode.match(CONFIG.services.car.serviceCodeRegEx).join('.').indexOf('..') !== -1;
             }
         }
     };
@@ -405,10 +463,18 @@ class TomaSPCAdapter {
             switch (adapterService.type) {
                 case SERVICE_TYPES.car: {
                     this.assignCarServiceFromAdapterObjectToCrsObject(adapterService, service, crsObject);
+                    this.assignHotelData(adapterService, crsObject);
+
                     break;
                 }
                 case SERVICE_TYPES.hotel: {
                     this.assignHotelServiceFromAdapterObjectToCrsObject(adapterService, service);
+                    break;
+                }
+                case SERVICE_TYPES.camper: {
+                    this.assignCamperServiceFromAdapterObjectToCrsObject(adapterService, service, crsObject);
+                    this.assignCamperExtras(adapterService, crsObject);
+
                     break;
                 }
             }
@@ -426,16 +492,18 @@ class TomaSPCAdapter {
     getMarkedServiceByServiceType(crsObject, serviceType) {
         let markedService = void 0;
 
-        (crsObject.services || []).forEach((crsService) => {
-            if (crsService.serviceType !== CONFIG.crs.serviceTypes[serviceType]) {
-                return;
+        (crsObject.services || []).some((crsService) => {
+            if (crsService.serviceType !== CONFIG.crs.serviceTypes[serviceType]) return;
+
+            if (crsService.marker) {
+                markedService = crsService;
+
+                return true;
             }
 
-            if (!this.isMarked(crsService, serviceType)) {
-                return;
+            if (!markedService && this.isMarked(crsService, serviceType)) {
+                markedService = crsService;
             }
-
-            markedService = crsService.marker ? crsService : markedService || crsService;
         });
 
         return markedService;
@@ -448,16 +516,6 @@ class TomaSPCAdapter {
      * @param crsObject object
      */
     assignCarServiceFromAdapterObjectToCrsObject(adapterService, crsService, crsObject) {
-        const calculateDropOffDate = (service) => {
-            if (service.dropOffDate) {
-                return moment(service.dropOffDate, this.options.useDateFormat).format(CONFIG.crs.dateFormat);
-            }
-
-            return moment(service.pickUpDate, this.options.useDateFormat)
-                .add(service.duration, 'days')
-                .format(CONFIG.crs.dateFormat);
-        };
-
         const reduceExtrasList = (extras) => {
             return (extras || []).join('|')
                 .replace(/navigationSystem/g, 'GPS')
@@ -465,26 +523,10 @@ class TomaSPCAdapter {
                 .replace(/childCareSeat(\d)/g, 'CS$1YRS');
         };
 
-        const reduceHotelDataToRemarkString = (service) => {
-            let hotelData = [];
-
-            if (service.pickUpHotelName) {
-                hotelData.push([service.pickUpHotelAddress, service.pickUpHotelPhoneNumber].filter(Boolean).join('|'));
-            }
-
-            if (service.dropOffHotelName) {
-                if (service.pickUpHotelName) {
-                    hotelData.push(service.dropOffHotelName);
-                }
-
-                hotelData.push([service.dropOffHotelAddress, service.dropOffHotelPhoneNumber].filter(Boolean).join('|'));
-            }
-
-            return hotelData.filter(Boolean).join('|');
-        };
-
-        let pickUpDateFormatted = moment(adapterService.pickUpDate, this.options.useDateFormat).format(CONFIG.crs.dateFormat);
-        let calculatedDropOffDate = calculateDropOffDate(adapterService);
+        let pickUpDate = moment(adapterService.pickUpDate, this.options.useDateFormat);
+        let dropOffDate = (adapterService.dropOffDate)
+            ? moment(adapterService.dropOffDate, this.options.useDateFormat)
+            : moment(adapterService.pickUpDate, this.options.useDateFormat).add(adapterService.duration, 'days');
 
         crsService.serviceType = CONFIG.crs.serviceTypes.car;
 
@@ -498,23 +540,54 @@ class TomaSPCAdapter {
             adapterService.dropOffLocation,
         ].join('');
 
-        crsService.fromDate = pickUpDateFormatted;
-        crsService.toDate = calculatedDropOffDate;
+        crsService.fromDate = pickUpDate.format(CONFIG.crs.dateFormat);
+        crsService.toDate = dropOffDate.format(CONFIG.crs.dateFormat);
         crsService.accommodation = adapterService.pickUpTime;
 
+        crsObject.remark = [crsObject.remark, reduceExtrasList(adapterService.extras)].filter(Boolean).join(',') || void 0;
+    };
+
+    /**
+     * @private
+     * @param adapterService object
+     * @param crsObject object
+     */
+    assignHotelData(adapterService, crsObject) {
+        const reduceHotelDataToRemarkString = (service) => {
+            let hotelData = [];
+
+            if (service.pickUpHotelName) {
+                hotelData.push([service.pickUpHotelAddress, service.pickUpHotelPhoneNumber].filter(Boolean).join(' '));
+            }
+
+            if (service.dropOffHotelName) {
+                if (service.pickUpHotelName) {
+                    hotelData.push(service.dropOffHotelName);
+                }
+
+                hotelData.push([service.dropOffHotelAddress, service.dropOffHotelPhoneNumber].filter(Boolean).join(' '));
+            }
+
+            return hotelData.filter(Boolean).join('|');
+        };
+
+        let pickUpDate = moment(adapterService.pickUpDate, this.options.useDateFormat);
+        let dropOffDate = (adapterService.dropOffDate)
+            ? moment(adapterService.dropOffDate, this.options.useDateFormat)
+            : moment(adapterService.pickUpDate, this.options.useDateFormat).add(adapterService.duration, 'days');
         let hotelName = adapterService.pickUpHotelName || adapterService.dropOffHotelName;
 
         if (hotelName) {
             let emptyService = this.createAndAssignEmptyService(crsObject);
 
-            emptyService.serviceType = CONFIG.crs.serviceTypes.extras;
+            emptyService.serviceType = CONFIG.crs.serviceTypes.carExtra;
             emptyService.serviceCode = hotelName;
-            emptyService.fromDate = pickUpDateFormatted;
-            emptyService.toDate = calculatedDropOffDate;
+            emptyService.fromDate = pickUpDate.format(CONFIG.crs.dateFormat);
+            emptyService.toDate = dropOffDate.format(CONFIG.crs.dateFormat);
         }
 
-        crsObject.remark = [crsObject.remark, reduceExtrasList(adapterService.extras), reduceHotelDataToRemarkString(adapterService)].filter(Boolean).join(',') || void 0;
-    };
+        crsObject.remark = [crsObject.remark, reduceHotelDataToRemarkString(adapterService)].filter(Boolean).join(',') || void 0;
+    }
 
     /**
      * @private
@@ -527,6 +600,61 @@ class TomaSPCAdapter {
         crsService.accommodation = [adapterService.roomCode, adapterService.mealCode].join(' ');
         crsService.fromDate = moment(adapterService.dateFrom, this.options.useDateFormat).format(CONFIG.crs.dateFormat);
         crsService.toDate = moment(adapterService.dateTo, this.options.useDateFormat).format(CONFIG.crs.dateFormat);
+    }
+
+    /**
+     * @private
+     * @param adapterService object
+     * @param crsService object
+     * @param crsObject object
+     */
+    assignCamperServiceFromAdapterObjectToCrsObject(adapterService, crsService, crsObject) {
+        let pickUpDate = moment(adapterService.pickUpDate, this.options.useDateFormat);
+        let dropOffDate = (adapterService.dropOffDate)
+            ? moment(adapterService.dropOffDate, this.options.useDateFormat)
+            : moment(adapterService.pickUpDate, this.options.useDateFormat).add(adapterService.duration, 'days');
+
+        crsService.serviceType = CONFIG.crs.serviceTypes.camper;
+
+        // PRT02FS/LIS1-LIS2
+        crsService.serviceCode = [
+            adapterService.renterCode,
+            adapterService.camperCode,
+            '/',
+            adapterService.pickUpLocation,
+            '-',
+            adapterService.dropOffLocation,
+        ].join('');
+
+        crsService.fromDate = pickUpDate.format(CONFIG.crs.dateFormat);
+        crsService.toDate = dropOffDate.format(CONFIG.crs.dateFormat);
+        crsService.accommodation = adapterService.pickUpTime;
+        crsService.quantity = adapterService.milesIncludedPerDay;
+        crsService.occupancy = adapterService.milesPackagesIncluded;
+        crsService.travellerAssociation = '1' + ((crsObject.numTravellers > 1) ? '-' + crsObject.numTravellers : '');
+    };
+
+    /**
+     * @private
+     * @param adapterService object
+     * @param crsObject object
+     */
+    assignCamperExtras(adapterService, crsObject) {
+        let pickUpDate = moment(adapterService.pickUpDate, this.options.useDateFormat);
+        let dropOffDate = (adapterService.dropOffDate)
+            ? moment(adapterService.dropOffDate, this.options.useDateFormat)
+            : moment(adapterService.pickUpDate, this.options.useDateFormat).add(adapterService.duration, 'days');
+
+        (adapterService.extras || []).forEach((extra) => {
+            let service = this.createAndAssignEmptyService(crsObject);
+            let extraParts = extra.split('.');
+
+            service.serviceType = CONFIG.crs.serviceTypes.camperExtra;
+            service.serviceCode = extraParts[0];
+            service.fromDate = pickUpDate.format(CONFIG.crs.dateFormat);
+            service.toDate = dropOffDate.format(CONFIG.crs.dateFormat);
+            service.travellerAssociation = '1' + ((extraParts[1] > 1) ? '-' + extraParts[1] : '');
+        });
     }
 
     /**

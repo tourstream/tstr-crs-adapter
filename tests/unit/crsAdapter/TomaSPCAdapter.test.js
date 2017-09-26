@@ -452,6 +452,84 @@ describe('TomaSPCAdapter', () => {
             });
         });
 
+        it('getData() should parse complete camper service data', (done) => {
+            let expected = {services: [{
+                type: SERVICE_TYPES.camper,
+                pickUpDate: '09112017',
+                dropOffDate: '21112017',
+                pickUpTime: '0915',
+                duration: 12,
+                renterCode: 'USA96',
+                camperCode: 'A4',
+                pickUpLocation: 'MIA1',
+                dropOffLocation: 'TPA',
+                milesIncludedPerDay: '200',
+                milesPackagesIncluded: '3',
+                marked: false,
+            }]};
+
+            crsData = {
+                services: [{
+                    serviceType: 'WM',
+                    serviceCode: 'USA96A4/MIA1-TPA',
+                    accommodation: '0915',
+                    fromDate: '091117',
+                    toDate: '211117',
+                    quantity: '200',
+                    occupancy: '3',
+                }]
+            };
+
+            adapter.getData().then((data) => {
+                expect(data).toEqual(expected);
+                done();
+            }, (error) => {
+                done.fail(error);
+            });
+        });
+
+        it('getData() should parse minimal camper service data', (done) => {
+            let expected = {services: [{
+                type: SERVICE_TYPES.camper,
+                pickUpLocation: 'MIA1',
+                marked: true,
+            }]};
+
+            crsData = {
+                services: [{
+                    serviceType: 'WM',
+                    serviceCode: 'MIA1',
+                }]
+            };
+
+            adapter.getData().then((data) => {
+                expect(data).toEqual(expected);
+                done();
+            }, (error) => {
+                done.fail(error);
+            });
+        });
+
+        it('getData() should parse camper service with no service code', (done) => {
+            let expected = {services: [{
+                type: SERVICE_TYPES.camper,
+                marked: true,
+            }]};
+
+            crsData = {
+                services: [{
+                    serviceType: 'WM',
+                }]
+            };
+
+            adapter.getData().then((data) => {
+                expect(data).toEqual(expected);
+                done();
+            }, (error) => {
+                done.fail(error);
+            });
+        });
+
         it('getData() should parse service data without serviceType', (done) => {
             let expected = {services: []};
 
@@ -588,7 +666,7 @@ describe('TomaSPCAdapter', () => {
             let expected = {
                 action: 'BA',
                 numTravellers: 1,
-                remark: 'GPS|BS|childCarSeat2|roofRack,puh address|puh number|doh name|doh address|doh number',
+                remark: 'GPS|BS|childCarSeat2|roofRack,puh address puh number|doh name|doh address doh number',
                 services: [
                     {
                         serviceType: 'MW',
@@ -674,7 +752,7 @@ describe('TomaSPCAdapter', () => {
             let expected = {
                 action: 'BA',
                 numTravellers: 1,
-                remark: 'doh address|doh number',
+                remark: 'doh address doh number',
                 services: [
                     {
                         serviceType: 'MW',
@@ -724,6 +802,66 @@ describe('TomaSPCAdapter', () => {
                         accommodation: 'rc mc',
                         fromDate: '010118',
                         toDate: '080118',
+                    },
+                ],
+            };
+
+            adapter.setData(adapterObject).then(() => {
+                expect(requestData).toEqual([expected]);
+                done();
+            }, (error) => {
+                done.fail(error);
+            });
+        });
+
+        it('setData() should convert camper data to crs object correct', (done) => {
+            let adapterObject = {
+                numberOfTravellers: 2,
+                services: [
+                    {
+                        type: SERVICE_TYPES.camper,
+                        renterCode: 'USA89',
+                        camperCode: 'A4',
+                        pickUpLocation: 'MIA1',
+                        dropOffLocation: 'TPA',
+                        pickUpDate: '04052018',
+                        dropOffDate: '07052018',
+                        duration: 14,
+                        pickUpTime: '1730',
+                        milesIncludedPerDay: '200',
+                        milesPackagesIncluded: '4',
+                        extras: ['extra.3', 'special'],
+                    },
+                ],
+            };
+
+            let expected = {
+                action: 'BA',
+                numTravellers: 2,
+                services: [
+                    {
+                        serviceType: 'WM',
+                        serviceCode: 'USA89A4/MIA1-TPA',
+                        fromDate: '040518',
+                        toDate: '070518',
+                        accommodation: '1730',
+                        quantity: '200',
+                        occupancy: '4',
+                        travellerAssociation: '1-2',
+                    },
+                    {
+                        serviceType: 'TA',
+                        serviceCode: 'extra',
+                        fromDate: '040518',
+                        toDate: '070518',
+                        travellerAssociation: '1-3'
+                    },
+                    {
+                        serviceType: 'TA',
+                        serviceCode: 'special',
+                        fromDate: '040518',
+                        toDate: '070518',
+                        travellerAssociation: '1'
                     },
                 ],
             };

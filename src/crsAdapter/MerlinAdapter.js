@@ -17,7 +17,6 @@ const CONFIG = {
             action: 'BA',
             numberOfTravellers: '1',
         },
-        maxServiceLinesCount: 5,
     },
     services: {
         car: {
@@ -166,15 +165,7 @@ class MerlinAdapter {
             if (!xmlService) {
                 xmlService = this.createEmptyService(xmlImport.ServiceBlock.ServiceRow);
 
-                if (xmlService) {
-                    xmlImport.ServiceBlock.ServiceRow.push(xmlService);
-                }
-            }
-
-            if (!xmlService) {
-                this.logger.info('service not parsed because no CRS service is marked or no space left for more services');
-                this.logger.info(service);
-                return;
+                xmlImport.ServiceBlock.ServiceRow.push(xmlService);
             }
 
             switch (service.type) {
@@ -188,9 +179,7 @@ class MerlinAdapter {
                 }
             }
 
-            if (service.marked) {
-                xmlService.MarkField = 'X';
-            }
+            xmlService.MarkField = service.marked ? 'X' : void 0;
         });
     };
 
@@ -198,16 +187,23 @@ class MerlinAdapter {
      * @private
      * @param xmlServices [object]
      * @param serviceType string
-     * @returns {number}
+     * @returns {object}
      */
     getMarkedServiceForServiceType(xmlServices, serviceType) {
         let markedService = void 0;
 
-        xmlServices.forEach((xmlService) => {
+        xmlServices.some((xmlService) => {
             if (xmlService.KindOfService !== CONFIG.crs.serviceTypes[serviceType]) return;
-            if (!this.isServiceMarked(xmlService, serviceType)) return;
 
-            markedService = xmlService.MarkField ? xmlService : markedService || xmlService;
+            if (xmlService.MarkField) {
+                markedService = xmlService;
+
+                return true;
+            }
+
+            if (this.isServiceMarked(xmlService, serviceType)) {
+                markedService = markedService || xmlService;
+            }
         });
 
         return markedService;
@@ -220,10 +216,6 @@ class MerlinAdapter {
      * @returns {boolean}
      */
     isServiceMarked(xmlService, serviceType) {
-        if (xmlService.MarkField) {
-            return true;
-        }
-
         switch(serviceType) {
             case SERVICE_TYPES.car: {
                 let serviceCode = xmlService.Service;
@@ -305,8 +297,6 @@ class MerlinAdapter {
         if (hotelName) {
             let emptyService = this.createEmptyService(xml.ServiceBlock.ServiceRow);
 
-            if (!emptyService) return;
-
             xml.ServiceBlock.ServiceRow.push(emptyService);
 
             emptyService.KindOfService = CONFIG.crs.serviceTypes.extras;
@@ -340,17 +330,11 @@ class MerlinAdapter {
      * @returns {object}
      */
     createEmptyService(xmlServices) {
-        let emptyService = void 0;
-
-        if (xmlServices.length < CONFIG.crs.maxServiceLinesCount) {
-            emptyService = {
-                [CONFIG.builderOptions.attrkey]: {
-                    positionNo: xmlServices.length + 1,
-                },
-            };
-        }
-
-        return emptyService;
+        return {
+            [CONFIG.builderOptions.attrkey]: {
+                positionNo: xmlServices.length + 1,
+            },
+        };
     }
 }
 
