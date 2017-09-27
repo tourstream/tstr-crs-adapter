@@ -14,7 +14,6 @@ module.exports = {
     },
     entry: './src/UbpCrsAdapter.js',
     output: {
-        path: path.resolve(__dirname, 'dist'),
         library: 'UbpCrsAdapter',
         libraryTarget: 'umd',
         umdNamedDefine: true
@@ -22,7 +21,8 @@ module.exports = {
     resolve: {
         modules: [
             path.resolve(__dirname, 'node_modules'),
-            path.resolve(__dirname, 'src')
+            path.resolve(__dirname, 'src'),
+            path.resolve(__dirname),
         ],
         extensions: [
             '.json',

@@ -7,13 +7,12 @@
     "doc": "docs"
   },
   "scripts": {
-    "build": "npm run clean && npm run build:prod && npm run build:dev",
-    "build:dev": "webpack --config webpack.config.dev.js && cp dist/ubpCrsAdapter.js tests/manual/assets/ubpCrsAdapter.js",
-    "build:prod": "webpack --config webpack.config.prod.js",
-    "clean": "rimraf dist build",
+    "build": "npm run build:dev && npm run build:prod",
+    "build:dev": "rimraf build && webpack --config webpack.config.dev.js && cp build/ubpCrsAdapter.js tests/manual/assets/ubpCrsAdapter.js",
+    "build:prod": "rimraf dist && webpack --config webpack.config.prod.js",
     "test": "karma start karma.config.js --single-run",
     "preversion": "npm test",
-    "version": "npm run build && git add -A dist --force",
+    "version": "npm run build && cp -R build/* dist/ && git add -A dist tests/manual",
     "postversion": "git push && git push --tags",
     "serve": "npm run build:dev && ws --https --hostname localhost --port 1337 --directory ./tests/manual --static.index crsTest.html"
   },
