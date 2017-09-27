@@ -232,7 +232,7 @@ class TomaAdapter {
             }
 
             if (service) {
-                service.marked = this.isMarked(xmlTom, lineNumber, service.type);
+                service.marked = this.isMarked(xmlTom, lineNumber, {type: service.type});
 
                 dataObject.services.push(service);
             }
@@ -397,15 +397,15 @@ class TomaAdapter {
      * @private
      * @param xml object
      * @param lineNumber number
-     * @param serviceType string
+     * @param service object
      * @returns {boolean}
      */
-    isMarked(xml, lineNumber, serviceType) {
+    isMarked(xml, lineNumber, service) {
         if (xml['MarkerField.' + lineNumber]) {
             return true;
         }
 
-        switch (serviceType) {
+        switch (service.type) {
             case SERVICE_TYPES.car: {
                 let serviceCode = xml['ServiceCode.' + lineNumber];
 
@@ -423,6 +423,11 @@ class TomaAdapter {
 
                 // gaps in the regEx result array will result in lined up "." after the join
                 return !serviceCode || serviceCode.match(CONFIG.services.car.serviceCodeRegEx).join('.').indexOf('..') !== -1;
+            }
+            case SERVICE_TYPES.roundTrip: {
+                let bookingId = xml['ServiceCode.' + lineNumber];
+
+                return !bookingId || bookingId === service.bookingId;
             }
         }
     };
@@ -445,7 +450,7 @@ class TomaAdapter {
         xmlTom.NoOfPersons = dataObject.numberOfTravellers || (xmlTom.NoOfPersons && xmlTom.NoOfPersons[CONFIG.parserOptions.textNodeName]) || CONFIG.crs.defaultValues.numberOfTravellers;
 
         (dataObject.services || []).forEach((service) => {
-            let lineNumber = this.getMarkedLineNumberForServiceType(xmlTom, service.type) || this.getNextEmptyLineNumber(xmlTom);
+            let lineNumber = this.getMarkedLineNumberForService(xmlTom, service) || this.getNextEmptyLineNumber(xmlTom);
 
             switch (service.type) {
                 case SERVICE_TYPES.car: {
@@ -475,10 +480,10 @@ class TomaAdapter {
     /**
      * @private
      * @param xml object
-     * @param serviceType string
+     * @param service object
      * @returns {number}
      */
-    getMarkedLineNumberForServiceType(xml, serviceType) {
+    getMarkedLineNumberForService(xml, service) {
         let lineNumber = 1;
         let markedLineNumber = void 0;
 
@@ -486,10 +491,10 @@ class TomaAdapter {
             let kindOfService = xml['KindOfService.' + lineNumber];
 
             if (!kindOfService) return markedLineNumber;
-            if (kindOfService !== CONFIG.crs.serviceTypes[serviceType]) continue;
+            if (kindOfService !== CONFIG.crs.serviceTypes[service.type]) continue;
             if (xml['MarkerField.' + lineNumber]) return lineNumber;
 
-            if (!markedLineNumber && this.isMarked(xml, lineNumber, serviceType)) {
+            if (!markedLineNumber && this.isMarked(xml, lineNumber, service)) {
                 markedLineNumber = lineNumber;
             }
         } while (lineNumber++);
@@ -606,7 +611,6 @@ class TomaAdapter {
         xml['Name.' + lineNumber] = service.name;
         xml['Reduction.' + lineNumber] = service.birthday || service.age;
     }
-
 
     /**
      * @private

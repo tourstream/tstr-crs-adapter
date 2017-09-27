@@ -324,7 +324,8 @@ describe('TomaAdapter', () => {
                 endDate: '16122017',
                 salutation: 'H',
                 name: 'DOE/JOHN',
-                birthdate: '040485'
+                birthdate: '040485',
+                marked: false,
             };
 
             TomaConnection.GetXmlData.and.returnValue(xml);
@@ -358,7 +359,8 @@ describe('TomaAdapter', () => {
                 endDate: '16122017',
                 salutation: 'H',
                 name: 'DOE/JOHN',
-                age: '32'
+                age: '32',
+                marked: false,
             };
 
             TomaConnection.GetXmlData.and.returnValue(xml);
@@ -567,17 +569,17 @@ describe('TomaAdapter', () => {
                     numberOfTravellers: 1,
                     services: [
                         {
-                            type: "roundTrip",
-                            marked: "",
-                            bookingId: "NEZE2784NQXTHEN",
-                            destination: "YYZ",
-                            numberOfPassengers: "1",
-                            startDate: "05122017",
-                            endDate: "16122017",
-                            salutation: "H",
-                            name: "DOE/JOHN",
-                            age: "32",
-                            birthday: "040485"
+                            type: 'roundTrip',
+                            marked: '',
+                            bookingId: 'NEZE2784NQXTHEN',
+                            destination: 'YYZ',
+                            numberOfPassengers: '1',
+                            startDate: '05122017',
+                            endDate: '16122017',
+                            salutation: 'H',
+                            name: 'DOE/JOHN',
+                            age: '32',
+                            birthday: '040485',
                         },
                     ]
                 });

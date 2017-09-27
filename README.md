@@ -2,20 +2,29 @@
 
 This project provides a JS module to enable an web-application to communicate with a CRS (TOMA, SABRE, CETS, ...).
 
+## How to install
+
+`npm install ubp-crs-adapter --save`
+
+```
+import UbpCrsAdapter from 'ubp-crs-adapter';
+
+let ubpCrsAdapter = new UbpCrsAdapter(adapterOptions);
+```
+
+Or for applications without loader:
+```
+<script src="[path/to/script/ubpCrsAdapter.js]"></script>
+
+<script>
+  var ubpCrsAdapter = new UbpCrsAdapter.default(adapterOptions);
+</script>
+```
+
 
 ## Interface
 
-After loading the script into your application
-```
-<script src="[path/to/script/ubpCrsAdapter.js]"></script>
-```
-
-you are able to create a new adapter via:
-```
-var ubpCrsAdapter = new UbpCrsAdapter.default(adapterOptions);
-```
-
-and to connect to a CRS via:
+To connect to a CRS use:
 ```
 ubpCrsAdapter.connect(connectionType, connectionOptions);
 ```
@@ -42,7 +51,7 @@ Or you can set data to the CRS via:
 ubpCrsAdapter.setData(outputData);
 ```
 
-The outputData object can have the following structure:
+The `outputData` object has the following structure:
 ```
 {
     numberOfTravellers: string,
@@ -59,7 +68,7 @@ ubpCrsAdapter.exit(exitOptions)
 _note: every method returns a promise_
 
 
-### Supported adapterOptions
+### Supported `adapterOptions`
 
 You can check the default options with `UbpCrsAdapter.DEFAULT_OPTIONS`.
 This options will be applied on every underlying adapter.
@@ -92,9 +101,9 @@ For TOMA SPC there is one crsUrl for each environment preconfigured.
 If no environment is set, the production crsUrl is used.
 
 
-### Data object structure
+### `.services` object structure
 
-Depending on the `services[*].type` the structure of a ServiceObject differs.
+Depending on the `.services[*].type` the structure of a ServiceObject differs.
 
 
 #### Supported service types
@@ -168,7 +177,7 @@ _note: if .dropOffDate is not set, it will be calculated with .pickUpDate + .dur
 
 _note: if .dropOffDate is not set, it will be calculated with .pickUpDate + .duration_
 
-Additionally every service has a `marked` field which is by default falsy.
+Additionally every service has a `.marked` field which is by default falsy.
 But if this service is either "marked" in the crs or detected as "marked" (depends on the type) it will be true.
 
 
