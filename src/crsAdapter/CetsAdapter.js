@@ -43,10 +43,10 @@ class CetsAdapter {
         };
 
         this.xmlParser = {
-            parse: xmlString => {
+            parse: (xmlString) => {
                 const xmlObject = fastXmlParser.parse(xmlString, this.parserOptions);
 
-                const groupXmlAttributes = object => {
+                const groupXmlAttributes = (object) => {
                     if (typeof object !== 'object') {
                         return;
                     }
@@ -72,32 +72,19 @@ class CetsAdapter {
         };
 
         this.xmlBuilder = {
-            build: xmlObject => {
+            build: (xmlObject) => {
                 const builder = new xml2js.Builder(this.builderOptions);
 
-                const prepareXmlObject = requestObject => {
-                    requestObject[this.parserOptions.attrPrefix].From = 'FTI';
-                    requestObject[this.parserOptions.attrPrefix].To = 'cets';
+                xmlObject.Request[this.parserOptions.attrPrefix].From = 'FTI';
+                xmlObject.Request[this.parserOptions.attrPrefix].To = 'cets';
 
-                    if (requestObject.Avl) {
-                        delete requestObject.Avl;
-                    }
-
-                    let xmlObject = {Fab: requestObject};
-
-                    xmlObject[this.parserOptions.attrPrefix] = requestObject[this.parserOptions.attrPrefix];
-
-                    delete xmlObject.Fab[this.parserOptions.attrPrefix];
-
-                    return {Request: xmlObject};
-                };
-
-                return builder.buildObject(prepareXmlObject(xmlObject.Request));
+                return builder.buildObject(xmlObject);
             }
         };
 
         this.config = {
             externalObjectName: 'cetsObject',
+            hotelLocationCode: 'MISC',
             defaults: {
                 personCount: 1,
                 serviceCode: {car: 'MIETW'},
@@ -148,13 +135,14 @@ class CetsAdapter {
 
     setData(dataObject) {
         let xmlObject = this.xmlParser.parse(this.getCrsXml());
+        let requestObject = this.createRequestObject(xmlObject);
 
-        this.assignAdapterObjectToXmlObject(xmlObject, dataObject);
+        this.assignAdapterObjectToXmlObject(requestObject, dataObject);
 
         this.logger.info('XML OBJECT:');
-        this.logger.info(xmlObject);
+        this.logger.info(requestObject);
 
-        let xml = this.xmlBuilder.build(xmlObject);
+        let xml = this.xmlBuilder.build(requestObject);
 
         this.logger.info('XML:');
         this.logger.info(xml);
@@ -289,8 +277,36 @@ class CetsAdapter {
         return service;
     }
 
+    /**
+     * @private
+     *
+     * The basic structure of the XML has to be: xml.Request.Fab
+     *
+     * @param xmlObject object
+     * @returns {*}
+     */
+    createRequestObject(xmlObject) {
+        if (xmlObject.Request.Fab) {
+            return xmlObject;
+        }
+
+        let requestObject = { Request: {} };
+
+        requestObject.Request[this.parserOptions.attrPrefix] = xmlObject.Request[this.parserOptions.attrPrefix];
+
+        delete xmlObject.Request[this.parserOptions.attrPrefix];
+
+        if (xmlObject.Request.Avl) {
+            delete xmlObject.Request.Avl;
+        }
+
+        requestObject.Request.Fab = xmlObject.Request;
+
+        return requestObject;
+    }
+
     assignAdapterObjectToXmlObject(xmlObject, dataObject = {}) {
-        let xmlRequest = xmlObject.Request;
+        let xmlRequest = xmlObject.Request.Fab;
 
         if (!xmlRequest.Fah) {
             xmlRequest.Fah = [];
@@ -298,10 +314,6 @@ class CetsAdapter {
 
         if (!Array.isArray(xmlRequest.Fah)) {
             xmlRequest.Fah = [xmlRequest.Fah];
-        }
-
-        if (!xmlRequest.Faq) {
-            xmlRequest.Faq = [];
         }
 
         (dataObject.services || []).forEach(service => {
@@ -387,6 +399,7 @@ class CetsAdapter {
                 },
             },
         };
+
         if (!service.pickUpHotelName && service.dropOffHotelName) {
             xmlService.CarDetails.DropOff.Info = service.dropOffHotelName;
         }
@@ -397,21 +410,25 @@ class CetsAdapter {
             return;
         }
 
+        if (!xml.Faq) {
+            xml.Faq = [];
+        }
+
         let xmlFaq = {
             [this.builderOptions.attrkey]: {
                 ServiceType: this.config.defaults.serviceType.customerRequest,
             },
-            Code: "MISC",
+            Code: this.config.hotelLocationCode,
             Persons: this.config.defaults.personCount,
             TextV: [
                 service.pickUpHotelName,
                 service.pickUpHotelPhoneNumber,
                 service.pickUpHotelAddress,
-                "|",
+                '|',
                 service.dropOffHotelName,
                 service.dropOffHotelPhoneNumber,
                 service.dropOffHotelAddress
-            ].join(' ').replace(/(^\|?\s*\|?\s)|(\s*\|?\s*$)/g, "")
+            ].join(' ').replace(/(^\|?\s*\|?\s)|(\s*\|?\s*$)/g, '')
         };
 
         xml.Faq.push(xmlFaq);
