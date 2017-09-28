@@ -29864,29 +29864,16 @@ var CetsAdapter = function () {
             build: function build(xmlObject) {
                 var builder = new _xml2js2.default.Builder(_this.builderOptions);
 
-                var prepareXmlObject = function prepareXmlObject(requestObject) {
-                    requestObject[_this.parserOptions.attrPrefix].From = 'FTI';
-                    requestObject[_this.parserOptions.attrPrefix].To = 'cets';
+                xmlObject.Request[_this.parserOptions.attrPrefix].From = 'FTI';
+                xmlObject.Request[_this.parserOptions.attrPrefix].To = 'cets';
 
-                    if (requestObject.Avl) {
-                        delete requestObject.Avl;
-                    }
-
-                    var xmlObject = { Fab: requestObject };
-
-                    xmlObject[_this.parserOptions.attrPrefix] = requestObject[_this.parserOptions.attrPrefix];
-
-                    delete xmlObject.Fab[_this.parserOptions.attrPrefix];
-
-                    return { Request: xmlObject };
-                };
-
-                return builder.buildObject(prepareXmlObject(xmlObject.Request));
+                return builder.buildObject(xmlObject);
             }
         };
 
         this.config = {
             externalObjectName: 'cetsObject',
+            hotelLocationCode: 'MISC',
             defaults: {
                 personCount: 1,
                 serviceCode: { car: 'MIETW' },
@@ -29941,13 +29928,14 @@ var CetsAdapter = function () {
         key: 'setData',
         value: function setData(dataObject) {
             var xmlObject = this.xmlParser.parse(this.getCrsXml());
+            var requestObject = this.createRequestObject(xmlObject);
 
-            this.assignAdapterObjectToXmlObject(xmlObject, dataObject);
+            this.assignAdapterObjectToXmlObject(requestObject, dataObject);
 
             this.logger.info('XML OBJECT:');
-            this.logger.info(xmlObject);
+            this.logger.info(requestObject);
 
-            var xml = this.xmlBuilder.build(xmlObject);
+            var xml = this.xmlBuilder.build(requestObject);
 
             this.logger.info('XML:');
             this.logger.info(xml);
@@ -30091,6 +30079,37 @@ var CetsAdapter = function () {
 
             return service;
         }
+
+        /**
+         * @private
+         *
+         * The basic structure of the XML has to be: xml.Request.Fab
+         *
+         * @param xmlObject object
+         * @returns {*}
+         */
+
+    }, {
+        key: 'createRequestObject',
+        value: function createRequestObject(xmlObject) {
+            if (xmlObject.Request.Fab) {
+                return xmlObject;
+            }
+
+            var requestObject = { Request: {} };
+
+            requestObject.Request[this.parserOptions.attrPrefix] = xmlObject.Request[this.parserOptions.attrPrefix];
+
+            delete xmlObject.Request[this.parserOptions.attrPrefix];
+
+            if (xmlObject.Request.Avl) {
+                delete xmlObject.Request.Avl;
+            }
+
+            requestObject.Request.Fab = xmlObject.Request;
+
+            return requestObject;
+        }
     }, {
         key: 'assignAdapterObjectToXmlObject',
         value: function assignAdapterObjectToXmlObject(xmlObject) {
@@ -30098,7 +30117,7 @@ var CetsAdapter = function () {
 
             var dataObject = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
 
-            var xmlRequest = xmlObject.Request;
+            var xmlRequest = xmlObject.Request.Fab;
 
             if (!xmlRequest.Fah) {
                 xmlRequest.Fah = [];
@@ -30106,10 +30125,6 @@ var CetsAdapter = function () {
 
             if (!Array.isArray(xmlRequest.Fah)) {
                 xmlRequest.Fah = [xmlRequest.Fah];
-            }
-
-            if (!xmlRequest.Faq) {
-                xmlRequest.Faq = [];
             }
 
             (dataObject.services || []).forEach(function (service) {
@@ -30183,6 +30198,7 @@ var CetsAdapter = function () {
                     }), _defineProperty(_CarStation2, this.builderOptions.charkey, ''), _CarStation2)
                 }
             }), _xmlService);
+
             if (!service.pickUpHotelName && service.dropOffHotelName) {
                 xmlService.CarDetails.DropOff.Info = service.dropOffHotelName;
             }
@@ -30193,9 +30209,13 @@ var CetsAdapter = function () {
                 return;
             }
 
+            if (!xml.Faq) {
+                xml.Faq = [];
+            }
+
             var xmlFaq = (_xmlFaq = {}, _defineProperty(_xmlFaq, this.builderOptions.attrkey, {
                 ServiceType: this.config.defaults.serviceType.customerRequest
-            }), _defineProperty(_xmlFaq, 'Code', "MISC"), _defineProperty(_xmlFaq, 'Persons', this.config.defaults.personCount), _defineProperty(_xmlFaq, 'TextV', [service.pickUpHotelName, service.pickUpHotelPhoneNumber, service.pickUpHotelAddress, "|", service.dropOffHotelName, service.dropOffHotelPhoneNumber, service.dropOffHotelAddress].join(' ').replace(/(^\|?\s*\|?\s)|(\s*\|?\s*$)/g, "")), _xmlFaq);
+            }), _defineProperty(_xmlFaq, 'Code', this.config.hotelLocationCode), _defineProperty(_xmlFaq, 'Persons', this.config.defaults.personCount), _defineProperty(_xmlFaq, 'TextV', [service.pickUpHotelName, service.pickUpHotelPhoneNumber, service.pickUpHotelAddress, '|', service.dropOffHotelName, service.dropOffHotelPhoneNumber, service.dropOffHotelAddress].join(' ').replace(/(^\|?\s*\|?\s)|(\s*\|?\s*$)/g, '')), _xmlFaq);
 
             xml.Faq.push(xmlFaq);
         }
