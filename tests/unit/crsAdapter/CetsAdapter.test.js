@@ -335,6 +335,7 @@ describe('CetsAdapter', () => {
                     '</DropOff>' +
                     '</CarDetails>' +
                     '</Fah>';
+
                 let expectedXml = createResponseXML(service);
 
                 adapter.setData(data);
@@ -408,7 +409,6 @@ describe('CetsAdapter', () => {
                 expect(CetsConnection.returnBooking).toHaveBeenCalledWith(createResponseXML());
             });
         });
-
 
         describe('CETS hotel pick-up/drop-off connection returns xml -', () => {
             let requestXml;
@@ -549,8 +549,6 @@ describe('CetsAdapter', () => {
                 expect(CetsConnection.returnBooking).toHaveBeenCalledWith(expectedXml);
             });
         });
-
-
 
         describe('CETS hotel drop-off connection returns xml -', () => {
             let requestXml;
@@ -693,9 +691,6 @@ describe('CetsAdapter', () => {
             });
         });
 
-
-
-
         describe('CETS hotel pick-up connection returns xml -', () => {
             let requestXml;
 
@@ -834,6 +829,73 @@ describe('CetsAdapter', () => {
 
                 expect(CetsConnection.returnBooking).toHaveBeenCalledWith(expectedXml);
             });
+        });
+
+        it('setData() should add data correct to basket XML', () => {
+            let requestXml = '<Request Version="2.5" From="cets" To="FTI" TermId="CC1937" Window="A" Date="11052017" Time="081635" Type="AVL" SubType="S" Confirm="NO" Agent="549870" Lang="DE" LayoutLang="EN" UserCode="tourCH" UserType="M" UserName="Pan" UserFirstName="Peter" UserMail="peter.pan@tourstream.eu" Source="DPL" Mode="Test" DeepLinkURL="YES">' +
+                '<Fab>' +
+                '<Fap ID="1">' +
+                '<PersonType>M</PersonType>' +
+                '<Name>NTBAA</Name>' +
+                '<FirstName>NN</FirstName>' +
+                '</Fap>' +
+                '</Fab>' +
+                '</Request>';
+
+            CetsConnection.getXmlRequest.and.returnValue(requestXml);
+
+            let expectedXml = '<?xml version="1.0" encoding="windows-1252"?>';
+
+            expectedXml += '<Request Version="2.5" From="FTI" To="cets" TermId="CC1937" Window="A" Date="11052017" Time="081635" Type="AVL" SubType="S" Confirm="NO" Agent="549870" Lang="DE" LayoutLang="EN" UserCode="tourCH" UserType="M" UserName="Pan" UserFirstName="Peter" UserMail="peter.pan@tourstream.eu" Source="DPL" Mode="Test" DeepLinkURL="YES">' +
+                '<Fab>' +
+                    '<Fap ID="1">' +
+                        '<PersonType>M</PersonType>' +
+                        '<Name>NTBAA</Name>' +
+                        '<FirstName>NN</FirstName>' +
+                    '</Fap>' +
+                    '<Fah ServiceType="C" Key="vehicle.type.code/pick.up.location-drop.off.location">' +
+                        '<StartDate>01052017</StartDate>' +
+                        '<Duration>duration</Duration>' +
+                        '<Destination>pick.up.location</Destination>' +
+                        '<Product>rental.code</Product>' +
+                        '<Room>vehicle.type.code</Room>' +
+                        '<Norm>1</Norm>' +
+                        '<MaxAdults>1</MaxAdults>' +
+                        '<Meal>MIETW</Meal>' +
+                        '<Persons>1</Persons>' +
+                        '<CarDetails>' +
+                            '<PickUp Where="Walkin">' +
+                                '<Time>0820</Time>' +
+                                '<CarStation Code="pick.up.location"/>' +
+                                '<Info>WALK IN</Info>' +
+                            '</PickUp>' +
+                            '<DropOff>' +
+                                '<Time/>' +
+                                '<CarStation Code="drop.off.location"/>' +
+                            '</DropOff>' +
+                        '</CarDetails>' +
+                    '</Fah>' +
+                '</Fab>' +
+                '</Request>';
+
+            let data = {
+                services: [
+                    {
+                        vehicleTypeCode: 'vehicle.type.code',
+                        pickUpLocation: 'pick.up.location',
+                        dropOffLocation: 'drop.off.location',
+                        pickUpDate: '01052017',
+                        pickUpTime: '0820',
+                        duration: 'duration',
+                        rentalCode: 'rental.code',
+                        type: 'car',
+                    },
+                ],
+            };
+
+            adapter.setData(data);
+
+            expect(CetsConnection.returnBooking).toHaveBeenCalledWith(expectedXml);
         });
     });
 });
