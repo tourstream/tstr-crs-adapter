@@ -42,6 +42,9 @@ class UbpCrsAdapter {
         this.logger = new LogService();
 
         this.initLogger();
+
+        this.logger.log('init adapter with:');
+        this.logger.log(this.options);
     }
 
     /**
@@ -81,9 +84,7 @@ class UbpCrsAdapter {
             }
 
             try {
-                options = Object.assign({}, DEFAULT_OPTIONS, options);
-
-                this.logger.info('Try to connect with options:');
+                this.logger.info('With options:');
                 this.logger.info(options);
 
                 Promise.resolve(this.getAdapterInstance().connect(options)).then(resolve);
@@ -124,12 +125,13 @@ class UbpCrsAdapter {
         });
     }
 
-    exit() {
+    exit(options = {}) {
         return new Promise((resolve) => {
-            this.logger.info('Try to exit');
+            this.logger.info('Try to exit with options');
+            this.logger.info(options);
 
             try {
-                this.getAdapterInstance().exit();
+                this.getAdapterInstance().exit(options);
 
                 resolve();
             } catch (error) {

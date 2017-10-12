@@ -100,11 +100,7 @@ describe('UbpCrsAdapter', () => {
     it('connect() should throw nothing', () => {
         adapter.connect(UbpCrsAdapter.CRS_TYPES.cets, {option: 'value'});
 
-        expect(AnyCrsAdapter.connect).toHaveBeenCalledWith({
-            debug: false,
-            useDateFormat: 'DDMMYYYY',
-            option: 'value'
-        });
+        expect(AnyCrsAdapter.connect).toHaveBeenCalledWith({ option: 'value' });
     });
 
     it('should throw exception if any method is used without crs-connection', (done) => {

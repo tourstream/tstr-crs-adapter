@@ -77,9 +77,11 @@ class TomaSPCAdapter {
             }
 
             try {
-                this.getConnection().requestService('popups.close', { id: popupId });
-
-                resolve();
+                this.getConnection().requestService(
+                    'popups.close',
+                    { id: popupId },
+                    this.createCallbackObject(resolve, null, 'exit error')
+                );
             } catch (error) {
                 this.logger.error(error);
                 throw new Error('connection::popups.close: ' + error.message);
@@ -142,7 +144,7 @@ class TomaSPCAdapter {
         name = name.replace(/[\[]/, '\\[').replace(/[\]]/, '\\]');
 
         let regex = new RegExp('[\\?&]' + name + '=([^&#]*)');
-        let results = regex.exec(window.location.search);
+        let results = regex.exec(window.location);
 
         return results === null ? void 0 : decodeURIComponent(results[1].replace(/\+/g, ' '));
     };
