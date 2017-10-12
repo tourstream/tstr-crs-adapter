@@ -125,7 +125,7 @@ class UbpCrsAdapter {
         });
     }
 
-    exit(options) {
+    exit(options = {}) {
         return new Promise((resolve) => {
             this.logger.info('Try to exit with options');
             this.logger.info(options);

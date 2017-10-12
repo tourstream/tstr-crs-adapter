@@ -77,9 +77,11 @@ class TomaSPCAdapter {
             }
 
             try {
-                this.getConnection().requestService('popups.close', { id: popupId });
-
-                resolve();
+                this.getConnection().requestService(
+                    'popups.close',
+                    { id: popupId },
+                    this.createCallbackObject(resolve, null, 'exit error')
+                );
             } catch (error) {
                 this.logger.error(error);
                 throw new Error('connection::popups.close: ' + error.message);
