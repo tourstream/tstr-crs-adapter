@@ -816,7 +816,7 @@ describe('TomaSPCAdapter', () => {
             });
         });
 
-        it('exitData() should request to close the popup', (done) => {
+        it('exit() should request to close the popup', (done) => {
             adapter.exit({popupId: 'pId'}).then(() => {
                 expect(requestData).toEqual({id: 'pId'});
                 done();
@@ -825,8 +825,8 @@ describe('TomaSPCAdapter', () => {
             });
         });
 
-        it('exitData() should request to close the popup with popup id from url parameter', (done) => {
-            window.history.replaceState({}, '', '?POPUP_ID=url.pId');
+        it('exit() should request to close the popup with popup id from url parameter', (done) => {
+            window.history.replaceState({}, '', '/#/?POPUP_ID=url.pId');
 
             adapter.exit().then(() => {
                 expect(requestData).toEqual({id: 'url.pId'});
@@ -836,7 +836,7 @@ describe('TomaSPCAdapter', () => {
             });
         });
 
-        it('exitData() should throw error if no popup id is available', (done) => {
+        it('exit() should throw error if no popup id is available', (done) => {
             adapter.exit().then(() => {
                 done.fail('expectation error');
             }, (error) => {
