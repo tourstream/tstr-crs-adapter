@@ -7088,6 +7088,9 @@ var UbpCrsAdapter = function () {
         this.logger = new _LogService2.default();
 
         this.initLogger();
+
+        this.logger.log('init adapter with:');
+        this.logger.log(this.options);
     }
 
     /**
@@ -7135,9 +7138,7 @@ var UbpCrsAdapter = function () {
                 }
 
                 try {
-                    options = Object.assign({}, DEFAULT_OPTIONS, options);
-
-                    _this.logger.info('Try to connect with options:');
+                    _this.logger.info('With options:');
                     _this.logger.info(options);
 
                     Promise.resolve(_this.getAdapterInstance().connect(options)).then(resolve);
@@ -7188,11 +7189,14 @@ var UbpCrsAdapter = function () {
         value: function exit() {
             var _this4 = this;
 
+            var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+
             return new Promise(function (resolve) {
-                _this4.logger.info('Try to exit');
+                _this4.logger.info('Try to exit with options');
+                _this4.logger.info(options);
 
                 try {
-                    _this4.getAdapterInstance().exit();
+                    _this4.getAdapterInstance().exit(options);
 
                     resolve();
                 } catch (error) {
@@ -31459,9 +31463,7 @@ var TomaSPCAdapter = function () {
                 }
 
                 try {
-                    _this3.getConnection().requestService('popups.close', { id: popupId });
-
-                    resolve();
+                    _this3.getConnection().requestService('popups.close', { id: popupId }, _this3.createCallbackObject(resolve, null, 'exit error'));
                 } catch (error) {
                     _this3.logger.error(error);
                     throw new Error('connection::popups.close: ' + error.message);
@@ -31526,7 +31528,7 @@ var TomaSPCAdapter = function () {
             name = name.replace(/[\[]/, '\\[').replace(/[\]]/, '\\]');
 
             var regex = new RegExp('[\\?&]' + name + '=([^&#]*)');
-            var results = regex.exec(window.location.search);
+            var results = regex.exec(window.location);
 
             return results === null ? void 0 : decodeURIComponent(results[1].replace(/\+/g, ' '));
         }
