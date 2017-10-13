@@ -226,7 +226,6 @@ describe('TomaAdapter', () => {
             let xml = createTomaXml(
                 '<KindOfService.1>WM</KindOfService.1>' +
                 '<ServiceCode.1>PRT02FS/LIS1-LIS2</ServiceCode.1>' +
-                '<Accommodation.1>0910</Accommodation.1>' +
                 '<From.1>200417</From.1>' +
                 '<To.1>300417</To.1>' +
                 '<Count.1>200</Count.1>' +
@@ -238,7 +237,6 @@ describe('TomaAdapter', () => {
                 camperCode: 'FS',
                 pickUpDate: '20042017',
                 dropOffDate: '30042017',
-                pickUpTime: '0910',
                 duration: 10,
                 pickUpLocation: 'LIS1',
                 dropOffLocation: 'LIS2',
@@ -259,7 +257,6 @@ describe('TomaAdapter', () => {
             let xml = createTomaXml(
                 '<KindOfService.1>WM</KindOfService.1>' +
                 '<ServiceCode.1>LIS1</ServiceCode.1>' +
-                '<Accommodation.1>0910</Accommodation.1>' +
                 '<From.1>200417</From.1>' +
                 '<To.1>300417</To.1>' +
                 '<Count.1>200</Count.1>' +
@@ -269,7 +266,6 @@ describe('TomaAdapter', () => {
             let expectedService = {
                 pickUpDate: '20042017',
                 dropOffDate: '30042017',
-                pickUpTime: '0910',
                 duration: 10,
                 pickUpLocation: 'LIS1',
                 milesIncludedPerDay: '200',
@@ -595,11 +591,10 @@ describe('TomaAdapter', () => {
                     '<ServiceCode.1>rent.codecamper.code/from.loc-to.loc</ServiceCode.1>' +
                     '<From.1>231218</From.1>' +
                     '<To.1>040119</To.1>' +
-                    '<Accommodation.1>from.time</Accommodation.1>' +
                     '<Count.1>miles.per.day</Count.1>' +
                     '<Occupancy.1>miles.packages</Occupancy.1>' +
-                    '<TravAssociation.1>1-2</TravAssociation.1' +
-                    '><KindOfService.2>TA</KindOfService.2>' +
+                    '<TravAssociation.1>1-2</TravAssociation.1>' +
+                    '<KindOfService.2>TA</KindOfService.2>' +
                     '<ServiceCode.2>extra</ServiceCode.2>' +
                     '<From.2>231218</From.2>' +
                     '<To.2>040119</To.2>' +
@@ -622,7 +617,6 @@ describe('TomaAdapter', () => {
                         {
                             type: 'camper',
                             pickUpDate: '23122018',
-                            pickUpTime: 'from.time',
                             pickUpLocation: 'from.loc',
                             dropOffDate: '04012019',
                             dropOffTime: 'to.time',

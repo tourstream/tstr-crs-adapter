@@ -379,7 +379,6 @@ class TomaAdapter {
         let service = {
             pickUpDate: pickUpDate.isValid() ? pickUpDate.format(this.options.useDateFormat) : xml['From.' + lineNumber],
             dropOffDate: dropOffDate.isValid() ? dropOffDate.format(this.options.useDateFormat) : xml['To.' + lineNumber],
-            pickUpTime: xml['Accommodation.' + lineNumber],
             duration: pickUpDate.isValid() && dropOffDate.isValid()
                 ? Math.ceil(dropOffDate.diff(pickUpDate, 'days', true))
                 : void 0,
@@ -638,7 +637,6 @@ class TomaAdapter {
 
         xml['From.' + lineNumber] = pickUpDate.format(CONFIG.crs.dateFormat);
         xml['To.' + lineNumber] = dropOffDate.format(CONFIG.crs.dateFormat);
-        xml['Accommodation.' + lineNumber] = service.pickUpTime;
         xml['Count.' + lineNumber] = service.milesIncludedPerDay;
         xml['Occupancy.' + lineNumber] = service.milesPackagesIncluded;
         xml['TravAssociation.' + lineNumber] = '1' + ((xml.NoOfPersons > 1) ? '-' + xml.NoOfPersons : '');

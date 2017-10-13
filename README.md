@@ -167,7 +167,6 @@ _note: if .dropOffDate is not set, it will be calculated with .pickUpDate + .dur
 |          | .camperCode            | 'FS' 
 |          | .pickUpLocation        | 'LIS1' 
 |          | .pickUpDate            | '10102017' 
-|          | .pickUpTime            | '0940' 
 |          | .dropOffLocation       | 'LIS2' 
 |          | .dropOffDate           | '17102017' 
 |          | .duration              | '7' 

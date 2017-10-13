@@ -91,9 +91,7 @@ document.getElementById('set-data-btn').addEventListener('click', function () {
             }
         });
 
-        if (service.type) {
-            data.services = [service];
-        }
+        data.services = [service];
 
         adapter.setData(data).catch(log);
     } catch (e) {
