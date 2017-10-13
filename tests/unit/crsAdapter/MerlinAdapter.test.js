@@ -297,56 +297,6 @@ describe('MerlinAdapter', () => {
             });
         });
 
-        it('setData() should send car data without pickup hotel caused of no service lines left', (done) => {
-            let expectation = createXML(
-                '<NoOfPersons>1</NoOfPersons>' +
-                '<ServiceBlock>' +
-                    '<ServiceRow positionNo="1"><KindOfService>H</KindOfService><Service>dest</Service><Accommodation>rc</Accommodation></ServiceRow>' +
-                    '<ServiceRow positionNo="2"><KindOfService>H</KindOfService><Service>dest</Service><Accommodation>rc</Accommodation></ServiceRow>' +
-                    '<ServiceRow positionNo="3"><KindOfService>H</KindOfService><Service>dest</Service><Accommodation>rc</Accommodation></ServiceRow>' +
-                    '<ServiceRow positionNo="4"><KindOfService>H</KindOfService><Service>dest</Service><Accommodation>rc</Accommodation></ServiceRow>' +
-                    '<ServiceRow positionNo="5">' +
-                        '<KindOfService>MW</KindOfService>' +
-                        '<Service>rent.codevehicle.type.code/from.loc-to.loc</Service>' +
-                        '<FromDate>231218</FromDate>' +
-                        '<EndDate>040119</EndDate>' +
-                        '<Accommodation>from.time</Accommodation>' +
-                    '</ServiceRow>' +
-                '</ServiceBlock>'
-            );
-
-            let data = {
-                services: [
-                    { type: 'hotel', roomCode: 'rc', destination: 'dest' },
-                    { type: 'hotel', roomCode: 'rc', destination: 'dest' },
-                    { type: 'hotel', roomCode: 'rc', destination: 'dest' },
-                    { type: 'hotel', roomCode: 'rc', destination: 'dest' },
-                    { type: 'car' },
-                    {
-                        type: 'car',
-                        pickUpDate: '23122018',
-                        pickUpTime: 'from.time',
-                        pickUpLocation: 'from.loc',
-                        pickUpHotelName: 'pu h.name',
-                        pickUpHotelAddress: 'pu h.address',
-                        pickUpHotelPhoneNumber: 'pu h.number',
-                        dropOffDate: '04012019',
-                        dropOffTime: 'to.time',
-                        dropOffLocation: 'to.loc',
-                        rentalCode: 'rent.code',
-                        vehicleTypeCode: 'vehicle.type.code',
-                    },
-                ],
-            };
-
-            adapter.setData(data).then(() => {
-                done.fail('unexpected result');
-            }, () => {
-                expect(requestParameter).toEqual(expectation);
-                done();
-            });
-        });
-
         it('setData() should send complete hotel data', (done) => {
             let expectation = createXML(
                 '<NoOfPersons>1</NoOfPersons>' +
@@ -382,59 +332,39 @@ describe('MerlinAdapter', () => {
             });
         });
 
-        it('setData() should send capped amount of data', (done) => {
-            let expectation = createXML(
-                '<NoOfPersons>1</NoOfPersons>' +
-                '<ServiceBlock>' +
-                    '<ServiceRow positionNo="1"><KindOfService>H</KindOfService><Service>dest</Service><Accommodation>rc</Accommodation></ServiceRow>' +
-                    '<ServiceRow positionNo="2"><KindOfService>H</KindOfService><Service>dest</Service><Accommodation>rc</Accommodation></ServiceRow>' +
-                    '<ServiceRow positionNo="3"><KindOfService>H</KindOfService><Service>dest</Service><Accommodation>rc</Accommodation></ServiceRow>' +
-                    '<ServiceRow positionNo="4"><KindOfService>H</KindOfService><Service>dest</Service><Accommodation>rc</Accommodation></ServiceRow>' +
-                    '<ServiceRow positionNo="5"><KindOfService>H</KindOfService><Service>dest</Service><Accommodation>rc</Accommodation></ServiceRow>' +
-                '</ServiceBlock>'
-            );
-
-            let data = {
-                services: [
-                    { type: 'hotel', roomCode: 'rc', destination: 'dest' },
-                    { type: 'hotel', roomCode: 'rc', destination: 'dest' },
-                    { type: 'hotel', roomCode: 'rc', destination: 'dest' },
-                    { type: 'hotel', roomCode: 'rc', destination: 'dest' },
-                    { type: 'hotel', roomCode: 'rc', destination: 'dest' },
-                    { type: 'hotel', roomCode: 'rc', destination: 'dest' },
-                    { type: 'hotel', roomCode: 'rc', destination: 'dest' },
-                    { type: 'hotel', roomCode: 'rc', destination: 'dest' },
-                    { type: 'hotel', roomCode: 'rc', destination: 'dest' },
-                    { type: 'hotel', roomCode: 'rc', destination: 'dest' },
-                ],
-            };
-
-            adapter.setData(data).then(() => {
-                done.fail('unexpected result');
-            }, () => {
-                expect(requestParameter).toEqual(expectation);
-                done();
-            });
-        });
-
-        it('setData() should overwrite first data row because it is not complete or it is marked', (done) => {
+        it('setData() should overwrite not complete data row', (done) => {
             let expectation = createXML(
                 '<NoOfPersons>1</NoOfPersons>' +
                 '<ServiceBlock>' +
                     '<ServiceRow positionNo="1">' +
+                        '<KindOfService>MW</KindOfService>' +
+                        '<Service>/-</Service>' +
+                        '<FromDate>Invalid date</FromDate>' +
+                        '<EndDate>Invalid date</EndDate>' +
+                    '</ServiceRow>' +
+                    '<ServiceRow positionNo="2">' +
                         '<KindOfService>H</KindOfService>' +
-                        '<Service>dest</Service>' +
-                        '<Accommodation>rc</Accommodation>' +
-                        '<MarkField>X</MarkField>' +
+                        '<Service>dest.5</Service>' +
+                        '<Accommodation>rc.5 mc.5</Accommodation>' +
+                    '</ServiceRow>' +
+                    '<ServiceRow positionNo="3">' +
+                        '<KindOfService>H</KindOfService>' +
+                        '<Service>dest.6</Service>' +
+                        '<Accommodation>rc.6 mc.6</Accommodation>' +
                     '</ServiceRow>' +
                 '</ServiceBlock>'
             );
 
             let data = {
                 services: [
-                    { type: 'hotel', destination: 'dest' },
-                    { type: 'hotel', roomCode: 'rc', marked: true },
-                    { type: 'hotel', roomCode: 'rc', destination: 'dest' },
+                    { type: 'car', rentalCode: 'USA81' },
+                    { type: 'car' },
+                    { type: 'hotel', destination: 'dest.1' },
+                    { type: 'hotel', roomCode: 'rc.2' },
+                    { type: 'hotel', mealCode: 'mc.3' },
+                    { type: 'hotel', destination: 'dest.4', roomCode: 'rc.4', marked: true },
+                    { type: 'hotel', destination: 'dest.5', roomCode: 'rc.5', mealCode: 'mc.5', marked: false },
+                    { type: 'hotel', destination: 'dest.6', roomCode: 'rc.6', mealCode: 'mc.6' },
                 ],
             };
 

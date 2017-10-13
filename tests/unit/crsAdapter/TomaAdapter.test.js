@@ -196,7 +196,7 @@ describe('TomaAdapter', () => {
             });
         });
 
-        it('getData() should parse hotel services', () => {
+        it('getData() should parse hotel service', () => {
             let xml = createTomaXml(
                 '<KindOfService.1>H</KindOfService.1>' +
                 '<ServiceCode.1>LAX20S</ServiceCode.1>' +
@@ -205,7 +205,7 @@ describe('TomaAdapter', () => {
                 '<To.1>200217</To.1>'
             );
 
-            let hotelService1 = {
+            let expectedService = {
                 roomCode: 'DZ',
                 mealCode: 'U',
                 destination: 'LAX20S',
@@ -218,9 +218,83 @@ describe('TomaAdapter', () => {
             TomaConnection.GetXmlData.and.returnValue(xml);
 
             expect(adapter.getData()).toEqual({
-                services: [
-                    hotelService1,
-                ]
+                services: [expectedService]
+            });
+        });
+
+        it('getData() should parse full camper service', () => {
+            let xml = createTomaXml(
+                '<KindOfService.1>WM</KindOfService.1>' +
+                '<ServiceCode.1>PRT02FS/LIS1-LIS2</ServiceCode.1>' +
+                '<From.1>200417</From.1>' +
+                '<To.1>300417</To.1>' +
+                '<Count.1>200</Count.1>' +
+                '<Occupancy.1>3</Occupancy.1>'
+            );
+
+            let expectedService = {
+                renterCode: 'PRT02',
+                camperCode: 'FS',
+                pickUpDate: '20042017',
+                dropOffDate: '30042017',
+                duration: 10,
+                pickUpLocation: 'LIS1',
+                dropOffLocation: 'LIS2',
+                milesIncludedPerDay: '200',
+                milesPackagesIncluded: '3',
+                type: 'camper',
+                marked: false,
+            };
+
+            TomaConnection.GetXmlData.and.returnValue(xml);
+
+            expect(adapter.getData()).toEqual({
+                services: [expectedService]
+            });
+        });
+
+        it('getData() should parse camper service with short ServiceCode', () => {
+            let xml = createTomaXml(
+                '<KindOfService.1>WM</KindOfService.1>' +
+                '<ServiceCode.1>LIS1</ServiceCode.1>' +
+                '<From.1>200417</From.1>' +
+                '<To.1>300417</To.1>' +
+                '<Count.1>200</Count.1>' +
+                '<Occupancy.1>3</Occupancy.1>'
+            );
+
+            let expectedService = {
+                pickUpDate: '20042017',
+                dropOffDate: '30042017',
+                duration: 10,
+                pickUpLocation: 'LIS1',
+                milesIncludedPerDay: '200',
+                milesPackagesIncluded: '3',
+                type: 'camper',
+                marked: true,
+            };
+
+            TomaConnection.GetXmlData.and.returnValue(xml);
+
+            expect(adapter.getData()).toEqual({
+                services: [expectedService]
+            });
+        });
+
+        it('getData() should parse minimal camper service', () => {
+            let xml = createTomaXml(
+                '<KindOfService.1>WM</KindOfService.1>'
+            );
+
+            let expectedService = {
+                type: 'camper',
+                marked: true,
+            };
+
+            TomaConnection.GetXmlData.and.returnValue(xml);
+
+            expect(adapter.getData()).toEqual({
+                services: [expectedService]
             });
         });
 
@@ -246,7 +320,8 @@ describe('TomaAdapter', () => {
                 endDate: '16122017',
                 salutation: 'H',
                 name: 'DOE/JOHN',
-                birthdate: '040485'
+                birthdate: '040485',
+                marked: false,
             };
 
             TomaConnection.GetXmlData.and.returnValue(xml);
@@ -280,7 +355,8 @@ describe('TomaAdapter', () => {
                 endDate: '16122017',
                 salutation: 'H',
                 name: 'DOE/JOHN',
-                age: '32'
+                age: '32',
+                marked: false,
             };
 
             TomaConnection.GetXmlData.and.returnValue(xml);
@@ -453,10 +529,6 @@ describe('TomaAdapter', () => {
                     '<To.1>150218</To.1>'
                 );
 
-                let xml = createTomaXml();
-
-                TomaConnection.GetXmlData.and.returnValue(xml);
-
                 adapter.setData({
                     numberOfTravellers: 2,
                     services: [
@@ -489,25 +561,21 @@ describe('TomaAdapter', () => {
                     '<Reduction.1>040485</Reduction.1>'
                 );
 
-                let xml = createTomaXml();
-
-                TomaConnection.GetXmlData.and.returnValue(xml);
-
                 adapter.setData({
                     numberOfTravellers: 1,
                     services: [
                         {
-                            type: "roundTrip",
-                            marked: "",
-                            bookingId: "NEZE2784NQXTHEN",
-                            destination: "YYZ",
-                            numberOfPassengers: "1",
-                            startDate: "05122017",
-                            endDate: "16122017",
-                            salutation: "H",
-                            name: "DOE/JOHN",
-                            age: "32",
-                            birthday: "040485"
+                            type: 'roundTrip',
+                            marked: '',
+                            bookingId: 'NEZE2784NQXTHEN',
+                            destination: 'YYZ',
+                            numberOfPassengers: '1',
+                            startDate: '05122017',
+                            endDate: '16122017',
+                            salutation: 'H',
+                            name: 'DOE/JOHN',
+                            age: '32',
+                            birthday: '040485',
                         },
                     ]
                 });
@@ -515,21 +583,83 @@ describe('TomaAdapter', () => {
                 expect(TomaConnection.FIFramePutData).toHaveBeenCalledWith(expectXml);
             });
 
-            it('setData() should detect existing service and enhance it', () => {
+            it('setData() should set camper service', () => {
                 let expectXml = createTomaXml(
-                    '<KindOfService.2>MW</KindOfService.2>' +
                     '<Action>BA</Action>' +
-                    '<NoOfPersons>1</NoOfPersons>' +
-                    '<ServiceCode.2>rent.codevehicle.type.code/from.loc-to.loc</ServiceCode.2>' +
-                    '<From.2>110918</From.2>' +
-                    '<To.2>150918</To.2>' +
-                    '<KindOfService.1>E</KindOfService.1>' +
-                    '<ServiceCode.1>do h.name</ServiceCode.1>' +
-                    '<From.1>110918</From.1>' +
-                    '<To.1>150918</To.1>'
+                    '<NoOfPersons>2</NoOfPersons>' +
+                    '<KindOfService.1>WM</KindOfService.1>' +
+                    '<ServiceCode.1>rent.codecamper.code/from.loc-to.loc</ServiceCode.1>' +
+                    '<From.1>231218</From.1>' +
+                    '<To.1>040119</To.1>' +
+                    '<Count.1>miles.per.day</Count.1>' +
+                    '<Occupancy.1>miles.packages</Occupancy.1>' +
+                    '<TravAssociation.1>1-2</TravAssociation.1>' +
+                    '<KindOfService.2>TA</KindOfService.2>' +
+                    '<ServiceCode.2>extra</ServiceCode.2>' +
+                    '<From.2>231218</From.2>' +
+                    '<To.2>040119</To.2>' +
+                    '<TravAssociation.2>1-3</TravAssociation.2>' +
+                    '<KindOfService.3>TA</KindOfService.3>' +
+                    '<ServiceCode.3>special</ServiceCode.3>' +
+                    '<From.3>231218</From.3>' +
+                    '<To.3>040119</To.3>' +
+                    '<TravAssociation.3>1</TravAssociation.3>' +
+                    '<KindOfService.4>TA</KindOfService.4>' +
+                    '<ServiceCode.4>extra</ServiceCode.4>' +
+                    '<From.4>231218</From.4>' +
+                    '<To.4>040119</To.4>' +
+                    '<TravAssociation.4>1</TravAssociation.4>'
                 );
 
-                let xml = createTomaXml('<KindOfService.2>MW</KindOfService.2>');
+                adapter.setData({
+                    numberOfTravellers: 2,
+                    services: [
+                        {
+                            type: 'camper',
+                            pickUpDate: '23122018',
+                            pickUpLocation: 'from.loc',
+                            dropOffDate: '04012019',
+                            dropOffTime: 'to.time',
+                            dropOffLocation: 'to.loc',
+                            duration: '10',
+                            renterCode: 'rent.code',
+                            camperCode: 'camper.code',
+                            milesIncludedPerDay: 'miles.per.day',
+                            milesPackagesIncluded: 'miles.packages',
+                            extras: ['extra.3', 'special', 'extra'],
+                        },
+                    ]
+                });
+
+                expect(TomaConnection.FIFramePutData).toHaveBeenCalledWith(expectXml);
+            });
+
+            it('setData() should detect marked service and enhance it', () => {
+                let expectXml = createTomaXml(
+                    '<KindOfService.1>unknown</KindOfService.1>' +
+                    '<KindOfService.2>MW</KindOfService.2>' +
+                    '<ServiceCode.2>USA81E4/SFO-LAX</ServiceCode.2>' +
+                    '<MarkerField.3>X</MarkerField.3>' +
+                    '<KindOfService.3>MW</KindOfService.3>' +
+                    '<ServiceCode.3>rent.codevehicle.type.code/from.loc-to.loc</ServiceCode.3>' +
+                    '<Action>BA</Action>' +
+                    '<NoOfPersons>1</NoOfPersons>' +
+                    '<From.3>110918</From.3>' +
+                    '<To.3>150918</To.3>' +
+                    '<KindOfService.4>E</KindOfService.4>' +
+                    '<ServiceCode.4>do h.name</ServiceCode.4>' +
+                    '<From.4>110918</From.4>' +
+                    '<To.4>150918</To.4>'
+                );
+
+                let xml = createTomaXml(
+                    '<KindOfService.1>unknown</KindOfService.1>' +
+                    '<KindOfService.2>MW</KindOfService.2>' +
+                    '<ServiceCode.2>USA81E4/SFO-LAX</ServiceCode.2>' +
+                    '<MarkerField.3>X</MarkerField.3>' +
+                    '<KindOfService.3>MW</KindOfService.3>' +
+                    '<ServiceCode.3>DEU10I2/MUC-BER</ServiceCode.3>'
+                );
 
                 TomaConnection.GetXmlData.and.returnValue(xml);
 
@@ -551,47 +681,40 @@ describe('TomaAdapter', () => {
                 expect(TomaConnection.FIFramePutData).toHaveBeenCalledWith(expectXml);
             });
 
-            it('setData() should overwrite partially xml data and skip adding lines as there is no more line available', () => {
+            it('setData() should detect existing car service and enhance it', () => {
                 let expectXml = createTomaXml(
-                    '<Action>BA</Action>' +
-                    '<Operator>old.operator</Operator>' +
-                    '<unknownElement>unknown</unknownElement>' +
-                    '<Traveltype>old.travel.type</Traveltype>' +
-                    '<NoOfPersons>3</NoOfPersons>' +
-                    '<Remark>remark</Remark>' +
                     '<KindOfService.1>MW</KindOfService.1>' +
                     '<ServiceCode.1>rent.codevehicle.type.code/from.loc-to.loc</ServiceCode.1>' +
+                    '<KindOfService.2>unknown</KindOfService.2>' +
+                    '<Action>BA</Action>' +
+                    '<NoOfPersons>1</NoOfPersons>' +
                     '<From.1>110918</From.1>' +
-                    '<To.1>150918</To.1>'
+                    '<To.1>150918</To.1>' +
+                    '<KindOfService.3>E</KindOfService.3>' +
+                    '<ServiceCode.3>do h.name</ServiceCode.3>' +
+                    '<From.3>110918</From.3>' +
+                    '<To.3>150918</To.3>'
                 );
 
                 let xml = createTomaXml(
-                    '<Action>old.action</Action>' +
-                    '<Operator>old.operator</Operator>' +
-                    '<unknownElement>unknown</unknownElement>' +
-                    '<Traveltype>old.travel.type</Traveltype>' +
-                    '<NoOfPersons attr="val">3</NoOfPersons>'
+                    '<KindOfService.1>MW</KindOfService.1>' +
+                    '<ServiceCode.1>SFO-LAX</ServiceCode.1>' +
+                    '<KindOfService.2>unknown</KindOfService.2>'
                 );
 
                 TomaConnection.GetXmlData.and.returnValue(xml);
 
-                adapter.serviceListEnumeration = [1];
-
                 adapter.setData({
-                    remark: 'remark',
                     services: [
                         {
                             type: 'car',
                             pickUpDate: '11092018',
                             pickUpLocation: 'from.loc',
-                            pickUpHotelName: 'pu h.name',
+                            dropOffHotelName: 'do h.name',
                             duration: 4,
                             dropOffLocation: 'to.loc',
                             rentalCode: 'rent.code',
                             vehicleTypeCode: 'vehicle.type.code',
-                        },
-                        {
-                            type: 'unknown',
                         },
                     ],
                 });

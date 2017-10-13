@@ -2,20 +2,29 @@
 
 This project provides a JS module to enable an web-application to communicate with a CRS (TOMA, SABRE, CETS, ...).
 
+## How to install
+
+`npm install ubp-crs-adapter --save`
+
+```
+import UbpCrsAdapter from 'ubp-crs-adapter';
+
+let ubpCrsAdapter = new UbpCrsAdapter(adapterOptions);
+```
+
+Or for applications without loader:
+```
+<script src="[path/to/script/ubpCrsAdapter.js]"></script>
+
+<script>
+  var ubpCrsAdapter = new UbpCrsAdapter.default(adapterOptions);
+</script>
+```
+
 
 ## Interface
 
-After loading the script into your application
-```
-<script src="[path/to/script/ubpCrsAdapter.js]"></script>
-```
-
-you are able to create a new adapter via:
-```
-var ubpCrsAdapter = new UbpCrsAdapter.default(adapterOptions);
-```
-
-and to connect to a CRS via:
+To connect to a CRS use:
 ```
 ubpCrsAdapter.connect(connectionType, connectionOptions);
 ```
@@ -42,7 +51,7 @@ Or you can set data to the CRS via:
 ubpCrsAdapter.setData(outputData);
 ```
 
-The outputData object can have the following structure:
+The `outputData` object has the following structure:
 ```
 {
     numberOfTravellers: string,
@@ -59,7 +68,7 @@ ubpCrsAdapter.exit(exitOptions)
 _note: every method returns a promise_
 
 
-### Supported adapterOptions
+### Supported `adapterOptions`
 
 You can check the default options with `UbpCrsAdapter.DEFAULT_OPTIONS`.
 This options will be applied on every underlying adapter.
@@ -92,9 +101,9 @@ For TOMA SPC there is one crsUrl for each environment preconfigured.
 If no environment is set, the production crsUrl is used.
 
 
-### Data object structure
+### `.services` object structure
 
-Depending on the `services[*].type` the structure of a ServiceObject differs.
+Depending on the `.services[*].type` the structure of a ServiceObject differs.
 
 
 #### Supported service types
@@ -105,8 +114,8 @@ service type | CETS  | TOMA (old) | TOMA (new) | Booking Manager | Merlin | TBM 
 ---          | :---: | :---:      | :---:      | :---:           | :---:  | :---: | :---:
 'car'        | X     | X          | X          | X               | X      |       |
 'hotel'      |       | X          | X          | X               | X      |       |
-'roundtrip'  |       | X          |            |                 |        |       |
-'camper'     |       |            |            |                 |        |       |
+'roundtrip'  |       | X          |            | X               |        |       |
+'camper'     |       | X          | X          | X               |        |       |
 'flight'     |       |            |            |                 |        |       |
 
 | type  | fields                   | example
@@ -138,7 +147,6 @@ _note: if .dropOffDate is not set, it will be calculated with .pickUpDate + .dur
 |         | .dateFrom    | '20092017' 
 |         | .dateTo      | '20092017' 
 
-
 | type      | fields              | example
 | :---      | :---                | :---
 |'roundTrip'| .bookingId          | 'NEZE2784NQXTHEN' 
@@ -153,69 +161,23 @@ _note: if .dropOffDate is not set, it will be calculated with .pickUpDate + .dur
 
 *In case "age" and "birthday" are set "birthday" is preferred.
 
-Additionally every service has a `marked` field which is by default falsy.
+| type     | fields                 | example
+| :---     | :---                   | :---
+| 'camper' | .renterCode            | 'PRT02' 
+|          | .camperCode            | 'FS' 
+|          | .pickUpLocation        | 'LIS1' 
+|          | .pickUpDate            | '10102017' 
+|          | .dropOffLocation       | 'LIS2' 
+|          | .dropOffDate           | '17102017' 
+|          | .duration              | '7' 
+|          | .milesIncludedPerDay   | '300' 
+|          | .milesPackagesIncluded | '3' 
+|          | .extras                | ['extra.2', 'special', 'extra.4']
+
+_note: if .dropOffDate is not set, it will be calculated with .pickUpDate + .duration_
+
+Additionally every service has a `.marked` field which is by default falsy.
 But if this service is either "marked" in the crs or detected as "marked" (depends on the type) it will be true.
-
-
-### Field mapping
-
-#### Amadeus Toma (old) & Amadeus Toma SPC (new)
-
-![toma mask](docs/toma/tomaMask.png)
-
-CRS field | example            | adapter field               | example
----       | ---                | ---                         | ---
-2         | 'BA'               | action                      | 'BA'
-3         | 'FTI'              | operator                    | 'FTI'
-4         | 'BAUS'             | travelType                  | 'BAUS'
-5         | '1'                | numberOfTravellers          | '1'
-13        | 'X'                | services[*].marked          | true
-30        | 'remark'           | remark                      | 'remark'
-
-##### for car service
-CRS field | example            | adapter field               | example
----       | ---                | ---                         | ---
-14        | 'MW'               | services[*].type            | 'car'
-15        | 'USA85E4/LAX-SFO1' | services[*].rentalCode      | 'USA85'
-|         |                    | services[*].vehicleTypeCode | 'E4'
-|         |                    | services[*].pickUpLocation  | 'LAX'
-|         |                    | services[*].dropOffLocation | 'SFO1'
-16        | '0915'             | services[*].pickUpTime      | '0915'
-20        | '281217'           | services[*].pickUpDate      | '28122017'
-21        | '040118'           | services[*].dropOffDate     | '04012018'
-21        | '040118'           | services[*].duration        | '8'
-
-If car service includes hotel drop off or hotel pick up an extra line is added and the remark field is extended.
-
-CRS field | example            | adapter field                       | example
----       | ---                | ---                                 | ---
-14        | 'E'                | |
-15        | 'pick up name'     | services[*].hotelPickUpName         | 'pick up name'
-15        | 'drop off name'    | services[*].hotelDropOffName        | 'drop off name'
-20        | '281217'           | services[*].pickUpDate              | '28122017'
-21        | '040118'           | services[*].dropOffDate             | '04012018'
-21        | '040118'           | services[*].duration                | '8'
-30        | other hotel infos  | services[*].hotelPickUpAddress      | 'hotel street 1, 12345 hotel city'
-|         |                    | services[*].hotelPickUpPhoneNumber  | '+49 172 678 0832 09'
-|         |                    | services[*].hotelDropOffName        | 'Very Best Hotel'
-|         |                    | services[*].hotelDropOffAddress     | 'hotel drive 34a, famous place'
-|         |                    | services[*].hotelDropOffPhoneNumber | '04031989213'
-
-- `.hotelPickUpName` overwrites `.hotelDropOffName`
-- the hotel infos in field 30 are structured like that: 
-`.hotelPickUpAddress .hotelPickUpPhoneNumber;.hotelDropOffName .hotelDropOffAddress .hotelDropOffPhoneNumber` 
-  - fields which are not provided, will be ommited here
-  - if `.hotelDropOffName` is already used, it will be ommitted here
-
-##### for hotel service
-CRS field | example  | adapter field           | example
----       | ---      | ---                     | ---
-14        | 'H'      | services[*].type        | 'car'
-15        | 'LAX20S' | services[*].destination | 'USA85'
-16        | 'DZ U'   | services[*].roomCode    | '0915'
-|         |          | services[*].mealCode    | 'E4'
-20        | '200917' | services[*].dateFrom    | '20092017'
-21        | '200917' | services[*].dateTo      | '20092017'
 
 
 ## Debugging

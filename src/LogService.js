@@ -1,6 +1,7 @@
 class LogService {
     constructor() {
         this.debugWindow = null;
+        this.adapterVersion = require('package.json').version;
     }
 
     enable() {
@@ -96,7 +97,7 @@ class LogService {
 
         this.debugWindow.document.writeln([
             '<div>',
-            '<small>' + (new Date()).toUTCString() + '</small>',
+            '<small>' + (new Date()).toUTCString() + '@v' + this.adapterVersion + '</small>',
             '<strong>[' + type.toUpperCase() + ']</strong>:',
             '<pre>' + this.syntaxHighlight(stringified) + '</pre>',
             '</div>',

@@ -14,16 +14,17 @@ const CONFIG = {
         dateFormat: 'DDMMYY',
         serviceTypes: {
             car: 'MW',
-            extras: 'E',
+            carExtra: 'E',
             hotel: 'H',
-            roundTrip: 'R'
+            roundTrip: 'R',
+            camper: 'WM',
+            camperExtra: 'TA',
         },
         activeXObjectName: 'Spice.Start',
         defaultValues: {
             action: 'BA',
             numberOfTravellers: '1',
         },
-        maxServiceLinesCount: 6,
     },
     services: {
         car: {
@@ -74,8 +75,6 @@ class TomaAdapter {
         this.xmlBuilder = {
             build: xmlObject => (new xml2js.Builder(CONFIG.builderOptions)).buildObject(JSON.parse(JSON.stringify(xmlObject)))
         };
-
-        this.serviceListEnumeration = [...Array(CONFIG.crs.maxServiceLinesCount)].map((v, i) => i + 1);
     }
 
     /**
@@ -192,9 +191,7 @@ class TomaAdapter {
      * @param xmlObject object
      */
     mapXmlObjectToAdapterObject(xmlObject) {
-        if (!xmlObject || !xmlObject.Envelope) {
-            return;
-        }
+        if (!xmlObject || !xmlObject.Envelope) return;
 
         let xmlTom = xmlObject.Envelope.Body.TOM;
         let dataObject = {
@@ -206,12 +203,12 @@ class TomaAdapter {
             services: [],
         };
 
-        this.serviceListEnumeration.forEach((lineNumber) => {
+        let lineNumber = 1;
+
+        do {
             let serviceType = xmlTom['KindOfService.' + lineNumber];
 
-            if (!serviceType) {
-                return;
-            }
+            if (!serviceType) break;
 
             let service;
 
@@ -228,14 +225,18 @@ class TomaAdapter {
                     service = this.mapRoundTripServiceFromXmlObjectToAdapterObject(xmlTom, lineNumber);
                     break;
                 }
+                case CONFIG.crs.serviceTypes.camper: {
+                    service = this.mapCamperServiceFromXmlObjectToAdapterObject(xmlTom, lineNumber);
+                    break;
+                }
             }
 
             if (service) {
-                service.marked = this.isMarked(xmlTom, lineNumber, service.type);
+                service.marked = this.isMarked(xmlTom, lineNumber, {type: service.type});
 
                 dataObject.services.push(service);
             }
-        });
+        } while (lineNumber++);
 
         return JSON.parse(JSON.stringify(dataObject));
     }
@@ -248,9 +249,7 @@ class TomaAdapter {
      */
     mapCarServiceFromXmlObjectToAdapterObject(xml, lineNumber) {
         const mapServiceCodeToService = (code, service) => {
-            if (!code) {
-                return;
-            }
+            if (!code) return;
 
             const keyRentalCode = 1;
             const keyVehicleTypeCode = 2;
@@ -345,15 +344,67 @@ class TomaAdapter {
      * @private
      * @param xml object
      * @param lineNumber number
-     * @param serviceType string
+     * @returns {object}
+     */
+    mapCamperServiceFromXmlObjectToAdapterObject(xml, lineNumber) {
+        const mapServiceCodeToService = (code, service) => {
+            if (!code) return;
+
+            const keyRentalCode = 1;
+            const keyVehicleTypeCode = 2;
+            const keySeparator = 3;
+            const keyPickUpLoc = 4;
+            const keyLocDash = 5;
+            const keyDropOffLoc = 6;
+
+            let codeParts = code.match(CONFIG.services.car.serviceCodeRegEx);
+
+            // i.e. MIA or MIA1 or MIA1-TPA
+            if (!codeParts[keySeparator]) {
+                service.pickUpLocation = codeParts[keyRentalCode];
+                service.dropOffLocation = codeParts[keyDropOffLoc];
+
+                return;
+            }
+
+            // i.e USA96/MIA1 or USA96A4/MIA1-TPA
+            service.renterCode = codeParts[keyRentalCode];
+            service.camperCode = codeParts[keyVehicleTypeCode];
+            service.pickUpLocation = codeParts[keyPickUpLoc];
+            service.dropOffLocation = codeParts[keyDropOffLoc];
+        };
+
+        let pickUpDate = moment(xml['From.' + lineNumber], CONFIG.crs.dateFormat);
+        let dropOffDate = moment(xml['To.' + lineNumber], CONFIG.crs.dateFormat);
+        let service = {
+            pickUpDate: pickUpDate.isValid() ? pickUpDate.format(this.options.useDateFormat) : xml['From.' + lineNumber],
+            dropOffDate: dropOffDate.isValid() ? dropOffDate.format(this.options.useDateFormat) : xml['To.' + lineNumber],
+            duration: pickUpDate.isValid() && dropOffDate.isValid()
+                ? Math.ceil(dropOffDate.diff(pickUpDate, 'days', true))
+                : void 0,
+            milesIncludedPerDay: xml['Count.' + lineNumber],
+            milesPackagesIncluded: xml['Occupancy.' + lineNumber],
+            type: SERVICE_TYPES.camper,
+        };
+
+        mapServiceCodeToService(xml['ServiceCode.' + lineNumber], service);
+
+        return service;
+    }
+
+    /**
+     * @private
+     * @param xml object
+     * @param lineNumber number
+     * @param service object
      * @returns {boolean}
      */
-    isMarked(xml, lineNumber, serviceType) {
+    isMarked(xml, lineNumber, service) {
         if (xml['MarkerField.' + lineNumber]) {
             return true;
         }
 
-        switch (serviceType) {
+        switch (service.type) {
             case SERVICE_TYPES.car: {
                 let serviceCode = xml['ServiceCode.' + lineNumber];
 
@@ -365,6 +416,17 @@ class TomaAdapter {
                 let accommodation = xml['Accommodation.' + lineNumber];
 
                 return !serviceCode || !accommodation;
+            }
+            case SERVICE_TYPES.camper: {
+                let serviceCode = xml['ServiceCode.' + lineNumber];
+
+                // gaps in the regEx result array will result in lined up "." after the join
+                return !serviceCode || serviceCode.match(CONFIG.services.car.serviceCodeRegEx).join('.').indexOf('..') !== -1;
+            }
+            case SERVICE_TYPES.roundTrip: {
+                let bookingId = xml['ServiceCode.' + lineNumber];
+
+                return !bookingId || bookingId === service.bookingId;
             }
         }
     };
@@ -387,19 +449,23 @@ class TomaAdapter {
         xmlTom.NoOfPersons = dataObject.numberOfTravellers || (xmlTom.NoOfPersons && xmlTom.NoOfPersons[CONFIG.parserOptions.textNodeName]) || CONFIG.crs.defaultValues.numberOfTravellers;
 
         (dataObject.services || []).forEach((service) => {
-            let lineNumber = this.getMarkedLineNumberForServiceType(xmlTom, service.type) || this.getNextEmptyLineNumber(xmlTom);
-
-            if (!lineNumber) {
-                return;
-            }
+            let lineNumber = this.getMarkedLineNumberForService(xmlTom, service) || this.getNextEmptyLineNumber(xmlTom);
 
             switch (service.type) {
                 case SERVICE_TYPES.car: {
                     this.assignCarServiceFromAdapterObjectToXmlObject(service, xmlTom, lineNumber);
+                    this.assignHotelData(service, xmlTom);
+
                     break;
                 }
                 case SERVICE_TYPES.hotel: {
                     this.assignHotelServiceFromAdapterObjectToXmlObject(service, xmlTom, lineNumber);
+                    break;
+                }
+                case SERVICE_TYPES.camper: {
+                    this.assignCamperServiceFromAdapterObjectToXmlObject(service, xmlTom, lineNumber);
+                    this.assignCamperExtras(service, xmlTom);
+
                     break;
                 }
                 case SERVICE_TYPES.roundTrip: {
@@ -413,25 +479,24 @@ class TomaAdapter {
     /**
      * @private
      * @param xml object
-     * @param serviceType string
+     * @param service object
      * @returns {number}
      */
-    getMarkedLineNumberForServiceType(xml, serviceType) {
+    getMarkedLineNumberForService(xml, service) {
+        let lineNumber = 1;
         let markedLineNumber = void 0;
 
-        this.serviceListEnumeration.forEach((lineNumber) => {
-            if (xml['KindOfService.' + lineNumber] !== CONFIG.crs.serviceTypes[serviceType]) {
-                return;
+        do {
+            let kindOfService = xml['KindOfService.' + lineNumber];
+
+            if (!kindOfService) return markedLineNumber;
+            if (kindOfService !== CONFIG.crs.serviceTypes[service.type]) continue;
+            if (xml['MarkerField.' + lineNumber]) return lineNumber;
+
+            if (!markedLineNumber && this.isMarked(xml, lineNumber, service)) {
+                markedLineNumber = lineNumber;
             }
-
-            if (!this.isMarked(xml, lineNumber, serviceType)) {
-                return;
-            }
-
-            markedLineNumber = xml['MarkerField.' + lineNumber] ? lineNumber : markedLineNumber || lineNumber;
-        });
-
-        return markedLineNumber;
+        } while (lineNumber++);
     }
 
     /**
@@ -441,16 +506,6 @@ class TomaAdapter {
      * @param lineNumber number
      */
     assignCarServiceFromAdapterObjectToXmlObject(service, xml, lineNumber) {
-        const calculateDropOffDate = (service) => {
-            if (service.dropOffDate) {
-                return moment(service.dropOffDate, this.options.useDateFormat).format(CONFIG.crs.dateFormat);
-            }
-
-            return moment(service.pickUpDate, this.options.useDateFormat)
-                .add(service.duration, 'days')
-                .format(CONFIG.crs.dateFormat);
-        };
-
         const reduceExtrasList = (extras) => {
             return (extras || []).join('|')
                 .replace(/navigationSystem/g, 'GPS')
@@ -458,6 +513,36 @@ class TomaAdapter {
                 .replace(/childCareSeat(\d)/g, 'CS$1YRS');
         };
 
+        let pickUpDate = moment(service.pickUpDate, this.options.useDateFormat);
+        let dropOffDate = (service.dropOffDate)
+            ? moment(service.dropOffDate, this.options.useDateFormat)
+            : moment(service.pickUpDate, this.options.useDateFormat).add(service.duration, 'days');
+
+        xml['KindOfService.' + lineNumber] = CONFIG.crs.serviceTypes.car;
+
+        // USA96A4/MIA1-TPA
+        xml['ServiceCode.' + lineNumber] = [
+            service.rentalCode,
+            service.vehicleTypeCode,
+            '/',
+            service.pickUpLocation,
+            '-',
+            service.dropOffLocation,
+        ].join('');
+
+        xml['From.' + lineNumber] = pickUpDate.format(CONFIG.crs.dateFormat);
+        xml['To.' + lineNumber] = dropOffDate.format(CONFIG.crs.dateFormat);
+        xml['Accommodation.' + lineNumber] = service.pickUpTime;
+
+        xml.Remark = [xml.Remark, reduceExtrasList(service.extras)].filter(Boolean).join(',') || void 0;
+    };
+
+    /**
+     * @private
+     * @param service object
+     * @param xml object
+     */
+    assignHotelData(service, xml) {
         const reduceHotelDataToRemarkString = (service) => {
             let hotelData = [];
 
@@ -476,42 +561,23 @@ class TomaAdapter {
             return hotelData.filter(Boolean).join('|');
         };
 
-        let pickUpDateFormatted = moment(service.pickUpDate, this.options.useDateFormat).format(CONFIG.crs.dateFormat);
-        let calculatedDropOffDate = calculateDropOffDate(service);
-
-        xml['KindOfService.' + lineNumber] = CONFIG.crs.serviceTypes.car;
-
-        // USA96A4/MIA1-TPA
-        xml['ServiceCode.' + lineNumber] = [
-            service.rentalCode,
-            service.vehicleTypeCode,
-            '/',
-            service.pickUpLocation,
-            '-',
-            service.dropOffLocation,
-        ].join('');
-
-        xml['From.' + lineNumber] = pickUpDateFormatted;
-        xml['To.' + lineNumber] = calculatedDropOffDate;
-        xml['Accommodation.' + lineNumber] = service.pickUpTime;
-
+        let pickUpDate = moment(service.pickUpDate, this.options.useDateFormat);
+        let dropOffDate = (service.dropOffDate)
+            ? moment(service.dropOffDate, this.options.useDateFormat)
+            : moment(service.pickUpDate, this.options.useDateFormat).add(service.duration, 'days');
         let hotelName = service.pickUpHotelName || service.dropOffHotelName;
 
         if (hotelName) {
-            let emptyLineNumber = this.getNextEmptyLineNumber(xml);
+            let lineNumber = this.getNextEmptyLineNumber(xml);
 
-            if (!emptyLineNumber) {
-                return;
-            }
-
-            xml['KindOfService.' + emptyLineNumber] = CONFIG.crs.serviceTypes.extras;
-            xml['ServiceCode.' + emptyLineNumber] = hotelName;
-            xml['From.' + emptyLineNumber] = pickUpDateFormatted;
-            xml['To.' + emptyLineNumber] = calculatedDropOffDate;
+            xml['KindOfService.' + lineNumber] = CONFIG.crs.serviceTypes.carExtra;
+            xml['ServiceCode.' + lineNumber] = hotelName;
+            xml['From.' + lineNumber] = pickUpDate.format(CONFIG.crs.dateFormat);
+            xml['To.' + lineNumber] = dropOffDate.format(CONFIG.crs.dateFormat);
         }
 
-        xml.Remark = [xml.Remark, reduceExtrasList(service.extras), reduceHotelDataToRemarkString(service)].filter(Boolean).join(',') || void 0;
-    };
+        xml.Remark = [xml.Remark, reduceHotelDataToRemarkString(service)].filter(Boolean).join(',') || void 0;
+    }
 
     /**
      * @private
@@ -545,6 +611,59 @@ class TomaAdapter {
         xml['Reduction.' + lineNumber] = service.birthday || service.age;
     }
 
+    /**
+     * @private
+     * @param service object
+     * @param xml object
+     * @param lineNumber number
+     */
+    assignCamperServiceFromAdapterObjectToXmlObject(service, xml, lineNumber) {
+        let pickUpDate = moment(service.pickUpDate, this.options.useDateFormat);
+        let dropOffDate = (service.dropOffDate)
+            ? moment(service.dropOffDate, this.options.useDateFormat)
+            : moment(service.pickUpDate, this.options.useDateFormat).add(service.duration, 'days');
+
+        xml['KindOfService.' + lineNumber] = CONFIG.crs.serviceTypes.camper;
+
+        // PRT02FS/LIS1-LIS2
+        xml['ServiceCode.' + lineNumber] = [
+            service.renterCode,
+            service.camperCode,
+            '/',
+            service.pickUpLocation,
+            '-',
+            service.dropOffLocation,
+        ].join('');
+
+        xml['From.' + lineNumber] = pickUpDate.format(CONFIG.crs.dateFormat);
+        xml['To.' + lineNumber] = dropOffDate.format(CONFIG.crs.dateFormat);
+        xml['Count.' + lineNumber] = service.milesIncludedPerDay;
+        xml['Occupancy.' + lineNumber] = service.milesPackagesIncluded;
+        xml['TravAssociation.' + lineNumber] = '1' + ((xml.NoOfPersons > 1) ? '-' + xml.NoOfPersons : '');
+    }
+
+    /**
+     * @private
+     * @param service object
+     * @param xml object
+     */
+    assignCamperExtras(service, xml) {
+        let pickUpDate = moment(service.pickUpDate, this.options.useDateFormat);
+        let dropOffDate = (service.dropOffDate)
+            ? moment(service.dropOffDate, this.options.useDateFormat)
+            : moment(service.pickUpDate, this.options.useDateFormat).add(service.duration, 'days');
+
+        (service.extras || []).forEach((extra) => {
+            let lineNumber = this.getNextEmptyLineNumber(xml);
+            let extraParts = extra.split('.');
+
+            xml['KindOfService.' + lineNumber] = CONFIG.crs.serviceTypes.camperExtra;
+            xml['ServiceCode.' + lineNumber] = extraParts[0];
+            xml['From.' + lineNumber] = pickUpDate.format(CONFIG.crs.dateFormat);
+            xml['To.' + lineNumber] = dropOffDate.format(CONFIG.crs.dateFormat);
+            xml['TravAssociation.' + lineNumber] = '1' + ((extraParts[1] > 1) ? '-' + extraParts[1] : '');
+        });
+    }
 
     /**
      * @private
@@ -552,23 +671,17 @@ class TomaAdapter {
      * @returns {number}
      */
     getNextEmptyLineNumber(xml) {
-        let emptyLineNumber = void 0;
+        let lineNumber = 1;
 
-        this.serviceListEnumeration.some((lineNumber) => {
+        do {
             let markerField = xml['MarkerField.' + lineNumber];
             let xmlServiceType = xml['KindOfService.' + lineNumber];
             let serviceCode = xml['ServiceCode.' + lineNumber];
 
-            if (markerField || xmlServiceType || serviceCode) {
-                return;
+            if (!markerField && !xmlServiceType && !serviceCode) {
+                return lineNumber;
             }
-
-            emptyLineNumber = lineNumber;
-
-            return true;
-        });
-
-        return emptyLineNumber;
+        } while (lineNumber++);
     }
 }
 

@@ -10,6 +10,7 @@ const SERVICE_TYPES = {
     car: 'car',
     hotel: 'hotel',
     roundTrip: 'roundTrip',
+    camper: 'camper',
 };
 
 const CRS_TYPES = {

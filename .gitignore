@@ -2,6 +2,7 @@
 
 /node_modules/
 /coverage/
+/build/
 
 /npm-debug.log
-/tests/manual/assets/ubpCrsAdapter.js
+/package-lock.json
