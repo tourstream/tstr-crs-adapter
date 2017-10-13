@@ -4,22 +4,11 @@ body  {
 	margin-top: 0;
 }
 
-input {
-    display: block;
-}
-
-label {
-    display: block;
-    line-height: 1.5em;
-    margin-bottom: 4px;
-}
-
 #header {
     background-color: white;
     outline: 1px solid lightgray;
     padding: 5px;
-    position: fixed;
-    width: 48%;
+    width: 50%;
 }
 
 #templates {
@@ -27,9 +16,19 @@ label {
 }
 
 .column {
+    width: 100%;
+}
+
+input {
     display: inline-block;
-    vertical-align: top;
-    width: 180px;
+    left: 200px;
+    position: fixed;
+}
+
+label {
+    display: block;
+    line-height: 1.5em;
+    margin-bottom: 4px;
 }
 
 #report {
