@@ -118,9 +118,7 @@ class UbpCrsAdapter {
             }
 
             try {
-                this.getAdapterInstance().setData(data);
-
-                resolve();
+                Promise.resolve(this.getAdapterInstance().setData(data)).then(resolve);
             } catch (error) {
                 this.logAndThrow('set data error:', error);
             }
@@ -133,9 +131,7 @@ class UbpCrsAdapter {
             this.logger.info(options);
 
             try {
-                this.getAdapterInstance().exit(options);
-
-                resolve();
+                Promise.resolve(this.getAdapterInstance().exit(options)).then(resolve);
             } catch (error) {
                 this.logAndThrow('exit error:', error);
             }
