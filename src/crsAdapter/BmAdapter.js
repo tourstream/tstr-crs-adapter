@@ -3,9 +3,8 @@ import {SERVICE_TYPES} from '../UbpCrsAdapter';
 import moment from 'moment';
 
 const CONFIG = {
-    crs: {
-        dateFormat: 'YYYYMMDD',
-    },
+    dateFormat: 'YYYY-MM-DD',
+    timeFormat: 'HH:mm',
 };
 
 class BmAdapter {
@@ -20,14 +19,7 @@ class BmAdapter {
         this.createConnection();
     }
 
-    getData() {
-        return this.getConnection().promise.then(parent => {
-            this.logger.warn('booking manager has no "read" interface');
-            this.logger.info(parent);
-        });
-    }
-
-    setData(dataObject) {
+    addToBasket(dataObject) {
         this.getConnection().promise.then(parent => {
             let rawObject = this.mapDataObjectToRawObject(dataObject);
 
@@ -35,6 +27,17 @@ class BmAdapter {
             this.logger.log(rawObject);
 
             parent.addToBasket(rawObject);
+        });
+    }
+
+    directCheckout(dataObject) {
+        this.getConnection().promise.then(parent => {
+            let rawObject = this.mapDataObjectToRawObject(dataObject);
+
+            this.logger.log('RAW DATA');
+            this.logger.log(rawObject);
+
+            parent.directCheckout(rawObject);
         });
     }
 
@@ -97,8 +100,10 @@ class BmAdapter {
             service.dropOffTime = service.pickUpTime;
         }
 
-        service.pickUpDate = moment(service.pickUpDate, this.options.useDateFormat).format(CONFIG.crs.dateFormat);
-        service.dropOffDate = moment(service.dropOffDate, this.options.useDateFormat).format(CONFIG.crs.dateFormat);
+        service.pickUpDate = moment(service.pickUpDate, this.options.useDateFormat).format(CONFIG.dateFormat);
+        service.dropOffDate = moment(service.dropOffDate, this.options.useDateFormat).format(CONFIG.dateFormat);
+        service.pickUpTime = moment(service.pickUpTime, this.options.useTimeFormat).format(CONFIG.timeFormat);
+        service.dropOffTime = moment(service.dropOffTime, this.options.useTimeFormat).format(CONFIG.timeFormat);
     }
 }
 

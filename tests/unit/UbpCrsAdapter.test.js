@@ -66,6 +66,7 @@ describe('UbpCrsAdapter', () => {
         expect(UbpCrsAdapter.DEFAULT_OPTIONS).toEqual({
             debug: false,
             useDateFormat: 'DDMMYYYY',
+            useTimeFormat: 'HHmm',
         });
     });
 

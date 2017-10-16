@@ -32,11 +32,12 @@ const CRS_TYPE_TO_ADAPTER = {
 const DEFAULT_OPTIONS = {
     debug: false,
     useDateFormat: 'DDMMYYYY',
+    useTimeFormat: 'HHmm',
 };
 
 class UbpCrsAdapter {
     /**
-     * @param options i.e. { debug: false, useDateFormat: 'DDMMYYYY' }
+     * @param options i.e. { debug: false, useDateFormat: 'DDMMYYYY', useTimeFormat: 'HHmm' }
      */
     constructor(options = {}) {
         this.options = Object.assign({}, DEFAULT_OPTIONS, options);
