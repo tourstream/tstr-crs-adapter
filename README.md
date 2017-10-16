@@ -31,7 +31,7 @@ ubpCrsAdapter.connect(connectionType, connectionOptions);
 
 When you are connected you can get the data from the CRS via:
 ```
-ubpCrsAdapter.getData().then(inputData => {});
+ubpCrsAdapter.getData().then((inputData) => {});
 ```
 
 The `inputData` you get will look like that:
@@ -178,6 +178,18 @@ _note: if .dropOffDate is not set, it will be calculated with .pickUpDate + .dur
 
 Additionally every service has a `.marked` field which is by default falsy.
 But if this service is either "marked" in the crs or detected as "marked" (depends on the type) it will be true.
+
+
+## === Booking Manager ===
+
+This adapter supports also the connection to the so called _FTI360 Booking Manager_.
+Use as `adapter.connect('BM')` and you unlock the full functionality of it:
+
+* `adapter.addToBasket(outputData)`
+* `adapter.directCheckout(outputData)`
+* `adapter.exit()`
+
+The structure of `outputData` is the same like it is described [above](#interface).
 
 
 ## Debugging
