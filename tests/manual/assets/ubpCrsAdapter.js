@@ -7073,12 +7073,13 @@ var CRS_TYPE_TO_ADAPTER = {
 
 var DEFAULT_OPTIONS = {
     debug: false,
-    useDateFormat: 'DDMMYYYY'
+    useDateFormat: 'DDMMYYYY',
+    useTimeFormat: 'HHmm'
 };
 
 var UbpCrsAdapter = function () {
     /**
-     * @param options i.e. { debug: false, useDateFormat: 'DDMMYYYY' }
+     * @param options i.e. { debug: false, useDateFormat: 'DDMMYYYY', useTimeFormat: 'HHmm' }
      */
     function UbpCrsAdapter() {
         var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
@@ -7177,9 +7178,7 @@ var UbpCrsAdapter = function () {
                 }
 
                 try {
-                    _this3.getAdapterInstance().setData(data);
-
-                    resolve();
+                    Promise.resolve(_this3.getAdapterInstance().setData(data)).then(resolve);
                 } catch (error) {
                     _this3.logAndThrow('set data error:', error);
                 }
@@ -7197,9 +7196,7 @@ var UbpCrsAdapter = function () {
                 _this4.logger.info(options);
 
                 try {
-                    _this4.getAdapterInstance().exit(options);
-
-                    resolve();
+                    Promise.resolve(_this4.getAdapterInstance().exit(options)).then(resolve);
                 } catch (error) {
                     _this4.logAndThrow('exit error:', error);
                 }
@@ -29625,9 +29622,8 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 var CONFIG = {
-    crs: {
-        dateFormat: 'YYYYMMDD'
-    }
+    dateFormat: 'YYYY-MM-DD',
+    timeFormat: 'HH:mm'
 };
 
 var BmAdapter = function () {
@@ -29646,18 +29642,22 @@ var BmAdapter = function () {
             this.createConnection();
         }
     }, {
-        key: 'getData',
-        value: function getData() {
+        key: 'addToBasket',
+        value: function addToBasket(dataObject) {
             var _this = this;
 
-            return this.getConnection().promise.then(function (parent) {
-                _this.logger.warn('booking manager has no "read" interface');
-                _this.logger.info(parent);
+            this.getConnection().promise.then(function (parent) {
+                var rawObject = _this.mapDataObjectToRawObject(dataObject);
+
+                _this.logger.log('RAW DATA');
+                _this.logger.log(rawObject);
+
+                parent.addToBasket(rawObject);
             });
         }
     }, {
-        key: 'setData',
-        value: function setData(dataObject) {
+        key: 'directCheckout',
+        value: function directCheckout(dataObject) {
             var _this2 = this;
 
             this.getConnection().promise.then(function (parent) {
@@ -29666,7 +29666,7 @@ var BmAdapter = function () {
                 _this2.logger.log('RAW DATA');
                 _this2.logger.log(rawObject);
 
-                parent.addToBasket(rawObject);
+                parent.directCheckout(rawObject);
             });
         }
     }, {
@@ -29736,15 +29736,24 @@ var BmAdapter = function () {
         key: 'convertRawCarService',
         value: function convertRawCarService(service) {
             if (!service.dropOffDate) {
-                service.dropOffDate = (0, _moment2.default)(service.pickUpDate, this.options.useDateFormat).add(service.duration, 'days').format(this.options.useDateFormat);
+                var _pickUpDate = (0, _moment2.default)(service.pickUpDate, this.options.useDateFormat);
+
+                service.dropOffDate = _pickUpDate.isValid() ? _pickUpDate.add(service.duration, 'days').format(this.options.useDateFormat) : '';
             }
 
             if (!service.dropOffTime) {
                 service.dropOffTime = service.pickUpTime;
             }
 
-            service.pickUpDate = (0, _moment2.default)(service.pickUpDate, this.options.useDateFormat).format(CONFIG.crs.dateFormat);
-            service.dropOffDate = (0, _moment2.default)(service.dropOffDate, this.options.useDateFormat).format(CONFIG.crs.dateFormat);
+            var pickUpDate = (0, _moment2.default)(service.pickUpDate, this.options.useDateFormat);
+            var dropOffDate = (0, _moment2.default)(service.dropOffDate, this.options.useDateFormat);
+            var pickUpTime = (0, _moment2.default)(service.pickUpTime, this.options.useTimeFormat);
+            var dropOffTime = (0, _moment2.default)(service.dropOffTime, this.options.useTimeFormat);
+
+            service.pickUpDate = pickUpDate.isValid() ? pickUpDate.format(CONFIG.dateFormat) : service.pickUpDate;
+            service.dropOffDate = dropOffDate.isValid() ? dropOffDate.format(CONFIG.dateFormat) : service.dropOffDate;
+            service.pickUpTime = pickUpTime.isValid() ? pickUpTime.format(CONFIG.timeFormat) : service.pickUpTime;
+            service.dropOffTime = dropOffTime.isValid() ? dropOffTime.format(CONFIG.timeFormat) : service.dropOffTime;
         }
     }]);
 
@@ -29794,7 +29803,8 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 var CONFIG = {
-    crsDateFormat: 'DDMMYYYY'
+    crsDateFormat: 'DDMMYYYY',
+    crsTimeFormat: 'HHmm'
 };
 
 var CetsAdapter = function () {
@@ -30062,11 +30072,15 @@ var CetsAdapter = function () {
             var _this3 = this;
 
             var addDropOffDate = function addDropOffDate(service) {
-                service.dropOffDate = (0, _moment2.default)(service.pickUpDate, CONFIG.crsDateFormat).add(service.duration, 'days').format(_this3.options.useDateFormat);
+                var pickUpDate = (0, _moment2.default)(service.pickUpDate, CONFIG.crsDateFormat);
+
+                service.dropOffDate = pickUpDate.isValid() ? pickUpDate.add(service.duration, 'days').format(_this3.options.useDateFormat) : '';
             };
 
+            var pickUpDate = (0, _moment2.default)(xmlService.StartDate, CONFIG.crsDateFormat);
+
             var service = {
-                pickUpDate: (0, _moment2.default)(xmlService.StartDate, CONFIG.crsDateFormat).format(this.options.useDateFormat),
+                pickUpDate: pickUpDate.isValid() ? pickUpDate.format(this.options.useDateFormat) : xmlService.StartDate,
                 pickUpLocation: xmlService.Destination,
                 duration: xmlService.Duration,
                 rentalCode: xmlService.Product,
@@ -30077,10 +30091,13 @@ var CetsAdapter = function () {
             addDropOffDate(service);
 
             if (xmlService.CarDetails) {
+                var pickUpTime = (0, _moment2.default)(xmlService.CarDetails.PickUp.Time, CONFIG.crsTimeFormat);
+                var dropOffTime = (0, _moment2.default)(xmlService.CarDetails.DropOff.Time, CONFIG.crsTimeFormat);
+
                 service.pickUpLocation = xmlService.CarDetails.PickUp.CarStation[this.parserOptions.attrPrefix].Code;
                 service.dropOffLocation = xmlService.CarDetails.DropOff.CarStation[this.parserOptions.attrPrefix].Code;
-                service.pickUpTime = xmlService.CarDetails.PickUp.Time;
-                service.dropOffTime = xmlService.CarDetails.DropOff.Time;
+                service.pickUpTime = pickUpTime.isValid() ? pickUpTime.format(this.options.useTimeFormat) : xmlService.CarDetails.PickUp.Time;
+                service.dropOffTime = dropOffTime.isValid() ? dropOffTime.format(this.options.useTimeFormat) : xmlService.CarDetails.DropOff.Time;
             }
 
             return service;
@@ -30181,24 +30198,31 @@ var CetsAdapter = function () {
                 }
 
                 if (service.dropOffDate) {
-                    var pickUpDate = (0, _moment2.default)(service.pickUpDate, _this5.options.useDateFormat);
+                    var _pickUpDate = (0, _moment2.default)(service.pickUpDate, _this5.options.useDateFormat);
                     var dropOffDate = (0, _moment2.default)(service.dropOffDate, _this5.options.useDateFormat);
 
-                    return Math.ceil(dropOffDate.diff(pickUpDate, 'days', true));
+                    if (_pickUpDate.isValid() && dropOffDate.isValid()) {
+                        return Math.ceil(dropOffDate.diff(_pickUpDate, 'days', true));
+                    }
                 }
             };
+
+            var pickUpDate = (0, _moment2.default)(service.pickUpDate, this.options.useDateFormat);
+            var pickUpTime = (0, _moment2.default)(service.pickUpTime, this.options.useTimeFormat);
+            var dropOffTime = (0, _moment2.default)(service.dropOffTime, this.options.useTimeFormat);
 
             var xmlService = (_xmlService = {}, _defineProperty(_xmlService, this.builderOptions.attrkey, {
                 ServiceType: this.config.defaults.serviceType.car,
                 Key: service.vehicleTypeCode + '/' + service.pickUpLocation + '-' + service.dropOffLocation
-            }), _defineProperty(_xmlService, 'StartDate', (0, _moment2.default)(service.pickUpDate, this.options.useDateFormat).format(CONFIG.crsDateFormat)), _defineProperty(_xmlService, 'Duration', calculateDuration(service)), _defineProperty(_xmlService, 'Destination', service.pickUpLocation), _defineProperty(_xmlService, 'Product', service.rentalCode), _defineProperty(_xmlService, 'Room', service.vehicleTypeCode), _defineProperty(_xmlService, 'Norm', this.config.defaults.personCount), _defineProperty(_xmlService, 'MaxAdults', this.config.defaults.personCount), _defineProperty(_xmlService, 'Meal', this.config.defaults.serviceCode.car), _defineProperty(_xmlService, 'Persons', this.config.defaults.personCount), _defineProperty(_xmlService, 'CarDetails', {
+            }), _defineProperty(_xmlService, 'StartDate', pickUpDate.isValid() ? pickUpDate.format(CONFIG.crsDateFormat) : service.pickUpDate), _defineProperty(_xmlService, 'Duration', calculateDuration(service)), _defineProperty(_xmlService, 'Destination', service.pickUpLocation), _defineProperty(_xmlService, 'Product', service.rentalCode), _defineProperty(_xmlService, 'Room', service.vehicleTypeCode), _defineProperty(_xmlService, 'Norm', this.config.defaults.personCount), _defineProperty(_xmlService, 'MaxAdults', this.config.defaults.personCount), _defineProperty(_xmlService, 'Meal', this.config.defaults.serviceCode.car), _defineProperty(_xmlService, 'Persons', this.config.defaults.personCount), _defineProperty(_xmlService, 'CarDetails', {
                 PickUp: (_PickUp = {}, _defineProperty(_PickUp, this.builderOptions.attrkey, {
                     Where: this.getCarServiceWhereLocation(service)
-                }), _defineProperty(_PickUp, 'Time', service.pickUpTime), _defineProperty(_PickUp, 'CarStation', (_CarStation = {}, _defineProperty(_CarStation, this.builderOptions.attrkey, {
+                }), _defineProperty(_PickUp, 'Time', pickUpTime.isValid() ? pickUpTime.format(CONFIG.crsTimeFormat) : service.pickUpTime), _defineProperty(_PickUp, 'CarStation', (_CarStation = {}, _defineProperty(_CarStation, this.builderOptions.attrkey, {
                     Code: service.pickUpLocation
                 }), _defineProperty(_CarStation, this.builderOptions.charkey, ''), _CarStation)), _defineProperty(_PickUp, 'Info', this.getCarServicePickUpInfoLocation(service)), _PickUp),
                 DropOff: {
-                    Time: service.dropOffTime, // is sadly not evaluated by CETS at the moment
+                    // "Time" is sadly not evaluated by CETS at the moment
+                    Time: dropOffTime.isValid() ? dropOffTime.format(CONFIG.crsTimeFormat) : service.dropOffTime,
                     CarStation: (_CarStation2 = {}, _defineProperty(_CarStation2, this.builderOptions.attrkey, {
                         Code: service.dropOffLocation
                     }), _defineProperty(_CarStation2, this.builderOptions.charkey, ''), _CarStation2)
@@ -30273,6 +30297,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 var CONFIG = {
     crs: {
         dateFormat: 'DDMMYY',
+        timeFormat: 'HHmm',
         serviceTypes: {
             car: 'MW',
             extras: 'E',
@@ -30554,10 +30579,14 @@ var MerlinAdapter = function () {
 
             var calculateDropOffDate = function calculateDropOffDate(service) {
                 if (service.dropOffDate) {
-                    return (0, _moment2.default)(service.dropOffDate, _this5.options.useDateFormat).format(CONFIG.crs.dateFormat);
+                    var dropOffDate = (0, _moment2.default)(service.dropOffDate, _this5.options.useDateFormat);
+
+                    return dropOffDate.isValid() ? dropOffDate.format(CONFIG.crs.dateFormat) : service.dropOffDate;
                 }
 
-                return (0, _moment2.default)(service.pickUpDate, _this5.options.useDateFormat).add(service.duration, 'days').format(CONFIG.crs.dateFormat);
+                var pickUpDate = (0, _moment2.default)(service.pickUpDate, _this5.options.useDateFormat);
+
+                return pickUpDate.isValid() ? pickUpDate.add(service.duration, 'days').format(CONFIG.crs.dateFormat) : service.pickUpDate;
             };
 
             var reduceExtrasList = function reduceExtrasList(extras) {
@@ -30582,7 +30611,8 @@ var MerlinAdapter = function () {
                 return hotelData.filter(Boolean).join(';');
             };
 
-            var pickUpDateFormatted = (0, _moment2.default)(service.pickUpDate, this.options.useDateFormat).format(CONFIG.crs.dateFormat);
+            var pickUpDate = (0, _moment2.default)(service.pickUpDate, this.options.useDateFormat);
+            var pickUpTime = (0, _moment2.default)(service.pickUpTime, this.options.useTimeFormat);
             var calculatedDropOffDate = calculateDropOffDate(service);
 
             xmlService.KindOfService = CONFIG.crs.serviceTypes.car;
@@ -30590,9 +30620,9 @@ var MerlinAdapter = function () {
             // USA96A4/MIA1-TPA
             xmlService.Service = [service.rentalCode, service.vehicleTypeCode, '/', service.pickUpLocation, '-', service.dropOffLocation].join('');
 
-            xmlService.FromDate = pickUpDateFormatted;
+            xmlService.FromDate = pickUpDate.isValid() ? pickUpDate.format(CONFIG.crs.dateFormat) : service.pickUpDate;
             xmlService.EndDate = calculatedDropOffDate;
-            xmlService.Accommodation = service.pickUpTime;
+            xmlService.Accommodation = pickUpTime.isValid() ? pickUpTime.format(CONFIG.crs.timeFormat) : service.pickUpTime;
 
             var hotelName = service.pickUpHotelName || service.dropOffHotelName;
 
@@ -30603,7 +30633,7 @@ var MerlinAdapter = function () {
 
                 emptyService.KindOfService = CONFIG.crs.serviceTypes.extras;
                 emptyService.Service = hotelName;
-                emptyService.FromDate = pickUpDateFormatted;
+                emptyService.FromDate = pickUpDate.isValid() ? pickUpDate.format(CONFIG.crs.dateFormat) : service.pickUpDate;
                 emptyService.EndDate = calculatedDropOffDate;
             }
 
@@ -30693,6 +30723,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 var CONFIG = {
     crs: {
         dateFormat: 'DDMMYY',
+        timeFormat: 'HHmm',
         serviceTypes: {
             car: 'MW',
             carExtra: 'E',
@@ -30994,10 +31025,11 @@ var TomaAdapter = function () {
 
             var pickUpDate = (0, _moment2.default)(xml['From.' + lineNumber], CONFIG.crs.dateFormat);
             var dropOffDate = (0, _moment2.default)(xml['To.' + lineNumber], CONFIG.crs.dateFormat);
+            var pickUpTime = (0, _moment2.default)(xml['Accommodation.' + lineNumber], CONFIG.crs.timeFormat);
             var service = {
                 pickUpDate: pickUpDate.isValid() ? pickUpDate.format(this.options.useDateFormat) : xml['From.' + lineNumber],
                 dropOffDate: dropOffDate.isValid() ? dropOffDate.format(this.options.useDateFormat) : xml['To.' + lineNumber],
-                pickUpTime: xml['Accommodation.' + lineNumber],
+                pickUpTime: pickUpTime.isValid() ? pickUpTime.format(this.options.useTimeFormat) : xml['Accommodation.' + lineNumber],
                 duration: pickUpDate.isValid() && dropOffDate.isValid() ? Math.ceil(dropOffDate.diff(pickUpDate, 'days', true)) : void 0,
                 type: _UbpCrsAdapter.SERVICE_TYPES.car
             };
@@ -31041,13 +31073,16 @@ var TomaAdapter = function () {
     }, {
         key: 'mapRoundTripServiceFromXmlObjectToAdapterObject',
         value: function mapRoundTripServiceFromXmlObjectToAdapterObject(xml, lineNumber) {
+            var startDate = (0, _moment2.default)(xml['From.' + lineNumber], CONFIG.crs.dateFormat);
+            var endDate = (0, _moment2.default)(xml['To.' + lineNumber], CONFIG.crs.dateFormat);
+
             var service = {
                 type: _UbpCrsAdapter.SERVICE_TYPES.roundTrip,
                 bookingId: xml['ServiceCode.' + lineNumber],
                 destination: xml['Accommodation.' + lineNumber],
                 numberOfPassengers: xml['Count.' + lineNumber],
-                startDate: (0, _moment2.default)(xml['From.' + lineNumber], CONFIG.crs.dateFormat).format(this.options.useDateFormat),
-                endDate: (0, _moment2.default)(xml['To.' + lineNumber], CONFIG.crs.dateFormat).format(this.options.useDateFormat),
+                startDate: startDate.isValid() ? startDate.format(this.options.useDateFormat) : xml['From.' + lineNumber],
+                endDate: endDate.isValid() ? endDate.format(this.options.useDateFormat) : xml['To.' + lineNumber],
                 salutation: xml['Title.' + lineNumber],
                 name: xml['Name.' + lineNumber]
             };
@@ -31258,15 +31293,16 @@ var TomaAdapter = function () {
 
             var pickUpDate = (0, _moment2.default)(service.pickUpDate, this.options.useDateFormat);
             var dropOffDate = service.dropOffDate ? (0, _moment2.default)(service.dropOffDate, this.options.useDateFormat) : (0, _moment2.default)(service.pickUpDate, this.options.useDateFormat).add(service.duration, 'days');
+            var pickUpTime = (0, _moment2.default)(service.pickUpTime, this.options.useTimeFormat);
 
             xml['KindOfService.' + lineNumber] = CONFIG.crs.serviceTypes.car;
 
             // USA96A4/MIA1-TPA
             xml['ServiceCode.' + lineNumber] = [service.rentalCode, service.vehicleTypeCode, '/', service.pickUpLocation, '-', service.dropOffLocation].join('');
 
-            xml['From.' + lineNumber] = pickUpDate.format(CONFIG.crs.dateFormat);
-            xml['To.' + lineNumber] = dropOffDate.format(CONFIG.crs.dateFormat);
-            xml['Accommodation.' + lineNumber] = service.pickUpTime;
+            xml['From.' + lineNumber] = pickUpDate.isValid ? pickUpDate.format(CONFIG.crs.dateFormat) : service.pickUpDate;
+            xml['To.' + lineNumber] = dropOffDate.isValid() ? dropOffDate.format(CONFIG.crs.dateFormat) : service.dropOffDate;
+            xml['Accommodation.' + lineNumber] = pickUpTime.isValid() ? pickUpTime.format(CONFIG.crs.timeFormat) : service.pickUpTime;
 
             xml.Remark = [xml.Remark, reduceExtrasList(service.extras)].filter(Boolean).join(',') || void 0;
         }
@@ -31307,8 +31343,8 @@ var TomaAdapter = function () {
 
                 xml['KindOfService.' + lineNumber] = CONFIG.crs.serviceTypes.carExtra;
                 xml['ServiceCode.' + lineNumber] = hotelName;
-                xml['From.' + lineNumber] = pickUpDate.format(CONFIG.crs.dateFormat);
-                xml['To.' + lineNumber] = dropOffDate.format(CONFIG.crs.dateFormat);
+                xml['From.' + lineNumber] = pickUpDate.isValid() ? pickUpDate.format(CONFIG.crs.dateFormat) : service.pickUpDate;
+                xml['To.' + lineNumber] = dropOffDate.isValid() ? dropOffDate.format(CONFIG.crs.dateFormat) : service.dropOffDate;
             }
 
             xml.Remark = [xml.Remark, reduceHotelDataToRemarkString(service)].filter(Boolean).join(',') || void 0;
@@ -31324,11 +31360,14 @@ var TomaAdapter = function () {
     }, {
         key: 'assignHotelServiceFromAdapterObjectToXmlObject',
         value: function assignHotelServiceFromAdapterObjectToXmlObject(service, xml, lineNumber) {
+            var dateFrom = (0, _moment2.default)(service.dateFrom, this.options.useDateFormat);
+            var dateTo = (0, _moment2.default)(service.dateTo, this.options.useDateFormat);
+
             xml['KindOfService.' + lineNumber] = CONFIG.crs.serviceTypes.hotel;
             xml['ServiceCode.' + lineNumber] = service.destination;
             xml['Accommodation.' + lineNumber] = [service.roomCode, service.mealCode].join(' ');
-            xml['From.' + lineNumber] = (0, _moment2.default)(service.dateFrom, this.options.useDateFormat).format(CONFIG.crs.dateFormat);
-            xml['To.' + lineNumber] = (0, _moment2.default)(service.dateTo, this.options.useDateFormat).format(CONFIG.crs.dateFormat);
+            xml['From.' + lineNumber] = dateFrom.isValid() ? dateFrom.format(CONFIG.crs.dateFormat) : service.dateFrom;
+            xml['To.' + lineNumber] = dateTo.isValid() ? dateTo.format(CONFIG.crs.dateFormat) : service.dateTo;
         }
 
         /**
@@ -31341,12 +31380,15 @@ var TomaAdapter = function () {
     }, {
         key: 'assignRoundTripServiceFromAdapterObjectToXmlObject',
         value: function assignRoundTripServiceFromAdapterObjectToXmlObject(service, xml, lineNumber) {
+            var startDate = (0, _moment2.default)(service.startDate, this.options.useDateFormat);
+            var endDate = (0, _moment2.default)(service.endDate, this.options.useDateFormat);
+
             xml['KindOfService.' + lineNumber] = CONFIG.crs.serviceTypes.roundTrip;
             xml['ServiceCode.' + lineNumber] = service.bookingId;
             xml['Accommodation.' + lineNumber] = service.destination;
             xml['Count.' + lineNumber] = service.numberOfPassengers;
-            xml['From.' + lineNumber] = (0, _moment2.default)(service.startDate, this.options.useDateFormat).format(CONFIG.crs.dateFormat);
-            xml['To.' + lineNumber] = (0, _moment2.default)(service.endDate, this.options.useDateFormat).format(CONFIG.crs.dateFormat);
+            xml['From.' + lineNumber] = startDate.isValid() ? startDate.format(CONFIG.crs.dateFormat) : service.startDate;
+            xml['To.' + lineNumber] = endDate.isValid() ? endDate.format(CONFIG.crs.dateFormat) : service.endDate;
             xml['Title.' + lineNumber] = service.salutation;
             xml['Name.' + lineNumber] = service.name;
             xml['Reduction.' + lineNumber] = service.birthday || service.age;
@@ -31370,8 +31412,8 @@ var TomaAdapter = function () {
             // PRT02FS/LIS1-LIS2
             xml['ServiceCode.' + lineNumber] = [service.renterCode, service.camperCode, '/', service.pickUpLocation, '-', service.dropOffLocation].join('');
 
-            xml['From.' + lineNumber] = pickUpDate.format(CONFIG.crs.dateFormat);
-            xml['To.' + lineNumber] = dropOffDate.format(CONFIG.crs.dateFormat);
+            xml['From.' + lineNumber] = pickUpDate.isValid() ? pickUpDate.format(CONFIG.crs.dateFormat) : service.pickUpDate;
+            xml['To.' + lineNumber] = dropOffDate.isValid() ? dropOffDate.format(CONFIG.crs.dateFormat) : service.dropOffDate;
             xml['Count.' + lineNumber] = service.milesIncludedPerDay;
             xml['Occupancy.' + lineNumber] = service.milesPackagesIncluded;
             xml['TravAssociation.' + lineNumber] = '1' + (xml.NoOfPersons > 1 ? '-' + xml.NoOfPersons : '');
@@ -31397,8 +31439,8 @@ var TomaAdapter = function () {
 
                 xml['KindOfService.' + lineNumber] = CONFIG.crs.serviceTypes.camperExtra;
                 xml['ServiceCode.' + lineNumber] = extraParts[0];
-                xml['From.' + lineNumber] = pickUpDate.format(CONFIG.crs.dateFormat);
-                xml['To.' + lineNumber] = dropOffDate.format(CONFIG.crs.dateFormat);
+                xml['From.' + lineNumber] = pickUpDate.isValid() ? pickUpDate.format(CONFIG.crs.dateFormat) : service.pickUpDate;
+                xml['To.' + lineNumber] = dropOffDate.isValid() ? dropOffDate.format(CONFIG.crs.dateFormat) : service.dropOffDate;
                 xml['TravAssociation.' + lineNumber] = '1' + (extraParts[1] > 1 ? '-' + extraParts[1] : '');
             });
         }
@@ -31471,6 +31513,7 @@ var CONFIG = {
         },
         catalogFileName: 'ExternalCatalog.js',
         dateFormat: 'DDMMYY',
+        timeFormat: 'HHmm',
         serviceTypes: {
             car: 'MW',
             carExtra: 'E',
@@ -31838,10 +31881,11 @@ var TomaSPCAdapter = function () {
 
             var pickUpDate = (0, _moment2.default)(crsService.fromDate, CONFIG.crs.dateFormat);
             var dropOffDate = (0, _moment2.default)(crsService.toDate, CONFIG.crs.dateFormat);
+            var pickUpTime = (0, _moment2.default)(crsService.accommodation, CONFIG.crs.timeFormat);
             var service = {
                 pickUpDate: pickUpDate.isValid() ? pickUpDate.format(this.options.useDateFormat) : crsService.fromDate,
                 dropOffDate: dropOffDate.isValid() ? dropOffDate.format(this.options.useDateFormat) : crsService.toDate,
-                pickUpTime: crsService.accommodation,
+                pickUpTime: pickUpTime.isValid() ? pickUpTime.format(this.options.useTimeFormat) : crsService.accommodation,
                 duration: pickUpDate.isValid() && dropOffDate.isValid() ? Math.ceil(dropOffDate.diff(pickUpDate, 'days', true)) : void 0,
                 type: _UbpCrsAdapter.SERVICE_TYPES.car
             };
@@ -31912,10 +31956,11 @@ var TomaSPCAdapter = function () {
 
             var pickUpDate = (0, _moment2.default)(crsService.fromDate, CONFIG.crs.dateFormat);
             var dropOffDate = (0, _moment2.default)(crsService.toDate, CONFIG.crs.dateFormat);
+            var pickUpTime = (0, _moment2.default)(crsService.accommodation, CONFIG.crs.timeFormat);
             var service = {
                 pickUpDate: pickUpDate.isValid() ? pickUpDate.format(this.options.useDateFormat) : crsService.fromDate,
                 dropOffDate: dropOffDate.isValid() ? dropOffDate.format(this.options.useDateFormat) : crsService.toDate,
-                pickUpTime: crsService.accommodation,
+                pickUpTime: pickUpTime.isValid() ? pickUpTime.format(this.options.useTimeFormat) : crsService.accommodation,
                 duration: pickUpDate.isValid() && dropOffDate.isValid() ? Math.ceil(dropOffDate.diff(pickUpDate, 'days', true)) : void 0,
                 milesIncludedPerDay: crsService.quantity,
                 milesPackagesIncluded: crsService.occupancy,
@@ -32064,6 +32109,7 @@ var TomaSPCAdapter = function () {
 
             var pickUpDate = (0, _moment2.default)(adapterService.pickUpDate, this.options.useDateFormat);
             var dropOffDate = adapterService.dropOffDate ? (0, _moment2.default)(adapterService.dropOffDate, this.options.useDateFormat) : (0, _moment2.default)(adapterService.pickUpDate, this.options.useDateFormat).add(adapterService.duration, 'days');
+            var pickUpTime = (0, _moment2.default)(adapterService.pickUpTime, this.options.useDateFormat);
 
             crsService.serviceType = CONFIG.crs.serviceTypes.car;
 
@@ -32072,7 +32118,7 @@ var TomaSPCAdapter = function () {
 
             crsService.fromDate = pickUpDate.format(CONFIG.crs.dateFormat);
             crsService.toDate = dropOffDate.format(CONFIG.crs.dateFormat);
-            crsService.accommodation = adapterService.pickUpTime;
+            crsService.accommodation = pickUpTime.isValid() ? pickUpTime.format(CONFIG.crs.timeFormat) : adapterService.pickUpTime;
 
             crsObject.remark = [crsObject.remark, reduceExtrasList(adapterService.extras)].filter(Boolean).join(',') || void 0;
         }
@@ -32113,8 +32159,8 @@ var TomaSPCAdapter = function () {
 
                 emptyService.serviceType = CONFIG.crs.serviceTypes.carExtra;
                 emptyService.serviceCode = hotelName;
-                emptyService.fromDate = pickUpDate.format(CONFIG.crs.dateFormat);
-                emptyService.toDate = dropOffDate.format(CONFIG.crs.dateFormat);
+                emptyService.fromDate = pickUpDate.isValid() ? pickUpDate.format(CONFIG.crs.dateFormat) : adapterService.pickUpDate;
+                emptyService.toDate = dropOffDate.isValid() ? dropOffDate.format(CONFIG.crs.dateFormat) : adapterService.dropOffDate;
             }
 
             crsObject.remark = [crsObject.remark, reduceHotelDataToRemarkString(adapterService)].filter(Boolean).join(',') || void 0;
@@ -32129,11 +32175,14 @@ var TomaSPCAdapter = function () {
     }, {
         key: 'assignHotelServiceFromAdapterObjectToCrsObject',
         value: function assignHotelServiceFromAdapterObjectToCrsObject(adapterService, crsService) {
+            var dateFrom = (0, _moment2.default)(adapterService.dateFrom, this.options.useDateFormat);
+            var dateTo = (0, _moment2.default)(adapterService.dateTo, this.options.useDateFormat);
+
             crsService.serviceType = CONFIG.crs.serviceTypes.hotel;
             crsService.serviceCode = adapterService.destination;
             crsService.accommodation = [adapterService.roomCode, adapterService.mealCode].join(' ');
-            crsService.fromDate = (0, _moment2.default)(adapterService.dateFrom, this.options.useDateFormat).format(CONFIG.crs.dateFormat);
-            crsService.toDate = (0, _moment2.default)(adapterService.dateTo, this.options.useDateFormat).format(CONFIG.crs.dateFormat);
+            crsService.fromDate = dateFrom.isValid() ? dateFrom.format(CONFIG.crs.dateFormat) : adapterService.dateFrom;
+            crsService.toDate = dateTo.isValid() ? dateTo.format(CONFIG.crs.dateFormat) : adapterService.dateTo;
         }
 
         /**
@@ -32154,8 +32203,8 @@ var TomaSPCAdapter = function () {
             // PRT02FS/LIS1-LIS2
             crsService.serviceCode = [adapterService.renterCode, adapterService.camperCode, '/', adapterService.pickUpLocation, '-', adapterService.dropOffLocation].join('');
 
-            crsService.fromDate = pickUpDate.format(CONFIG.crs.dateFormat);
-            crsService.toDate = dropOffDate.format(CONFIG.crs.dateFormat);
+            crsService.fromDate = pickUpDate.isValid() ? pickUpDate.format(CONFIG.crs.dateFormat) : adapterService.pickUpDate;
+            crsService.toDate = dropOffDate.isValid() ? dropOffDate.format(CONFIG.crs.dateFormat) : adapterService.dropOffDate;
             crsService.accommodation = adapterService.pickUpTime;
             crsService.quantity = adapterService.milesIncludedPerDay;
             crsService.occupancy = adapterService.milesPackagesIncluded;
@@ -32182,8 +32231,8 @@ var TomaSPCAdapter = function () {
 
                 service.serviceType = CONFIG.crs.serviceTypes.camperExtra;
                 service.serviceCode = extraParts[0];
-                service.fromDate = pickUpDate.format(CONFIG.crs.dateFormat);
-                service.toDate = dropOffDate.format(CONFIG.crs.dateFormat);
+                service.fromDate = pickUpDate.isValid() ? pickUpDate.format(CONFIG.crs.dateFormat) : adapterService.pickUpDate;
+                service.toDate = dropOffDate.isValid() ? dropOffDate.format(CONFIG.crs.dateFormat) : adapterService.dropOffDate;
                 service.travellerAssociation = '1' + (extraParts[1] > 1 ? '-' + extraParts[1] : '');
             });
         }
@@ -41508,7 +41557,7 @@ function config (name) {
 
 module.exports = {
 	"name": "ubp-crs-adapter",
-	"version": "0.0.9",
+	"version": "0.0.10",
 	"description": "This library provides connections to different travel CRSs. It also let you read and write data from/to them.",
 	"main": "dist/ubpCrsAdapter.js",
 	"directories": {
