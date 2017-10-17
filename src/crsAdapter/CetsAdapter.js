@@ -6,6 +6,7 @@ import {SERVICE_TYPES} from '../UbpCrsAdapter';
 
 const CONFIG = {
     crsDateFormat: 'DDMMYYYY',
+    crsTimeFormat: 'HHmm',
 };
 
 class CetsAdapter {
@@ -251,13 +252,17 @@ class CetsAdapter {
 
     mapCarServiceFromXmlObjectToAdapterObject(xmlService) {
         const addDropOffDate = (service) => {
-            service.dropOffDate = moment(service.pickUpDate, CONFIG.crsDateFormat)
-                .add(service.duration, 'days')
-                .format(this.options.useDateFormat);
+            let pickUpDate = moment(service.pickUpDate, CONFIG.crsDateFormat);
+
+            service.dropOffDate = pickUpDate.isValid()
+                ? pickUpDate.add(service.duration, 'days').format(this.options.useDateFormat)
+                : '';
         };
 
+        let pickUpDate = moment(xmlService.StartDate, CONFIG.crsDateFormat);
+
         let service = {
-            pickUpDate: moment(xmlService.StartDate, CONFIG.crsDateFormat).format(this.options.useDateFormat),
+            pickUpDate: pickUpDate.isValid() ? pickUpDate.format(this.options.useDateFormat) : xmlService.StartDate,
             pickUpLocation: xmlService.Destination,
             duration: xmlService.Duration,
             rentalCode: xmlService.Product,
@@ -268,10 +273,13 @@ class CetsAdapter {
         addDropOffDate(service);
 
         if (xmlService.CarDetails) {
+            let pickUpTime = moment(xmlService.CarDetails.PickUp.Time, CONFIG.crsTimeFormat);
+            let dropOffTime = moment(xmlService.CarDetails.DropOff.Time, CONFIG.crsTimeFormat);
+
             service.pickUpLocation = xmlService.CarDetails.PickUp.CarStation[this.parserOptions.attrPrefix].Code;
             service.dropOffLocation = xmlService.CarDetails.DropOff.CarStation[this.parserOptions.attrPrefix].Code;
-            service.pickUpTime = xmlService.CarDetails.PickUp.Time;
-            service.dropOffTime = xmlService.CarDetails.DropOff.Time;
+            service.pickUpTime = pickUpTime.isValid() ? pickUpTime.format(this.options.useTimeFormat) : xmlService.CarDetails.PickUp.Time;
+            service.dropOffTime = dropOffTime.isValid() ? dropOffTime.format(this.options.useTimeFormat) : xmlService.CarDetails.DropOff.Time;
         }
 
         return service;
@@ -356,16 +364,22 @@ class CetsAdapter {
                 let pickUpDate = moment(service.pickUpDate, this.options.useDateFormat);
                 let dropOffDate = moment(service.dropOffDate, this.options.useDateFormat);
 
-                return Math.ceil(dropOffDate.diff(pickUpDate, 'days', true));
+                if (pickUpDate.isValid() && dropOffDate.isValid()) {
+                    return Math.ceil(dropOffDate.diff(pickUpDate, 'days', true));
+                }
             }
         };
+
+        let pickUpDate = moment(service.pickUpDate, this.options.useDateFormat);
+        let pickUpTime = moment(service.pickUpTime, this.options.useTimeFormat);
+        let dropOffTime = moment(service.dropOffTime, this.options.useTimeFormat);
 
         let xmlService = {
             [this.builderOptions.attrkey]: {
                 ServiceType: this.config.defaults.serviceType.car,
                 Key: service.vehicleTypeCode + '/' + service.pickUpLocation + '-' + service.dropOffLocation,
             },
-            StartDate: moment(service.pickUpDate, this.options.useDateFormat).format(CONFIG.crsDateFormat),
+            StartDate: pickUpDate.isValid() ? pickUpDate.format(CONFIG.crsDateFormat) : service.pickUpDate,
             Duration: calculateDuration(service),
             Destination: service.pickUpLocation,
             Product: service.rentalCode,
@@ -379,7 +393,7 @@ class CetsAdapter {
                     [this.builderOptions.attrkey]: {
                         Where: this.getCarServiceWhereLocation(service),
                     },
-                    Time: service.pickUpTime,
+                    Time: pickUpTime.isValid() ? pickUpTime.format(CONFIG.crsTimeFormat) : service.pickUpTime,
                     CarStation: {
                         [this.builderOptions.attrkey]: {
                             Code: service.pickUpLocation,
@@ -389,7 +403,8 @@ class CetsAdapter {
                     Info: this.getCarServicePickUpInfoLocation(service),
                 },
                 DropOff: {
-                    Time: service.dropOffTime,  // is sadly not evaluated by CETS at the moment
+                    // "Time" is sadly not evaluated by CETS at the moment
+                    Time: dropOffTime.isValid() ? dropOffTime.format(CONFIG.crsTimeFormat) : service.dropOffTime,
                     CarStation: {
                         [this.builderOptions.attrkey]: {
                             Code: service.dropOffLocation,

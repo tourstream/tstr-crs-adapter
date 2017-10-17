@@ -339,8 +339,6 @@ describe('MerlinAdapter', () => {
                     '<ServiceRow positionNo="1">' +
                         '<KindOfService>MW</KindOfService>' +
                         '<Service>/-</Service>' +
-                        '<FromDate>Invalid date</FromDate>' +
-                        '<EndDate>Invalid date</EndDate>' +
                     '</ServiceRow>' +
                     '<ServiceRow positionNo="2">' +
                         '<KindOfService>H</KindOfService>' +

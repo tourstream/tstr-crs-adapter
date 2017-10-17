@@ -183,7 +183,7 @@ But if this service is either "marked" in the crs or detected as "marked" (depen
 ## === Booking Manager ===
 
 This adapter supports also the connection to the so called _FTI360 Booking Manager_.
-Use as `adapter.connect('BM')` and you unlock the full functionality of it:
+Use `adapter.connect('BM')` and you unlock the full functionality of it:
 
 * `adapter.addToBasket(outputData)`
 * `adapter.directCheckout(outputData)`

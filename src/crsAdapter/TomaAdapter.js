@@ -12,6 +12,7 @@ import {SERVICE_TYPES} from '../UbpCrsAdapter';
 const CONFIG = {
     crs: {
         dateFormat: 'DDMMYY',
+        timeFormat: 'HHmm',
         serviceTypes: {
             car: 'MW',
             carExtra: 'E',
@@ -277,10 +278,11 @@ class TomaAdapter {
 
         let pickUpDate = moment(xml['From.' + lineNumber], CONFIG.crs.dateFormat);
         let dropOffDate = moment(xml['To.' + lineNumber], CONFIG.crs.dateFormat);
+        let pickUpTime = moment(xml['Accommodation.' + lineNumber], CONFIG.crs.timeFormat);
         let service = {
             pickUpDate: pickUpDate.isValid() ? pickUpDate.format(this.options.useDateFormat) : xml['From.' + lineNumber],
             dropOffDate: dropOffDate.isValid() ? dropOffDate.format(this.options.useDateFormat) : xml['To.' + lineNumber],
-            pickUpTime: xml['Accommodation.' + lineNumber],
+            pickUpTime: pickUpTime.isValid() ? pickUpTime.format(this.options.useTimeFormat) : xml['Accommodation.' + lineNumber],
             duration: pickUpDate.isValid() && dropOffDate.isValid()
                 ? Math.ceil(dropOffDate.diff(pickUpDate, 'days', true))
                 : void 0,
@@ -320,18 +322,21 @@ class TomaAdapter {
      * @returns {object}
      */
     mapRoundTripServiceFromXmlObjectToAdapterObject(xml, lineNumber) {
+        let startDate = moment(xml['From.' + lineNumber], CONFIG.crs.dateFormat);
+        let endDate = moment(xml['To.' + lineNumber], CONFIG.crs.dateFormat);
+
         let service = {
             type: SERVICE_TYPES.roundTrip,
             bookingId: xml['ServiceCode.' + lineNumber],
             destination: xml['Accommodation.' + lineNumber],
             numberOfPassengers: xml['Count.' + lineNumber],
-            startDate: moment(xml['From.' + lineNumber], CONFIG.crs.dateFormat).format(this.options.useDateFormat),
-            endDate: moment(xml['To.' + lineNumber], CONFIG.crs.dateFormat).format(this.options.useDateFormat),
+            startDate: startDate.isValid() ? startDate.format(this.options.useDateFormat) : xml['From.' + lineNumber],
+            endDate: endDate.isValid() ? endDate.format(this.options.useDateFormat) : xml['To.' + lineNumber],
             salutation: xml['Title.' + lineNumber],
             name: xml['Name.' + lineNumber],
         };
 
-        if(xml['Reduction.' + lineNumber].match(CONFIG.services.roundTrip.ageRegEx)){
+        if (xml['Reduction.' + lineNumber].match(CONFIG.services.roundTrip.ageRegEx)){
             service.age = xml['Reduction.' + lineNumber]
         } else {
             service.birthdate = xml['Reduction.' + lineNumber];
@@ -517,6 +522,7 @@ class TomaAdapter {
         let dropOffDate = (service.dropOffDate)
             ? moment(service.dropOffDate, this.options.useDateFormat)
             : moment(service.pickUpDate, this.options.useDateFormat).add(service.duration, 'days');
+        let pickUpTime = moment(service.pickUpTime, this.options.useTimeFormat);
 
         xml['KindOfService.' + lineNumber] = CONFIG.crs.serviceTypes.car;
 
@@ -530,9 +536,9 @@ class TomaAdapter {
             service.dropOffLocation,
         ].join('');
 
-        xml['From.' + lineNumber] = pickUpDate.format(CONFIG.crs.dateFormat);
-        xml['To.' + lineNumber] = dropOffDate.format(CONFIG.crs.dateFormat);
-        xml['Accommodation.' + lineNumber] = service.pickUpTime;
+        xml['From.' + lineNumber] = pickUpDate.isValid ? pickUpDate.format(CONFIG.crs.dateFormat) : service.pickUpDate;
+        xml['To.' + lineNumber] = dropOffDate.isValid() ? dropOffDate.format(CONFIG.crs.dateFormat) : service.dropOffDate;
+        xml['Accommodation.' + lineNumber] = pickUpTime.isValid() ? pickUpTime.format(CONFIG.crs.timeFormat) : service.pickUpTime;
 
         xml.Remark = [xml.Remark, reduceExtrasList(service.extras)].filter(Boolean).join(',') || void 0;
     };
@@ -572,8 +578,8 @@ class TomaAdapter {
 
             xml['KindOfService.' + lineNumber] = CONFIG.crs.serviceTypes.carExtra;
             xml['ServiceCode.' + lineNumber] = hotelName;
-            xml['From.' + lineNumber] = pickUpDate.format(CONFIG.crs.dateFormat);
-            xml['To.' + lineNumber] = dropOffDate.format(CONFIG.crs.dateFormat);
+            xml['From.' + lineNumber] = pickUpDate.isValid() ? pickUpDate.format(CONFIG.crs.dateFormat) : service.pickUpDate;
+            xml['To.' + lineNumber] = dropOffDate.isValid() ? dropOffDate.format(CONFIG.crs.dateFormat) : service.dropOffDate;
         }
 
         xml.Remark = [xml.Remark, reduceHotelDataToRemarkString(service)].filter(Boolean).join(',') || void 0;
@@ -586,11 +592,14 @@ class TomaAdapter {
      * @param lineNumber number
      */
     assignHotelServiceFromAdapterObjectToXmlObject(service, xml, lineNumber) {
+        let dateFrom = moment(service.dateFrom, this.options.useDateFormat);
+        let dateTo = moment(service.dateTo, this.options.useDateFormat);
+
         xml['KindOfService.' + lineNumber] = CONFIG.crs.serviceTypes.hotel;
         xml['ServiceCode.' + lineNumber] = service.destination;
         xml['Accommodation.' + lineNumber] = [service.roomCode, service.mealCode].join(' ');
-        xml['From.' + lineNumber] = moment(service.dateFrom, this.options.useDateFormat).format(CONFIG.crs.dateFormat);
-        xml['To.' + lineNumber] = moment(service.dateTo, this.options.useDateFormat).format(CONFIG.crs.dateFormat);
+        xml['From.' + lineNumber] = dateFrom.isValid() ? dateFrom.format(CONFIG.crs.dateFormat) : service.dateFrom;
+        xml['To.' + lineNumber] = dateTo.isValid() ? dateTo.format(CONFIG.crs.dateFormat) : service.dateTo;
     }
 
     /**
@@ -600,12 +609,15 @@ class TomaAdapter {
      * @param lineNumber number
      */
     assignRoundTripServiceFromAdapterObjectToXmlObject(service, xml, lineNumber) {
+        let startDate = moment(service.startDate, this.options.useDateFormat);
+        let endDate = moment(service.endDate, this.options.useDateFormat);
+
         xml['KindOfService.' + lineNumber] = CONFIG.crs.serviceTypes.roundTrip;
         xml['ServiceCode.' + lineNumber] = service.bookingId;
         xml['Accommodation.' + lineNumber] = service.destination;
         xml['Count.' + lineNumber] = service.numberOfPassengers;
-        xml['From.' + lineNumber] = moment(service.startDate, this.options.useDateFormat).format(CONFIG.crs.dateFormat);
-        xml['To.' + lineNumber] = moment(service.endDate, this.options.useDateFormat).format(CONFIG.crs.dateFormat);
+        xml['From.' + lineNumber] = startDate.isValid() ? startDate.format(CONFIG.crs.dateFormat) : service.startDate;
+        xml['To.' + lineNumber] = endDate.isValid() ? endDate.format(CONFIG.crs.dateFormat) : service.endDate;
         xml['Title.' + lineNumber] = service.salutation;
         xml['Name.' + lineNumber] = service.name;
         xml['Reduction.' + lineNumber] = service.birthday || service.age;
@@ -635,8 +647,8 @@ class TomaAdapter {
             service.dropOffLocation,
         ].join('');
 
-        xml['From.' + lineNumber] = pickUpDate.format(CONFIG.crs.dateFormat);
-        xml['To.' + lineNumber] = dropOffDate.format(CONFIG.crs.dateFormat);
+        xml['From.' + lineNumber] = pickUpDate.isValid() ? pickUpDate.format(CONFIG.crs.dateFormat) : service.pickUpDate;
+        xml['To.' + lineNumber] = dropOffDate.isValid() ? dropOffDate.format(CONFIG.crs.dateFormat) : service.dropOffDate;
         xml['Count.' + lineNumber] = service.milesIncludedPerDay;
         xml['Occupancy.' + lineNumber] = service.milesPackagesIncluded;
         xml['TravAssociation.' + lineNumber] = '1' + ((xml.NoOfPersons > 1) ? '-' + xml.NoOfPersons : '');
@@ -659,8 +671,8 @@ class TomaAdapter {
 
             xml['KindOfService.' + lineNumber] = CONFIG.crs.serviceTypes.camperExtra;
             xml['ServiceCode.' + lineNumber] = extraParts[0];
-            xml['From.' + lineNumber] = pickUpDate.format(CONFIG.crs.dateFormat);
-            xml['To.' + lineNumber] = dropOffDate.format(CONFIG.crs.dateFormat);
+            xml['From.' + lineNumber] = pickUpDate.isValid() ? pickUpDate.format(CONFIG.crs.dateFormat) : service.pickUpDate;
+            xml['To.' + lineNumber] = dropOffDate.isValid() ? dropOffDate.format(CONFIG.crs.dateFormat) : service.dropOffDate;
             xml['TravAssociation.' + lineNumber] = '1' + ((extraParts[1] > 1) ? '-' + extraParts[1] : '');
         });
     }

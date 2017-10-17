@@ -7,6 +7,7 @@ import { SERVICE_TYPES } from '../UbpCrsAdapter';
 const CONFIG = {
     crs: {
         dateFormat: 'DDMMYY',
+        timeFormat: 'HHmm',
         serviceTypes: {
             car: 'MW',
             extras: 'E',
@@ -241,12 +242,16 @@ class MerlinAdapter {
     assignCarServiceFromAdapterObjectToXmlObject(service, xmlService, xml) {
         const calculateDropOffDate = (service) => {
             if (service.dropOffDate) {
-                return moment(service.dropOffDate, this.options.useDateFormat).format(CONFIG.crs.dateFormat);
+                let dropOffDate = moment(service.dropOffDate, this.options.useDateFormat);
+
+                return dropOffDate.isValid() ? dropOffDate.format(CONFIG.crs.dateFormat) : service.dropOffDate;
             }
 
-            return moment(service.pickUpDate, this.options.useDateFormat)
-                .add(service.duration, 'days')
-                .format(CONFIG.crs.dateFormat);
+            let pickUpDate = moment(service.pickUpDate, this.options.useDateFormat);
+
+            return pickUpDate.isValid()
+                ? pickUpDate.add(service.duration, 'days').format(CONFIG.crs.dateFormat)
+                : service.pickUpDate;
         };
 
         const reduceExtrasList = (extras) => {
@@ -273,7 +278,8 @@ class MerlinAdapter {
             return hotelData.filter(Boolean).join(';');
         };
 
-        let pickUpDateFormatted = moment(service.pickUpDate, this.options.useDateFormat).format(CONFIG.crs.dateFormat);
+        let pickUpDate = moment(service.pickUpDate, this.options.useDateFormat);
+        let pickUpTime = moment(service.pickUpTime, this.options.useTimeFormat);
         let calculatedDropOffDate = calculateDropOffDate(service);
 
         xmlService.KindOfService = CONFIG.crs.serviceTypes.car;
@@ -288,9 +294,9 @@ class MerlinAdapter {
             service.dropOffLocation,
         ].join('');
 
-        xmlService.FromDate = pickUpDateFormatted;
+        xmlService.FromDate = pickUpDate.isValid() ? pickUpDate.format(CONFIG.crs.dateFormat) : service.pickUpDate;
         xmlService.EndDate = calculatedDropOffDate;
-        xmlService.Accommodation = service.pickUpTime;
+        xmlService.Accommodation = pickUpTime.isValid() ? pickUpTime.format(CONFIG.crs.timeFormat) : service.pickUpTime;
 
         let hotelName = service.pickUpHotelName || service.dropOffHotelName;
 
@@ -301,7 +307,7 @@ class MerlinAdapter {
 
             emptyService.KindOfService = CONFIG.crs.serviceTypes.extras;
             emptyService.Service = hotelName;
-            emptyService.FromDate = pickUpDateFormatted;
+            emptyService.FromDate = pickUpDate.isValid() ? pickUpDate.format(CONFIG.crs.dateFormat) : service.pickUpDate;
             emptyService.EndDate = calculatedDropOffDate;
         }
 

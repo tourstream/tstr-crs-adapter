@@ -91,19 +91,26 @@ class BmAdapter {
      */
     convertRawCarService(service) {
         if (!service.dropOffDate) {
-            service.dropOffDate = moment(service.pickUpDate, this.options.useDateFormat)
-                .add(service.duration, 'days')
-                .format(this.options.useDateFormat);
+            let pickUpDate = moment(service.pickUpDate, this.options.useDateFormat);
+
+            service.dropOffDate = pickUpDate.isValid()
+                ? pickUpDate.add(service.duration, 'days').format(this.options.useDateFormat)
+                : '';
         }
 
         if (!service.dropOffTime) {
             service.dropOffTime = service.pickUpTime;
         }
 
-        service.pickUpDate = moment(service.pickUpDate, this.options.useDateFormat).format(CONFIG.dateFormat);
-        service.dropOffDate = moment(service.dropOffDate, this.options.useDateFormat).format(CONFIG.dateFormat);
-        service.pickUpTime = moment(service.pickUpTime, this.options.useTimeFormat).format(CONFIG.timeFormat);
-        service.dropOffTime = moment(service.dropOffTime, this.options.useTimeFormat).format(CONFIG.timeFormat);
+        let pickUpDate = moment(service.pickUpDate, this.options.useDateFormat);
+        let dropOffDate = moment(service.dropOffDate, this.options.useDateFormat);
+        let pickUpTime = moment(service.pickUpTime, this.options.useTimeFormat);
+        let dropOffTime = moment(service.dropOffTime, this.options.useTimeFormat);
+
+        service.pickUpDate = pickUpDate.isValid() ? pickUpDate.format(CONFIG.dateFormat) : service.pickUpDate;
+        service.dropOffDate = dropOffDate.isValid() ? dropOffDate.format(CONFIG.dateFormat) : service.dropOffDate;
+        service.pickUpTime = pickUpTime.isValid() ? pickUpTime.format(CONFIG.timeFormat) : service.pickUpTime;
+        service.dropOffTime = dropOffTime.isValid() ? dropOffTime.format(CONFIG.timeFormat) : service.dropOffTime;
     }
 }
 
