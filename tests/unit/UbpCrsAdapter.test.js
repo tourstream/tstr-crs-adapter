@@ -66,6 +66,7 @@ describe('UbpCrsAdapter', () => {
         expect(UbpCrsAdapter.DEFAULT_OPTIONS).toEqual({
             debug: false,
             useDateFormat: 'DDMMYYYY',
+            useTimeFormat: 'HHmm',
         });
     });
 
@@ -171,6 +172,17 @@ describe('UbpCrsAdapter', () => {
             adapter.exit();
 
             expect(AnyCrsAdapter.exit).toHaveBeenCalledTimes(1);
+        });
+
+        it('exit() should resolve promise if underlying adapter resolved it', (done) => {
+            AnyCrsAdapter.exit.and.returnValue(Promise.resolve('exited'));
+
+            adapter.exit().then((result) => {
+                expect(result).toBe('exited');
+                done();
+            }).catch((error) => {
+                done.fail('expectation error')
+            });
         });
     });
 });

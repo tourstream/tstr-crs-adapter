@@ -31,8 +31,8 @@ describe('BmAdapter', () => {
     it('connect() should throw error if no connection is available', () => {
         let message = 'No connection available - please connect to Booking Manager first.';
 
-        expect(adapter.getData.bind(adapter)).toThrowError(message);
-        expect(adapter.setData.bind(adapter)).toThrowError(message);
+        expect(adapter.addToBasket.bind(adapter)).toThrowError(message);
+        expect(adapter.directCheckout.bind(adapter)).toThrowError(message);
         expect(adapter.exit.bind(adapter)).toThrowError(message);
     });
 
@@ -50,14 +50,19 @@ describe('BmAdapter', () => {
             adapter.connect();
         });
 
-        it('getData() should do nothing', (done) => {
-            adapter.getData().then((data) => {
-                expect(data).toBeUndefined();
+        it('addToBasket() should handle empty data', (done) => {
+            let data = {};
+            let expected = {};
+
+            bmApi.addToBasket.and.callFake((data) => {
+                expect(data).toEqual(expected);
                 done();
             });
+
+            adapter.addToBasket(data);
         });
 
-        it('setData() should set data correct', (done) => {
+        it('addToBasket() should set data correct', (done) => {
             let data = {
                 services: [{
                     type: 'car',
@@ -71,10 +76,10 @@ describe('BmAdapter', () => {
             let expected = {
                 services: [{
                     type: 'car',
-                    pickUpDate: '20180712',
-                    pickUpTime: '0945',
-                    dropOffDate: '20180716',
-                    dropOffTime: '1720'
+                    pickUpDate: '2018-07-12',
+                    pickUpTime: '09:45',
+                    dropOffDate: '2018-07-16',
+                    dropOffTime: '17:20'
                 }],
             };
 
@@ -83,10 +88,10 @@ describe('BmAdapter', () => {
                 done();
             });
 
-            adapter.setData(data);
+            adapter.addToBasket(data);
         });
 
-        it('setData() should enhance data and set data correct', (done) => {
+        it('addToBasket() should enhance data and set data correct', (done) => {
             let data = {
                 services: [{
                     type: 'car',
@@ -100,10 +105,10 @@ describe('BmAdapter', () => {
                 services: [{
                     type: 'car',
                     duration: 4,
-                    pickUpDate: '20180712',
-                    pickUpTime: '0945',
-                    dropOffDate: '20180716',
-                    dropOffTime: '0945'
+                    pickUpDate: '2018-07-12',
+                    pickUpTime: '09:45',
+                    dropOffDate: '2018-07-16',
+                    dropOffTime: '09:45'
                 }],
             };
 
@@ -112,7 +117,36 @@ describe('BmAdapter', () => {
                 done();
             });
 
-            adapter.setData(data);
+            adapter.addToBasket(data);
+        });
+
+        it('directCheckout() should set data correct', (done) => {
+            let data = {
+                services: [{
+                    type: 'car',
+                    pickUpDate: '12072018',
+                    pickUpTime: '0945',
+                    dropOffDate: '16072018',
+                    dropOffTime: '1720',
+                }],
+            };
+
+            let expected = {
+                services: [{
+                    type: 'car',
+                    pickUpDate: '2018-07-12',
+                    pickUpTime: '09:45',
+                    dropOffDate: '2018-07-16',
+                    dropOffTime: '17:20'
+                }],
+            };
+
+            bmApi.directCheckout.and.callFake((data) => {
+                expect(data).toEqual(expected);
+                done();
+            });
+
+            adapter.directCheckout(data);
         });
 
         it('exit() should destroy connection', () => {

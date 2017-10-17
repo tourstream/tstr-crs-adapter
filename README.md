@@ -31,7 +31,7 @@ ubpCrsAdapter.connect(connectionType, connectionOptions);
 
 When you are connected you can get the data from the CRS via:
 ```
-ubpCrsAdapter.getData().then(inputData => {});
+ubpCrsAdapter.getData().then((inputData) => {});
 ```
 
 The `inputData` you get will look like that:
@@ -77,6 +77,7 @@ name          | default value
 :---          | :---           
 debug         | false
 useDateFormat | 'DDMMYYYY' (according to [momentjs date format](https://momentjs.com/docs/#/displaying/))
+useTimeFormat | 'HHmm' (according to [momentjs date format](https://momentjs.com/docs/#/displaying/))
 
 
 ### Supported CRS
@@ -91,7 +92,6 @@ TOMA (old)      | 'toma'           | .providerKey: string             | -
 TOMA SPC (new)  | 'toma2'          | .externalCatalogVersion?: string | .popupId?: string
 |               |                  | .crsUrl?: string                 |
 |               |                  | .env?: ['test' OR 'prod']        |
-Booking Manager | 'bm'             | -                                | -
 Merlin          | 'merlin'         | -                                | -
 
 For some connections you need credentials or other connection data,
@@ -110,13 +110,13 @@ Depending on the `.services[*].type` the structure of a ServiceObject differs.
 
 You can check the currently supported service types with `UbpCrsAdapter.SERVICE_TYPES`.
 
-service type | CETS  | TOMA (old) | TOMA (new) | Booking Manager | Merlin | TBM   | NEO
----          | :---: | :---:      | :---:      | :---:           | :---:  | :---: | :---:
-'car'        | X     | X          | X          | X               | X      |       |
-'hotel'      |       | X          | X          | X               | X      |       |
-'roundtrip'  |       | X          |            | X               |        |       |
-'camper'     |       | X          | X          | X               |        |       |
-'flight'     |       |            |            |                 |        |       |
+service type | CETS  | TOMA (old) | TOMA (new) | Merlin | TBM   | NEO
+---          | :---: | :---:      | :---:      | :---:  | :---: | :---:
+'car'        | X     | X          | X          | X      |       |
+'hotel'      |       | X          | X          | X      |       |
+'roundtrip'  |       | X          |            |        |       |
+'camper'     |       | X          | X          |        |       |
+'flight'     |       |            |            |        |       |
 
 | type  | fields                   | example
 | :---  | :---                     | :---
@@ -160,7 +160,7 @@ _note: if .dropOffDate is not set, it will be calculated with .pickUpDate + .dur
 |           | .birthday*          | '040485'
 
 *In case "age" and "birthday" are set "birthday" is preferred.
-
+ 
 | type     | fields                 | example
 | :---     | :---                   | :---
 | 'camper' | .renterCode            | 'PRT02' 
@@ -178,6 +178,18 @@ _note: if .dropOffDate is not set, it will be calculated with .pickUpDate + .dur
 
 Additionally every service has a `.marked` field which is by default falsy.
 But if this service is either "marked" in the crs or detected as "marked" (depends on the type) it will be true.
+
+
+## === Booking Manager ===
+
+This adapter supports also the connection to the so called _FTI360 Booking Manager_.
+Use `adapter.connect('BM')` and you unlock the full functionality of it:
+
+* `adapter.addToBasket(outputData)`
+* `adapter.directCheckout(outputData)`
+* `adapter.exit()`
+
+The structure of `outputData` is the same like it is described [above](#interface).
 
 
 ## Debugging

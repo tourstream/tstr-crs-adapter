@@ -11,6 +11,7 @@ const CONFIG = {
         },
         catalogFileName: 'ExternalCatalog.js',
         dateFormat: 'DDMMYY',
+        timeFormat: 'HHmm',
         serviceTypes: {
             car: 'MW',
             carExtra: 'E',
@@ -322,10 +323,11 @@ class TomaSPCAdapter {
 
         let pickUpDate = moment(crsService.fromDate, CONFIG.crs.dateFormat);
         let dropOffDate = moment(crsService.toDate, CONFIG.crs.dateFormat);
+        let pickUpTime = moment(crsService.accommodation, CONFIG.crs.timeFormat);
         let service = {
             pickUpDate: pickUpDate.isValid() ? pickUpDate.format(this.options.useDateFormat) : crsService.fromDate,
             dropOffDate: dropOffDate.isValid() ? dropOffDate.format(this.options.useDateFormat) : crsService.toDate,
-            pickUpTime: crsService.accommodation,
+            pickUpTime: pickUpTime.isValid() ? pickUpTime.format(this.options.useTimeFormat) : crsService.accommodation,
             duration: pickUpDate.isValid() && dropOffDate.isValid()
                 ? Math.ceil(dropOffDate.diff(pickUpDate, 'days', true))
                 : void 0,
@@ -392,10 +394,11 @@ class TomaSPCAdapter {
 
         let pickUpDate = moment(crsService.fromDate, CONFIG.crs.dateFormat);
         let dropOffDate = moment(crsService.toDate, CONFIG.crs.dateFormat);
+        let pickUpTime = moment(crsService.accommodation, CONFIG.crs.timeFormat);
         let service = {
             pickUpDate: pickUpDate.isValid() ? pickUpDate.format(this.options.useDateFormat) : crsService.fromDate,
             dropOffDate: dropOffDate.isValid() ? dropOffDate.format(this.options.useDateFormat) : crsService.toDate,
-            pickUpTime: crsService.accommodation,
+            pickUpTime: pickUpTime.isValid() ? pickUpTime.format(this.options.useTimeFormat) : crsService.accommodation,
             duration: pickUpDate.isValid() && dropOffDate.isValid()
                 ? Math.ceil(dropOffDate.diff(pickUpDate, 'days', true))
                 : void 0,
@@ -527,6 +530,7 @@ class TomaSPCAdapter {
         let dropOffDate = (adapterService.dropOffDate)
             ? moment(adapterService.dropOffDate, this.options.useDateFormat)
             : moment(adapterService.pickUpDate, this.options.useDateFormat).add(adapterService.duration, 'days');
+        let pickUpTime = moment(adapterService.pickUpTime, this.options.useDateFormat);
 
         crsService.serviceType = CONFIG.crs.serviceTypes.car;
 
@@ -542,7 +546,7 @@ class TomaSPCAdapter {
 
         crsService.fromDate = pickUpDate.format(CONFIG.crs.dateFormat);
         crsService.toDate = dropOffDate.format(CONFIG.crs.dateFormat);
-        crsService.accommodation = adapterService.pickUpTime;
+        crsService.accommodation = pickUpTime.isValid() ? pickUpTime.format(CONFIG.crs.timeFormat) : adapterService.pickUpTime;
 
         crsObject.remark = [crsObject.remark, reduceExtrasList(adapterService.extras)].filter(Boolean).join(',') || void 0;
     };
@@ -582,8 +586,8 @@ class TomaSPCAdapter {
 
             emptyService.serviceType = CONFIG.crs.serviceTypes.carExtra;
             emptyService.serviceCode = hotelName;
-            emptyService.fromDate = pickUpDate.format(CONFIG.crs.dateFormat);
-            emptyService.toDate = dropOffDate.format(CONFIG.crs.dateFormat);
+            emptyService.fromDate = pickUpDate.isValid() ? pickUpDate.format(CONFIG.crs.dateFormat) : adapterService.pickUpDate;
+            emptyService.toDate = dropOffDate.isValid() ? dropOffDate.format(CONFIG.crs.dateFormat) : adapterService.dropOffDate;
         }
 
         crsObject.remark = [crsObject.remark, reduceHotelDataToRemarkString(adapterService)].filter(Boolean).join(',') || void 0;
@@ -595,11 +599,14 @@ class TomaSPCAdapter {
      * @param crsService object
      */
     assignHotelServiceFromAdapterObjectToCrsObject(adapterService, crsService) {
+        let dateFrom = moment(adapterService.dateFrom, this.options.useDateFormat);
+        let dateTo = moment(adapterService.dateTo, this.options.useDateFormat);
+
         crsService.serviceType = CONFIG.crs.serviceTypes.hotel;
         crsService.serviceCode = adapterService.destination;
         crsService.accommodation = [adapterService.roomCode, adapterService.mealCode].join(' ');
-        crsService.fromDate = moment(adapterService.dateFrom, this.options.useDateFormat).format(CONFIG.crs.dateFormat);
-        crsService.toDate = moment(adapterService.dateTo, this.options.useDateFormat).format(CONFIG.crs.dateFormat);
+        crsService.fromDate = dateFrom.isValid() ? dateFrom.format(CONFIG.crs.dateFormat) : adapterService.dateFrom;
+        crsService.toDate = dateTo.isValid() ? dateTo.format(CONFIG.crs.dateFormat) : adapterService.dateTo;
     }
 
     /**
@@ -626,8 +633,8 @@ class TomaSPCAdapter {
             adapterService.dropOffLocation,
         ].join('');
 
-        crsService.fromDate = pickUpDate.format(CONFIG.crs.dateFormat);
-        crsService.toDate = dropOffDate.format(CONFIG.crs.dateFormat);
+        crsService.fromDate = pickUpDate.isValid() ? pickUpDate.format(CONFIG.crs.dateFormat) : adapterService.pickUpDate;
+        crsService.toDate = dropOffDate.isValid() ? dropOffDate.format(CONFIG.crs.dateFormat) : adapterService.dropOffDate;
         crsService.accommodation = adapterService.pickUpTime;
         crsService.quantity = adapterService.milesIncludedPerDay;
         crsService.occupancy = adapterService.milesPackagesIncluded;
@@ -651,8 +658,8 @@ class TomaSPCAdapter {
 
             service.serviceType = CONFIG.crs.serviceTypes.camperExtra;
             service.serviceCode = extraParts[0];
-            service.fromDate = pickUpDate.format(CONFIG.crs.dateFormat);
-            service.toDate = dropOffDate.format(CONFIG.crs.dateFormat);
+            service.fromDate = pickUpDate.isValid() ? pickUpDate.format(CONFIG.crs.dateFormat) : adapterService.pickUpDate;
+            service.toDate = dropOffDate.isValid() ? dropOffDate.format(CONFIG.crs.dateFormat) : adapterService.dropOffDate;
             service.travellerAssociation = '1' + ((extraParts[1] > 1) ? '-' + extraParts[1] : '');
         });
     }
