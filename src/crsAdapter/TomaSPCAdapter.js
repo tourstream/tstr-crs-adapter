@@ -530,7 +530,7 @@ class TomaSPCAdapter {
         let dropOffDate = (adapterService.dropOffDate)
             ? moment(adapterService.dropOffDate, this.options.useDateFormat)
             : moment(adapterService.pickUpDate, this.options.useDateFormat).add(adapterService.duration, 'days');
-        let pickUpTime = moment(adapterService.pickUpTime, this.options.useDateFormat);
+        let pickUpTime = moment(adapterService.pickUpTime, this.options.useTimeFormat);
 
         crsService.serviceType = CONFIG.crs.serviceTypes.car;
 
@@ -620,6 +620,7 @@ class TomaSPCAdapter {
         let dropOffDate = (adapterService.dropOffDate)
             ? moment(adapterService.dropOffDate, this.options.useDateFormat)
             : moment(adapterService.pickUpDate, this.options.useDateFormat).add(adapterService.duration, 'days');
+        let pickUpTime = moment(adapterService.pickUpTime, this.options.useTimeFormat);
 
         crsService.serviceType = CONFIG.crs.serviceTypes.camper;
 
@@ -635,7 +636,7 @@ class TomaSPCAdapter {
 
         crsService.fromDate = pickUpDate.isValid() ? pickUpDate.format(CONFIG.crs.dateFormat) : adapterService.pickUpDate;
         crsService.toDate = dropOffDate.isValid() ? dropOffDate.format(CONFIG.crs.dateFormat) : adapterService.dropOffDate;
-        crsService.accommodation = adapterService.pickUpTime;
+        crsService.accommodation = pickUpTime.isValid() ? pickUpTime.format(CONFIG.crs.timeFormat) : adapterService.pickUpTime;
         crsService.quantity = adapterService.milesIncludedPerDay;
         crsService.occupancy = adapterService.milesPackagesIncluded;
         crsService.travellerAssociation = '1' + ((crsObject.numTravellers > 1) ? '-' + crsObject.numTravellers : '');

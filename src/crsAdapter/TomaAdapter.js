@@ -381,9 +381,11 @@ class TomaAdapter {
 
         let pickUpDate = moment(xml['From.' + lineNumber], CONFIG.crs.dateFormat);
         let dropOffDate = moment(xml['To.' + lineNumber], CONFIG.crs.dateFormat);
+        let pickUpTime = moment(xml['Accommodation.' + lineNumber], CONFIG.crs.timeFormat);
         let service = {
             pickUpDate: pickUpDate.isValid() ? pickUpDate.format(this.options.useDateFormat) : xml['From.' + lineNumber],
             dropOffDate: dropOffDate.isValid() ? dropOffDate.format(this.options.useDateFormat) : xml['To.' + lineNumber],
+            pickUpTime: pickUpTime.isValid() ? pickUpTime.format(this.options.useTimeFormat) : xml['Accommodation.' + lineNumber],
             duration: pickUpDate.isValid() && dropOffDate.isValid()
                 ? Math.ceil(dropOffDate.diff(pickUpDate, 'days', true))
                 : void 0,
@@ -634,6 +636,7 @@ class TomaAdapter {
         let dropOffDate = (service.dropOffDate)
             ? moment(service.dropOffDate, this.options.useDateFormat)
             : moment(service.pickUpDate, this.options.useDateFormat).add(service.duration, 'days');
+        let pickUpTime = moment(service.pickUpTime, this.options.useTimeFormat);
 
         xml['KindOfService.' + lineNumber] = CONFIG.crs.serviceTypes.camper;
 
@@ -649,6 +652,7 @@ class TomaAdapter {
 
         xml['From.' + lineNumber] = pickUpDate.isValid() ? pickUpDate.format(CONFIG.crs.dateFormat) : service.pickUpDate;
         xml['To.' + lineNumber] = dropOffDate.isValid() ? dropOffDate.format(CONFIG.crs.dateFormat) : service.dropOffDate;
+        xml['Accommodation' + lineNumber] = pickUpTime.isValid() ? pickUpTime.format(CONFIG.crs.timeFormat) : service.pickUpTime;
         xml['Count.' + lineNumber] = service.milesIncludedPerDay;
         xml['Occupancy.' + lineNumber] = service.milesPackagesIncluded;
         xml['TravAssociation.' + lineNumber] = '1' + ((xml.NoOfPersons > 1) ? '-' + xml.NoOfPersons : '');
