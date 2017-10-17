@@ -517,7 +517,7 @@ class TomaAdapter {
             return (extras || []).join('|')
                 .replace(/navigationSystem/g, 'GPS')
                 .replace(/childCareSeat0/g, 'BS')
-                .replace(/childCareSeat(\d)/g, 'CS$1YRS');
+                .replace(/childCareSeat((\d){1,2})/g, 'CS$1YRS');
         };
 
         let pickUpDate = moment(service.pickUpDate, this.options.useDateFormat);

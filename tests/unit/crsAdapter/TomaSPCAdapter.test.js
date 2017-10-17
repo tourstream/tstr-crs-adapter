@@ -658,7 +658,7 @@ describe('TomaSPCAdapter', () => {
                         dropOffHotelName: 'doh name',
                         dropOffHotelAddress: 'doh address',
                         dropOffHotelPhoneNumber: 'doh number',
-                        extras: ['navigationSystem', 'childCareSeat0', 'childCarSeat2', 'roofRack'],
+                        extras: ['navigationSystem', 'childCareSeat0', 'childCarSeat10', 'roofRack'],
                     },
                 ],
             };
@@ -666,7 +666,7 @@ describe('TomaSPCAdapter', () => {
             let expected = {
                 action: 'BA',
                 numTravellers: 1,
-                remark: 'GPS|BS|childCarSeat2|roofRack,puh address puh number|doh name|doh address doh number',
+                remark: 'GPS|BS|childCarSeat10|roofRack,puh address puh number|doh name|doh address doh number',
                 services: [
                     {
                         serviceType: 'MW',
