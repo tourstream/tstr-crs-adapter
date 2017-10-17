@@ -30590,7 +30590,7 @@ var MerlinAdapter = function () {
             };
 
             var reduceExtrasList = function reduceExtrasList(extras) {
-                return (extras || []).join('|').replace(/childCareSeat0/g, 'BS').replace(/childCareSeat(\d)/g, 'CS$1YRS');
+                return (extras || []).join('|').replace(/childCareSeat0/g, 'BS').replace(/childCareSeat((\d){1,2})/g, 'CS$1YRS');
             };
 
             var reduceHotelDataToRemarkString = function reduceHotelDataToRemarkString(service) {
@@ -31135,9 +31135,11 @@ var TomaAdapter = function () {
 
             var pickUpDate = (0, _moment2.default)(xml['From.' + lineNumber], CONFIG.crs.dateFormat);
             var dropOffDate = (0, _moment2.default)(xml['To.' + lineNumber], CONFIG.crs.dateFormat);
+            var pickUpTime = (0, _moment2.default)(xml['Accommodation.' + lineNumber], CONFIG.crs.timeFormat);
             var service = {
                 pickUpDate: pickUpDate.isValid() ? pickUpDate.format(this.options.useDateFormat) : xml['From.' + lineNumber],
                 dropOffDate: dropOffDate.isValid() ? dropOffDate.format(this.options.useDateFormat) : xml['To.' + lineNumber],
+                pickUpTime: pickUpTime.isValid() ? pickUpTime.format(this.options.useTimeFormat) : xml['Accommodation.' + lineNumber],
                 duration: pickUpDate.isValid() && dropOffDate.isValid() ? Math.ceil(dropOffDate.diff(pickUpDate, 'days', true)) : void 0,
                 milesIncludedPerDay: xml['Count.' + lineNumber],
                 milesPackagesIncluded: xml['Occupancy.' + lineNumber],
@@ -31288,7 +31290,7 @@ var TomaAdapter = function () {
         key: 'assignCarServiceFromAdapterObjectToXmlObject',
         value: function assignCarServiceFromAdapterObjectToXmlObject(service, xml, lineNumber) {
             var reduceExtrasList = function reduceExtrasList(extras) {
-                return (extras || []).join('|').replace(/navigationSystem/g, 'GPS').replace(/childCareSeat0/g, 'BS').replace(/childCareSeat(\d)/g, 'CS$1YRS');
+                return (extras || []).join('|').replace(/navigationSystem/g, 'GPS').replace(/childCareSeat0/g, 'BS').replace(/childCareSeat((\d){1,2})/g, 'CS$1YRS');
             };
 
             var pickUpDate = (0, _moment2.default)(service.pickUpDate, this.options.useDateFormat);
@@ -31406,6 +31408,7 @@ var TomaAdapter = function () {
         value: function assignCamperServiceFromAdapterObjectToXmlObject(service, xml, lineNumber) {
             var pickUpDate = (0, _moment2.default)(service.pickUpDate, this.options.useDateFormat);
             var dropOffDate = service.dropOffDate ? (0, _moment2.default)(service.dropOffDate, this.options.useDateFormat) : (0, _moment2.default)(service.pickUpDate, this.options.useDateFormat).add(service.duration, 'days');
+            var pickUpTime = (0, _moment2.default)(service.pickUpTime, this.options.useTimeFormat);
 
             xml['KindOfService.' + lineNumber] = CONFIG.crs.serviceTypes.camper;
 
@@ -31414,6 +31417,7 @@ var TomaAdapter = function () {
 
             xml['From.' + lineNumber] = pickUpDate.isValid() ? pickUpDate.format(CONFIG.crs.dateFormat) : service.pickUpDate;
             xml['To.' + lineNumber] = dropOffDate.isValid() ? dropOffDate.format(CONFIG.crs.dateFormat) : service.dropOffDate;
+            xml['Accommodation' + lineNumber] = pickUpTime.isValid() ? pickUpTime.format(CONFIG.crs.timeFormat) : service.pickUpTime;
             xml['Count.' + lineNumber] = service.milesIncludedPerDay;
             xml['Occupancy.' + lineNumber] = service.milesPackagesIncluded;
             xml['TravAssociation.' + lineNumber] = '1' + (xml.NoOfPersons > 1 ? '-' + xml.NoOfPersons : '');
@@ -32104,12 +32108,12 @@ var TomaSPCAdapter = function () {
         key: 'assignCarServiceFromAdapterObjectToCrsObject',
         value: function assignCarServiceFromAdapterObjectToCrsObject(adapterService, crsService, crsObject) {
             var reduceExtrasList = function reduceExtrasList(extras) {
-                return (extras || []).join('|').replace(/navigationSystem/g, 'GPS').replace(/childCareSeat0/g, 'BS').replace(/childCareSeat(\d)/g, 'CS$1YRS');
+                return (extras || []).join('|').replace(/navigationSystem/g, 'GPS').replace(/childCareSeat0/g, 'BS').replace(/childCareSeat((\d){1,2})/g, 'CS$1YRS');
             };
 
             var pickUpDate = (0, _moment2.default)(adapterService.pickUpDate, this.options.useDateFormat);
             var dropOffDate = adapterService.dropOffDate ? (0, _moment2.default)(adapterService.dropOffDate, this.options.useDateFormat) : (0, _moment2.default)(adapterService.pickUpDate, this.options.useDateFormat).add(adapterService.duration, 'days');
-            var pickUpTime = (0, _moment2.default)(adapterService.pickUpTime, this.options.useDateFormat);
+            var pickUpTime = (0, _moment2.default)(adapterService.pickUpTime, this.options.useTimeFormat);
 
             crsService.serviceType = CONFIG.crs.serviceTypes.car;
 
@@ -32197,6 +32201,7 @@ var TomaSPCAdapter = function () {
         value: function assignCamperServiceFromAdapterObjectToCrsObject(adapterService, crsService, crsObject) {
             var pickUpDate = (0, _moment2.default)(adapterService.pickUpDate, this.options.useDateFormat);
             var dropOffDate = adapterService.dropOffDate ? (0, _moment2.default)(adapterService.dropOffDate, this.options.useDateFormat) : (0, _moment2.default)(adapterService.pickUpDate, this.options.useDateFormat).add(adapterService.duration, 'days');
+            var pickUpTime = (0, _moment2.default)(adapterService.pickUpTime, this.options.useTimeFormat);
 
             crsService.serviceType = CONFIG.crs.serviceTypes.camper;
 
@@ -32205,7 +32210,7 @@ var TomaSPCAdapter = function () {
 
             crsService.fromDate = pickUpDate.isValid() ? pickUpDate.format(CONFIG.crs.dateFormat) : adapterService.pickUpDate;
             crsService.toDate = dropOffDate.isValid() ? dropOffDate.format(CONFIG.crs.dateFormat) : adapterService.dropOffDate;
-            crsService.accommodation = adapterService.pickUpTime;
+            crsService.accommodation = pickUpTime.isValid() ? pickUpTime.format(CONFIG.crs.timeFormat) : adapterService.pickUpTime;
             crsService.quantity = adapterService.milesIncludedPerDay;
             crsService.occupancy = adapterService.milesPackagesIncluded;
             crsService.travellerAssociation = '1' + (crsObject.numTravellers > 1 ? '-' + crsObject.numTravellers : '');
@@ -41557,7 +41562,7 @@ function config (name) {
 
 module.exports = {
 	"name": "ubp-crs-adapter",
-	"version": "0.0.10",
+	"version": "0.0.11",
 	"description": "This library provides connections to different travel CRSs. It also let you read and write data from/to them.",
 	"main": "dist/ubpCrsAdapter.js",
 	"directories": {
