@@ -523,14 +523,14 @@ class TomaSPCAdapter {
             return (extras || []).join('|')
                 .replace(/navigationSystem/g, 'GPS')
                 .replace(/childCareSeat0/g, 'BS')
-                .replace(/childCareSeat(\d)/g, 'CS$1YRS');
+                .replace(/childCareSeat((\d){1,2})/g, 'CS$1YRS');
         };
 
         let pickUpDate = moment(adapterService.pickUpDate, this.options.useDateFormat);
         let dropOffDate = (adapterService.dropOffDate)
             ? moment(adapterService.dropOffDate, this.options.useDateFormat)
             : moment(adapterService.pickUpDate, this.options.useDateFormat).add(adapterService.duration, 'days');
-        let pickUpTime = moment(adapterService.pickUpTime, this.options.useDateFormat);
+        let pickUpTime = moment(adapterService.pickUpTime, this.options.useTimeFormat);
 
         crsService.serviceType = CONFIG.crs.serviceTypes.car;
 
@@ -620,6 +620,7 @@ class TomaSPCAdapter {
         let dropOffDate = (adapterService.dropOffDate)
             ? moment(adapterService.dropOffDate, this.options.useDateFormat)
             : moment(adapterService.pickUpDate, this.options.useDateFormat).add(adapterService.duration, 'days');
+        let pickUpTime = moment(adapterService.pickUpTime, this.options.useTimeFormat);
 
         crsService.serviceType = CONFIG.crs.serviceTypes.camper;
 
@@ -635,7 +636,7 @@ class TomaSPCAdapter {
 
         crsService.fromDate = pickUpDate.isValid() ? pickUpDate.format(CONFIG.crs.dateFormat) : adapterService.pickUpDate;
         crsService.toDate = dropOffDate.isValid() ? dropOffDate.format(CONFIG.crs.dateFormat) : adapterService.dropOffDate;
-        crsService.accommodation = adapterService.pickUpTime;
+        crsService.accommodation = pickUpTime.isValid() ? pickUpTime.format(CONFIG.crs.timeFormat) : adapterService.pickUpTime;
         crsService.quantity = adapterService.milesIncludedPerDay;
         crsService.occupancy = adapterService.milesPackagesIncluded;
         crsService.travellerAssociation = '1' + ((crsObject.numTravellers > 1) ? '-' + crsObject.numTravellers : '');

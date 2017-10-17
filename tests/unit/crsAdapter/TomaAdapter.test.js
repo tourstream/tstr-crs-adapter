@@ -619,7 +619,6 @@ describe('TomaAdapter', () => {
                             pickUpDate: '23122018',
                             pickUpLocation: 'from.loc',
                             dropOffDate: '04012019',
-                            dropOffTime: 'to.time',
                             dropOffLocation: 'to.loc',
                             duration: '10',
                             renterCode: 'rent.code',
