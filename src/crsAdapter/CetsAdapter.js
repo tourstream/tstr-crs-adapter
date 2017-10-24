@@ -330,8 +330,7 @@ class CetsAdapter {
                     this.assignCarServiceFromAdapterObjectToXmlObject(service, xmlRequest);
                     break;
                 }
-                default:
-                    return;
+                default: this.logger.warn('type ' + service.type + ' is not supported by the CETS adapter');
             }
         });
     }

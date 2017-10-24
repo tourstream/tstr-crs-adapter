@@ -64,7 +64,9 @@ class TomaSPCAdapter {
             this.logger.info('CRS OBJECT:');
             this.logger.info(crsObject);
 
-            return this.sendData(crsObject);
+            return this.sendData(crsObject).then(() => {
+                this.exit();
+            });
         }).then(null, (error) => {
             this.logger.error(error);
             throw new Error('[.setData] ' + error.message);
@@ -161,7 +163,7 @@ class TomaSPCAdapter {
             return this.connection;
         }
 
-        throw new Error('No connection available - please connect to TOMA first.');
+        throw new Error('No connection available - please connect to TOMA SPC first.');
     }
 
     /**
@@ -480,8 +482,17 @@ class TomaSPCAdapter {
 
                     break;
                 }
+                default: {
+                    crsObject.services.splice(crsObject.services.indexOf(service), 1);
+
+                    this.logger.warn('type ' + service.type + ' is not supported by the TOMA SPC adapter');
+                }
             }
         });
+
+        if ((crsObject.services || []).length === 0) {
+            delete crsObject.services;
+        }
 
         return JSON.parse(JSON.stringify(crsObject));
     };

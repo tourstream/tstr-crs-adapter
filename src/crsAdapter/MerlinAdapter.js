@@ -55,13 +55,13 @@ class MerlinAdapter {
     }
 
     connect() {
-        let connection = this.createConnection();
-        this.connection = connection;
+        this.connection = this.createConnection();
 
-        return connection.post({}).then(() => {
+        return this.connection.post().then(() => {
             this.logger.log('Merlin connection available');
         }, (error) => {
-            this.logger.info(error);
+            this.logger.error(error.message);
+            this.logger.info('response is: ' + error.response);
             this.logger.error('Instantiate connection error - but nevertheless transfer could work');
             throw error;
         });
@@ -109,7 +109,7 @@ class MerlinAdapter {
      */
     createConnection() {
         return {
-            post: (data) => axios.post(CONFIG.crs.connectionUrl, data),
+            post: (data = {}) => axios.post(CONFIG.crs.connectionUrl, data),
         };
     }
 
@@ -150,6 +150,18 @@ class MerlinAdapter {
      * @param dataObject object
      */
     assignAdapterObjectToXmlObject(xmlObject, dataObject = {}) {
+        const createServiceIfNotExists = (service) => {
+            let xmlService = this.getMarkedServiceForServiceType(xmlImport.ServiceBlock.ServiceRow, service.type);
+
+            if (!xmlService) {
+                xmlService = this.createEmptyService(xmlImport.ServiceBlock.ServiceRow);
+
+                xmlImport.ServiceBlock.ServiceRow.push(xmlService);
+            }
+
+            return xmlService;
+        };
+
         let xmlImport = xmlObject.GATE2MX.SendRequest.Import;
 
         xmlImport.TransactionCode = CONFIG.crs.defaultValues.action;
@@ -161,13 +173,7 @@ class MerlinAdapter {
         }
 
         (dataObject.services || []).forEach((service) => {
-            let xmlService = this.getMarkedServiceForServiceType(xmlImport.ServiceBlock.ServiceRow, service.type);
-
-            if (!xmlService) {
-                xmlService = this.createEmptyService(xmlImport.ServiceBlock.ServiceRow);
-
-                xmlImport.ServiceBlock.ServiceRow.push(xmlService);
-            }
+            let xmlService = createServiceIfNotExists(service);
 
             switch (service.type) {
                 case SERVICE_TYPES.car: {
@@ -178,9 +184,18 @@ class MerlinAdapter {
                     this.assignHotelServiceFromAdapterObjectToXmlObject(service, xmlService);
                     break;
                 }
+                default: {
+                    xmlImport.ServiceBlock.ServiceRow.splice(xmlImport.ServiceBlock.ServiceRow.indexOf(xmlService), 1);
+
+                    this.logger.warn('type ' + service.type + ' is not supported by the Merlin adapter');
+                }
             }
 
             xmlService.MarkField = service.marked ? 'X' : void 0;
+
+            if ((xmlImport.ServiceBlock.ServiceRow || []).length === 0) {
+                delete xmlImport.ServiceBlock;
+            }
         });
     };
 

@@ -67,6 +67,10 @@ ubpCrsAdapter.exit(exitOptions)
 
 _note: every method returns a promise_
 
+_note: `setData` triggers automatically an `exit` 
+which will close the "CRS overlay/popup" (if there is any). 
+but be aware that you have to close any separated opened windows by yourself!_
+
 
 ### Supported `adapterOptions`
 
@@ -93,6 +97,7 @@ TOMA SPC (new)  | 'toma2'          | .externalCatalogVersion?: string | .popupId
 |               |                  | .crsUrl?: string                 |
 |               |                  | .env?: ['test' OR 'prod']        |
 Merlin          | 'merlin'         | -                                | -
+MyJackExpert    | 'mjExpert'       | token: string                    | -
 
 For some connections you need credentials or other connection data,
 which you can set in the `connectionOptions`.
@@ -110,17 +115,25 @@ Depending on the `.services[*].type` the structure of a ServiceObject differs.
 
 You can check the currently supported service types with `UbpCrsAdapter.SERVICE_TYPES`.
 
-service type | CETS  | TOMA (old) | TOMA (new) | Merlin | TBM   | NEO
----          | :---: | :---:      | :---:      | :---:  | :---: | :---:
-'car'        | X     | X          | X          | X      |       |
-'hotel'      |       | X          | X          | X      |       |
-'roundtrip'  |       | X          |            |        |       |
-'camper'     |       | X          | X          |        |       |
-'flight'     |       |            |            |        |       |
+|             | car   | hotel | roundtrip | camper 
+---           | :---: | :---: | :---:     | :---:
+CETS          | X     |       |           | 
+TOMA (old)    | X     | X     | X         | X 
+TOMA (new)    | X     | X     |           | X
+Merlin        | X     | X     |           | 
+TBM           |       |       |           | 
+NEO           |       |       |           | 
+MyJack Expert (alpha) | X | X | X         | X
+
+'car'        | X     | X          | X          | X      |       |       | X
+'hotel'      |       | X          | X          | X      |       |       | X
+'roundtrip'  |       | X          |            |        |       |       | X
+'camper'     |       | X          | X          |        |       |       | X
+'flight'     |       |            |            |        |       |       |
 
 | type  | fields                   | example
 | :---  | :---                     | :---
-| 'car' | .vehicleTypeCode         | 'E4' 
+| car   | .vehicleTypeCode         | 'E4' 
 |       | .rentalCode              | 'DEU85' 
 |       | .pickUpLocation          | 'BER3' 
 |       | .pickUpDate              | '28122017' 
@@ -141,7 +154,7 @@ _note: if .dropOffDate is not set, it will be calculated with .pickUpDate + .dur
 
 | type    | fields       | example
 | :---    | :---         | :---
-| 'hotel' | .roomCode    | 'DZ' 
+| hotel   | .roomCode    | 'DZ' 
 |         | .mealCode    | 'U' 
 |         | .destination | 'LAX20S' 
 |         | .dateFrom    | '20092017' 
@@ -149,7 +162,7 @@ _note: if .dropOffDate is not set, it will be calculated with .pickUpDate + .dur
 
 | type      | fields              | example
 | :---      | :---                | :---
-|'roundTrip'| .bookingId          | 'NEZE2784NQXTHEN' 
+| roundTrip | .bookingId          | 'NEZE2784NQXTHEN' 
 |           | .destination        | 'YYZ' 
 |           | .numberOfPassengers | '1' 
 |           | .startDate          | '05122017' 
@@ -163,7 +176,7 @@ _note: if .dropOffDate is not set, it will be calculated with .pickUpDate + .dur
  
 | type     | fields                 | example
 | :---     | :---                   | :---
-| 'camper' | .renterCode            | 'PRT02' 
+| camper   | .renterCode            | 'PRT02' 
 |          | .camperCode            | 'FS' 
 |          | .pickUpLocation        | 'LIS1' 
 |          | .pickUpDate            | '10102017' 
@@ -183,7 +196,7 @@ But if this service is either "marked" in the crs or detected as "marked" (depen
 ## === Booking Manager ===
 
 This adapter supports also the connection to the so called _FTI360 Booking Manager_.
-Use `adapter.connect('BM')` and you unlock the full functionality of it:
+Use `adapter.connect('bm')` and you unlock the full functionality of it:
 
 * `adapter.addToBasket(outputData)`
 * `adapter.directCheckout(outputData)`

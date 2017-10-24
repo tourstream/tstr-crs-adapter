@@ -22,7 +22,7 @@ body  {
 input {
     display: inline-block;
     left: 200px;
-    position: fixed;
+    position: sticky;
 }
 
 label {
