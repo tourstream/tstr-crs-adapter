@@ -125,12 +125,6 @@ TBM           |       |       |           |
 NEO           |       |       |           | 
 MyJack Expert (alpha) | X | X | X         | X
 
-'car'        | X     | X          | X          | X      |       |       | X
-'hotel'      |       | X          | X          | X      |       |       | X
-'roundtrip'  |       | X          |            |        |       |       | X
-'camper'     |       | X          | X          |        |       |       | X
-'flight'     |       |            |            |        |       |       |
-
 | type  | fields                   | example
 | :---  | :---                     | :---
 | car   | .vehicleTypeCode         | 'E4' 
