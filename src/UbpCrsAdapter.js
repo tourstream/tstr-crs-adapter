@@ -75,7 +75,7 @@ class UbpCrsAdapter {
      * @param options i.e. { providerKey: 'key' }
      */
     connect(crsType, options = {}) {
-        return new Promise((resolve) => {
+        return new Promise((resolve, reject) => {
             this.logger.info('Try to connect to CRS: ' + crsType);
 
             if (!crsType) {
@@ -92,7 +92,7 @@ class UbpCrsAdapter {
                 this.logger.info('With options:');
                 this.logger.info(options);
 
-                Promise.resolve(this.getAdapterInstance().connect(options)).then(resolve);
+                Promise.resolve(this.getAdapterInstance().connect(options)).then(resolve, reject);
             } catch (error) {
                 this.logAndThrow('connect error:', error);
             }
@@ -100,11 +100,11 @@ class UbpCrsAdapter {
     }
 
     getData() {
-        return new Promise((resolve) => {
+        return new Promise((resolve, reject) => {
             this.logger.info('Try to get data');
 
             try {
-                Promise.resolve(this.getAdapterInstance().getData()).then(resolve);
+                Promise.resolve(this.getAdapterInstance().getData()).then(resolve, reject);
             } catch (error) {
                 this.logAndThrow('get data error:', error);
             }
@@ -112,7 +112,7 @@ class UbpCrsAdapter {
     }
 
     setData(data) {
-        return new Promise((resolve) => {
+        return new Promise((resolve, reject) => {
             this.logger.info('Try to set data:');
             this.logger.info(data);
 
@@ -121,7 +121,7 @@ class UbpCrsAdapter {
             }
 
             try {
-                Promise.resolve(this.getAdapterInstance().setData(data)).then(resolve);
+                Promise.resolve(this.getAdapterInstance().setData(data)).then(resolve, reject);
             } catch (error) {
                 this.logAndThrow('set data error:', error);
             }
@@ -129,7 +129,7 @@ class UbpCrsAdapter {
     }
 
     directCheckout(data) {
-        return new Promise((resolve) => {
+        return new Promise((resolve, reject) => {
             this.logger.info('Try to do a direct checkout:');
             this.logger.info(data);
 
@@ -138,7 +138,7 @@ class UbpCrsAdapter {
             }
 
             try {
-                Promise.resolve(this.getAdapterInstance().directCheckout(data)).then(resolve);
+                Promise.resolve(this.getAdapterInstance().directCheckout(data)).then(resolve, reject);
             } catch (error) {
                 this.logAndThrow('direct checkout error:', error);
             }
@@ -146,7 +146,7 @@ class UbpCrsAdapter {
     }
 
     addToBasket(data) {
-        return new Promise((resolve) => {
+        return new Promise((resolve, reject) => {
             this.logger.info('Try to add to basket:');
             this.logger.info(data);
 
@@ -155,7 +155,7 @@ class UbpCrsAdapter {
             }
 
             try {
-                Promise.resolve(this.getAdapterInstance().addToBasket(data)).then(resolve);
+                Promise.resolve(this.getAdapterInstance().addToBasket(data)).then(resolve, reject);
             } catch (error) {
                 this.logAndThrow('add to basket error:', error);
             }
@@ -163,12 +163,12 @@ class UbpCrsAdapter {
     }
 
     exit(options = {}) {
-        return new Promise((resolve) => {
+        return new Promise((resolve, reject) => {
             this.logger.info('Try to exit with options');
             this.logger.info(options);
 
             try {
-                Promise.resolve(this.getAdapterInstance().exit(options)).then(resolve);
+                Promise.resolve(this.getAdapterInstance().exit(options)).then(resolve, reject);
             } catch (error) {
                 this.logAndThrow('exit error:', error);
             }

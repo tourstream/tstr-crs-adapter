@@ -20,24 +20,24 @@ class BmAdapter {
     }
 
     addToBasket(dataObject) {
-        this.getConnection().promise.then(parent => {
+        return this.getConnection().promise.then(parent => {
             let rawObject = this.mapDataObjectToRawObject(dataObject);
 
             this.logger.log('RAW DATA');
             this.logger.log(rawObject);
 
-            parent.addToBasket(rawObject);
+            return parent.addToBasket(rawObject);
         });
     }
 
     directCheckout(dataObject) {
-        this.getConnection().promise.then(parent => {
+        return this.getConnection().promise.then(parent => {
             let rawObject = this.mapDataObjectToRawObject(dataObject);
 
             this.logger.log('RAW DATA');
             this.logger.log(rawObject);
 
-            parent.directCheckout(rawObject);
+            return parent.directCheckout(rawObject);
         });
     }
 
