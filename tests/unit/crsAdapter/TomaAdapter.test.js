@@ -17,7 +17,7 @@ describe('TomaAdapter', () => {
     it('connect() should throw error if providerKey is not given', () => {
         window.ActiveXObject = void 0;
 
-        expect(adapter.connect).toThrowError('No providerKey found in options.');
+        expect(adapter.connect).toThrowError('No providerKey found in connectionOptions.');
     });
 
     it('connect() should throw error if ActiveX object can not be created', () => {

@@ -18,12 +18,16 @@
                 <option value="cets">CETS</option>
                 <option value="bm">Booking Manager</option>
                 <option value="merlin">Merlin</option>
+                <option value="mjexpert">MyJack</option>
             </select>
+            <button id="connect">connect</button>
+            <form id="connect-options"></form>
 
             <div id="actions">
                 <button id="get-data-btn">get data</button>
                 <button id="set-data-btn">send data</button>
                 <button id="exit-btn">trigger exit</button>
+                <br />
                 <button id="add-car-service-btn">toggle car service</button>
                 <button id="add-hotel-service-btn">toggle hotel service</button>
                 <button id="add-round-trip-service-btn">toggle round trip service</button>
@@ -31,6 +35,18 @@
             </div>
 
             <div id="templates">
+                <div id="toma-connect-template" class="column connect-option">
+                    <label>providerKey: <input name="providerKey"/></label>
+                </div>
+
+                <div id="toma2-connect-template" class="column connect-option">
+                    <label>env: <input name="env" value="test"/></label>
+                </div>
+
+                <div id="mjExpert-connect-template" class="column connect-option">
+                    <label>token: <input name="token"/></label>
+                </div>
+
                 <div id="car-service-template" class="column service">
                     <input type="hidden" name="service.type" value="car"/>
                     <label>marked: <input name="service.marked"/></label>

@@ -1,16 +1,18 @@
 import injector from 'inject!../../src/UbpCrsAdapter';
 
 describe('UbpCrsAdapter', () => {
-    let adapter, UbpCrsAdapter, AnyCrsAdapter, LogService;
+    let adapter, UbpCrsAdapter, AnyCrsAdapter, LogService, BmAdapter;
 
     beforeEach(() => {
         AnyCrsAdapter = require('tests/unit/_mocks/AnyCrsAdapter')();
+        BmAdapter = require('tests/unit/_mocks/BmAdapter')();
         LogService = require('tests/unit/_mocks/LogService');
         UbpCrsAdapter = injector({
             'crsAdapter/TomaAdapter': () => AnyCrsAdapter,
             'crsAdapter/CetsAdapter': () => AnyCrsAdapter,
-            'crsAdapter/BmAdapter': () => AnyCrsAdapter,
+            'crsAdapter/BmAdapter': () => BmAdapter,
             'crsAdapter/TomaSPCAdapter': () => AnyCrsAdapter,
+            'crsAdapter/MyJackExpertAdapter': () => AnyCrsAdapter,
             'LogService': LogService,
         });
 
@@ -59,6 +61,7 @@ describe('UbpCrsAdapter', () => {
             cets: jasmine.anything(),
             bookingManager: jasmine.anything(),
             merlin: jasmine.anything(),
+            myJackExpert: jasmine.anything(),
         });
     });
 
@@ -94,7 +97,7 @@ describe('UbpCrsAdapter', () => {
         adapter.connect(UbpCrsAdapter.CRS_TYPES.cets).then(() => {
             done.fail('expectation error');
         }).catch((error) => {
-            expect(error.toString()).toBe('Error: connection error: adapter.error');
+            expect(error.toString()).toBe('Error: connect error: adapter.error');
             done();
         });
     });
@@ -119,6 +122,18 @@ describe('UbpCrsAdapter', () => {
                 done.fail('set data: expectation error');
             }).catch((error) => {
                 expect(error.toString()).toBe('Error: set data error: ' + message);
+            }),
+
+            adapter.directCheckout({}).then(() => {
+                done.fail('direct checkout: expectation error');
+            }).catch((error) => {
+                expect(error.toString()).toBe('Error: direct checkout error: ' + message);
+            }),
+
+            adapter.addToBasket({}).then(() => {
+                done.fail('add to basket: expectation error');
+            }).catch((error) => {
+                expect(error.toString()).toBe('Error: add to basket error: ' + message);
             }),
 
             adapter.exit().then(() => {
@@ -182,6 +197,46 @@ describe('UbpCrsAdapter', () => {
                 done();
             }).catch((error) => {
                 done.fail('expectation error')
+            });
+        });
+    });
+
+    describe('is connected with BM', () => {
+        beforeEach(() => {
+            adapter.connect(UbpCrsAdapter.CRS_TYPES.bookingManager);
+        });
+
+        it('directCheckout() should throw error if no data is given', (done) => {
+            adapter.directCheckout().then(() => {
+                done.fail('expectation error');
+            }).catch((error) => {
+                expect(error.toString()).toBe('Error: No data given.');
+                done();
+            });
+        });
+
+        it('directCheckout() should call underlying adapter', () => {
+            adapter.directCheckout({ my: 'data' });
+
+            expect(BmAdapter.directCheckout).toHaveBeenCalledWith({
+                my: 'data',
+            });
+        });
+
+        it('addToBasket() should throw error if no data is given', (done) => {
+            adapter.addToBasket().then(() => {
+                done.fail('expectation error');
+            }).catch((error) => {
+                expect(error.toString()).toBe('Error: No data given.');
+                done();
+            });
+        });
+
+        it('addToBasket() should call underlying adapter', () => {
+            adapter.addToBasket({ my: 'data' });
+
+            expect(BmAdapter.addToBasket).toHaveBeenCalledWith({
+                my: 'data',
             });
         });
     });

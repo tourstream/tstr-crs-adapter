@@ -83,7 +83,7 @@ class TomaAdapter {
      */
     connect(options) {
         if (!options || !options.providerKey) {
-            throw new Error('No providerKey found in options.');
+            throw new Error('No providerKey found in connectionOptions.');
         }
 
         this.createConnection();
@@ -479,6 +479,7 @@ class TomaAdapter {
                     this.assignRoundTripServiceFromAdapterObjectToXmlObject(service, xmlTom, lineNumber);
                     break;
                 }
+                default: this.logger.warn('type ' + service.type + ' is not supported by the TOMA adapter');
             }
         });
     };

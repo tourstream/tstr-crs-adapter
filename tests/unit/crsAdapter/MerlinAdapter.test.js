@@ -2,7 +2,7 @@ import injector from 'inject!../../../src/crsAdapter/MerlinAdapter';
 import {DEFAULT_OPTIONS} from '../../../src/UbpCrsAdapter';
 
 describe('MerlinAdapter', () => {
-    let adapter, MerlinAdapter, axios, requestParameter;
+    let adapter, MerlinAdapter, axios, requestParameter, logService;
 
     function createXML(data = '') {
         let xml = '<?xml version="1.0" encoding="UTF-8"?>';
@@ -18,7 +18,7 @@ describe('MerlinAdapter', () => {
     }
 
     beforeEach(() => {
-        let logService = require('tests/unit/_mocks/LogService')();
+        logService = require('tests/unit/_mocks/LogService')();
 
         // as the connection to the Merlin mask is not properly implemented by Sabre we have to assume
         // that every connection/transfer request results in an error but the logic works nevertheless
@@ -90,7 +90,7 @@ describe('MerlinAdapter', () => {
             });
         });
 
-        it('setData() should send base data', (done) => {
+        it('setData() should send base data only', (done) => {
             let expectation = createXML(
                 '<Remarks>my.remark</Remarks>' +
                 '<NoOfPersons>2</NoOfPersons>'
@@ -99,12 +99,14 @@ describe('MerlinAdapter', () => {
             let data = {
                 numberOfTravellers: 2,
                 remark: 'my.remark',
+                services: [{ type: 'unknown' }],
             };
 
             adapter.setData(data).then(() => {
                 done.fail('unexpected result');
             }, () => {
                 expect(requestParameter).toEqual(expectation);
+                expect(logService.warn).toHaveBeenCalledWith('type unknown is not supported by the Merlin adapter');
                 done();
             });
         });

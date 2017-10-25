@@ -132,10 +132,11 @@ describe('TomaSPCAdapter', () => {
     });
 
     describe('is connected with TOMA SPC -', () => {
-        let crsData, responseError, responseWarnings, requestData;
+        let crsData, responseError, responseWarnings, requestData, requestMethod;
 
         beforeEach(() => {
             TomaSPCConnection.requestService.and.callFake((type, params, callback) => {
+                requestMethod = type;
                 requestData = params;
 
                 let response = {
@@ -143,10 +144,6 @@ describe('TomaSPCAdapter', () => {
                     error: responseError,
                     warnings: responseWarnings,
                 };
-
-                if (type === 'bookingfile.toma.getData') {
-                    response.data = crsData;
-                }
 
                 if (callback) {
                     return callback.fn.onSuccess(response);
@@ -619,10 +616,11 @@ describe('TomaSPCAdapter', () => {
             });
         });
 
-        it('setData() should convert base data to crs object correct', (done) => {
+        it('setData() should convert base data to crs object correct and trigger exit', (done) => {
             let adapterObject = {
                 numberOfTravellers: 2,
                 remark: 'rmrk',
+                services: [{ type: 'unknown' }],
             };
 
             let expected = {
@@ -949,7 +947,7 @@ describe('TomaSPCAdapter', () => {
             adapter.setData().then(() => {
                 done.fail('expectation error');
             }, (error) => {
-                expect(error.toString()).toBe('Error: [.setData] No connection available - please connect to TOMA first.');
+                expect(error.toString()).toBe('Error: [.setData] No connection available - please connect to TOMA SPC first.');
                 done();
             });
         });
@@ -989,7 +987,7 @@ describe('TomaSPCAdapter', () => {
             adapter.exit({popupId: 'id'}).then(() => {
                 done.fail('expectation error');
             }, (error) => {
-                expect(error.toString()).toBe('Error: connection::popups.close: No connection available - please connect to TOMA first.');
+                expect(error.toString()).toBe('Error: connection::popups.close: No connection available - please connect to TOMA SPC first.');
                 done();
             });
         });
