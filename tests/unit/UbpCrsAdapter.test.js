@@ -12,7 +12,7 @@ describe('UbpCrsAdapter', () => {
             'crsAdapter/CetsAdapter': () => AnyCrsAdapter,
             'crsAdapter/BmAdapter': () => BmAdapter,
             'crsAdapter/TomaSPCAdapter': () => AnyCrsAdapter,
-            'crsAdapter/MyJackExpertAdapter': () => AnyCrsAdapter,
+            'crsAdapter/BewotecExpertAdapter': () => AnyCrsAdapter,
             'LogService': LogService,
         });
 
@@ -61,7 +61,8 @@ describe('UbpCrsAdapter', () => {
             cets: jasmine.anything(),
             bookingManager: jasmine.anything(),
             merlin: jasmine.anything(),
-            myJackExpert: jasmine.anything(),
+            myJack: jasmine.anything(),
+            jackPlus: jasmine.anything(),
         });
     });
 

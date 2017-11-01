@@ -18,7 +18,7 @@ const CONFIG = {
         connectionUrl: 'http://localhost:7354/airob',
         defaultValues: {
             action: 'BA',
-            numberOfTravellers: '1',
+            numberOfTravellers: 1,
         },
         lineNumberMap: ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'],
     },
@@ -29,7 +29,7 @@ const CONFIG = {
     },
 };
 
-class MyJackExpertAdapter {
+class BewotecExpertAdapter {
     constructor(logger, options = {}) {
         this.options = options;
         this.logger = logger;
@@ -43,7 +43,7 @@ class MyJackExpertAdapter {
         this.connection = this.createConnection(options);
 
         return this.connection.get().then(() => {
-            this.logger.log('MyJackExpert connection available');
+            this.logger.log('BewotecExpert (' + this.options.crsType + ') connection available');
         }, (error) => {
             this.logger.error(error.message);
             this.logger.info('response is: ' + error.response);
@@ -53,15 +53,19 @@ class MyJackExpertAdapter {
     }
 
     getData() {
-        this.logger.warn('MyJackExpert has no mechanism for getting the data');
+        this.logger.warn('BewotecExpert (' + this.options.crsType + ') has no mechanism for getting the data');
 
-        return Promise.resolve();
+        return this.getConnection().get().then((data) => {
+            return Promise.resolve(data);
+        }, () => {
+            return Promise.resolve();
+        });
     }
 
     setData(dataObject = {}) {
         let crsObject = this.createBaseCrsObject();
 
-        this.assignDataObjectToCrsObject(crsObject, dataObject);
+        crsObject = this.assignDataObjectToCrsObject(crsObject, dataObject);
 
         this.logger.info('BASE OBJECT:');
         this.logger.info(crsObject);
@@ -78,7 +82,7 @@ class MyJackExpertAdapter {
     }
 
     exit() {
-        this.logger.warn('MyJackExpert has no exit mechanism');
+        this.logger.warn('BewotecExpert (' + this.options.crsType + ') has no exit mechanism');
 
         return Promise.resolve();
     }
@@ -102,7 +106,6 @@ class MyJackExpertAdapter {
             get: () => axios.get(CONFIG.crs.connectionUrl + '/expert', {
                 params: {
                     token: options.token,
-                    merge: true,
                 },
             }),
             send: (data = {}) => axios.get(CONFIG.crs.connectionUrl + '/fill', {
@@ -120,7 +123,7 @@ class MyJackExpertAdapter {
             return this.connection;
         }
 
-        throw new Error('No connection available - please connect to MyJackExpert first.');
+        throw new Error('No connection available - please connect to Bewotec application first.');
     }
 
     createBaseCrsObject() {
@@ -162,13 +165,15 @@ class MyJackExpertAdapter {
                     break;
                 }
                 default: {
-                    this.logger.warn('type ' + service.type + ' is not supported by the MyJackExpert adapter');
+                    this.logger.warn('type ' + service.type + ' is not supported by the BewotecExpert (' + this.options.crsType + ') adapter');
                     return;
                 }
             }
 
             crsObject['m' + CONFIG.crs.lineNumberMap[lineNumber]] = service.marked ? 'X' : void 0;
         });
+
+        return JSON.parse(JSON.stringify(crsObject));
     };
 
     /**
@@ -365,4 +370,4 @@ class MyJackExpertAdapter {
     }
 }
 
-export default MyJackExpertAdapter;
+export default BewotecExpertAdapter;

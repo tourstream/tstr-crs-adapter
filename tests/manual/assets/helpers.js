@@ -47,7 +47,8 @@ var camperServiceTemplate = window.document.getElementById('camper-service-templ
 var connectOptionsMap = {
     toma: window.document.getElementById('toma-connect-template'),
     toma2: window.document.getElementById('toma2-connect-template'),
-    mjexpert: window.document.getElementById('mjExpert-connect-template')
+    myjack: window.document.getElementById('jack-connect-template'),
+    jackplus: window.document.getElementById('jack-connect-template')
 };
 var form = document.getElementById('data-form');
 var formConnectOptions = document.getElementById('connect-options');
@@ -61,7 +62,7 @@ document.getElementById('crs-selector').addEventListener('change', function (eve
 
     selectedCrs = event.target.value;
 
-    removeChildrenFromElement('connect-options' , 'connect-option');
+    removeChildrenFromElement('connect-options', 'connect-option');
 
     if (connectOptionsMap[selectedCrs]) {
         formConnectOptions.appendChild(connectOptionsMap[selectedCrs].cloneNode(true));
@@ -140,21 +141,21 @@ document.getElementById('exit-btn').addEventListener('click', function () {
 });
 
 document.getElementById('add-car-service-btn').addEventListener('click', function () {
-    removeChildrenFromElement('data-form' , 'service');
+    removeChildrenFromElement('data-form', 'service');
     form.appendChild(carServiceTemplate.cloneNode(true));
 });
 
 document.getElementById('add-hotel-service-btn').addEventListener('click', function () {
-    removeChildrenFromElement('data-form' , 'service');
+    removeChildrenFromElement('data-form', 'service');
     form.appendChild(hotelServiceTemplate.cloneNode(true));
 });
 
 document.getElementById('add-round-trip-service-btn').addEventListener('click', function () {
-    removeChildrenFromElement('data-form' , 'service');
+    removeChildrenFromElement('data-form', 'service');
     form.appendChild(roundTripServiceTemplate.cloneNode(true));
 });
 
 document.getElementById('add-camper-service-btn').addEventListener('click', function () {
-    removeChildrenFromElement('data-form' , 'service');
+    removeChildrenFromElement('data-form', 'service');
     form.appendChild(camperServiceTemplate.cloneNode(true));
 });
