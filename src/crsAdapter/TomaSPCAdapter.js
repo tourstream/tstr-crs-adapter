@@ -23,6 +23,11 @@ const CONFIG = {
             action: 'BA',
             numberOfTravellers: 1,
         },
+        salutations: {
+            mr: 'H',
+            mrs: 'F',
+            kid: 'K',
+        },
     },
     services: {
         car: {
@@ -271,7 +276,7 @@ class TomaSPCAdapter {
                     break;
                 }
                 case CONFIG.crs.serviceTypes.hotel: {
-                    service = this.mapHotelServiceFromCrsObjectToAdapterObject(crsService);
+                    service = this.mapHotelServiceFromCrsObjectToAdapterObject(crsService, crsObject);
                     break;
                 }
                 case CONFIG.crs.serviceTypes.camper: {
@@ -344,9 +349,29 @@ class TomaSPCAdapter {
     /**
      * @private
      * @param crsService object
-     * @returns {object}
+     * @param crsObject object
+     * @returns {{roomCode: *, mealCode: *, roomQuantity: (*|string|string), roomOccupancy: (*|string|string|string), children, destination: *, dateFrom: string, dateTo: string, type: string}}
      */
-    mapHotelServiceFromCrsObjectToAdapterObject(crsService) {
+    mapHotelServiceFromCrsObjectToAdapterObject(crsService, crsObject) {
+        const collectChildren = () => {
+            let children = [];
+
+            (crsService.travellerAssociation || '').split(',').forEach((travellerLineNumber) => {
+                if (!travellerLineNumber) return;
+
+                let traveller = crsObject.travellers[travellerLineNumber - 1];
+
+                if (traveller.title !== CONFIG.crs.salutations.kid) return;
+
+                children.push({
+                    name: traveller.name,
+                    age: traveller.discount,
+                });
+            });
+
+            return children;
+        };
+
         let serviceCodes = (crsService.accommodation || '').split(' ');
         let dateFrom = moment(crsService.fromDate, CONFIG.crs.dateFormat);
         let dateTo = moment(crsService.toDate, CONFIG.crs.dateFormat);
@@ -354,6 +379,9 @@ class TomaSPCAdapter {
         return {
             roomCode: serviceCodes[0] || void 0,
             mealCode: serviceCodes[1] || void 0,
+            roomQuantity: crsService.quantity,
+            roomOccupancy: crsService.occupancy,
+            children: collectChildren(),
             destination: crsService.serviceCode,
             dateFrom: dateFrom.isValid() ? dateFrom.format(this.options.useDateFormat) : crsService.fromDate,
             dateTo: dateTo.isValid() ? dateTo.format(this.options.useDateFormat) : crsService.toDate,
@@ -473,7 +501,8 @@ class TomaSPCAdapter {
                     break;
                 }
                 case SERVICE_TYPES.hotel: {
-                    this.assignHotelServiceFromAdapterObjectToCrsObject(adapterService, service);
+                    this.assignHotelServiceFromAdapterObjectToCrsObject(adapterService, service, crsObject);
+                    this.assignChildrenData(adapterService, service, crsObject);
                     break;
                 }
                 case SERVICE_TYPES.camper: {
@@ -606,18 +635,76 @@ class TomaSPCAdapter {
 
     /**
      * @private
-     * @param adapterService object
+     * @param service object
      * @param crsService object
+     * @param crsObject object
      */
-    assignHotelServiceFromAdapterObjectToCrsObject(adapterService, crsService) {
-        let dateFrom = moment(adapterService.dateFrom, this.options.useDateFormat);
-        let dateTo = moment(adapterService.dateTo, this.options.useDateFormat);
+    assignHotelServiceFromAdapterObjectToCrsObject(service, crsService, crsObject) {
+        let dateFrom = moment(service.dateFrom, this.options.useDateFormat);
+        let dateTo = moment(service.dateTo, this.options.useDateFormat);
+        let travellerAssociation = crsService.travellerAssociation || '';
 
         crsService.serviceType = CONFIG.crs.serviceTypes.hotel;
-        crsService.serviceCode = adapterService.destination;
-        crsService.accommodation = [adapterService.roomCode, adapterService.mealCode].join(' ');
-        crsService.fromDate = dateFrom.isValid() ? dateFrom.format(CONFIG.crs.dateFormat) : adapterService.dateFrom;
-        crsService.toDate = dateTo.isValid() ? dateTo.format(CONFIG.crs.dateFormat) : adapterService.dateTo;
+        crsService.serviceCode = service.destination;
+        crsService.quantity = service.roomQuantity;
+        crsService.occupancy = service.roomOccupancy;
+        crsService.accommodation = [service.roomCode, service.mealCode].join(' ');
+        crsService.fromDate = dateFrom.isValid() ? dateFrom.format(CONFIG.crs.dateFormat) : service.dateFrom;
+        crsService.toDate = dateTo.isValid() ? dateTo.format(CONFIG.crs.dateFormat) : service.dateTo;
+        crsService.travellerAssociation = void 0;
+
+        travellerAssociation.split(',').forEach((travellerLineNumber) => {
+            if (!travellerLineNumber) return;
+
+            let traveller = crsObject.travellers[travellerLineNumber - 1];
+
+            traveller.title = void 0;
+            traveller.name = void 0;
+            traveller.discount = void 0;
+        });
+    }
+
+    /**
+     * @private
+     * @param service object
+     * @param crsService object
+     * @param crsObject object
+     */
+    assignChildrenData(service, crsService, crsObject) {
+        if (!service.children) {
+            return;
+        }
+
+        const getNextEmptyTravellerIndex = () => {
+            crsObject.travellers = crsObject.travellers || [];
+
+            let travellerIndex = void 0;
+
+            crsObject.travellers.some((traveller, index) =>{
+                if (!traveller.title && !traveller.name && !traveller.discount) {
+                    travellerIndex = index;
+
+                    return true;
+                }
+            });
+
+            if (travellerIndex !== void 0) return travellerIndex;
+
+            crsObject.travellers.push({});
+
+            return crsObject.travellers.length - 1;
+        };
+
+        service.children.forEach((child) => {
+            let travellerIndex = getNextEmptyTravellerIndex();
+            let traveller = crsObject.travellers[travellerIndex];
+
+            traveller.title = CONFIG.crs.salutations.kid;
+            traveller.name = child.name;
+            traveller.discount = child.age;
+
+            crsService.travellerAssociation = [crsService.travellerAssociation, travellerIndex + 1].filter(Boolean).join(',');
+        });
     }
 
     /**

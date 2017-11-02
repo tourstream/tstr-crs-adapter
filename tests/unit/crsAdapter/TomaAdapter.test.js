@@ -201,6 +201,49 @@ describe('TomaAdapter', () => {
                 '<KindOfService.1>H</KindOfService.1>' +
                 '<ServiceCode.1>LAX20S</ServiceCode.1>' +
                 '<Accommodation.1>DZ U</Accommodation.1>' +
+                '<Count.1>2</Count.1>' +
+                '<Occupancy.1>4</Occupancy.1>' +
+                '<TravAssociation.1>1,2</TravAssociation.1>' +
+                '<From.1>100217</From.1>' +
+                '<To.1>200217</To.1>' +
+                '<Title.1>K</Title.1>' +
+                '<Name.1>child 1</Name.1>' +
+                '<Reduction.1>13</Reduction.1>' +
+                '<Title.2>H</Title.2>' +
+                '<Name.2>John</Name.2>' +
+                '<Reduction.2>42</Reduction.2>'
+            );
+
+            let expectedService = {
+                roomCode: 'DZ',
+                mealCode: 'U',
+                destination: 'LAX20S',
+                dateFrom: '10022017',
+                dateTo: '20022017',
+                marked: false,
+                type: 'hotel',
+                roomQuantity: '2',
+                roomOccupancy: '4',
+                children: [{
+                    name: 'child 1',
+                    age: '13'
+                }],
+            };
+
+            TomaConnection.GetXmlData.and.returnValue(xml);
+
+            expect(adapter.getData()).toEqual({
+                services: [expectedService]
+            });
+        });
+
+        it('getData() should parse minimal hotel service', () => {
+            let xml = createTomaXml(
+                '<KindOfService.1>H</KindOfService.1>' +
+                '<ServiceCode.1>LAX20S</ServiceCode.1>' +
+                '<Accommodation.1>DZ U</Accommodation.1>' +
+                '<Count.1>2</Count.1>' +
+                '<Occupancy.1>4</Occupancy.1>' +
                 '<From.1>100217</From.1>' +
                 '<To.1>200217</To.1>'
             );
@@ -213,13 +256,14 @@ describe('TomaAdapter', () => {
                 dateTo: '20022017',
                 marked: false,
                 type: 'hotel',
+                roomQuantity: '2',
+                roomOccupancy: '4',
+                children: [],
             };
 
             TomaConnection.GetXmlData.and.returnValue(xml);
 
-            expect(adapter.getData()).toEqual({
-                services: [expectedService]
-            });
+            expect(adapter.getData()).toEqual({ services: [expectedService] });
         });
 
         it('getData() should parse full camper service', () => {
@@ -301,14 +345,14 @@ describe('TomaAdapter', () => {
         it('getData() should parse round-trip services', () => {
             let xml = createTomaXml(
                 '<KindOfService.1>R</KindOfService.1>' +
-                '<Accommodation.1>YYZ</Accommodation.1>' +
                 '<ServiceCode.1>NEZE2784NQXTHEN</ServiceCode.1>' +
-                '<Name.1>DOE/JOHN</Name.1>' +
-                '<Reduction.1>040485</Reduction.1>' +
-                '<Title.1>H</Title.1>' +
-                '<From.1>051217</From.1>' +
+                '<Accommodation.1>YYZ</Accommodation.1>' +
                 '<Count.1>1</Count.1>' +
-                '<To.1>161217</To.1>'
+                '<From.1>051217</From.1>' +
+                '<To.1>161217</To.1>' +
+                '<Title.1>H</Title.1>' +
+                '<Name.1>DOE/JOHN</Name.1>' +
+                '<Reduction.1>040485</Reduction.1>'
             );
 
             let roundTripService = {
@@ -336,14 +380,14 @@ describe('TomaAdapter', () => {
         it('getData() should parse round-trip services and returns age field instead of birthDate', () => {
             let xml = createTomaXml(
                 '<KindOfService.1>R</KindOfService.1>' +
-                '<Accommodation.1>YYZ</Accommodation.1>' +
                 '<ServiceCode.1>NEZE2784NQXTHEN</ServiceCode.1>' +
-                '<Name.1>DOE/JOHN</Name.1>' +
-                '<Reduction.1>32</Reduction.1>' +
-                '<Title.1>H</Title.1>' +
-                '<From.1>051217</From.1>' +
+                '<Accommodation.1>YYZ</Accommodation.1>' +
                 '<Count.1>1</Count.1>' +
-                '<To.1>161217</To.1>'
+                '<From.1>051217</From.1>' +
+                '<To.1>161217</To.1>' +
+                '<Title.1>H</Title.1>' +
+                '<Name.1>DOE/JOHN</Name.1>' +
+                '<Reduction.1>32</Reduction.1>'
             );
 
             let roundTripService = {
@@ -416,9 +460,9 @@ describe('TomaAdapter', () => {
                     '<NoOfPersons>1</NoOfPersons>' +
                     '<KindOfService.1>MW</KindOfService.1>' +
                     '<ServiceCode.1>rent.codevehicle.type.code/from.loc-to.loc</ServiceCode.1>' +
+                    '<Accommodation.1>from.time</Accommodation.1>' +
                     '<From.1>110918</From.1>' +
-                    '<To.1>150918</To.1>' +
-                    '<Accommodation.1>from.time</Accommodation.1>'
+                    '<To.1>150918</To.1>'
                 );
 
                 adapter.setData({
@@ -446,9 +490,9 @@ describe('TomaAdapter', () => {
                     '<NoOfPersons>1</NoOfPersons>' +
                     '<KindOfService.1>MW</KindOfService.1>' +
                     '<ServiceCode.1>rent.codevehicle.type.code/from.loc-to.loc</ServiceCode.1>' +
+                    '<Accommodation.1>from.time</Accommodation.1>' +
                     '<From.1>231218</From.1>' +
                     '<To.1>040119</To.1>' +
-                    '<Accommodation.1>from.time</Accommodation.1>' +
 
                     '<KindOfService.2>E</KindOfService.2>' +
                     '<ServiceCode.2>pu h.name</ServiceCode.2>' +
@@ -493,9 +537,9 @@ describe('TomaAdapter', () => {
                     '<NoOfPersons>1</NoOfPersons>' +
                     '<KindOfService.1>MW</KindOfService.1>' +
                     '<ServiceCode.1>rent.codevehicle.type.code/from.loc-to.loc</ServiceCode.1>' +
+                    '<Accommodation.1>from.time</Accommodation.1>' +
                     '<From.1>231218</From.1>' +
-                    '<To.1>040119</To.1>' +
-                    '<Accommodation.1>from.time</Accommodation.1>'
+                    '<To.1>040119</To.1>'
                 );
 
                 adapter.setData({
@@ -525,8 +569,14 @@ describe('TomaAdapter', () => {
                     '<KindOfService.1>H</KindOfService.1>' +
                     '<ServiceCode.1>destination</ServiceCode.1>' +
                     '<Accommodation.1>room.code meal.code</Accommodation.1>' +
+                    '<Count.1>2</Count.1>' +
+                    '<Occupancy.1>4</Occupancy.1>' +
                     '<From.1>100218</From.1>' +
-                    '<To.1>150218</To.1>'
+                    '<To.1>150218</To.1>' +
+                    '<TravAssociation.1>1</TravAssociation.1>' +
+                    '<Title.1>K</Title.1>' +
+                    '<Name.1>child 1</Name.1>' +
+                    '<Reduction.1>13</Reduction.1>'
                 );
 
                 adapter.setData({
@@ -537,6 +587,56 @@ describe('TomaAdapter', () => {
                             destination: 'destination',
                             roomCode: 'room.code',
                             mealCode: 'meal.code',
+                            roomQuantity: 2,
+                            roomOccupancy: 4,
+                            dateFrom: '10022018',
+                            dateTo: '15022018',
+                            children: [{
+                                name: 'child 1',
+                                age: 13,
+                            }],
+                        },
+                    ]
+                });
+
+                expect(TomaConnection.FIFramePutData).toHaveBeenCalledWith(expectXml);
+            });
+
+            it('setData() replace with minimal hotel service', () => {
+                let expectXml = createTomaXml(
+                    '<KindOfService.1>H</KindOfService.1>' +
+                    '<MarkerField.1>X</MarkerField.1>' +
+                    '<Action>BA</Action>' +
+                    '<NoOfPersons>2</NoOfPersons>' +
+                    '<ServiceCode.1>destination</ServiceCode.1>' +
+                    '<Accommodation.1>room.code meal.code</Accommodation.1>' +
+                    '<Count.1>2</Count.1>' +
+                    '<Occupancy.1>4</Occupancy.1>' +
+                    '<From.1>100218</From.1>' +
+                    '<To.1>150218</To.1>'
+                );
+
+                let xml = createTomaXml(
+                    '<KindOfService.1>H</KindOfService.1>' +
+                    '<MarkerField.1>X</MarkerField.1>' +
+                    '<TravAssociation.1>2</TravAssociation.1>' +
+                    '<Title.2>F</Title.2>' +
+                    '<Name.2>Jane</Name.2>' +
+                    '<Reduction.2>3</Reduction.2>'
+                );
+
+                TomaConnection.GetXmlData.and.returnValue(xml);
+
+                adapter.setData({
+                    numberOfTravellers: 2,
+                    services: [
+                        {
+                            type: 'hotel',
+                            destination: 'destination',
+                            roomCode: 'room.code',
+                            mealCode: 'meal.code',
+                            roomQuantity: 2,
+                            roomOccupancy: 4,
                             dateFrom: '10022018',
                             dateTo: '15022018',
                         },
@@ -589,10 +689,10 @@ describe('TomaAdapter', () => {
                     '<NoOfPersons>2</NoOfPersons>' +
                     '<KindOfService.1>WM</KindOfService.1>' +
                     '<ServiceCode.1>rent.codecamper.code/from.loc-to.loc</ServiceCode.1>' +
-                    '<From.1>231218</From.1>' +
-                    '<To.1>040119</To.1>' +
                     '<Count.1>miles.per.day</Count.1>' +
                     '<Occupancy.1>miles.packages</Occupancy.1>' +
+                    '<From.1>231218</From.1>' +
+                    '<To.1>040119</To.1>' +
                     '<TravAssociation.1>1-2</TravAssociation.1>' +
                     '<KindOfService.2>TA</KindOfService.2>' +
                     '<ServiceCode.2>extra</ServiceCode.2>' +

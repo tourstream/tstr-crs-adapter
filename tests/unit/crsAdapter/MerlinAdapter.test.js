@@ -299,7 +299,7 @@ describe('MerlinAdapter', () => {
             });
         });
 
-        it('setData() should send complete hotel data', (done) => {
+        it('setData() should send hotel data', (done) => {
             let expectation = createXML(
                 '<NoOfPersons>1</NoOfPersons>' +
                 '<ServiceBlock>' +
@@ -307,10 +307,27 @@ describe('MerlinAdapter', () => {
                         '<KindOfService>H</KindOfService>' +
                         '<Service>dest</Service>' +
                         '<Accommodation>rc mc</Accommodation>' +
+                        '<StealBoarding>2</StealBoarding>' +
+                        '<Occupancy>4</Occupancy>' +
                         '<FromDate>231218</FromDate>' +
                         '<EndDate>040119</EndDate>' +
+                        '<TravellerAllocation>1,2</TravellerAllocation>' +
                     '</ServiceRow>' +
-                '</ServiceBlock>'
+                '</ServiceBlock>' +
+                '<TravellerBlock>' +
+                    '<PersonBlock>' +
+                        '<PersonRow travellerNo="1">' +
+                            '<Salutation>K</Salutation>' +
+                            '<Name>john doe</Name>' +
+                            '<Age>8</Age>' +
+                        '</PersonRow>' +
+                        '<PersonRow travellerNo="2">' +
+                            '<Salutation>K</Salutation>' +
+                            '<Name>jane doe</Name>' +
+                            '<Age>14</Age>' +
+                        '</PersonRow>' +
+                    '</PersonBlock>' +
+                '</TravellerBlock>'
             );
 
             let data = {
@@ -320,8 +337,83 @@ describe('MerlinAdapter', () => {
                         destination: 'dest',
                         roomCode: 'rc',
                         mealCode: 'mc',
+                        roomQuantity: 2,
+                        roomOccupancy: 4,
                         dateFrom: '23122018',
                         dateTo: '04012019',
+                        children: [
+                            { name: 'john doe', age: 8 },
+                            { name: 'jane doe', age: 14 },
+                        ],
+                    },
+                ],
+            };
+
+            adapter.setData(data).then(() => {
+                done.fail('unexpected result');
+            }, () => {
+                expect(requestParameter).toEqual(expectation);
+                done();
+            });
+        });
+
+        it('setData() should replace hotel data', (done) => {
+            let expectation = createXML(
+                '<NoOfPersons>1</NoOfPersons>' +
+                '<ServiceBlock>' +
+                '<ServiceRow positionNo="1">' +
+                '<KindOfService>H</KindOfService>' +
+                '<Service>wonderland</Service>' +
+                '<Accommodation>xs dr</Accommodation>' +
+                '<FromDate>231218</FromDate>' +
+                '<EndDate>040119</EndDate>' +
+                '<TravellerAllocation>1</TravellerAllocation>' +
+                '</ServiceRow>' +
+                '</ServiceBlock>' +
+                '<TravellerBlock>' +
+                '<PersonBlock>' +
+                '<PersonRow travellerNo="1">' +
+                '<Salutation>K</Salutation>' +
+                '<Name>john doe</Name>' +
+                '<Age>11</Age>' +
+                '</PersonRow>' +
+                '</PersonBlock>' +
+                '</TravellerBlock>'
+            );
+
+            let data = {
+                services: [
+                    {
+                        type: 'hotel',
+                        destination: 'neverland',
+                        roomCode: 'oak',
+                        mealCode: 'bg',
+                        dateFrom: '23122018',
+                        dateTo: '04012019',
+                        children: [
+                            { name: 'jane doe', age: 3 },
+                        ],
+                        marked: true,
+                    },
+                    {
+                        type: 'hotel',
+                        destination: 'dest',
+                        roomCode: 'rc',
+                        mealCode: 'mc',
+                        dateFrom: '23122018',
+                        dateTo: '04012019',
+                        marked: true,
+                    },
+                    {
+                        type: 'hotel',
+                        destination: 'wonderland',
+                        roomCode: 'xs',
+                        mealCode: 'dr',
+                        dateFrom: '23122018',
+                        dateTo: '04012019',
+                        children: [
+                            { name: 'john doe', age: 11 },
+                        ],
                     },
                 ],
             };
