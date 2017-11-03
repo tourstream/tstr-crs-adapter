@@ -355,19 +355,23 @@ class TomaSPCAdapter {
     mapHotelServiceFromCrsObjectToAdapterObject(crsService, crsObject) {
         const collectChildren = () => {
             let children = [];
+            let travellerAssociation = crsService.travellerAssociation || '';
 
-            (crsService.travellerAssociation || '').split(',').forEach((travellerLineNumber) => {
-                if (!travellerLineNumber) return;
+            let startLineNumber = parseInt(travellerAssociation.substr(0, 1), 10);
+            let endLineNumber = parseInt(travellerAssociation.substr(-1), 10);
 
-                let traveller = crsObject.travellers[travellerLineNumber - 1];
+            if (!startLineNumber) return;
 
-                if (traveller.title !== CONFIG.crs.salutations.kid) return;
+            do {
+                let traveller = crsObject.travellers[startLineNumber - 1];
+
+                if (traveller.title !== CONFIG.crs.salutations.kid) continue;
 
                 children.push({
                     name: traveller.name,
                     age: traveller.discount,
                 });
-            });
+            } while (++startLineNumber <= endLineNumber);
 
             return children;
         };
@@ -651,17 +655,20 @@ class TomaSPCAdapter {
         crsService.accommodation = [service.roomCode, service.mealCode].join(' ');
         crsService.fromDate = dateFrom.isValid() ? dateFrom.format(CONFIG.crs.dateFormat) : service.dateFrom;
         crsService.toDate = dateTo.isValid() ? dateTo.format(CONFIG.crs.dateFormat) : service.dateTo;
-        crsService.travellerAssociation = void 0;
+        crsService.travellerAssociation = '1' + ((service.roomOccupancy > 1) ? '-' + service.roomOccupancy : '');
 
-        travellerAssociation.split(',').forEach((travellerLineNumber) => {
-            if (!travellerLineNumber) return;
+        let startLineNumber = parseInt(travellerAssociation.substr(0, 1), 10);
+        let endLineNumber = parseInt(travellerAssociation.substr(-1), 10);
 
-            let traveller = crsObject.travellers[travellerLineNumber - 1];
+        if (!startLineNumber) return;
+
+        do {
+            let traveller = crsObject.travellers[startLineNumber - 1];
 
             traveller.title = void 0;
             traveller.name = void 0;
             traveller.discount = void 0;
-        });
+        } while (++startLineNumber <= endLineNumber);
     }
 
     /**
@@ -695,16 +702,27 @@ class TomaSPCAdapter {
             return crsObject.travellers.length - 1;
         };
 
+        let travellerLineNumber = void 0;
+
         service.children.forEach((child) => {
             let travellerIndex = getNextEmptyTravellerIndex();
             let traveller = crsObject.travellers[travellerIndex];
 
+            travellerLineNumber = travellerIndex + 1;
+
             traveller.title = CONFIG.crs.salutations.kid;
             traveller.name = child.name;
             traveller.discount = child.age;
-
-            crsService.travellerAssociation = [crsService.travellerAssociation, travellerIndex + 1].filter(Boolean).join(',');
         });
+
+        if (!travellerLineNumber) return;
+
+        let lastTravellerLineNumber = Math.max(service.roomOccupancy, travellerLineNumber);
+        let firstTravellerLineNumber = lastTravellerLineNumber - service.roomOccupancy + 1;
+
+        crsService.travellerAssociation = firstTravellerLineNumber === lastTravellerLineNumber
+            ? firstTravellerLineNumber
+            : firstTravellerLineNumber + '-' + lastTravellerLineNumber;
     }
 
     /**

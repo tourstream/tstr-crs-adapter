@@ -355,17 +355,22 @@ class MerlinAdapter {
         xmlService.Occupancy = service.roomOccupancy;
         xmlService.FromDate = dateFrom.isValid() ? dateFrom.format(CONFIG.crs.dateFormat) : service.dateFrom;
         xmlService.EndDate = dateTo.isValid() ? dateTo.format(CONFIG.crs.dateFormat) : service.dateTo;
-        xmlService.TravellerAllocation = void 0;
+        xmlService.TravellerAllocation = '1' + ((service.roomOccupancy > 1) ? '-' + service.roomOccupancy : '');
 
-        travellerAssociation.split(',').forEach((travellerLineNumber) => {
-            if (!travellerLineNumber) return;
+        let startLineNumber = parseInt(travellerAssociation.substr(0, 1) || 0, 10);
+        let endLineNumber = parseInt(travellerAssociation.substr(-1) || 0, 10);
 
-            let traveller = xml.TravellerBlock.PersonBlock.PersonRow[travellerLineNumber - 1];
+        if (!startLineNumber) return;
+
+        do {
+            let traveller = (((xml.TravellerBlock || {}).PersonBlock || {}).PersonRow || [])[startLineNumber - 1];
+
+            if (!traveller) continue;
 
             traveller.Salutation = void 0;
             traveller.Name = void 0;
             traveller.Age = void 0;
-        });
+        } while (++startLineNumber <= endLineNumber);
     }
 
     /**
@@ -406,16 +411,27 @@ class MerlinAdapter {
             return personRows.length - 1;
         };
 
+        let travellerLineNumber = void 0;
+
         service.children.forEach((child) => {
             let travellerIndex = getNextEmptyTravellerIndex();
             let traveller = xml.TravellerBlock.PersonBlock.PersonRow[travellerIndex];
 
+            travellerLineNumber = travellerIndex + 1;
+
             traveller.Salutation = CONFIG.crs.salutations.kid;
             traveller.Name = child.name;
             traveller.Age = child.age;
-
-            xmlService.TravellerAllocation = [xmlService.TravellerAllocation, travellerIndex + 1].filter(Boolean).join(',');
         });
+
+        if (!travellerLineNumber) return;
+
+        let lastTravellerLineNumber = Math.max(service.roomOccupancy, travellerLineNumber);
+        let firstTravellerLineNumber = lastTravellerLineNumber - service.roomOccupancy + 1;
+
+        xmlService.TravellerAllocation = firstTravellerLineNumber === lastTravellerLineNumber
+            ? firstTravellerLineNumber
+            : firstTravellerLineNumber + '-' + lastTravellerLineNumber;
     }
 
     /**

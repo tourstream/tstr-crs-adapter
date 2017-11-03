@@ -311,7 +311,7 @@ describe('MerlinAdapter', () => {
                         '<Occupancy>4</Occupancy>' +
                         '<FromDate>231218</FromDate>' +
                         '<EndDate>040119</EndDate>' +
-                        '<TravellerAllocation>1,2</TravellerAllocation>' +
+                        '<TravellerAllocation>1-4</TravellerAllocation>' +
                     '</ServiceRow>' +
                 '</ServiceBlock>' +
                 '<TravellerBlock>' +
@@ -365,9 +365,10 @@ describe('MerlinAdapter', () => {
                 '<KindOfService>H</KindOfService>' +
                 '<Service>wonderland</Service>' +
                 '<Accommodation>xs dr</Accommodation>' +
+                '<Occupancy>3</Occupancy>' +
                 '<FromDate>231218</FromDate>' +
                 '<EndDate>040119</EndDate>' +
-                '<TravellerAllocation>1</TravellerAllocation>' +
+                '<TravellerAllocation>1-3</TravellerAllocation>' +
                 '</ServiceRow>' +
                 '</ServiceBlock>' +
                 '<TravellerBlock>' +
@@ -388,6 +389,7 @@ describe('MerlinAdapter', () => {
                         destination: 'neverland',
                         roomCode: 'oak',
                         mealCode: 'bg',
+                        roomOccupancy: 2,
                         dateFrom: '23122018',
                         dateTo: '04012019',
                         children: [
@@ -400,15 +402,18 @@ describe('MerlinAdapter', () => {
                         destination: 'dest',
                         roomCode: 'rc',
                         mealCode: 'mc',
+                        roomOccupancy: 1,
                         dateFrom: '23122018',
                         dateTo: '04012019',
                         marked: true,
+                        children: [],
                     },
                     {
                         type: 'hotel',
                         destination: 'wonderland',
                         roomCode: 'xs',
                         mealCode: 'dr',
+                        roomOccupancy: 3,
                         dateFrom: '23122018',
                         dateTo: '04012019',
                         children: [
@@ -438,11 +443,13 @@ describe('MerlinAdapter', () => {
                         '<KindOfService>H</KindOfService>' +
                         '<Service>dest.5</Service>' +
                         '<Accommodation>rc.5 mc.5</Accommodation>' +
+                        '<TravellerAllocation>1</TravellerAllocation>' +
                     '</ServiceRow>' +
                     '<ServiceRow positionNo="3">' +
                         '<KindOfService>H</KindOfService>' +
                         '<Service>dest.6</Service>' +
                         '<Accommodation>rc.6 mc.6</Accommodation>' +
+                        '<TravellerAllocation>1</TravellerAllocation>' +
                     '</ServiceRow>' +
                 '</ServiceBlock>'
             );

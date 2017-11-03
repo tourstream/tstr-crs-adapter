@@ -371,7 +371,7 @@ describe('TomaSPCAdapter', () => {
                         accommodation: 'rc mc',
                         fromDate: '111217',
                         toDate: '221217',
-                        travellerAssociation: '2,3,4'
+                        travellerAssociation: '1-4'
                     }
                 ],
                 travellers: [
@@ -401,7 +401,6 @@ describe('TomaSPCAdapter', () => {
                         dateFrom: '11122017',
                         dateTo: '22122017',
                         marked: false,
-                        children: [],
                     }
                 ],
             };
@@ -435,7 +434,6 @@ describe('TomaSPCAdapter', () => {
                         roomCode: 'rc',
                         mealCode: 'mc',
                         marked: true,
-                        children: [],
                     }
                 ],
             };
@@ -465,7 +463,6 @@ describe('TomaSPCAdapter', () => {
                         type: SERVICE_TYPES.hotel,
                         destination: 'destination',
                         marked: true,
-                        children: [],
                     }
                 ],
             };
@@ -862,7 +859,7 @@ describe('TomaSPCAdapter', () => {
                         toDate: '080118',
                         quantity: 2,
                         occupancy: 4,
-                        travellerAssociation: '1,2',
+                        travellerAssociation: '1-4',
                     },
                 ],
                 travellers: [
@@ -893,6 +890,7 @@ describe('TomaSPCAdapter', () => {
                         mealCode: 'mc',
                         dateFrom: '01012018',
                         dateTo: '08012018',
+                        children: [],
                     },
                 ],
             };
@@ -908,6 +906,7 @@ describe('TomaSPCAdapter', () => {
                         fromDate: '010118',
                         toDate: '080118',
                         marker: true,
+                        travellerAssociation: '1',
                     },
                 ],
                 travellers: [{}, {}],
@@ -1056,6 +1055,7 @@ describe('TomaSPCAdapter', () => {
                         accommodation: 'rc mc',
                         fromDate: '010118',
                         toDate: '080118',
+                        travellerAssociation: '1',
                     },
                 ],
             };

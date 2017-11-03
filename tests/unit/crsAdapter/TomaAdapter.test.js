@@ -203,7 +203,7 @@ describe('TomaAdapter', () => {
                 '<Accommodation.1>DZ U</Accommodation.1>' +
                 '<Count.1>2</Count.1>' +
                 '<Occupancy.1>4</Occupancy.1>' +
-                '<TravAssociation.1>1,2</TravAssociation.1>' +
+                '<TravAssociation.1>1-4</TravAssociation.1>' +
                 '<From.1>100217</From.1>' +
                 '<To.1>200217</To.1>' +
                 '<Title.1>K</Title.1>' +
@@ -258,7 +258,6 @@ describe('TomaAdapter', () => {
                 type: 'hotel',
                 roomQuantity: '2',
                 roomOccupancy: '4',
-                children: [],
             };
 
             TomaConnection.GetXmlData.and.returnValue(xml);
@@ -573,7 +572,7 @@ describe('TomaAdapter', () => {
                     '<Occupancy.1>4</Occupancy.1>' +
                     '<From.1>100218</From.1>' +
                     '<To.1>150218</To.1>' +
-                    '<TravAssociation.1>1</TravAssociation.1>' +
+                    '<TravAssociation.1>1-4</TravAssociation.1>' +
                     '<Title.1>K</Title.1>' +
                     '<Name.1>child 1</Name.1>' +
                     '<Reduction.1>13</Reduction.1>'
@@ -606,12 +605,13 @@ describe('TomaAdapter', () => {
                 let expectXml = createTomaXml(
                     '<KindOfService.1>H</KindOfService.1>' +
                     '<MarkerField.1>X</MarkerField.1>' +
+                    '<TravAssociation.1>1</TravAssociation.1>' +
                     '<Action>BA</Action>' +
                     '<NoOfPersons>2</NoOfPersons>' +
                     '<ServiceCode.1>destination</ServiceCode.1>' +
                     '<Accommodation.1>room.code meal.code</Accommodation.1>' +
                     '<Count.1>2</Count.1>' +
-                    '<Occupancy.1>4</Occupancy.1>' +
+                    '<Occupancy.1>1</Occupancy.1>' +
                     '<From.1>100218</From.1>' +
                     '<To.1>150218</To.1>'
                 );
@@ -636,7 +636,19 @@ describe('TomaAdapter', () => {
                             roomCode: 'room.code',
                             mealCode: 'meal.code',
                             roomQuantity: 2,
-                            roomOccupancy: 4,
+                            roomOccupancy: 1,
+                            dateFrom: '10022018',
+                            dateTo: '15022018',
+                            marked: true,
+                            children: [],
+                        },
+                        {
+                            type: 'hotel',
+                            destination: 'destination',
+                            roomCode: 'room.code',
+                            mealCode: 'meal.code',
+                            roomQuantity: 2,
+                            roomOccupancy: 1,
                             dateFrom: '10022018',
                             dateTo: '15022018',
                         },
