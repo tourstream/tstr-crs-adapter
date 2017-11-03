@@ -103,6 +103,14 @@ document.getElementById('set-data-btn').addEventListener('click', function () {
         Object.keys(form).forEach(function (key) {
             if (form[key].name.indexOf('service.') === 0) {
                 service[form[key].name.split('.')[1]] = form[key].value;
+            } else if (form[key].name.indexOf('children.') === 0) {
+                if (!service.children) {
+                    service.children = [{}];
+                }
+
+                var child = service.children.slice(-1)[0];
+
+                child[form[key].name.split('.')[1]] = form[key].value;
             } else if (form[key].name.indexOf('extra.') === 0) {
                 if (!service.extras) {
                     service.extras = [];

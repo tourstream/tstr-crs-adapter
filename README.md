@@ -148,13 +148,16 @@ JackPlus   | X     | X     | X         | X
 
 _note: if .dropOffDate is not set, it will be calculated with .pickUpDate + .duration_
 
-| type    | fields       | example
-| :---    | :---         | :---
-| hotel   | .roomCode    | 'DZ' 
-|         | .mealCode    | 'U' 
-|         | .destination | 'LAX20S' 
-|         | .dateFrom    | '20092017' 
-|         | .dateTo      | '20092017' 
+| type    | fields         | example
+| :---    | :---           | :---
+| hotel   | .roomCode      | 'DZ' 
+|         | .mealCode      | 'U' 
+|         | .roomQuantity  | '2'
+|         | .roomOccupancy | '4'
+|         | .destination   | 'LAX20S' 
+|         | .dateFrom      | '20092017' 
+|         | .dateTo        | '20092017' 
+|         | .children      | [ { name: 'john', age: '11' }, ... ] 
 
 | type      | fields              | example
 | :---      | :---                | :---
