@@ -324,6 +324,12 @@ class CetsAdapter {
         return normalizedObject;
     }
 
+    /**
+     * @private
+     *
+     * @param xmlObject object
+     * @param dataObject object
+     */
     assignAdapterObjectToXmlObject(xmlObject, dataObject = {}) {
         let xmlRequest = xmlObject.Request.Fab;
 
@@ -345,6 +351,8 @@ class CetsAdapter {
             switch (service.type) {
                 case SERVICE_TYPES.car: {
                     this.assignCarServiceFromAdapterObjectToXmlObject(service, xmlRequest);
+                    this.assignHotelData(service, xmlRequest);
+
                     break;
                 }
                 default: this.logger.warn('type ' + service.type + ' is not supported by the CETS adapter');
@@ -352,6 +360,12 @@ class CetsAdapter {
         });
     }
 
+    /**
+     * @private
+     *
+     * @param service object
+     * @param xml object
+     */
     assignCarServiceFromAdapterObjectToXmlObject(service, xml) {
         const calculateDuration = (service) => {
             if (service.duration) {
@@ -367,6 +381,15 @@ class CetsAdapter {
                 }
             }
         };
+
+        const normalizeService = (service) => {
+            service.vehicleTypeCode = service.vehicleTypeCode.toUpperCase();
+            service.rentalCode = service.rentalCode.toUpperCase();
+            service.pickUpLocation = service.pickUpLocation.toUpperCase();
+            service.dropOffLocation = service.dropOffLocation.toUpperCase();
+        };
+
+        normalizeService(service);
 
         let pickUpDate = moment(service.pickUpDate, this.options.useDateFormat);
         let pickUpTime = moment(service.pickUpTime, this.options.useTimeFormat);
@@ -389,7 +412,7 @@ class CetsAdapter {
             CarDetails: {
                 PickUp: {
                     [CONFIG.builderOptions.attrkey]: {
-                        Where: service.pickUpHotelName ? CONFIG.defaults.pickUp.hotel.key : CONFIG.defaults.pickUp.walkIn.key,
+                        Where: CONFIG.defaults.pickUp.walkIn.key,
                     },
                     Time: pickUpTime.isValid() ? pickUpTime.format(CONFIG.crs.crsTimeFormat) : service.pickUpTime,
                     CarStation: {
@@ -398,7 +421,7 @@ class CetsAdapter {
                         },
                         [CONFIG.builderOptions.charkey]: '',
                     },
-                    Info: service.pickUpHotelName || CONFIG.defaults.pickUp.walkIn.info,
+                    Info: CONFIG.defaults.pickUp.walkIn.info,
                 },
                 DropOff: {
                     // "Time" is sadly not evaluated by CETS at the moment
@@ -413,19 +436,29 @@ class CetsAdapter {
             },
         };
 
+        xml.Fah.push(xmlService);
+    }
+
+    /**
+     * @private
+     * @param service object
+     * @param xml object
+     */
+    assignHotelData(service, xml) {
+        if (!service.pickUpHotelName && !service.dropOffHotelName) return;
+
+        let xmlService = xml.Fah.slice(-1)[0];
+
+        if (service.pickUpHotelName) {
+            xmlService.CarDetails.PickUp[CONFIG.builderOptions.attrkey].Where = CONFIG.defaults.pickUp.hotel.key;
+            xmlService.CarDetails.PickUp.Info = service.pickUpHotelName;
+        }
+
         if (!service.pickUpHotelName && service.dropOffHotelName) {
             xmlService.CarDetails.DropOff.Info = service.dropOffHotelName;
         }
 
-        xml.Fah.push(xmlService);
-
-        if (!service.pickUpHotelName && !service.dropOffHotelName) {
-            return;
-        }
-
-        if (!xml.Faq) {
-            xml.Faq = [];
-        }
+        xml.Faq = xml.Faq || [];
 
         let xmlFaq = {
             [CONFIG.builderOptions.attrkey]: {

@@ -33,6 +33,54 @@ describe('CetsAdapter', () => {
     describe('is connected with CETS -', () => {
         let CetsConnection;
 
+        function createRequestXml(data) {
+            return '<Request Version="2.5" From="cets" To="FTI" TermId="CC1937" Window="A" Date="11052017" Time="081635" Type="AVL" SubType="S" Confirm="NO" Agent="549870" Lang="DE" LayoutLang="EN" UserCode="tourCH" UserType="M" UserName="Pan" UserFirstName="Peter" UserMail="peter.pan@tourstream.eu" Source="DPL" Mode="Test" DeepLinkURL="YES">' +
+                data +
+                createFapXml() +
+                '</Request>';
+        }
+
+        function createFabRequestXml(data) {
+            return '<Request Version="2.5" From="cets" To="FTI" TermId="CC1937" Window="A" Date="11052017" Time="081635" Type="AVL" SubType="S" Confirm="NO" Agent="549870" Lang="DE" LayoutLang="EN" UserCode="tourCH" UserType="M" UserName="Pan" UserFirstName="Peter" UserMail="peter.pan@tourstream.eu" Source="DPL" Mode="Test" DeepLinkURL="YES">' +
+                '<Fab>' +
+                data +
+                createFapXml() +
+                '</Fab>' +
+                '</Request>';
+        }
+
+        function createCustomResponseXml(data = '') {
+            let xml = '<?xml version="1.0" encoding="windows-1252"?>';
+
+            return xml + '<Request Version="2.5" From="FTI" To="cets" TermId="CC1937" Window="A" Date="11052017" Time="081635" Type="AVL" SubType="S" Confirm="NO" Agent="549870" Lang="DE" LayoutLang="EN" UserCode="tourCH" UserType="M" UserName="Pan" UserFirstName="Peter" UserMail="peter.pan@tourstream.eu" Source="DPL" Mode="Test" DeepLinkURL="YES">' +
+                '<Fab>' +
+                data +
+                '</Fab>' +
+                '</Request>';
+        }
+
+        function createResponseXml(data = '') {
+            let xml = '<?xml version="1.0" encoding="windows-1252"?>';
+
+            return xml + '<Request Version="2.5" From="FTI" To="cets" TermId="CC1937" Window="A" Date="11052017" Time="081635" Type="AVL" SubType="S" Confirm="NO" Agent="549870" Lang="DE" LayoutLang="EN" UserCode="tourCH" UserType="M" UserName="Pan" UserFirstName="Peter" UserMail="peter.pan@tourstream.eu" Source="DPL" Mode="Test" DeepLinkURL="YES">' +
+                '<Fab>' +
+                createFapXml() +
+                '<Catalog>DCH</Catalog>' +
+                '<TOCode>FTI</TOCode>' +
+                '<Adults>1</Adults>' +
+                data +
+                '</Fab>' +
+                '</Request>';
+        }
+
+        function createFapXml() {
+            return '<Fap ID="1">' +
+                '<PersonType>M</PersonType>' +
+                '<Name>NTBAA</Name>' +
+                '<FirstName>NN</FirstName>' +
+                '</Fap>';
+        }
+
         beforeEach(() => {
             CetsConnection = require('tests/unit/_mocks/CetsConnection')();
 
@@ -58,8 +106,8 @@ describe('CetsAdapter', () => {
         });
 
         it('getData() should return crs model without unsupported services', () => {
-            let xml = '<Request Version="2.5" From="cets" To="FTI" TermId="CC1937" Window="A" Date="11052017" Time="081635" Type="AVL" SubType="S" Confirm="NO" Agent="549870" Lang="DE" LayoutLang="EN" UserCode="tourCH" UserType="M" UserName="Pan" UserFirstName="Peter" UserMail="peter.pan@tourstream.eu" Source="DPL" Mode="Test" DeepLinkURL="YES">' +
-                '<Avl ServiceType="U" FabKey="08:09,09_ACHECK_____RESPONSE_001_SESSIONID_8FED16BBAB590F34_CC1937001010">' +
+            let xml = createRequestXml(
+                '<Avl ServiceType="U">' +
                 '<TOCode>FTI</TOCode>' +
                 '<Catalog>DCH</Catalog>' +
                 '<StartDate>02072017</StartDate>' +
@@ -68,13 +116,8 @@ describe('CetsAdapter', () => {
                 '<Adults>1</Adults>' +
                 '</Avl>' +
                 '<Fah ServiceType="U"/>' +
-                '<Fah ServiceType="Q"/>' +
-                '<Fap ID="1">' +
-                '<PersonType>M</PersonType>' +
-                '<Name>NTBAA</Name>' +
-                '<FirstName>NN</FirstName>' +
-                '</Fap>' +
-                '</Request>';
+                '<Fah ServiceType="Q"/>'
+            );
 
             let expectation = {
                 operator: 'FTI',
@@ -90,8 +133,8 @@ describe('CetsAdapter', () => {
         });
 
         it('getData() should return crs model with shopping cart data', () => {
-            let xml = '<Request Version="2.5" From="cets" To="FTI" TermId="CC1937" Window="A" Date="11052017" Time="081635" Type="AVL" SubType="S" Confirm="NO" Agent="549870" Lang="DE" LayoutLang="EN" UserCode="tourCH" UserType="M" UserName="Pan" UserFirstName="Peter" UserMail="peter.pan@tourstream.eu" Source="DPL" Mode="Test" DeepLinkURL="YES">' +
-                '<Avl ServiceType="C" FabKey="08:09,09_ACHECK_____RESPONSE_001_SESSIONID_8FED16BBAB590F34_CC1937001010">' +
+            let xml = createRequestXml(
+                '<Avl ServiceType="C">' +
                 '<TOCode>FTI</TOCode>' +
                 '<Catalog>DCH</Catalog>' +
                 '<StartDate>02072017</StartDate>' +
@@ -120,13 +163,8 @@ describe('CetsAdapter', () => {
                 '<CarStation Code="LAX"></CarStation>' +
                 '</DropOff>' +
                 '</CarDetails>' +
-                '</Fah>' +
-                '<Fap ID="1">' +
-                '<PersonType>M</PersonType>' +
-                '<Name>NTBAA</Name>' +
-                '<FirstName>NN</FirstName>' +
-                '</Fap>' +
-                '</Request>';
+                '</Fah>'
+            );
 
             let expectation = {
                 operator: 'FTI',
@@ -173,40 +211,17 @@ describe('CetsAdapter', () => {
         describe('and initial search is triggered -', () => {
             let requestXml;
 
-            function createResponseXML(service = '') {
-                let xml = '<?xml version="1.0" encoding="windows-1252"?>';
-
-                return xml + '<Request Version="2.5" From="FTI" To="cets" TermId="CC1937" Window="A" Date="11052017" Time="081635" Type="AVL" SubType="S" Confirm="NO" Agent="549870" Lang="DE" LayoutLang="EN" UserCode="tourCH" UserType="M" UserName="Pan" UserFirstName="Peter" UserMail="peter.pan@tourstream.eu" Source="DPL" Mode="Test" DeepLinkURL="YES">' +
-                    '<Fab>' +
-                    '<Fap ID="1">' +
-                    '<PersonType>M</PersonType>' +
-                    '<Name>NTBAA</Name>' +
-                    '<FirstName>NN</FirstName>' +
-                    '</Fap>' +
-                    '<Catalog>DCH</Catalog>' +
-                    '<TOCode>FTI</TOCode>' +
-                    '<Adults>1</Adults>' +
-                    service +
-                    '</Fab>' +
-                    '</Request>';
-            }
-
             beforeEach(() => {
-                requestXml = '<Request Version="2.5" From="cets" To="FTI" TermId="CC1937" Window="A" Date="11052017" Time="081635" Type="AVL" SubType="S" Confirm="NO" Agent="549870" Lang="DE" LayoutLang="EN" UserCode="tourCH" UserType="M" UserName="Pan" UserFirstName="Peter" UserMail="peter.pan@tourstream.eu" Source="DPL" Mode="Test" DeepLinkURL="YES">' +
-                    '<Avl ServiceType="C" FabKey="08:09,09_ACHECK_____RESPONSE_001_SESSIONID_8FED16BBAB590F34_CC1937001010">' +
+                requestXml = createRequestXml(
+                    '<Avl ServiceType="C">' +
                     '<TOCode>FTI</TOCode>' +
                     '<Catalog>DCH</Catalog>' +
                     '<StartDate>02072017</StartDate>' +
                     '<Duration>7</Duration>' +
                     '<Destination>LAX</Destination>' +
                     '<Adults>1</Adults>' +
-                    '</Avl>' +
-                    '<Fap ID="1">' +
-                    '<PersonType>M</PersonType>' +
-                    '<Name>NTBAA</Name>' +
-                    '<FirstName>NN</FirstName>' +
-                    '</Fap>' +
-                    '</Request>';
+                    '</Avl>'
+                );
 
                 CetsConnection.getXmlRequest.and.returnValue(requestXml);
             });
@@ -227,12 +242,12 @@ describe('CetsAdapter', () => {
                     ],
                 };
 
-                let service = '<Fah ServiceType="C" Key="vehicle.type.code/pick.up.location-drop.off.location">' +
+                let service = '<Fah ServiceType="C" Key="VEHICLE.TYPE.CODE/PICK.UP.LOCATION-DROP.OFF.LOCATION">' +
                     '<StartDate>01052017</StartDate>' +
                     '<Duration>duration</Duration>' +
-                    '<Destination>pick.up.location</Destination>' +
-                    '<Product>rental.code</Product>' +
-                    '<Room>vehicle.type.code</Room>' +
+                    '<Destination>PICK.UP.LOCATION</Destination>' +
+                    '<Product>RENTAL.CODE</Product>' +
+                    '<Room>VEHICLE.TYPE.CODE</Room>' +
                     '<Norm>1</Norm>' +
                     '<MaxAdults>1</MaxAdults>' +
                     '<Meal>MIETW</Meal>' +
@@ -240,16 +255,17 @@ describe('CetsAdapter', () => {
                     '<CarDetails>' +
                     '<PickUp Where="Walkin">' +
                     '<Time>0820</Time>' +
-                    '<CarStation Code="pick.up.location"/>' +
+                    '<CarStation Code="PICK.UP.LOCATION"/>' +
                     '<Info>WALK IN</Info>' +
                     '</PickUp>' +
                     '<DropOff>' +
                     '<Time/>' +
-                    '<CarStation Code="drop.off.location"/>' +
+                    '<CarStation Code="DROP.OFF.LOCATION"/>' +
                     '</DropOff>' +
                     '</CarDetails>' +
                     '</Fah>';
-                let expectedXml = createResponseXML(service);
+
+                let expectedXml = createResponseXml(service);
 
                 adapter.setData(data);
 
@@ -273,12 +289,12 @@ describe('CetsAdapter', () => {
                     ],
                 };
 
-                let service = '<Fah ServiceType="C" Key="vehicle.type.code/pick.up.location-drop.off.location">' +
+                let service = '<Fah ServiceType="C" Key="VEHICLE.TYPE.CODE/PICK.UP.LOCATION-DROP.OFF.LOCATION">' +
                     '<StartDate>01052017</StartDate>' +
                     '<Duration>19</Duration>' +
-                    '<Destination>pick.up.location</Destination>' +
-                    '<Product>rental.code</Product>' +
-                    '<Room>vehicle.type.code</Room>' +
+                    '<Destination>PICK.UP.LOCATION</Destination>' +
+                    '<Product>RENTAL.CODE</Product>' +
+                    '<Room>VEHICLE.TYPE.CODE</Room>' +
                     '<Norm>1</Norm>' +
                     '<MaxAdults>1</MaxAdults>' +
                     '<Meal>MIETW</Meal>' +
@@ -286,17 +302,17 @@ describe('CetsAdapter', () => {
                     '<CarDetails>' +
                     '<PickUp Where="Walkin">' +
                     '<Time>0820</Time>' +
-                    '<CarStation Code="pick.up.location"/>' +
+                    '<CarStation Code="PICK.UP.LOCATION"/>' +
                     '<Info>WALK IN</Info>' +
                     '</PickUp>' +
                     '<DropOff>' +
                     '<Time>0615</Time>' +
-                    '<CarStation Code="drop.off.location"/>' +
+                    '<CarStation Code="DROP.OFF.LOCATION"/>' +
                     '</DropOff>' +
                     '</CarDetails>' +
                     '</Fah>';
 
-                let expectedXml = createResponseXML(service);
+                let expectedXml = createResponseXml(service);
 
                 adapter.setData(data);
 
@@ -335,7 +351,7 @@ describe('CetsAdapter', () => {
             it('setData() should set nothing if empty data is given', () => {
                 adapter.setData({});
 
-                expect(CetsConnection.returnBooking).toHaveBeenCalledWith(createResponseXML());
+                expect(CetsConnection.returnBooking).toHaveBeenCalledWith(createResponseXml());
             });
 
             it('setData() should send car service with hotel pick up and drop off', () => {
@@ -360,12 +376,12 @@ describe('CetsAdapter', () => {
                     ],
                 };
 
-                let service = '<Fah ServiceType="C" Key="vehicle.type.code/pick.up.location-drop.off.location">' +
+                let service = '<Fah ServiceType="C" Key="VEHICLE.TYPE.CODE/PICK.UP.LOCATION-DROP.OFF.LOCATION">' +
                     '<StartDate>08112017</StartDate>' +
                     '<Duration>4</Duration>' +
-                    '<Destination>pick.up.location</Destination>' +
+                    '<Destination>PICK.UP.LOCATION</Destination>' +
                     '<Product>DEU81</Product>' +
-                    '<Room>vehicle.type.code</Room>' +
+                    '<Room>VEHICLE.TYPE.CODE</Room>' +
                     '<Norm>1</Norm>' +
                     '<MaxAdults>1</MaxAdults>' +
                     '<Meal>MIETW</Meal>' +
@@ -373,12 +389,12 @@ describe('CetsAdapter', () => {
                     '<CarDetails>' +
                     '<PickUp Where="Hotel">' +
                     '<Time>0940</Time>' +
-                    '<CarStation Code="pick.up.location"/>' +
+                    '<CarStation Code="PICK.UP.LOCATION"/>' +
                     '<Info>pick.up.hotel.name</Info>' +
                     '</PickUp>' +
                     '<DropOff>' +
                     '<Time/>' +
-                    '<CarStation Code="drop.off.location"/>' +
+                    '<CarStation Code="DROP.OFF.LOCATION"/>' +
                     '</DropOff>' +
                     '</CarDetails>' +
                     '</Fah>' +
@@ -388,7 +404,7 @@ describe('CetsAdapter', () => {
                     '<TextV>pick.up.hotel.name 799103116 pick.up.hotel.address|drop.off.hotel.name 799103115 drop.off.hotel.address</TextV>' +
                     '</Faq>';
 
-                let expectedXml = createResponseXML(service);
+                let expectedXml = createResponseXml(service);
 
                 adapter.setData(data);
 
@@ -414,12 +430,12 @@ describe('CetsAdapter', () => {
                     ],
                 };
 
-                let service = '<Fah ServiceType="C" Key="vehicle.type.code/pick.up.location-drop.off.location">' +
+                let service = '<Fah ServiceType="C" Key="VEHICLE.TYPE.CODE/PICK.UP.LOCATION-DROP.OFF.LOCATION">' +
                     '<StartDate>08112017</StartDate>' +
                     '<Duration>4</Duration>' +
-                    '<Destination>pick.up.location</Destination>' +
+                    '<Destination>PICK.UP.LOCATION</Destination>' +
                     '<Product>DEU81</Product>' +
-                    '<Room>vehicle.type.code</Room>' +
+                    '<Room>VEHICLE.TYPE.CODE</Room>' +
                     '<Norm>1</Norm>' +
                     '<MaxAdults>1</MaxAdults>' +
                     '<Meal>MIETW</Meal>' +
@@ -427,12 +443,12 @@ describe('CetsAdapter', () => {
                     '<CarDetails>' +
                     '<PickUp Where="Walkin">' +
                     '<Time>0940</Time>' +
-                    '<CarStation Code="pick.up.location"/>' +
+                    '<CarStation Code="PICK.UP.LOCATION"/>' +
                     '<Info>WALK IN</Info>' +
                     '</PickUp>' +
                     '<DropOff>' +
                     '<Time/>' +
-                    '<CarStation Code="drop.off.location"/>' +
+                    '<CarStation Code="DROP.OFF.LOCATION"/>' +
                     '<Info>drop.off.hotel.name</Info>' +
                     '</DropOff>' +
                     '</CarDetails>' +
@@ -443,7 +459,7 @@ describe('CetsAdapter', () => {
                     '<TextV>drop.off.hotel.name 799103115 drop.off.hotel.address</TextV>' +
                     '</Faq>';
 
-                let expectedXml = createResponseXML(service);
+                let expectedXml = createResponseXml(service);
 
                 adapter.setData(data);
 
@@ -469,12 +485,12 @@ describe('CetsAdapter', () => {
                     ],
                 };
 
-                let service = '<Fah ServiceType="C" Key="vehicle.type.code/pick.up.location-drop.off.location">' +
+                let service = '<Fah ServiceType="C" Key="VEHICLE.TYPE.CODE/PICK.UP.LOCATION-DROP.OFF.LOCATION">' +
                     '<StartDate>08112017</StartDate>' +
                     '<Duration>4</Duration>' +
-                    '<Destination>pick.up.location</Destination>' +
+                    '<Destination>PICK.UP.LOCATION</Destination>' +
                     '<Product>DEU81</Product>' +
-                    '<Room>vehicle.type.code</Room>' +
+                    '<Room>VEHICLE.TYPE.CODE</Room>' +
                     '<Norm>1</Norm>' +
                     '<MaxAdults>1</MaxAdults>' +
                     '<Meal>MIETW</Meal>' +
@@ -482,12 +498,12 @@ describe('CetsAdapter', () => {
                     '<CarDetails>' +
                     '<PickUp Where="Hotel">' +
                     '<Time>0940</Time>' +
-                    '<CarStation Code="pick.up.location"/>' +
+                    '<CarStation Code="PICK.UP.LOCATION"/>' +
                     '<Info>pick.up.hotel.name</Info>' +
                     '</PickUp>' +
                     '<DropOff>' +
                     '<Time/>' +
-                    '<CarStation Code="drop.off.location"/>' +
+                    '<CarStation Code="DROP.OFF.LOCATION"/>' +
                     '</DropOff>' +
                     '</CarDetails>' +
                     '</Fah>' +
@@ -497,7 +513,7 @@ describe('CetsAdapter', () => {
                     '<TextV>pick.up.hotel.name 799103116 pick.up.hotel.address</TextV>' +
                     '</Faq>';
 
-                let expectedXml = createResponseXML(service);
+                let expectedXml = createResponseXml(service);
 
                 adapter.setData(data);
 
@@ -518,20 +534,18 @@ describe('CetsAdapter', () => {
             it('exit() should return the same xml than received', () => {
                 adapter.exit();
 
-                expect(CetsConnection.returnBooking).toHaveBeenCalledWith(createResponseXML());
+                expect(CetsConnection.returnBooking).toHaveBeenCalledWith(createResponseXml());
             });
         });
 
         describe('and direct search from shopping cart is triggered -', () => {
             it('getData() should return crs model without unsupported services', () => {
-                let xml = '<Request Version="2.5" From="cets" To="FTI" TermId="CC1937" Window="A" Date="11052017" Time="081635" Type="AVL" SubType="S" Confirm="NO" Agent="549870" Lang="DE" LayoutLang="EN" UserCode="tourCH" UserType="M" UserName="Pan" UserFirstName="Peter" UserMail="peter.pan@tourstream.eu" Source="DPL" Mode="Test" DeepLinkURL="YES">' +
-                    '<Fab>' +
+                let xml = createFabRequestXml(
                     '<Catalog>DCH</Catalog>' +
                     '<TOCode>FTI</TOCode>' +
                     '<Adults>1</Adults>' +
-                    '<Fah ServiceType="U"/>' +
-                    '</Fab>' +
-                    '</Request>';
+                    '<Fah ServiceType="U"/>'
+                );
 
                 let expectation = {
                     operator: 'FTI',
@@ -547,54 +561,39 @@ describe('CetsAdapter', () => {
             });
 
             it('setData() should replace existing car data due catalog restrictions', () => {
-                let requestXml = '<Request Version="2.5" From="cets" To="FTI" TermId="CC1937" Window="A" Date="11052017" Time="081635" Type="AVL" SubType="S" Confirm="NO" Agent="549870" Lang="DE" LayoutLang="EN" UserCode="tourCH" UserType="M" UserName="Pan" UserFirstName="Peter" UserMail="peter.pan@tourstream.eu" Source="DPL" Mode="Test" DeepLinkURL="YES">' +
-                    '<Fab>' +
+                let requestXml = createFabRequestXml(
                     '<Catalog>DCH</Catalog>' +
-                    '<Fah ServiceType="C" Key="oldKey"/>' +
-                    '<Fap ID="1">' +
-                    '<PersonType>M</PersonType>' +
-                    '<Name>NTBAA</Name>' +
-                    '<FirstName>NN</FirstName>' +
-                    '</Fap>' +
-                    '</Fab>' +
-                    '</Request>';
+                    '<Fah ServiceType="C" Key="oldKey"/>'
+                );
 
                 CetsConnection.getXmlRequest.and.returnValue(requestXml);
 
-                let expectedXml = '<?xml version="1.0" encoding="windows-1252"?>';
-
-                expectedXml += '<Request Version="2.5" From="FTI" To="cets" TermId="CC1937" Window="A" Date="11052017" Time="081635" Type="AVL" SubType="S" Confirm="NO" Agent="549870" Lang="DE" LayoutLang="EN" UserCode="tourCH" UserType="M" UserName="Pan" UserFirstName="Peter" UserMail="peter.pan@tourstream.eu" Source="DPL" Mode="Test" DeepLinkURL="YES">' +
-                    '<Fab>' +
-                        '<Catalog>DCH</Catalog>' +
-                        '<Fah ServiceType="C" Key="vehicle.type.code/pick.up.location-drop.off.location">' +
-                            '<StartDate>01052017</StartDate>' +
-                            '<Duration>duration</Duration>' +
-                            '<Destination>pick.up.location</Destination>' +
-                            '<Product>rental.code</Product>' +
-                            '<Room>vehicle.type.code</Room>' +
-                            '<Norm>1</Norm>' +
-                            '<MaxAdults>1</MaxAdults>' +
-                            '<Meal>MIETW</Meal>' +
-                            '<Persons>1</Persons>' +
-                            '<CarDetails>' +
-                                '<PickUp Where="Walkin">' +
-                                    '<Time>0820</Time>' +
-                                    '<CarStation Code="pick.up.location"/>' +
-                                    '<Info>WALK IN</Info>' +
-                                '</PickUp>' +
-                                '<DropOff>' +
-                                    '<Time/>' +
-                                    '<CarStation Code="drop.off.location"/>' +
-                                '</DropOff>' +
-                            '</CarDetails>' +
-                        '</Fah>' +
-                        '<Fap ID="1">' +
-                            '<PersonType>M</PersonType>' +
-                            '<Name>NTBAA</Name>' +
-                            '<FirstName>NN</FirstName>' +
-                        '</Fap>' +
-                    '</Fab>' +
-                    '</Request>';
+                let expectedXml = createCustomResponseXml(
+                    '<Catalog>DCH</Catalog>' +
+                    '<Fah ServiceType="C" Key="VEHICLE.TYPE.CODE/PICK.UP.LOCATION-DROP.OFF.LOCATION">' +
+                        '<StartDate>01052017</StartDate>' +
+                        '<Duration>duration</Duration>' +
+                        '<Destination>PICK.UP.LOCATION</Destination>' +
+                        '<Product>RENTAL.CODE</Product>' +
+                        '<Room>VEHICLE.TYPE.CODE</Room>' +
+                        '<Norm>1</Norm>' +
+                        '<MaxAdults>1</MaxAdults>' +
+                        '<Meal>MIETW</Meal>' +
+                        '<Persons>1</Persons>' +
+                        '<CarDetails>' +
+                            '<PickUp Where="Walkin">' +
+                                '<Time>0820</Time>' +
+                                '<CarStation Code="PICK.UP.LOCATION"/>' +
+                                '<Info>WALK IN</Info>' +
+                            '</PickUp>' +
+                            '<DropOff>' +
+                                '<Time/>' +
+                                '<CarStation Code="DROP.OFF.LOCATION"/>' +
+                            '</DropOff>' +
+                        '</CarDetails>' +
+                    '</Fah>' +
+                    createFapXml()
+                );
 
                 let data = {
                     services: [
@@ -617,32 +616,22 @@ describe('CetsAdapter', () => {
             });
 
             it('setData() should append new car data', () => {
-                let requestXml = '<Request Version="2.5" From="cets" To="FTI" TermId="CC1937" Window="A" Date="11052017" Time="081635" Type="AVL" SubType="S" Confirm="NO" Agent="549870" Lang="DE" LayoutLang="EN" UserCode="tourCH" UserType="M" UserName="Pan" UserFirstName="Peter" UserMail="peter.pan@tourstream.eu" Source="DPL" Mode="Test" DeepLinkURL="YES">' +
-                    '<Fab>' +
+                let requestXml = createFabRequestXml(
                     '<Catalog>UNK</Catalog>' +
-                    '<Fah ServiceType="C" Key="oldKey"/>' +
-                    '<Fap ID="1">' +
-                    '<PersonType>M</PersonType>' +
-                    '<Name>NTBAA</Name>' +
-                    '<FirstName>NN</FirstName>' +
-                    '</Fap>' +
-                    '</Fab>' +
-                    '</Request>';
+                    '<Fah ServiceType="C" Key="oldKey"/>'
+                );
 
                 CetsConnection.getXmlRequest.and.returnValue(requestXml);
 
-                let expectedXml = '<?xml version="1.0" encoding="windows-1252"?>';
-
-                expectedXml += '<Request Version="2.5" From="FTI" To="cets" TermId="CC1937" Window="A" Date="11052017" Time="081635" Type="AVL" SubType="S" Confirm="NO" Agent="549870" Lang="DE" LayoutLang="EN" UserCode="tourCH" UserType="M" UserName="Pan" UserFirstName="Peter" UserMail="peter.pan@tourstream.eu" Source="DPL" Mode="Test" DeepLinkURL="YES">' +
-                    '<Fab>' +
+                let expectedXml = createCustomResponseXml(
                     '<Catalog>UNK</Catalog>' +
                     '<Fah ServiceType="C" Key="oldKey"/>' +
-                    '<Fah ServiceType="C" Key="vehicle.type.code/pick.up.location-drop.off.location">' +
+                    '<Fah ServiceType="C" Key="VEHICLE.TYPE.CODE/PICK.UP.LOCATION-DROP.OFF.LOCATION">' +
                     '<StartDate>01052017</StartDate>' +
                     '<Duration>duration</Duration>' +
-                    '<Destination>pick.up.location</Destination>' +
-                    '<Product>rental.code</Product>' +
-                    '<Room>vehicle.type.code</Room>' +
+                    '<Destination>PICK.UP.LOCATION</Destination>' +
+                    '<Product>RENTAL.CODE</Product>' +
+                    '<Room>VEHICLE.TYPE.CODE</Room>' +
                     '<Norm>1</Norm>' +
                     '<MaxAdults>1</MaxAdults>' +
                     '<Meal>MIETW</Meal>' +
@@ -650,33 +639,28 @@ describe('CetsAdapter', () => {
                     '<CarDetails>' +
                     '<PickUp Where="Walkin">' +
                     '<Time>0820</Time>' +
-                    '<CarStation Code="pick.up.location"/>' +
+                    '<CarStation Code="PICK.UP.LOCATION"/>' +
                     '<Info>WALK IN</Info>' +
                     '</PickUp>' +
                     '<DropOff>' +
                     '<Time/>' +
-                    '<CarStation Code="drop.off.location"/>' +
+                    '<CarStation Code="DROP.OFF.LOCATION"/>' +
                     '</DropOff>' +
                     '</CarDetails>' +
                     '</Fah>' +
-                    '<Fap ID="1">' +
-                    '<PersonType>M</PersonType>' +
-                    '<Name>NTBAA</Name>' +
-                    '<FirstName>NN</FirstName>' +
-                    '</Fap>' +
-                    '</Fab>' +
-                    '</Request>';
+                    createFapXml()
+                );
 
                 let data = {
                     services: [
                         {
-                            vehicleTypeCode: 'vehicle.type.code',
-                            pickUpLocation: 'pick.up.location',
-                            dropOffLocation: 'drop.off.location',
+                            vehicleTypeCode: 'VEHICLE.TYPE.CODE',
+                            pickUpLocation: 'PICK.UP.LOCATION',
+                            dropOffLocation: 'DROP.OFF.LOCATION',
                             pickUpDate: '01052017',
                             pickUpTime: '0820',
                             duration: 'duration',
-                            rentalCode: 'rental.code',
+                            rentalCode: 'RENTAL.CODE',
                             type: 'car',
                         },
                     ],
