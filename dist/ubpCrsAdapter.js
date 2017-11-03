@@ -5100,21 +5100,21 @@ var _TomaSPCAdapter = __webpack_require__(233);
 
 var _TomaSPCAdapter2 = _interopRequireDefault(_TomaSPCAdapter);
 
-var _CetsAdapter = __webpack_require__(229);
+var _CetsAdapter = __webpack_require__(230);
 
 var _CetsAdapter2 = _interopRequireDefault(_CetsAdapter);
 
-var _BmAdapter = __webpack_require__(228);
+var _BmAdapter = __webpack_require__(229);
 
 var _BmAdapter2 = _interopRequireDefault(_BmAdapter);
 
-var _MerlinAdapter = __webpack_require__(230);
+var _MerlinAdapter = __webpack_require__(231);
 
 var _MerlinAdapter2 = _interopRequireDefault(_MerlinAdapter);
 
-var _MyJackExpertAdapter = __webpack_require__(231);
+var _BewotecExpertAdapter = __webpack_require__(228);
 
-var _MyJackExpertAdapter2 = _interopRequireDefault(_MyJackExpertAdapter);
+var _BewotecExpertAdapter2 = _interopRequireDefault(_BewotecExpertAdapter);
 
 var _LogService = __webpack_require__(227);
 
@@ -5137,16 +5137,19 @@ var CRS_TYPES = {
     cets: 'cets',
     bookingManager: 'bm',
     merlin: 'merlin',
-    myJackExpert: 'mjExpert'
+    myJack: 'myJack',
+    jackPlus: 'jackPlus'
 };
 
 var CRS_TYPE_2_ADAPTER_MAP = {
     toma: _TomaAdapter2.default,
+    tomaspc: _TomaSPCAdapter2.default,
     toma2: _TomaSPCAdapter2.default,
     cets: _CetsAdapter2.default,
     bm: _BmAdapter2.default,
     merlin: _MerlinAdapter2.default,
-    mjexpert: _MyJackExpertAdapter2.default
+    myjack: _BewotecExpertAdapter2.default,
+    jackplus: _BewotecExpertAdapter2.default
 };
 
 var DEFAULT_OPTIONS = {
@@ -5348,6 +5351,8 @@ var UbpCrsAdapter = function () {
             if (!CRS_TYPE_2_ADAPTER_MAP[normalizedCrsType]) {
                 throw new Error('The CRS "' + normalizedCrsType + '" is currently not supported.');
             }
+
+            this.options.crsType = crsType;
 
             return new CRS_TYPE_2_ADAPTER_MAP[normalizedCrsType](this.logger, this.options);
         }
@@ -29659,6 +29664,451 @@ Object.defineProperty(exports, "__esModule", {
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
+var _es6Shim = __webpack_require__(14);
+
+var _es6Shim2 = _interopRequireDefault(_es6Shim);
+
+var _moment = __webpack_require__(0);
+
+var _moment2 = _interopRequireDefault(_moment);
+
+var _axios = __webpack_require__(55);
+
+var _axios2 = _interopRequireDefault(_axios);
+
+var _UbpCrsAdapter = __webpack_require__(9);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+var CONFIG = {
+    crs: {
+        dateFormat: 'DDMMYY',
+        timeFormat: 'HHmm',
+        serviceTypes: {
+            car: 'MW',
+            carExtras: 'E',
+            hotel: 'H',
+            roundTrip: 'R',
+            camper: 'WM',
+            camperExtra: 'TA'
+        },
+        connectionUrl: 'http://localhost:7354/airob',
+        defaultValues: {
+            action: 'BA',
+            numberOfTravellers: 1
+        },
+        lineNumberMap: ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h']
+    },
+    services: {
+        car: {
+            serviceCodeRegEx: /([A-Z]*[0-9]*)?([A-Z]*[0-9]*)?(\/)?([A-Z]*[0-9]*)?(-)?([A-Z]*[0-9]*)?/
+        }
+    }
+};
+
+var BewotecExpertAdapter = function () {
+    function BewotecExpertAdapter(logger) {
+        var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+
+        _classCallCheck(this, BewotecExpertAdapter);
+
+        this.options = options;
+        this.logger = logger;
+    }
+
+    _createClass(BewotecExpertAdapter, [{
+        key: 'connect',
+        value: function connect(options) {
+            var _this = this;
+
+            if (!options || !options.token) {
+                throw new Error('No token found in connectionOptions.');
+            }
+
+            this.connection = this.createConnection(options);
+
+            return this.connection.get().then(function () {
+                _this.logger.log('BewotecExpert (' + _this.options.crsType + ') connection available');
+            }, function (error) {
+                _this.logger.error(error.message);
+                _this.logger.info('response is: ' + error.response);
+                _this.logger.error('Instantiate connection error - but nevertheless transfer could work');
+                throw error;
+            });
+        }
+    }, {
+        key: 'getData',
+        value: function getData() {
+            this.logger.warn('BewotecExpert (' + this.options.crsType + ') has no mechanism for getting the data');
+
+            return this.getConnection().get().then(function (data) {
+                return Promise.resolve(data);
+            }, function () {
+                return Promise.resolve();
+            });
+        }
+    }, {
+        key: 'setData',
+        value: function setData() {
+            var _this2 = this;
+
+            var dataObject = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+
+            var crsObject = this.createBaseCrsObject();
+
+            crsObject = this.assignDataObjectToCrsObject(crsObject, dataObject);
+
+            this.logger.info('BASE OBJECT:');
+            this.logger.info(crsObject);
+
+            try {
+                return this.getConnection().send(crsObject).catch(function (error) {
+                    _this2.logger.info(error);
+                    _this2.logger.error('error during transfer - please check the result');
+                    throw error;
+                });
+            } catch (error) {
+                return Promise.reject(error);
+            }
+        }
+    }, {
+        key: 'exit',
+        value: function exit() {
+            this.logger.warn('BewotecExpert (' + this.options.crsType + ') has no exit mechanism');
+
+            return Promise.resolve();
+        }
+
+        /**
+         * @private
+         *
+         * @param options
+         * @returns {{send: (function(*=): AxiosPromise)}}
+         */
+
+    }, {
+        key: 'createConnection',
+        value: function createConnection(options) {
+            var extendSendData = function extendSendData() {
+                var data = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+
+                data.token = options.token;
+                data.merge = true;
+
+                return data;
+            };
+
+            return {
+                // does not work well - we get a "Network error" as long as we have the CORS issue
+                get: function get() {
+                    return _axios2.default.get(CONFIG.crs.connectionUrl + '/expert', {
+                        params: {
+                            token: options.token
+                        }
+                    });
+                },
+                send: function send() {
+                    var data = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+                    return _axios2.default.get(CONFIG.crs.connectionUrl + '/fill', {
+                        params: extendSendData(data)
+                    });
+                }
+            };
+        }
+
+        /**
+         * @private
+         * @returns {object}
+         */
+
+    }, {
+        key: 'getConnection',
+        value: function getConnection() {
+            if (this.connection) {
+                return this.connection;
+            }
+
+            throw new Error('No connection available - please connect to Bewotec application first.');
+        }
+    }, {
+        key: 'createBaseCrsObject',
+        value: function createBaseCrsObject() {
+            return {
+                a: CONFIG.crs.defaultValues.action,
+                v: 'FTI'
+            };
+        }
+
+        /**
+         * @private
+         * @param crsObject object
+         * @param dataObject object
+         */
+
+    }, {
+        key: 'assignDataObjectToCrsObject',
+        value: function assignDataObjectToCrsObject(crsObject) {
+            var _this3 = this;
+
+            var dataObject = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+
+            crsObject.rem = dataObject.remark;
+            crsObject.p = dataObject.numberOfTravellers || CONFIG.crs.defaultValues.numberOfTravellers;
+
+            (dataObject.services || []).forEach(function (service) {
+                var lineNumber = _this3.getNextEmptyLineNumber(crsObject);
+
+                switch (service.type) {
+                    case _UbpCrsAdapter.SERVICE_TYPES.car:
+                        {
+                            _this3.assignCarServiceFromAdapterObjectToCrsObject(service, crsObject, lineNumber);
+                            break;
+                        }
+                    case _UbpCrsAdapter.SERVICE_TYPES.hotel:
+                        {
+                            _this3.assignHotelServiceFromAdapterObjectToCrsObject(service, crsObject, lineNumber);
+                            break;
+                        }
+                    case _UbpCrsAdapter.SERVICE_TYPES.camper:
+                        {
+                            _this3.assignCamperServiceFromAdapterObjectToCrsObject(service, crsObject, lineNumber);
+                            _this3.assignCamperExtras(service, crsObject);
+
+                            break;
+                        }
+                    case _UbpCrsAdapter.SERVICE_TYPES.roundTrip:
+                        {
+                            _this3.assignRoundTripServiceFromAdapterObjectToCrsObject(service, crsObject, lineNumber);
+                            break;
+                        }
+                    default:
+                        {
+                            _this3.logger.warn('type ' + service.type + ' is not supported by the BewotecExpert (' + _this3.options.crsType + ') adapter');
+                            return;
+                        }
+                }
+
+                crsObject['m' + CONFIG.crs.lineNumberMap[lineNumber]] = service.marked ? 'X' : void 0;
+            });
+
+            return JSON.parse(JSON.stringify(crsObject));
+        }
+    }, {
+        key: 'assignCarServiceFromAdapterObjectToCrsObject',
+
+
+        /**
+         * @private
+         * @param service object
+         * @param crsObject object
+         * @param lineNumber int
+         */
+        value: function assignCarServiceFromAdapterObjectToCrsObject(service, crsObject, lineNumber) {
+            var _this4 = this;
+
+            var calculateDropOffDate = function calculateDropOffDate(service) {
+                if (service.dropOffDate) {
+                    var dropOffDate = (0, _moment2.default)(service.dropOffDate, _this4.options.useDateFormat);
+
+                    return dropOffDate.isValid() ? dropOffDate.format(CONFIG.crs.dateFormat) : service.dropOffDate;
+                }
+
+                var pickUpDate = (0, _moment2.default)(service.pickUpDate, _this4.options.useDateFormat);
+
+                return pickUpDate.isValid() ? pickUpDate.add(service.duration, 'days').format(CONFIG.crs.dateFormat) : service.pickUpDate;
+            };
+
+            var reduceExtrasList = function reduceExtrasList(extras) {
+                return (extras || []).join(',').replace(/childCareSeat0/g, 'BS').replace(/childCareSeat((\d){1,2})/g, 'CS$1YRS');
+            };
+
+            var reduceHotelDataToRemarkString = function reduceHotelDataToRemarkString(service) {
+                var hotelData = [];
+
+                if (service.pickUpHotelName) {
+                    hotelData.push([service.pickUpHotelAddress, service.pickUpHotelPhoneNumber].filter(Boolean).join(' '));
+                }
+
+                if (service.dropOffHotelName) {
+                    if (service.pickUpHotelName) {
+                        hotelData.push(service.dropOffHotelName);
+                    }
+
+                    hotelData.push([service.dropOffHotelAddress, service.dropOffHotelPhoneNumber].filter(Boolean).join(' '));
+                }
+
+                return hotelData.filter(Boolean).join(',');
+            };
+
+            var pickUpDate = (0, _moment2.default)(service.pickUpDate, this.options.useDateFormat);
+            var pickUpTime = (0, _moment2.default)(service.pickUpTime, this.options.useTimeFormat);
+            var calculatedDropOffDate = calculateDropOffDate(service);
+
+            crsObject['n' + CONFIG.crs.lineNumberMap[lineNumber]] = CONFIG.crs.serviceTypes.car;
+
+            // USA96A4/MIA1-TPA
+            crsObject['l' + CONFIG.crs.lineNumberMap[lineNumber]] = [service.rentalCode, service.vehicleTypeCode, '/', service.pickUpLocation, '-', service.dropOffLocation].join('');
+
+            crsObject['s' + CONFIG.crs.lineNumberMap[lineNumber]] = pickUpDate.isValid() ? pickUpDate.format(CONFIG.crs.dateFormat) : service.pickUpDate;
+            crsObject['i' + CONFIG.crs.lineNumberMap[lineNumber]] = calculatedDropOffDate;
+            crsObject['u' + CONFIG.crs.lineNumberMap[lineNumber]] = pickUpTime.isValid() ? pickUpTime.format(CONFIG.crs.timeFormat) : service.pickUpTime;
+
+            var hotelName = service.pickUpHotelName || service.dropOffHotelName;
+
+            if (hotelName) {
+                lineNumber = this.getNextEmptyLineNumber(crsObject);
+
+                crsObject['n' + CONFIG.crs.lineNumberMap[lineNumber]] = CONFIG.crs.serviceTypes.carExtras;
+                crsObject['l' + CONFIG.crs.lineNumberMap[lineNumber]] = hotelName;
+                crsObject['s' + CONFIG.crs.lineNumberMap[lineNumber]] = pickUpDate.isValid() ? pickUpDate.format(CONFIG.crs.dateFormat) : service.pickUpDate;
+                crsObject['i' + CONFIG.crs.lineNumberMap[lineNumber]] = calculatedDropOffDate;
+            }
+
+            crsObject.rem = [crsObject.rem, reduceExtrasList(service.extras), reduceHotelDataToRemarkString(service)].filter(Boolean).join(';') || void 0;
+        }
+    }, {
+        key: 'assignHotelServiceFromAdapterObjectToCrsObject',
+
+
+        /**
+         * @private
+         *
+         * @param service object
+         * @param crsObject object
+         * @param lineNumber int
+         */
+        value: function assignHotelServiceFromAdapterObjectToCrsObject(service, crsObject, lineNumber) {
+            var dateFrom = (0, _moment2.default)(service.dateFrom, this.options.useDateFormat);
+            var dateTo = (0, _moment2.default)(service.dateTo, this.options.useDateFormat);
+
+            crsObject['n' + CONFIG.crs.lineNumberMap[lineNumber]] = CONFIG.crs.serviceTypes.hotel;
+            crsObject['l' + CONFIG.crs.lineNumberMap[lineNumber]] = service.destination;
+            crsObject['u' + CONFIG.crs.lineNumberMap[lineNumber]] = [service.roomCode, service.mealCode].filter(Boolean).join(' ');
+            crsObject['s' + CONFIG.crs.lineNumberMap[lineNumber]] = dateFrom.isValid() ? dateFrom.format(CONFIG.crs.dateFormat) : service.dateFrom;
+            crsObject['i' + CONFIG.crs.lineNumberMap[lineNumber]] = dateTo.isValid() ? dateTo.format(CONFIG.crs.dateFormat) : service.dateTo;
+        }
+
+        /**
+         * @private
+         * @param service object
+         * @param crsObject object
+         * @param lineNumber number
+         */
+
+    }, {
+        key: 'assignRoundTripServiceFromAdapterObjectToCrsObject',
+        value: function assignRoundTripServiceFromAdapterObjectToCrsObject(service, crsObject, lineNumber) {
+            var startDate = (0, _moment2.default)(service.startDate, this.options.useDateFormat);
+            var endDate = (0, _moment2.default)(service.endDate, this.options.useDateFormat);
+
+            crsObject['n' + CONFIG.crs.lineNumberMap[lineNumber]] = CONFIG.crs.serviceTypes.roundTrip;
+            crsObject['l' + CONFIG.crs.lineNumberMap[lineNumber]] = service.bookingId;
+            crsObject['u' + CONFIG.crs.lineNumberMap[lineNumber]] = service.destination;
+            crsObject['z' + CONFIG.crs.lineNumberMap[lineNumber]] = service.numberOfPassengers;
+            crsObject['s' + CONFIG.crs.lineNumberMap[lineNumber]] = startDate.isValid() ? startDate.format(CONFIG.crs.dateFormat) : service.startDate;
+            crsObject['i' + CONFIG.crs.lineNumberMap[lineNumber]] = endDate.isValid() ? endDate.format(CONFIG.crs.dateFormat) : service.endDate;
+            crsObject['ta' + CONFIG.crs.lineNumberMap[lineNumber]] = service.salutation;
+            crsObject['tn' + CONFIG.crs.lineNumberMap[lineNumber]] = service.name;
+            crsObject['te' + CONFIG.crs.lineNumberMap[lineNumber]] = service.birthday || service.age;
+        }
+
+        /**
+         * @private
+         * @param service object
+         * @param crsObject object
+         * @param lineNumber number
+         */
+
+    }, {
+        key: 'assignCamperServiceFromAdapterObjectToCrsObject',
+        value: function assignCamperServiceFromAdapterObjectToCrsObject(service, crsObject, lineNumber) {
+            var pickUpDate = (0, _moment2.default)(service.pickUpDate, this.options.useDateFormat);
+            var dropOffDate = service.dropOffDate ? (0, _moment2.default)(service.dropOffDate, this.options.useDateFormat) : (0, _moment2.default)(service.pickUpDate, this.options.useDateFormat).add(service.duration, 'days');
+            var pickUpTime = (0, _moment2.default)(service.pickUpTime, this.options.useTimeFormat);
+
+            crsObject['n' + CONFIG.crs.lineNumberMap[lineNumber]] = CONFIG.crs.serviceTypes.camper;
+
+            // PRT02FS/LIS1-LIS2
+            crsObject['l' + CONFIG.crs.lineNumberMap[lineNumber]] = [service.renterCode, service.camperCode, '/', service.pickUpLocation, '-', service.dropOffLocation].join('');
+
+            crsObject['s' + CONFIG.crs.lineNumberMap[lineNumber]] = pickUpDate.isValid() ? pickUpDate.format(CONFIG.crs.dateFormat) : service.pickUpDate;
+            crsObject['i' + CONFIG.crs.lineNumberMap[lineNumber]] = dropOffDate.isValid() ? dropOffDate.format(CONFIG.crs.dateFormat) : service.dropOffDate;
+            crsObject['u' + CONFIG.crs.lineNumberMap[lineNumber]] = pickUpTime.isValid() ? pickUpTime.format(CONFIG.crs.timeFormat) : service.pickUpTime;
+            crsObject['c' + CONFIG.crs.lineNumberMap[lineNumber]] = service.milesIncludedPerDay;
+            crsObject['e' + CONFIG.crs.lineNumberMap[lineNumber]] = service.milesPackagesIncluded;
+            crsObject['d' + CONFIG.crs.lineNumberMap[lineNumber]] = '1' + (crsObject.NoOfPersons > 1 ? '-' + crsObject.NoOfPersons : '');
+        }
+
+        /**
+         * @private
+         * @param service object
+         * @param crsObject object
+         */
+
+    }, {
+        key: 'assignCamperExtras',
+        value: function assignCamperExtras(service, crsObject) {
+            var _this5 = this;
+
+            var pickUpDate = (0, _moment2.default)(service.pickUpDate, this.options.useDateFormat);
+            var dropOffDate = service.dropOffDate ? (0, _moment2.default)(service.dropOffDate, this.options.useDateFormat) : (0, _moment2.default)(service.pickUpDate, this.options.useDateFormat).add(service.duration, 'days');
+
+            (service.extras || []).forEach(function (extra) {
+                var lineNumber = _this5.getNextEmptyLineNumber(crsObject);
+                var extraParts = extra.split('.');
+
+                crsObject['n' + CONFIG.crs.lineNumberMap[lineNumber]] = CONFIG.crs.serviceTypes.camperExtra;
+                crsObject['l' + CONFIG.crs.lineNumberMap[lineNumber]] = extraParts[0];
+                crsObject['s' + CONFIG.crs.lineNumberMap[lineNumber]] = pickUpDate.isValid() ? pickUpDate.format(CONFIG.crs.dateFormat) : service.pickUpDate;
+                crsObject['i' + CONFIG.crs.lineNumberMap[lineNumber]] = dropOffDate.isValid() ? dropOffDate.format(CONFIG.crs.dateFormat) : service.dropOffDate;
+                crsObject['d' + CONFIG.crs.lineNumberMap[lineNumber]] = '1' + (extraParts[1] > 1 ? '-' + extraParts[1] : '');
+            });
+        }
+
+        /**
+         * @private
+         * @param crsObject object
+         * @returns {number}
+         */
+
+    }, {
+        key: 'getNextEmptyLineNumber',
+        value: function getNextEmptyLineNumber(crsObject) {
+            var lineNumber = 0;
+
+            do {
+                var markerField = crsObject['m' + CONFIG.crs.lineNumberMap[lineNumber]];
+                var serviceType = crsObject['n' + CONFIG.crs.lineNumberMap[lineNumber]];
+                var serviceCode = crsObject['l' + CONFIG.crs.lineNumberMap[lineNumber]];
+
+                if (!markerField && !serviceType && !serviceCode) {
+                    return lineNumber;
+                }
+            } while (++lineNumber);
+        }
+    }]);
+
+    return BewotecExpertAdapter;
+}();
+
+exports.default = BewotecExpertAdapter;
+module.exports = exports['default'];
+
+/***/ }),
+/* 229 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
 var _penpal = __webpack_require__(385);
 
 var _penpal2 = _interopRequireDefault(_penpal);
@@ -29816,7 +30266,7 @@ exports.default = BmAdapter;
 module.exports = exports['default'];
 
 /***/ }),
-/* 229 */
+/* 230 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -30310,7 +30760,7 @@ exports.default = CetsAdapter;
 module.exports = exports['default'];
 
 /***/ }),
-/* 230 */
+/* 231 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -30747,446 +31197,6 @@ var MerlinAdapter = function () {
 }();
 
 exports.default = MerlinAdapter;
-module.exports = exports['default'];
-
-/***/ }),
-/* 231 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-    value: true
-});
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-var _es6Shim = __webpack_require__(14);
-
-var _es6Shim2 = _interopRequireDefault(_es6Shim);
-
-var _moment = __webpack_require__(0);
-
-var _moment2 = _interopRequireDefault(_moment);
-
-var _axios = __webpack_require__(55);
-
-var _axios2 = _interopRequireDefault(_axios);
-
-var _UbpCrsAdapter = __webpack_require__(9);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-var CONFIG = {
-    crs: {
-        dateFormat: 'DDMMYY',
-        timeFormat: 'HHmm',
-        serviceTypes: {
-            car: 'MW',
-            carExtras: 'E',
-            hotel: 'H',
-            roundTrip: 'R',
-            camper: 'WM',
-            camperExtra: 'TA'
-        },
-        connectionUrl: 'http://localhost:7354/airob',
-        defaultValues: {
-            action: 'BA',
-            numberOfTravellers: '1'
-        },
-        lineNumberMap: ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h']
-    },
-    services: {
-        car: {
-            serviceCodeRegEx: /([A-Z]*[0-9]*)?([A-Z]*[0-9]*)?(\/)?([A-Z]*[0-9]*)?(-)?([A-Z]*[0-9]*)?/
-        }
-    }
-};
-
-var MyJackExpertAdapter = function () {
-    function MyJackExpertAdapter(logger) {
-        var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
-
-        _classCallCheck(this, MyJackExpertAdapter);
-
-        this.options = options;
-        this.logger = logger;
-    }
-
-    _createClass(MyJackExpertAdapter, [{
-        key: 'connect',
-        value: function connect(options) {
-            var _this = this;
-
-            if (!options || !options.token) {
-                throw new Error('No token found in connectionOptions.');
-            }
-
-            this.connection = this.createConnection(options);
-
-            return this.connection.get().then(function () {
-                _this.logger.log('MyJackExpert connection available');
-            }, function (error) {
-                _this.logger.error(error.message);
-                _this.logger.info('response is: ' + error.response);
-                _this.logger.error('Instantiate connection error - but nevertheless transfer could work');
-                throw error;
-            });
-        }
-    }, {
-        key: 'getData',
-        value: function getData() {
-            this.logger.warn('MyJackExpert has no mechanism for getting the data');
-
-            return Promise.resolve();
-        }
-    }, {
-        key: 'setData',
-        value: function setData() {
-            var _this2 = this;
-
-            var dataObject = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
-
-            var crsObject = this.createBaseCrsObject();
-
-            this.assignDataObjectToCrsObject(crsObject, dataObject);
-
-            this.logger.info('BASE OBJECT:');
-            this.logger.info(crsObject);
-
-            try {
-                return this.getConnection().send(crsObject).catch(function (error) {
-                    _this2.logger.info(error);
-                    _this2.logger.error('error during transfer - please check the result');
-                    throw error;
-                });
-            } catch (error) {
-                return Promise.reject(error);
-            }
-        }
-    }, {
-        key: 'exit',
-        value: function exit() {
-            this.logger.warn('MyJackExpert has no exit mechanism');
-
-            return Promise.resolve();
-        }
-
-        /**
-         * @private
-         *
-         * @param options
-         * @returns {{send: (function(*=): AxiosPromise)}}
-         */
-
-    }, {
-        key: 'createConnection',
-        value: function createConnection(options) {
-            var extendSendData = function extendSendData() {
-                var data = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
-
-                data.token = options.token;
-                data.merge = true;
-
-                return data;
-            };
-
-            return {
-                // does not work well - we get a "Network error" as long as we have the CORS issue
-                get: function get() {
-                    return _axios2.default.get(CONFIG.crs.connectionUrl + '/expert', {
-                        params: {
-                            token: options.token,
-                            merge: true
-                        }
-                    });
-                },
-                send: function send() {
-                    var data = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
-                    return _axios2.default.get(CONFIG.crs.connectionUrl + '/fill', {
-                        params: extendSendData(data)
-                    });
-                }
-            };
-        }
-
-        /**
-         * @private
-         * @returns {object}
-         */
-
-    }, {
-        key: 'getConnection',
-        value: function getConnection() {
-            if (this.connection) {
-                return this.connection;
-            }
-
-            throw new Error('No connection available - please connect to MyJackExpert first.');
-        }
-    }, {
-        key: 'createBaseCrsObject',
-        value: function createBaseCrsObject() {
-            return {
-                a: CONFIG.crs.defaultValues.action,
-                v: 'FTI'
-            };
-        }
-
-        /**
-         * @private
-         * @param crsObject object
-         * @param dataObject object
-         */
-
-    }, {
-        key: 'assignDataObjectToCrsObject',
-        value: function assignDataObjectToCrsObject(crsObject) {
-            var _this3 = this;
-
-            var dataObject = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
-
-            crsObject.rem = dataObject.remark;
-            crsObject.p = dataObject.numberOfTravellers || CONFIG.crs.defaultValues.numberOfTravellers;
-
-            (dataObject.services || []).forEach(function (service) {
-                var lineNumber = _this3.getNextEmptyLineNumber(crsObject);
-
-                switch (service.type) {
-                    case _UbpCrsAdapter.SERVICE_TYPES.car:
-                        {
-                            _this3.assignCarServiceFromAdapterObjectToCrsObject(service, crsObject, lineNumber);
-                            break;
-                        }
-                    case _UbpCrsAdapter.SERVICE_TYPES.hotel:
-                        {
-                            _this3.assignHotelServiceFromAdapterObjectToCrsObject(service, crsObject, lineNumber);
-                            break;
-                        }
-                    case _UbpCrsAdapter.SERVICE_TYPES.camper:
-                        {
-                            _this3.assignCamperServiceFromAdapterObjectToCrsObject(service, crsObject, lineNumber);
-                            _this3.assignCamperExtras(service, crsObject);
-
-                            break;
-                        }
-                    case _UbpCrsAdapter.SERVICE_TYPES.roundTrip:
-                        {
-                            _this3.assignRoundTripServiceFromAdapterObjectToCrsObject(service, crsObject, lineNumber);
-                            break;
-                        }
-                    default:
-                        {
-                            _this3.logger.warn('type ' + service.type + ' is not supported by the MyJackExpert adapter');
-                            return;
-                        }
-                }
-
-                crsObject['m' + CONFIG.crs.lineNumberMap[lineNumber]] = service.marked ? 'X' : void 0;
-            });
-        }
-    }, {
-        key: 'assignCarServiceFromAdapterObjectToCrsObject',
-
-
-        /**
-         * @private
-         * @param service object
-         * @param crsObject object
-         * @param lineNumber int
-         */
-        value: function assignCarServiceFromAdapterObjectToCrsObject(service, crsObject, lineNumber) {
-            var _this4 = this;
-
-            var calculateDropOffDate = function calculateDropOffDate(service) {
-                if (service.dropOffDate) {
-                    var dropOffDate = (0, _moment2.default)(service.dropOffDate, _this4.options.useDateFormat);
-
-                    return dropOffDate.isValid() ? dropOffDate.format(CONFIG.crs.dateFormat) : service.dropOffDate;
-                }
-
-                var pickUpDate = (0, _moment2.default)(service.pickUpDate, _this4.options.useDateFormat);
-
-                return pickUpDate.isValid() ? pickUpDate.add(service.duration, 'days').format(CONFIG.crs.dateFormat) : service.pickUpDate;
-            };
-
-            var reduceExtrasList = function reduceExtrasList(extras) {
-                return (extras || []).join(',').replace(/childCareSeat0/g, 'BS').replace(/childCareSeat((\d){1,2})/g, 'CS$1YRS');
-            };
-
-            var reduceHotelDataToRemarkString = function reduceHotelDataToRemarkString(service) {
-                var hotelData = [];
-
-                if (service.pickUpHotelName) {
-                    hotelData.push([service.pickUpHotelAddress, service.pickUpHotelPhoneNumber].filter(Boolean).join(' '));
-                }
-
-                if (service.dropOffHotelName) {
-                    if (service.pickUpHotelName) {
-                        hotelData.push(service.dropOffHotelName);
-                    }
-
-                    hotelData.push([service.dropOffHotelAddress, service.dropOffHotelPhoneNumber].filter(Boolean).join(' '));
-                }
-
-                return hotelData.filter(Boolean).join(',');
-            };
-
-            var pickUpDate = (0, _moment2.default)(service.pickUpDate, this.options.useDateFormat);
-            var pickUpTime = (0, _moment2.default)(service.pickUpTime, this.options.useTimeFormat);
-            var calculatedDropOffDate = calculateDropOffDate(service);
-
-            crsObject['n' + CONFIG.crs.lineNumberMap[lineNumber]] = CONFIG.crs.serviceTypes.car;
-
-            // USA96A4/MIA1-TPA
-            crsObject['l' + CONFIG.crs.lineNumberMap[lineNumber]] = [service.rentalCode, service.vehicleTypeCode, '/', service.pickUpLocation, '-', service.dropOffLocation].join('');
-
-            crsObject['s' + CONFIG.crs.lineNumberMap[lineNumber]] = pickUpDate.isValid() ? pickUpDate.format(CONFIG.crs.dateFormat) : service.pickUpDate;
-            crsObject['i' + CONFIG.crs.lineNumberMap[lineNumber]] = calculatedDropOffDate;
-            crsObject['u' + CONFIG.crs.lineNumberMap[lineNumber]] = pickUpTime.isValid() ? pickUpTime.format(CONFIG.crs.timeFormat) : service.pickUpTime;
-
-            var hotelName = service.pickUpHotelName || service.dropOffHotelName;
-
-            if (hotelName) {
-                lineNumber = this.getNextEmptyLineNumber(crsObject);
-
-                crsObject['n' + CONFIG.crs.lineNumberMap[lineNumber]] = CONFIG.crs.serviceTypes.carExtras;
-                crsObject['l' + CONFIG.crs.lineNumberMap[lineNumber]] = hotelName;
-                crsObject['s' + CONFIG.crs.lineNumberMap[lineNumber]] = pickUpDate.isValid() ? pickUpDate.format(CONFIG.crs.dateFormat) : service.pickUpDate;
-                crsObject['i' + CONFIG.crs.lineNumberMap[lineNumber]] = calculatedDropOffDate;
-            }
-
-            crsObject.rem = [crsObject.rem, reduceExtrasList(service.extras), reduceHotelDataToRemarkString(service)].filter(Boolean).join(';') || void 0;
-        }
-    }, {
-        key: 'assignHotelServiceFromAdapterObjectToCrsObject',
-
-
-        /**
-         * @private
-         *
-         * @param service object
-         * @param crsObject object
-         * @param lineNumber int
-         */
-        value: function assignHotelServiceFromAdapterObjectToCrsObject(service, crsObject, lineNumber) {
-            var dateFrom = (0, _moment2.default)(service.dateFrom, this.options.useDateFormat);
-            var dateTo = (0, _moment2.default)(service.dateTo, this.options.useDateFormat);
-
-            crsObject['n' + CONFIG.crs.lineNumberMap[lineNumber]] = CONFIG.crs.serviceTypes.hotel;
-            crsObject['l' + CONFIG.crs.lineNumberMap[lineNumber]] = service.destination;
-            crsObject['u' + CONFIG.crs.lineNumberMap[lineNumber]] = [service.roomCode, service.mealCode].filter(Boolean).join(' ');
-            crsObject['s' + CONFIG.crs.lineNumberMap[lineNumber]] = dateFrom.isValid() ? dateFrom.format(CONFIG.crs.dateFormat) : service.dateFrom;
-            crsObject['i' + CONFIG.crs.lineNumberMap[lineNumber]] = dateTo.isValid() ? dateTo.format(CONFIG.crs.dateFormat) : service.dateTo;
-        }
-
-        /**
-         * @private
-         * @param service object
-         * @param crsObject object
-         * @param lineNumber number
-         */
-
-    }, {
-        key: 'assignRoundTripServiceFromAdapterObjectToCrsObject',
-        value: function assignRoundTripServiceFromAdapterObjectToCrsObject(service, crsObject, lineNumber) {
-            var startDate = (0, _moment2.default)(service.startDate, this.options.useDateFormat);
-            var endDate = (0, _moment2.default)(service.endDate, this.options.useDateFormat);
-
-            crsObject['n' + CONFIG.crs.lineNumberMap[lineNumber]] = CONFIG.crs.serviceTypes.roundTrip;
-            crsObject['l' + CONFIG.crs.lineNumberMap[lineNumber]] = service.bookingId;
-            crsObject['u' + CONFIG.crs.lineNumberMap[lineNumber]] = service.destination;
-            crsObject['z' + CONFIG.crs.lineNumberMap[lineNumber]] = service.numberOfPassengers;
-            crsObject['s' + CONFIG.crs.lineNumberMap[lineNumber]] = startDate.isValid() ? startDate.format(CONFIG.crs.dateFormat) : service.startDate;
-            crsObject['i' + CONFIG.crs.lineNumberMap[lineNumber]] = endDate.isValid() ? endDate.format(CONFIG.crs.dateFormat) : service.endDate;
-            crsObject['ta' + CONFIG.crs.lineNumberMap[lineNumber]] = service.salutation;
-            crsObject['tn' + CONFIG.crs.lineNumberMap[lineNumber]] = service.name;
-            crsObject['te' + CONFIG.crs.lineNumberMap[lineNumber]] = service.birthday || service.age;
-        }
-
-        /**
-         * @private
-         * @param service object
-         * @param crsObject object
-         * @param lineNumber number
-         */
-
-    }, {
-        key: 'assignCamperServiceFromAdapterObjectToCrsObject',
-        value: function assignCamperServiceFromAdapterObjectToCrsObject(service, crsObject, lineNumber) {
-            var pickUpDate = (0, _moment2.default)(service.pickUpDate, this.options.useDateFormat);
-            var dropOffDate = service.dropOffDate ? (0, _moment2.default)(service.dropOffDate, this.options.useDateFormat) : (0, _moment2.default)(service.pickUpDate, this.options.useDateFormat).add(service.duration, 'days');
-            var pickUpTime = (0, _moment2.default)(service.pickUpTime, this.options.useTimeFormat);
-
-            crsObject['n' + CONFIG.crs.lineNumberMap[lineNumber]] = CONFIG.crs.serviceTypes.camper;
-
-            // PRT02FS/LIS1-LIS2
-            crsObject['l' + CONFIG.crs.lineNumberMap[lineNumber]] = [service.renterCode, service.camperCode, '/', service.pickUpLocation, '-', service.dropOffLocation].join('');
-
-            crsObject['s' + CONFIG.crs.lineNumberMap[lineNumber]] = pickUpDate.isValid() ? pickUpDate.format(CONFIG.crs.dateFormat) : service.pickUpDate;
-            crsObject['i' + CONFIG.crs.lineNumberMap[lineNumber]] = dropOffDate.isValid() ? dropOffDate.format(CONFIG.crs.dateFormat) : service.dropOffDate;
-            crsObject['u' + CONFIG.crs.lineNumberMap[lineNumber]] = pickUpTime.isValid() ? pickUpTime.format(CONFIG.crs.timeFormat) : service.pickUpTime;
-            crsObject['c' + CONFIG.crs.lineNumberMap[lineNumber]] = service.milesIncludedPerDay;
-            crsObject['e' + CONFIG.crs.lineNumberMap[lineNumber]] = service.milesPackagesIncluded;
-            crsObject['d' + CONFIG.crs.lineNumberMap[lineNumber]] = '1' + (crsObject.NoOfPersons > 1 ? '-' + crsObject.NoOfPersons : '');
-        }
-
-        /**
-         * @private
-         * @param service object
-         * @param crsObject object
-         */
-
-    }, {
-        key: 'assignCamperExtras',
-        value: function assignCamperExtras(service, crsObject) {
-            var _this5 = this;
-
-            var pickUpDate = (0, _moment2.default)(service.pickUpDate, this.options.useDateFormat);
-            var dropOffDate = service.dropOffDate ? (0, _moment2.default)(service.dropOffDate, this.options.useDateFormat) : (0, _moment2.default)(service.pickUpDate, this.options.useDateFormat).add(service.duration, 'days');
-
-            (service.extras || []).forEach(function (extra) {
-                var lineNumber = _this5.getNextEmptyLineNumber(crsObject);
-                var extraParts = extra.split('.');
-
-                crsObject['n' + CONFIG.crs.lineNumberMap[lineNumber]] = CONFIG.crs.serviceTypes.camperExtra;
-                crsObject['l' + CONFIG.crs.lineNumberMap[lineNumber]] = extraParts[0];
-                crsObject['s' + CONFIG.crs.lineNumberMap[lineNumber]] = pickUpDate.isValid() ? pickUpDate.format(CONFIG.crs.dateFormat) : service.pickUpDate;
-                crsObject['i' + CONFIG.crs.lineNumberMap[lineNumber]] = dropOffDate.isValid() ? dropOffDate.format(CONFIG.crs.dateFormat) : service.dropOffDate;
-                crsObject['d' + CONFIG.crs.lineNumberMap[lineNumber]] = '1' + (extraParts[1] > 1 ? '-' + extraParts[1] : '');
-            });
-        }
-
-        /**
-         * @private
-         * @param crsObject object
-         * @returns {number}
-         */
-
-    }, {
-        key: 'getNextEmptyLineNumber',
-        value: function getNextEmptyLineNumber(crsObject) {
-            var lineNumber = 0;
-
-            do {
-                var markerField = crsObject['m' + CONFIG.crs.lineNumberMap[lineNumber]];
-                var serviceType = crsObject['n' + CONFIG.crs.lineNumberMap[lineNumber]];
-                var serviceCode = crsObject['l' + CONFIG.crs.lineNumberMap[lineNumber]];
-
-                if (!markerField && !serviceType && !serviceCode) {
-                    return lineNumber;
-                }
-            } while (++lineNumber);
-        }
-    }]);
-
-    return MyJackExpertAdapter;
-}();
-
-exports.default = MyJackExpertAdapter;
 module.exports = exports['default'];
 
 /***/ }),
@@ -42079,7 +42089,7 @@ function config (name) {
 
 module.exports = {
 	"name": "ubp-crs-adapter",
-	"version": "0.0.12",
+	"version": "0.0.13",
 	"description": "This library provides connections to different travel CRSs. It also let you read and write data from/to them.",
 	"main": "dist/ubpCrsAdapter.js",
 	"directories": {
@@ -42116,7 +42126,7 @@ module.exports = {
 		"babel-loader": "^7.0.0",
 		"babel-minify-webpack-plugin": "^0.2.0",
 		"babel-plugin-add-module-exports": "^0.2.1",
-		"babel-preset-es2015": "^6.24.1",
+		"babel-preset-env": "^1.6.1",
 		"inject-loader": "^3.0.0",
 		"istanbul-instrumenter-loader": "^2.0.0",
 		"jasmine-core": "^2.6.1",
