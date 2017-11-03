@@ -20,13 +20,13 @@ describe('MerlinAdapter', () => {
     beforeEach(() => {
         logService = require('tests/unit/_mocks/LogService')();
 
-        // as the connection to the Merlin mask is not properly implemented by Sabre we have to assume
-        // that every connection/transfer request results in an error but the logic works nevertheless
         axios = require('tests/unit/_mocks/Axios')();
+
+        axios.defaults = {headers: {post: {}}};
         axios.post.and.callFake((url, parameter) => {
             requestParameter = parameter;
 
-            return Promise.reject(new Error('network.error'));
+            return Promise.resolve();
         });
 
         MerlinAdapter = injector({
@@ -37,6 +37,8 @@ describe('MerlinAdapter', () => {
     });
 
     it('connect() should create connection on error', (done) => {
+        axios.post.and.returnValue(Promise.reject(new Error('network.error')));
+
         adapter.connect().then(() => {
             done.fail('unexpected result');
         }, () => {
@@ -46,8 +48,6 @@ describe('MerlinAdapter', () => {
     });
 
     it('connect() should create connection on success', (done) => {
-        axios.post.and.returnValue(Promise.resolve());
-
         adapter.connect().then(() => {
             expect(adapter.connection).toBeTruthy();
             done();
@@ -68,6 +68,8 @@ describe('MerlinAdapter', () => {
     describe('adapter is connected', () => {
         beforeEach(() => {
             adapter.connect();
+
+            expect(axios.defaults.headers.post['Content-Type']).toBe('text/plain');
         });
 
         it('getData() should return nothing as it is not possible to get any data from the merlin mask', (done) => {
@@ -79,14 +81,25 @@ describe('MerlinAdapter', () => {
             });
         });
 
+        it('setData() throw exception on sending data error', (done) => {
+            axios.post.and.returnValue(Promise.reject(new Error('network.error')));
+
+            adapter.setData().then(() => {
+                done.fail('unexpected result');
+            }, (error) => {
+                expect(error.toString()).toEqual('Error: network.error');
+                done();
+            });
+        });
+
         it('setData() without data should send base data', (done) => {
             let expectation = createXML('<NoOfPersons>1</NoOfPersons>');
 
             adapter.setData().then(() => {
-                done.fail('unexpected result');
-            }, () => {
                 expect(requestParameter).toEqual(expectation);
                 done();
+            }, () => {
+                done.fail('unexpected result');
             });
         });
 
@@ -103,11 +116,11 @@ describe('MerlinAdapter', () => {
             };
 
             adapter.setData(data).then(() => {
-                done.fail('unexpected result');
-            }, () => {
                 expect(requestParameter).toEqual(expectation);
                 expect(logService.warn).toHaveBeenCalledWith('type unknown is not supported by the Merlin adapter');
                 done();
+            }, () => {
+                done.fail('unexpected result');
             });
         });
 
@@ -158,10 +171,10 @@ describe('MerlinAdapter', () => {
             };
 
             adapter.setData(data).then(() => {
-                done.fail('unexpected result');
-            }, () => {
                 expect(requestParameter).toEqual(expectation);
                 done();
+            }, () => {
+                done.fail('unexpected result');
             });
         });
 
@@ -196,10 +209,10 @@ describe('MerlinAdapter', () => {
             };
 
             adapter.setData(data).then(() => {
-                done.fail('unexpected result');
-            }, () => {
                 expect(requestParameter).toEqual(expectation);
                 done();
+            }, () => {
+                done.fail('unexpected result');
             });
         });
 
@@ -244,10 +257,10 @@ describe('MerlinAdapter', () => {
             };
 
             adapter.setData(data).then(() => {
-                done.fail('unexpected result');
-            }, () => {
                 expect(requestParameter).toEqual(expectation);
                 done();
+            }, () => {
+                done.fail('unexpected result');
             });
         });
 
@@ -292,10 +305,10 @@ describe('MerlinAdapter', () => {
             };
 
             adapter.setData(data).then(() => {
-                done.fail('unexpected result');
-            }, () => {
                 expect(requestParameter).toEqual(expectation);
                 done();
+            }, () => {
+                done.fail('unexpected result');
             });
         });
 
@@ -424,10 +437,10 @@ describe('MerlinAdapter', () => {
             };
 
             adapter.setData(data).then(() => {
-                done.fail('unexpected result');
-            }, () => {
                 expect(requestParameter).toEqual(expectation);
                 done();
+            }, () => {
+                done.fail('unexpected result');
             });
         });
 
@@ -468,10 +481,10 @@ describe('MerlinAdapter', () => {
             };
 
             adapter.setData(data).then(() => {
-                done.fail('unexpected result');
-            }, () => {
                 expect(requestParameter).toEqual(expectation);
                 done();
+            }, () => {
+                done.fail('unexpected result');
             });
         });
 

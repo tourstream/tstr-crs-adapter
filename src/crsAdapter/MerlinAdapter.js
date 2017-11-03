@@ -113,8 +113,10 @@ class MerlinAdapter {
      * @returns {{post: (function(*=): AxiosPromise)}}
      */
     createConnection() {
+        axios.defaults.headers.post['Content-Type'] = 'text/plain';
+
         return {
-            post: (data = {}) => axios.post(CONFIG.crs.connectionUrl, data),
+            post: (data = '') => axios.post(CONFIG.crs.connectionUrl, data),
         };
     }
 
