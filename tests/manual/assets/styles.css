@@ -20,9 +20,9 @@ body  {
 }
 
 input {
-    display: inline-block;
     left: 200px;
     position: sticky;
+    width: 50%;
 }
 
 label {

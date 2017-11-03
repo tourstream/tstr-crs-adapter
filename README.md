@@ -89,15 +89,16 @@ useTimeFormat | 'HHmm' (according to [momentjs date format](https://momentjs.com
 You can check the currently supported CRSs with `UbpCrsAdapter.CRS_TYPES`.
 Currently this module supports the connection to following CRS masks:
 
-CRS             | connectionType   | connectionOptions                | exitOptions
-:---            | :---             | :---                             | :---
-CETS            | 'cets'           | -                                | -
-TOMA (old)      | 'toma'           | .providerKey: string             | -
-TOMA SPC (new)  | 'toma2'          | .externalCatalogVersion?: string | .popupId?: string
-|               |                  | .crsUrl?: string                 |
-|               |                  | .env?: ['test' OR 'prod']        |
-Merlin          | 'merlin'         | -                                | -
-MyJackExpert    | 'mjExpert'       | token: string                    | -
+CRS            | connectionType | connectionOptions                | exitOptions
+:---           | :---           | :---                             | :---
+CETS           | 'cets'         | -                                | -
+TOMA (old)     | 'toma'         | .providerKey: string             | -
+TOMA SPC (new) | 'toma2'        | .externalCatalogVersion?: string | .popupId?: string
+|              |                | .crsUrl?: string                 |
+|              |                | .env?: ['test' OR 'prod']        |
+Merlin         | 'merlin'       | -                                | -
+MyJack         | 'myJack'       | token: string                    | -
+Jack+          | 'jackPlus'     | token: string                    | -
 
 For some connections you need credentials or other connection data,
 which you can set in the `connectionOptions`.
@@ -115,15 +116,16 @@ Depending on the `.services[*].type` the structure of a ServiceObject differs.
 
 You can check the currently supported service types with `UbpCrsAdapter.SERVICE_TYPES`.
 
-|             | car   | hotel | roundtrip | camper 
----           | :---: | :---: | :---:     | :---:
-CETS          | X     |       |           | 
-TOMA (old)    | X     | X     | X         | X 
-TOMA (new)    | X     | X     |           | X
-Merlin        | X     | X     |           | 
-TBM           |       |       |           | 
-NEO           |       |       |           | 
-MyJack Expert (alpha) | X | X | X         | X
+|          | car   | hotel | roundtrip | camper 
+---        | :---: | :---: | :---:     | :---:
+CETS       | X     |       |           | 
+TOMA (old) | X     | X     | X         | X 
+TOMA (new) | X     | X     |           | X
+Merlin     | X     | X     |           | 
+TBM        |       |       |           | 
+NEO        |       |       |           | 
+MyJack     | X     | X     | X         | X
+JackPlus   | X     | X     | X         | X
 
 | type  | fields                   | example
 | :---  | :---                     | :---
