@@ -211,11 +211,7 @@ class CetsAdapter {
             services: [],
         };
 
-        if (xmlRequest.Fab && xmlRequest.Fab.Fah) {
-            if (!Array.isArray(xmlRequest.Fab.Fah)) {
-                xmlRequest.Fab.Fah = [xmlRequest.Fab.Fah];
-            }
-
+        if (xmlRequest.Fab.Fah) {
             xmlRequest.Fab.Fah.forEach((xmlService) => {
                 let service;
 
@@ -299,29 +295,43 @@ class CetsAdapter {
      * @returns {*}
      */
     normalizeXmlObject(xmlObject) {
-        if (!xmlObject.Request || xmlObject.Request.Fab) {
-            return xmlObject;
+        const addFabNode = () =>  {
+            let normalizedObject = { Request: {} };
+
+            normalizedObject.Request[CONFIG.parserOptions.attrPrefix] = xmlObject.Request[CONFIG.parserOptions.attrPrefix];
+
+            delete xmlObject.Request[CONFIG.parserOptions.attrPrefix];
+
+            if (xmlObject.Request.Avl) {
+                xmlObject.Request.Catalog = xmlObject.Request.Avl.Catalog;
+                xmlObject.Request.TOCode = xmlObject.Request.Avl.TOCode;
+                xmlObject.Request.Adults = xmlObject.Request.Avl.Adults;
+
+                normalizedObject.Request.Avl = xmlObject.Request.Avl;
+
+                delete xmlObject.Request.Avl;
+            }
+
+            normalizedObject.Request.Fab = xmlObject.Request;
+
+            return normalizedObject;
+        };
+
+        if (!xmlObject.Request) return xmlObject;
+
+        if (!xmlObject.Request.Fab) {
+            xmlObject = addFabNode(xmlObject);
         }
 
-        let normalizedObject = { Request: {} };
-
-        normalizedObject.Request[CONFIG.parserOptions.attrPrefix] = xmlObject.Request[CONFIG.parserOptions.attrPrefix];
-
-        delete xmlObject.Request[CONFIG.parserOptions.attrPrefix];
-
-        if (xmlObject.Request.Avl) {
-            xmlObject.Request.Catalog = xmlObject.Request.Avl.Catalog;
-            xmlObject.Request.TOCode = xmlObject.Request.Avl.TOCode;
-            xmlObject.Request.Adults = xmlObject.Request.Avl.Adults;
-
-            normalizedObject.Request.Avl = xmlObject.Request.Avl;
-
-            delete xmlObject.Request.Avl;
+        if (xmlObject.Request.Fab.Fah && !Array.isArray(xmlObject.Request.Fab.Fah)) {
+            xmlObject.Request.Fab.Fah = [xmlObject.Request.Fab.Fah];
         }
 
-        normalizedObject.Request.Fab = xmlObject.Request;
+        if (xmlObject.Request.Fab.Faq && !Array.isArray(xmlObject.Request.Fab.Faq)) {
+            xmlObject.Request.Fab.Faq = [xmlObject.Request.Fab.Faq];
+        }
 
-        return normalizedObject;
+        return xmlObject;
     }
 
     /**
@@ -331,22 +341,35 @@ class CetsAdapter {
      * @param dataObject object
      */
     assignAdapterObjectToXmlObject(xmlObject, dataObject = {}) {
+        const removeLimitedServices = (service) => {
+            switch (service.type) {
+                case SERVICE_TYPES.car: {
+                    if (CONFIG.limitedCatalogs.includes(xmlRequest.Catalog)) {
+                        try {
+                            xmlRequest.Fah = xmlRequest.Fah.filter((compareService) => {
+                                return CONFIG.defaults.serviceType.car !== compareService[CONFIG.builderOptions.attrkey].ServiceType;
+                            });
+                        } catch (ignore) {}
+
+                        try {
+                            xmlRequest.Faq = xmlRequest.Faq.filter((compareService) => {
+                                return CONFIG.defaults.serviceType.customerRequest !== compareService[CONFIG.builderOptions.attrkey].ServiceType;
+                            });
+                        } catch (ignore) {}
+                    }
+
+                    break;
+                }
+            }
+        };
+
         let xmlRequest = xmlObject.Request.Fab;
 
-        if (!xmlRequest.Fah) {
-            xmlRequest.Fah = [];
-        }
-
-        if (!Array.isArray(xmlRequest.Fah)) {
-            xmlRequest.Fah = [xmlRequest.Fah];
-        }
+        xmlRequest.Fah = xmlRequest.Fah || [];
+        xmlRequest.Faq = xmlRequest.Faq || [];
 
         (dataObject.services || []).forEach(service => {
-            if (CONFIG.limitedCatalogs.includes(xmlRequest.Catalog)) {
-                xmlRequest.Fah = xmlRequest.Fah.filter((compareService) => {
-                    return compareService[CONFIG.builderOptions.attrkey].ServiceType !== CONFIG.defaults.serviceType[service.type]
-                });
-            }
+            removeLimitedServices(service);
 
             switch (service.type) {
                 case SERVICE_TYPES.car: {
@@ -358,6 +381,14 @@ class CetsAdapter {
                 default: this.logger.warn('type ' + service.type + ' is not supported by the CETS adapter');
             }
         });
+
+        if (!xmlRequest.Fah.length) {
+            delete xmlRequest.Fah;
+        }
+
+        if (!xmlRequest.Faq.length) {
+            delete xmlRequest.Faq;
+        }
     }
 
     /**

@@ -563,7 +563,8 @@ describe('CetsAdapter', () => {
             it('setData() should replace existing car data due catalog restrictions', () => {
                 let requestXml = createFabRequestXml(
                     '<Catalog>DCH</Catalog>' +
-                    '<Fah ServiceType="C" Key="oldKey"/>'
+                    '<Fah ServiceType="C" Key="oldKey"/>' +
+                    '<Faq ServiceType="Q"/>'
                 );
 
                 CetsConnection.getXmlRequest.and.returnValue(requestXml);
