@@ -363,10 +363,10 @@ describe('MerlinAdapter', () => {
             };
 
             adapter.setData(data).then(() => {
-                done.fail('unexpected result');
-            }, () => {
                 expect(requestParameter).toEqual(expectation);
                 done();
+            }, () => {
+                done.fail('unexpected result');
             });
         });
 
