@@ -6,8 +6,8 @@ import {SERVICE_TYPES} from '../UbpCrsAdapter';
 
 const CONFIG = {
     crs: {
-        crsDateFormat: 'DDMMYYYY',
-        crsTimeFormat: 'HHmm',
+        dateFormat: 'DDMMYYYY',
+        timeFormat: 'HHmm',
         externalObjectName: 'cetsObject',
         hotelLocationCode: 'MISC',
     },
@@ -257,14 +257,14 @@ class CetsAdapter {
 
     mapCarServiceFromXmlObjectToAdapterObject(xmlService) {
         const addDropOffDate = (service) => {
-            let pickUpDate = moment(service.pickUpDate, CONFIG.crs.crsDateFormat);
+            let pickUpDate = moment(service.pickUpDate, CONFIG.crs.dateFormat);
 
             service.dropOffDate = pickUpDate.isValid()
                 ? pickUpDate.add(service.duration, 'days').format(this.options.useDateFormat)
                 : '';
         };
 
-        let pickUpDate = moment(xmlService.StartDate, CONFIG.crs.crsDateFormat);
+        let pickUpDate = moment(xmlService.StartDate, CONFIG.crs.dateFormat);
 
         let service = {
             pickUpDate: pickUpDate.isValid() ? pickUpDate.format(this.options.useDateFormat) : xmlService.StartDate,
@@ -278,8 +278,8 @@ class CetsAdapter {
         addDropOffDate(service);
 
         if (xmlService.CarDetails) {
-            let pickUpTime = moment(xmlService.CarDetails.PickUp.Time, CONFIG.crs.crsTimeFormat);
-            let dropOffTime = moment(xmlService.CarDetails.DropOff.Time, CONFIG.crs.crsTimeFormat);
+            let pickUpTime = moment(xmlService.CarDetails.PickUp.Time, CONFIG.crs.timeFormat);
+            let dropOffTime = moment(xmlService.CarDetails.DropOff.Time, CONFIG.crs.timeFormat);
 
             service.pickUpLocation = xmlService.CarDetails.PickUp.CarStation[CONFIG.parserOptions.attrPrefix].Code;
             service.dropOffLocation = xmlService.CarDetails.DropOff.CarStation[CONFIG.parserOptions.attrPrefix].Code;
@@ -400,7 +400,7 @@ class CetsAdapter {
                 ServiceType: CONFIG.defaults.serviceType.car,
                 Key: service.vehicleTypeCode + '/' + service.pickUpLocation + '-' + service.dropOffLocation,
             },
-            StartDate: pickUpDate.isValid() ? pickUpDate.format(CONFIG.crs.crsDateFormat) : service.pickUpDate,
+            StartDate: pickUpDate.isValid() ? pickUpDate.format(CONFIG.crs.dateFormat) : service.pickUpDate,
             Duration: calculateDuration(service),
             Destination: service.pickUpLocation,
             Product: service.rentalCode,
@@ -414,7 +414,7 @@ class CetsAdapter {
                     [CONFIG.builderOptions.attrkey]: {
                         Where: CONFIG.defaults.pickUp.walkIn.key,
                     },
-                    Time: pickUpTime.isValid() ? pickUpTime.format(CONFIG.crs.crsTimeFormat) : service.pickUpTime,
+                    Time: pickUpTime.isValid() ? pickUpTime.format(CONFIG.crs.timeFormat) : service.pickUpTime,
                     CarStation: {
                         [CONFIG.builderOptions.attrkey]: {
                             Code: service.pickUpLocation,
@@ -425,7 +425,7 @@ class CetsAdapter {
                 },
                 DropOff: {
                     // "Time" is sadly not evaluated by CETS at the moment
-                    Time: dropOffTime.isValid() ? dropOffTime.format(CONFIG.crs.crsTimeFormat) : service.dropOffTime,
+                    Time: dropOffTime.isValid() ? dropOffTime.format(CONFIG.crs.timeFormat) : service.dropOffTime,
                     CarStation: {
                         [CONFIG.builderOptions.attrkey]: {
                             Code: service.dropOffLocation,
