@@ -5,8 +5,70 @@ import moment from 'moment';
 import {SERVICE_TYPES} from '../UbpCrsAdapter';
 
 const CONFIG = {
-    crsDateFormat: 'DDMMYYYY',
-    crsTimeFormat: 'HHmm',
+    crs: {
+        dateFormat: 'DDMMYYYY',
+        timeFormat: 'HHmm',
+        externalObjectName: 'cetsObject',
+        hotelLocationCode: 'MISC',
+    },
+    defaults: {
+        personCount: 1,
+        serviceCode: { car: 'MIETW' },
+        serviceType: {
+            car: 'C',
+            customerRequest: 'Q',
+        },
+        pickUp: {
+            walkIn: {
+                key: 'Walkin',
+                info: 'WALK IN',
+            },
+            airport: {
+                key: 'Airport',
+            },
+            hotel: {
+                key: 'Hotel',
+            },
+        },
+    },
+    catalog2TravelTypeMap: {
+        DCH: 'DRIV',
+        CCH: 'CARS',
+        DRI: 'DRIV',
+        TCH: 'BAUS',
+        TEU: 'BAUS',
+        '360': 'BAUS',
+        '360C': 'BAUS',
+        '360E': 'BAUS',
+    },
+    limitedCatalogs: ['DCH', 'CCH', 'DRI', 'DRIV', 'CARS'],
+    parserOptions: {
+        attrPrefix: '__attributes',
+        textNodeName: '__textNode',
+        ignoreNonTextNodeAttr: false,
+        ignoreTextNodeAttr: false,
+        ignoreNameSpace: false,
+        ignoreRootElement: false,
+        textNodeConversion: false,
+    },
+    builderOptions: {
+        attrkey: '__attributes',
+        charkey: '__textNode',
+        renderOpts: {
+            pretty: false,
+            indent: false,
+            newline: false,
+        },
+        xmldec: {
+            version: '1.0',
+            encoding: 'windows-1252',
+            standalone: void 0,
+        },
+        doctype: null,
+        headless: false,
+        allowSurrogateChars: false,
+        cdata: false,
+    },
 };
 
 class CetsAdapter {
@@ -14,38 +76,9 @@ class CetsAdapter {
         this.options = options;
         this.logger = logger;
 
-        this.parserOptions = {
-            attrPrefix: '__attributes',
-            textNodeName: '__textNode',
-            ignoreNonTextNodeAttr: false,
-            ignoreTextNodeAttr: false,
-            ignoreNameSpace: false,
-            ignoreRootElement: false,
-            textNodeConversion: false,
-        };
-
-        this.builderOptions = {
-            attrkey: this.parserOptions.attrPrefix,
-            charkey: this.parserOptions.textNodeName,
-            renderOpts: {
-                pretty: false,
-                indent: false,
-                newline: false,
-            },
-            xmldec: {
-                version: '1.0',
-                encoding: 'windows-1252',
-                standalone: void 0,
-            },
-            doctype: null,
-            headless: false,
-            allowSurrogateChars: false,
-            cdata: false,
-        };
-
         this.xmlParser = {
             parse: (xmlString) => {
-                const xmlObject = fastXmlParser.parse(xmlString, this.parserOptions);
+                const xmlObject = fastXmlParser.parse(xmlString, CONFIG.parserOptions);
 
                 const groupXmlAttributes = (object) => {
                     if (typeof object !== 'object') {
@@ -55,9 +88,9 @@ class CetsAdapter {
                     let propertyNames = Object.getOwnPropertyNames(object);
 
                     propertyNames.forEach((name) => {
-                        if (name.startsWith(this.parserOptions.attrPrefix)) {
-                            object[this.parserOptions.attrPrefix] = object[this.parserOptions.attrPrefix] || {};
-                            object[this.parserOptions.attrPrefix][name.substring(this.parserOptions.attrPrefix.length)] = object[name];
+                        if (name.startsWith(CONFIG.parserOptions.attrPrefix)) {
+                            object[CONFIG.parserOptions.attrPrefix] = object[CONFIG.parserOptions.attrPrefix] || {};
+                            object[CONFIG.parserOptions.attrPrefix][name.substring(CONFIG.parserOptions.attrPrefix.length)] = object[name];
 
                             delete object[name];
                         } else {
@@ -74,45 +107,13 @@ class CetsAdapter {
 
         this.xmlBuilder = {
             build: (xmlObject) => {
-                const builder = new xml2js.Builder(this.builderOptions);
+                const builder = new xml2js.Builder(CONFIG.builderOptions);
 
-                xmlObject.Request[this.parserOptions.attrPrefix].From = 'FTI';
-                xmlObject.Request[this.parserOptions.attrPrefix].To = 'cets';
+                xmlObject.Request[CONFIG.parserOptions.attrPrefix].From = 'FTI';
+                xmlObject.Request[CONFIG.parserOptions.attrPrefix].To = 'cets';
 
                 return builder.buildObject(xmlObject);
             }
-        };
-
-        this.config = {
-            externalObjectName: 'cetsObject',
-            hotelLocationCode: 'MISC',
-            defaults: {
-                personCount: 1,
-                serviceCode: {car: 'MIETW'},
-                serviceType: {
-                    car: 'C',
-                    customerRequest: 'Q'
-                },
-                pickUp: {
-                    walkIn: {
-                        key: 'Walkin',
-                        info: 'WALK IN',
-                    },
-                    airport: {
-                        key: 'Airport',
-                    },
-                    hotel: {
-                        key: 'Hotel',
-                    },
-                },
-            },
-            travelTypeMapping: {
-                DCH: 'DRIV',
-                CCH: 'CARS',
-                '360C': 'BAUS',
-                DRI: 'DRIV',
-                '360E': 'BAUS',
-            },
         };
     }
 
@@ -131,19 +132,23 @@ class CetsAdapter {
         this.logger.info('PARSED XML:');
         this.logger.info(xmlObject);
 
-        return this.mapXmlObjectToAdapterObject(xmlObject);
+        return this.mapXmlObjectToAdapterObject(this.normalizeXmlObject(xmlObject));
     }
 
     setData(dataObject) {
         let xmlObject = this.xmlParser.parse(this.getCrsXml());
-        let requestObject = this.createRequestObject(xmlObject);
+        let normalizedXmlObject = this.normalizeXmlObject(xmlObject);
 
-        this.assignAdapterObjectToXmlObject(requestObject, dataObject);
+        if (normalizedXmlObject.Request.Avl) {
+            delete normalizedXmlObject.Request.Avl;
+        }
+
+        this.assignAdapterObjectToXmlObject(normalizedXmlObject, dataObject);
 
         this.logger.info('XML OBJECT:');
-        this.logger.info(requestObject);
+        this.logger.info(normalizedXmlObject);
 
-        let xml = this.xmlBuilder.build(requestObject);
+        let xml = this.xmlBuilder.build(normalizedXmlObject);
 
         this.logger.info('XML:');
         this.logger.info(xml);
@@ -163,7 +168,7 @@ class CetsAdapter {
     createConnection() {
         try {
             // instance of "Travi.Win.Cets.Core.DeepLinkBrowser"
-            this.connection = external.Get(this.config.externalObjectName) || void 0;
+            this.connection = external.Get(CONFIG.crs.externalObjectName) || void 0;
         } catch (error) {
             this.logger.error(error);
             throw new Error('Instantiate connection error: ' + error.message);
@@ -199,23 +204,19 @@ class CetsAdapter {
         let xmlRequest = xmlObject.Request;
 
         let dataObject = {
-            agencyNumber: xmlRequest[this.parserOptions.attrPrefix].Agent,
-            operator: xmlRequest.Avl && xmlRequest.Avl.TOCode,
-            numberOfTravellers: xmlRequest.Avl && xmlRequest.Avl.Adults,
-            travelType: xmlRequest.Avl && this.config.travelTypeMapping[xmlRequest.Avl.Catalog],
+            agencyNumber: xmlRequest[CONFIG.parserOptions.attrPrefix].Agent,
+            operator: xmlRequest.Fab.TOCode,
+            numberOfTravellers: xmlRequest.Fab.Adults,
+            travelType: CONFIG.catalog2TravelTypeMap[xmlRequest.Fab.Catalog],
             services: [],
         };
 
-        if (xmlRequest.Fah) {
-            if (!Array.isArray(xmlRequest.Fah)) {
-                xmlRequest.Fah = [xmlRequest.Fah];
-            }
-
-            xmlRequest.Fah.forEach((xmlService) => {
+        if (xmlRequest.Fab.Fah) {
+            xmlRequest.Fab.Fah.forEach((xmlService) => {
                 let service;
 
-                switch (xmlService[this.parserOptions.attrPrefix].ServiceType) {
-                    case this.config.defaults.serviceType.car: {
+                switch (xmlService[CONFIG.parserOptions.attrPrefix].ServiceType) {
+                    case CONFIG.defaults.serviceType.car: {
                         service = this.mapCarServiceFromXmlObjectToAdapterObject(xmlService);
                         break;
                     }
@@ -232,8 +233,8 @@ class CetsAdapter {
         if (xmlRequest.Avl) {
             let service;
 
-            switch (xmlRequest.Avl[this.parserOptions.attrPrefix].ServiceType) {
-                case this.config.defaults.serviceType.car: {
+            switch (xmlRequest.Avl[CONFIG.parserOptions.attrPrefix].ServiceType) {
+                case CONFIG.defaults.serviceType.car: {
                     service = this.mapCarServiceFromXmlObjectToAdapterObject(xmlRequest.Avl);
                     break;
                 }
@@ -252,14 +253,14 @@ class CetsAdapter {
 
     mapCarServiceFromXmlObjectToAdapterObject(xmlService) {
         const addDropOffDate = (service) => {
-            let pickUpDate = moment(service.pickUpDate, CONFIG.crsDateFormat);
+            let pickUpDate = moment(service.pickUpDate, CONFIG.crs.dateFormat);
 
             service.dropOffDate = pickUpDate.isValid()
                 ? pickUpDate.add(service.duration, 'days').format(this.options.useDateFormat)
                 : '';
         };
 
-        let pickUpDate = moment(xmlService.StartDate, CONFIG.crsDateFormat);
+        let pickUpDate = moment(xmlService.StartDate, CONFIG.crs.dateFormat);
 
         let service = {
             pickUpDate: pickUpDate.isValid() ? pickUpDate.format(this.options.useDateFormat) : xmlService.StartDate,
@@ -273,11 +274,11 @@ class CetsAdapter {
         addDropOffDate(service);
 
         if (xmlService.CarDetails) {
-            let pickUpTime = moment(xmlService.CarDetails.PickUp.Time, CONFIG.crsTimeFormat);
-            let dropOffTime = moment(xmlService.CarDetails.DropOff.Time, CONFIG.crsTimeFormat);
+            let pickUpTime = moment(xmlService.CarDetails.PickUp.Time, CONFIG.crs.timeFormat);
+            let dropOffTime = moment(xmlService.CarDetails.DropOff.Time, CONFIG.crs.timeFormat);
 
-            service.pickUpLocation = xmlService.CarDetails.PickUp.CarStation[this.parserOptions.attrPrefix].Code;
-            service.dropOffLocation = xmlService.CarDetails.DropOff.CarStation[this.parserOptions.attrPrefix].Code;
+            service.pickUpLocation = xmlService.CarDetails.PickUp.CarStation[CONFIG.parserOptions.attrPrefix].Code;
+            service.dropOffLocation = xmlService.CarDetails.DropOff.CarStation[CONFIG.parserOptions.attrPrefix].Code;
             service.pickUpTime = pickUpTime.isValid() ? pickUpTime.format(this.options.useTimeFormat) : xmlService.CarDetails.PickUp.Time;
             service.dropOffTime = dropOffTime.isValid() ? dropOffTime.format(this.options.useTimeFormat) : xmlService.CarDetails.DropOff.Time;
         }
@@ -293,66 +294,109 @@ class CetsAdapter {
      * @param xmlObject object
      * @returns {*}
      */
-    createRequestObject(xmlObject) {
-        if (xmlObject.Request.Fab) {
-            return xmlObject;
+    normalizeXmlObject(xmlObject) {
+        const addFabNode = () =>  {
+            let normalizedObject = { Request: {} };
+
+            normalizedObject.Request[CONFIG.parserOptions.attrPrefix] = xmlObject.Request[CONFIG.parserOptions.attrPrefix];
+
+            delete xmlObject.Request[CONFIG.parserOptions.attrPrefix];
+
+            if (xmlObject.Request.Avl) {
+                xmlObject.Request.Catalog = xmlObject.Request.Avl.Catalog;
+                xmlObject.Request.TOCode = xmlObject.Request.Avl.TOCode;
+                xmlObject.Request.Adults = xmlObject.Request.Avl.Adults;
+
+                normalizedObject.Request.Avl = xmlObject.Request.Avl;
+
+                delete xmlObject.Request.Avl;
+            }
+
+            normalizedObject.Request.Fab = xmlObject.Request;
+
+            return normalizedObject;
+        };
+
+        if (!xmlObject.Request) return xmlObject;
+
+        if (!xmlObject.Request.Fab) {
+            xmlObject = addFabNode(xmlObject);
         }
 
-        let requestObject = { Request: {} };
-
-        requestObject.Request[this.parserOptions.attrPrefix] = xmlObject.Request[this.parserOptions.attrPrefix];
-
-        delete xmlObject.Request[this.parserOptions.attrPrefix];
-
-        if (xmlObject.Request.Avl) {
-            delete xmlObject.Request.Avl;
+        if (xmlObject.Request.Fab.Fah && !Array.isArray(xmlObject.Request.Fab.Fah)) {
+            xmlObject.Request.Fab.Fah = [xmlObject.Request.Fab.Fah];
         }
 
-        requestObject.Request.Fab = xmlObject.Request;
+        if (xmlObject.Request.Fab.Faq && !Array.isArray(xmlObject.Request.Fab.Faq)) {
+            xmlObject.Request.Fab.Faq = [xmlObject.Request.Fab.Faq];
+        }
 
-        return requestObject;
+        return xmlObject;
     }
 
+    /**
+     * @private
+     *
+     * @param xmlObject object
+     * @param dataObject object
+     */
     assignAdapterObjectToXmlObject(xmlObject, dataObject = {}) {
+        const removeLimitedServices = (service) => {
+            switch (service.type) {
+                case SERVICE_TYPES.car: {
+                    if (CONFIG.limitedCatalogs.includes(xmlRequest.Catalog)) {
+                        try {
+                            xmlRequest.Fah = xmlRequest.Fah.filter((compareService) => {
+                                return CONFIG.defaults.serviceType.car !== compareService[CONFIG.builderOptions.attrkey].ServiceType;
+                            });
+                        } catch (ignore) {}
+
+                        try {
+                            xmlRequest.Faq = xmlRequest.Faq.filter((compareService) => {
+                                return CONFIG.defaults.serviceType.customerRequest !== compareService[CONFIG.builderOptions.attrkey].ServiceType;
+                            });
+                        } catch (ignore) {}
+                    }
+
+                    break;
+                }
+            }
+        };
+
         let xmlRequest = xmlObject.Request.Fab;
 
-        if (!xmlRequest.Fah) {
-            xmlRequest.Fah = [];
-        }
-
-        if (!Array.isArray(xmlRequest.Fah)) {
-            xmlRequest.Fah = [xmlRequest.Fah];
-        }
+        xmlRequest.Fah = xmlRequest.Fah || [];
+        xmlRequest.Faq = xmlRequest.Faq || [];
 
         (dataObject.services || []).forEach(service => {
+            removeLimitedServices(service);
+
             switch (service.type) {
                 case SERVICE_TYPES.car: {
                     this.assignCarServiceFromAdapterObjectToXmlObject(service, xmlRequest);
+                    this.assignHotelData(service, xmlRequest);
+
                     break;
                 }
                 default: this.logger.warn('type ' + service.type + ' is not supported by the CETS adapter');
             }
         });
+
+        if (!xmlRequest.Fah.length) {
+            delete xmlRequest.Fah;
+        }
+
+        if (!xmlRequest.Faq.length) {
+            delete xmlRequest.Faq;
+        }
     }
 
-    getCarServiceWhereLocation(service) {
-        let hotelName = service.pickUpHotelName;
-        if (hotelName) {
-            return this.config.defaults.pickUp.hotel.key
-        } else {
-            return this.config.defaults.pickUp.walkIn.key
-        }
-    };
-
-    getCarServicePickUpInfoLocation(service) {
-        let hotelName = service.pickUpHotelName;
-        if (hotelName) {
-            return hotelName;
-        } else {
-            return this.config.defaults.pickUp.walkIn.info;
-        }
-    };
-
+    /**
+     * @private
+     *
+     * @param service object
+     * @param xml object
+     */
     assignCarServiceFromAdapterObjectToXmlObject(service, xml) {
         const calculateDuration = (service) => {
             if (service.duration) {
@@ -369,80 +413,102 @@ class CetsAdapter {
             }
         };
 
+        const normalizeService = (service) => {
+            service.vehicleTypeCode = service.vehicleTypeCode.toUpperCase();
+            service.rentalCode = service.rentalCode.toUpperCase();
+            service.pickUpLocation = service.pickUpLocation.toUpperCase();
+            service.dropOffLocation = service.dropOffLocation.toUpperCase();
+        };
+
+        normalizeService(service);
+
         let pickUpDate = moment(service.pickUpDate, this.options.useDateFormat);
         let pickUpTime = moment(service.pickUpTime, this.options.useTimeFormat);
         let dropOffTime = moment(service.dropOffTime, this.options.useTimeFormat);
 
         let xmlService = {
-            [this.builderOptions.attrkey]: {
-                ServiceType: this.config.defaults.serviceType.car,
+            [CONFIG.builderOptions.attrkey]: {
+                ServiceType: CONFIG.defaults.serviceType.car,
                 Key: service.vehicleTypeCode + '/' + service.pickUpLocation + '-' + service.dropOffLocation,
             },
-            StartDate: pickUpDate.isValid() ? pickUpDate.format(CONFIG.crsDateFormat) : service.pickUpDate,
+            StartDate: pickUpDate.isValid() ? pickUpDate.format(CONFIG.crs.dateFormat) : service.pickUpDate,
             Duration: calculateDuration(service),
             Destination: service.pickUpLocation,
             Product: service.rentalCode,
             Room: service.vehicleTypeCode,
-            Norm: this.config.defaults.personCount,
-            MaxAdults: this.config.defaults.personCount,
-            Meal: this.config.defaults.serviceCode.car,
-            Persons: this.config.defaults.personCount,
+            Norm: CONFIG.defaults.personCount,
+            MaxAdults: CONFIG.defaults.personCount,
+            Meal: CONFIG.defaults.serviceCode.car,
+            Persons: CONFIG.defaults.personCount,
             CarDetails: {
                 PickUp: {
-                    [this.builderOptions.attrkey]: {
-                        Where: this.getCarServiceWhereLocation(service),
+                    [CONFIG.builderOptions.attrkey]: {
+                        Where: CONFIG.defaults.pickUp.walkIn.key,
                     },
-                    Time: pickUpTime.isValid() ? pickUpTime.format(CONFIG.crsTimeFormat) : service.pickUpTime,
+                    Time: pickUpTime.isValid() ? pickUpTime.format(CONFIG.crs.timeFormat) : service.pickUpTime,
                     CarStation: {
-                        [this.builderOptions.attrkey]: {
+                        [CONFIG.builderOptions.attrkey]: {
                             Code: service.pickUpLocation,
                         },
-                        [this.builderOptions.charkey]: '',
+                        [CONFIG.builderOptions.charkey]: '',
                     },
-                    Info: this.getCarServicePickUpInfoLocation(service),
+                    Info: CONFIG.defaults.pickUp.walkIn.info,
                 },
                 DropOff: {
                     // "Time" is sadly not evaluated by CETS at the moment
-                    Time: dropOffTime.isValid() ? dropOffTime.format(CONFIG.crsTimeFormat) : service.dropOffTime,
+                    Time: dropOffTime.isValid() ? dropOffTime.format(CONFIG.crs.timeFormat) : service.dropOffTime,
                     CarStation: {
-                        [this.builderOptions.attrkey]: {
+                        [CONFIG.builderOptions.attrkey]: {
                             Code: service.dropOffLocation,
                         },
-                        [this.builderOptions.charkey]: '',
+                        [CONFIG.builderOptions.charkey]: '',
                     },
                 },
             },
         };
 
+        xml.Fah.push(xmlService);
+    }
+
+    /**
+     * @private
+     * @param service object
+     * @param xml object
+     */
+    assignHotelData(service, xml) {
+        if (!service.pickUpHotelName && !service.dropOffHotelName) return;
+
+        let xmlService = xml.Fah.slice(-1)[0];
+
+        if (service.pickUpHotelName) {
+            xmlService.CarDetails.PickUp[CONFIG.builderOptions.attrkey].Where = CONFIG.defaults.pickUp.hotel.key;
+            xmlService.CarDetails.PickUp.Info = service.pickUpHotelName;
+        }
+
         if (!service.pickUpHotelName && service.dropOffHotelName) {
             xmlService.CarDetails.DropOff.Info = service.dropOffHotelName;
         }
 
-        xml.Fah.push(xmlService);
-
-        if (!service.pickUpHotelName && !service.dropOffHotelName) {
-            return;
-        }
-
-        if (!xml.Faq) {
-            xml.Faq = [];
-        }
+        xml.Faq = xml.Faq || [];
 
         let xmlFaq = {
-            [this.builderOptions.attrkey]: {
-                ServiceType: this.config.defaults.serviceType.customerRequest,
+            [CONFIG.builderOptions.attrkey]: {
+                ServiceType: CONFIG.defaults.serviceType.customerRequest,
             },
-            Code: this.config.hotelLocationCode,
-            Persons: this.config.defaults.personCount,
+            Code: CONFIG.crs.hotelLocationCode,
+            Persons: CONFIG.defaults.personCount,
             TextV: [
-                service.pickUpHotelName,
-                service.pickUpHotelPhoneNumber,
-                service.pickUpHotelAddress,
-                '|',
-                service.dropOffHotelName,
-                service.dropOffHotelPhoneNumber,
-                service.dropOffHotelAddress
-            ].join(' ').replace(/(^\|?\s*\|?\s)|(\s*\|?\s*$)/g, '')
+                [
+                    service.pickUpHotelName,
+                    service.pickUpHotelPhoneNumber,
+                    service.pickUpHotelAddress
+                ].filter(Boolean).join(' '),
+                [
+                    service.dropOffHotelName,
+                    service.dropOffHotelPhoneNumber,
+                    service.dropOffHotelAddress,
+                ].filter(Boolean).join(' '),
+            ].filter(Boolean).join('|'),
         };
 
         xml.Faq.push(xmlFaq);
