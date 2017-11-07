@@ -104,13 +104,14 @@ document.getElementById('set-data-btn').addEventListener('click', function () {
             if (form[key].name.indexOf('service.') === 0) {
                 service[form[key].name.split('.')[1]] = form[key].value;
             } else if (form[key].name.indexOf('children.') === 0) {
-                if (!service.children) {
-                    service.children = [{}];
-                }
+                service.children = service.children || [];
 
-                var child = service.children.slice(-1)[0];
+                var index = form[key].name.split('.')[1];
+                var child = service.children[index] || {};
 
-                child[form[key].name.split('.')[1]] = form[key].value;
+                child[form[key].name.split('.')[2]] = form[key].value;
+
+                service.children[index] = child;
             } else if (form[key].name.indexOf('extra.') === 0) {
                 if (!service.extras) {
                     service.extras = [];
