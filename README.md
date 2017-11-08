@@ -135,9 +135,10 @@ JackPlus   | X     | X     | X         | X
 |       | .pickUpDate              | '28122017' 
 |       | .pickUpTime              | '0915' 
 |       | .dropOffLocation         | 'MUC' 
-|       | .dropOffDate             | '04012018'
-|       | .dropOffTime             | '1720' 
-|       | .duration                | '9' (in days)
+|       | .dropOffDate             | '04012018' (deprecated - use '.durationInMinutes')
+|       | .dropOffTime             | '1720' (deprecated - use '.durationInMinutes')
+|       | .duration                | '9' (in days) (deprecated - use '.durationInMinutes')
+|       | .durationInMinutes       | '12960'
 |       | .pickUpHotelName         | 'Best Hotel' 
 |       | .pickUpHotelAddress      | 'hotel street 1, 12345 hotel city' 
 |       | .pickUpHotelPhoneNumber  | '+49 172 678 0832 09' 
@@ -146,7 +147,7 @@ JackPlus   | X     | X     | X         | X
 |       | .dropOffHotelPhoneNumber | '04031989213' 
 |       | .extras                  | ['<extraName>.<count>', 'navigationSystem', 'childCareSeat0', 'childCareSeat3'] 
 
-_note: if .dropOffDate is not set, it will be calculated with .pickUpDate + .duration_
+_note: if .durationInMinutes is set .dropOffDate, .dropOffTime and .duration is recalculated_
 
 | type    | fields         | example
 | :---    | :---           | :---
