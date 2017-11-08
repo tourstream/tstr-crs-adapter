@@ -144,7 +144,7 @@ JackPlus   | X     | X     | X         | X
 |       | .dropOffHotelName        | 'Very Best Hotel' 
 |       | .dropOffHotelAddress     | 'hotel drive 34a, famous place' 
 |       | .dropOffHotelPhoneNumber | '04031989213' 
-|       | .extras                  | ['navigationSystem', 'childCareSeat0', 'childCareSeat3'] 
+|       | .extras                  | ['<extraName>.<count>', 'navigationSystem', 'childCareSeat0', 'childCareSeat3'] 
 
 _note: if .dropOffDate is not set, it will be calculated with .pickUpDate + .duration_
 
@@ -181,7 +181,7 @@ _note: if .dropOffDate is not set, it will be calculated with .pickUpDate + .dur
 |          | .duration              | '7' 
 |          | .milesIncludedPerDay   | '300' 
 |          | .milesPackagesIncluded | '3' 
-|          | .extras                | ['extra.2', 'special', 'extra.4']
+|          | .extras                | ['<extraName>.<count>', 'extra.2', 'special']
 
 _note: if .dropOffDate is not set, it will be calculated with .pickUpDate + .duration_
 
