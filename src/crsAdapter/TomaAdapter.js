@@ -625,6 +625,19 @@ class TomaAdapter {
      * @param lineNumber number
      */
     assignHotelServiceFromAdapterObjectToXmlObject(service, xml, lineNumber) {
+        const emptyRelatedTravellers = () => {
+            let startLineNumber = parseInt(travellerAssociation.substr(0, 1), 10);
+            let endLineNumber = parseInt(travellerAssociation.substr(-1), 10);
+
+            if (!startLineNumber) return;
+
+            do {
+                xml['Title.' + startLineNumber] = void 0;
+                xml['Name.' + startLineNumber] = void 0;
+                xml['Reduction.' + startLineNumber] = void 0;
+            } while (++startLineNumber <= endLineNumber);
+        };
+
         let dateFrom = moment(service.dateFrom, this.options.useDateFormat);
         let dateTo = moment(service.dateTo, this.options.useDateFormat);
         let travellerAssociation = xml['TravAssociation.' + lineNumber] || '';
@@ -638,16 +651,7 @@ class TomaAdapter {
         xml['To.' + lineNumber] = dateTo.isValid() ? dateTo.format(CONFIG.crs.dateFormat) : service.dateTo;
         xml['TravAssociation.' + lineNumber] = '1' + ((service.roomOccupancy > 1) ? '-' + service.roomOccupancy : '');
 
-        let startLineNumber = parseInt(travellerAssociation.substr(0, 1), 10);
-        let endLineNumber = parseInt(travellerAssociation.substr(-1), 10);
-
-        if (!startLineNumber) return;
-
-        do {
-            xml['Title.' + startLineNumber] = void 0;
-            xml['Name.' + startLineNumber] = void 0;
-            xml['Reduction.' + startLineNumber] = void 0;
-        } while (++startLineNumber <= endLineNumber);
+        emptyRelatedTravellers();
     }
 
     /**
@@ -675,6 +679,17 @@ class TomaAdapter {
             } while (lineNumber++)
         };
 
+        const addTravellerAllocation = () => {
+            if (!travellerLineNumber) return;
+
+            let lastTravellerLineNumber = Math.max(service.roomOccupancy, travellerLineNumber);
+            let firstTravellerLineNumber = lastTravellerLineNumber - service.roomOccupancy + 1;
+
+            xml['TravAssociation.' + lineNumber] = firstTravellerLineNumber === lastTravellerLineNumber
+                ? firstTravellerLineNumber
+                : firstTravellerLineNumber + '-' + lastTravellerLineNumber;
+        };
+
         let travellerLineNumber = void 0;
 
         service.children.forEach((child) => {
@@ -685,14 +700,7 @@ class TomaAdapter {
             xml['Reduction.' + travellerLineNumber] = child.age;
         });
 
-        if (!travellerLineNumber) return;
-
-        let lastTravellerLineNumber = Math.max(service.roomOccupancy, travellerLineNumber);
-        let firstTravellerLineNumber = lastTravellerLineNumber - service.roomOccupancy + 1;
-
-        xml['TravAssociation.' + lineNumber] = firstTravellerLineNumber === lastTravellerLineNumber
-            ? firstTravellerLineNumber
-            : firstTravellerLineNumber + '-' + lastTravellerLineNumber;
+        addTravellerAllocation();
     }
 
     /**

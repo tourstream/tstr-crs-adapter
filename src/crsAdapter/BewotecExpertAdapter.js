@@ -20,6 +20,11 @@ const CONFIG = {
             action: 'BA',
             numberOfTravellers: 1,
         },
+        salutations: {
+            mr: 'H',
+            mrs: 'F',
+            kid: 'K',
+        },
         lineNumberMap: ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'],
     },
     services: {
@@ -143,7 +148,8 @@ class BewotecExpertAdapter {
         crsObject.p = dataObject.numberOfTravellers || CONFIG.crs.defaultValues.numberOfTravellers;
 
         (dataObject.services || []).forEach((service) => {
-            let lineNumber = this.getNextEmptyLineNumber(crsObject);
+            let markedLineNumber = this.getMarkedLineNumberForService(crsObject, service);
+            let lineNumber = markedLineNumber === void 0 ? this.getNextEmptyLineNumber(crsObject) : markedLineNumber;
 
             switch (service.type) {
                 case SERVICE_TYPES.car: {
@@ -152,6 +158,7 @@ class BewotecExpertAdapter {
                 }
                 case SERVICE_TYPES.hotel: {
                     this.assignHotelServiceFromAdapterObjectToCrsObject(service, crsObject, lineNumber);
+                    this.assignChildrenData(service, crsObject, lineNumber);
                     break;
                 }
                 case SERVICE_TYPES.camper: {
@@ -263,14 +270,90 @@ class BewotecExpertAdapter {
      * @param lineNumber int
      */
     assignHotelServiceFromAdapterObjectToCrsObject(service, crsObject, lineNumber) {
+        const emptyRelatedTravellers = () => {
+            let startLineNumber = parseInt(travellerAssociation.substr(0, 1), 10);
+            let endLineNumber = parseInt(travellerAssociation.substr(-1), 10);
+
+            if (!startLineNumber) return;
+
+            do {
+                let startLineIndex = CONFIG.crs.lineNumberMap[startLineNumber - 1];
+
+                crsObject['ta' + startLineIndex] = void 0;
+                crsObject['tn' + startLineIndex] = void 0;
+                crsObject['te' + startLineIndex] = void 0;
+            } while (++startLineNumber <= endLineNumber);
+        };
+
+        const lineIndex = CONFIG.crs.lineNumberMap[lineNumber];
+
         let dateFrom = moment(service.dateFrom, this.options.useDateFormat);
         let dateTo = moment(service.dateTo, this.options.useDateFormat);
+        let travellerAssociation = crsObject['d' + lineNumber] || '';
 
-        crsObject['n' + CONFIG.crs.lineNumberMap[lineNumber]] = CONFIG.crs.serviceTypes.hotel;
-        crsObject['l' + CONFIG.crs.lineNumberMap[lineNumber]] = service.destination;
-        crsObject['u' + CONFIG.crs.lineNumberMap[lineNumber]] = [service.roomCode, service.mealCode].filter(Boolean).join(' ');
-        crsObject['s' + CONFIG.crs.lineNumberMap[lineNumber]] = dateFrom.isValid() ? dateFrom.format(CONFIG.crs.dateFormat) : service.dateFrom;
-        crsObject['i' + CONFIG.crs.lineNumberMap[lineNumber]] = dateTo.isValid() ? dateTo.format(CONFIG.crs.dateFormat) : service.dateTo;
+        crsObject['n' + lineIndex] = CONFIG.crs.serviceTypes.hotel;
+        crsObject['l' + lineIndex] = service.destination;
+        crsObject['u' + lineIndex] = [service.roomCode, service.mealCode].filter(Boolean).join(' ');
+        crsObject['z' + lineIndex] = service.roomQuantity;
+        crsObject['e' + lineIndex] = service.roomOccupancy;
+        crsObject['s' + lineIndex] = dateFrom.isValid() ? dateFrom.format(CONFIG.crs.dateFormat) : service.dateFrom;
+        crsObject['i' + lineIndex] = dateTo.isValid() ? dateTo.format(CONFIG.crs.dateFormat) : service.dateTo;
+        crsObject['d' + lineIndex] = '1' + ((service.roomOccupancy > 1) ? '-' + service.roomOccupancy : '');
+
+        emptyRelatedTravellers();
+    }
+
+    /**
+     * @private
+     * @param service object
+     * @param crsObject object
+     * @param lineNumber number
+     */
+    assignChildrenData(service, crsObject, lineNumber) {
+        if (!service.children || !service.children.length) {
+            return;
+        }
+
+        const lineIndex = CONFIG.crs.lineNumberMap[lineNumber];
+
+        const getNextEmptyTravellerLineNumber = () => {
+            let lineNumber = 0;
+
+            do {
+                let lineIndex = CONFIG.crs.lineNumberMap[lineNumber];
+
+                let title = crsObject['ta' + lineIndex];
+                let name = crsObject['tn' + lineIndex];
+                let reduction = crsObject['te' + lineIndex];
+
+                if (!title && !name && !reduction) {
+                    return lineNumber;
+                }
+            } while (++lineNumber)
+        };
+
+        const addTravellerAllocation = () => {
+            let lastTravellerLineNumber = Math.max(service.roomOccupancy, travellerLineNumber);
+            let firstTravellerLineNumber = lastTravellerLineNumber - service.roomOccupancy + 1;
+
+            crsObject['d' + lineIndex] = firstTravellerLineNumber === lastTravellerLineNumber
+                ? firstTravellerLineNumber
+                : firstTravellerLineNumber + '-' + lastTravellerLineNumber;
+        };
+
+        let travellerLineNumber = void 0;
+
+        service.children.forEach((child) => {
+            travellerLineNumber = getNextEmptyTravellerLineNumber();
+
+            let travellerLineIndex = CONFIG.crs.lineNumberMap[travellerLineNumber];
+
+            crsObject['ta' + travellerLineIndex] = CONFIG.crs.salutations.kid;
+            crsObject['tn' + travellerLineIndex] = child.name;
+            crsObject['te' + travellerLineIndex] = child.age;
+        });
+
+        addTravellerAllocation();
     }
 
     /**
@@ -348,6 +431,32 @@ class BewotecExpertAdapter {
             crsObject['i' + CONFIG.crs.lineNumberMap[lineNumber]] = dropOffDate.isValid() ? dropOffDate.format(CONFIG.crs.dateFormat) : service.dropOffDate;
             crsObject['d' + CONFIG.crs.lineNumberMap[lineNumber]] = '1' + ((extraParts[1] > 1) ? '-' + extraParts[1] : '');
         });
+    }
+
+    /**
+     * @private
+     * @param crsObject object
+     * @param service object
+     * @returns {number}
+     */
+    getMarkedLineNumberForService(crsObject, service) {
+        let lineNumber = 0;
+        let markedLineNumber = void 0;
+
+        do {
+            let lineIndex = CONFIG.crs.lineNumberMap[lineNumber];
+            let kindOfService = crsObject['n' + lineIndex];
+
+            if (!kindOfService) {
+                return markedLineNumber;
+            }
+
+            if (kindOfService !== CONFIG.crs.serviceTypes[service.type]) continue;
+
+            if (crsObject['m' + lineIndex]) {
+                return lineNumber;
+            }
+        } while (++lineNumber);
     }
 
     /**

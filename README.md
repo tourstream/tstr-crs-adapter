@@ -135,7 +135,7 @@ JackPlus   | X     | X     | X         | X
 |       | .pickUpDate              | '28122017' 
 |       | .pickUpTime              | '0915' 
 |       | .dropOffLocation         | 'MUC' 
-|       | .dropOffDate             | '04012018' (deprecated)
+|       | .dropOffDate             | '04012018'
 |       | .dropOffTime             | '1720' 
 |       | .duration                | '9' (in days)
 |       | .pickUpHotelName         | 'Best Hotel' 
