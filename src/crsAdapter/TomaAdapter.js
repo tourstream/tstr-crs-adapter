@@ -645,8 +645,8 @@ class TomaAdapter {
         xml['KindOfService.' + lineNumber] = CONFIG.crs.serviceTypes.hotel;
         xml['ServiceCode.' + lineNumber] = service.destination;
         xml['Accommodation.' + lineNumber] = [service.roomCode, service.mealCode].join(' ');
-        xml['Count.' + lineNumber] = service.roomQuantity;
         xml['Occupancy.' + lineNumber] = service.roomOccupancy;
+        xml['Count.' + lineNumber] = service.roomQuantity;
         xml['From.' + lineNumber] = dateFrom.isValid() ? dateFrom.format(CONFIG.crs.dateFormat) : service.dateFrom;
         xml['To.' + lineNumber] = dateTo.isValid() ? dateTo.format(CONFIG.crs.dateFormat) : service.dateTo;
         xml['TravAssociation.' + lineNumber] = '1' + ((service.roomOccupancy > 1) ? '-' + service.roomOccupancy : '');

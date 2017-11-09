@@ -667,9 +667,9 @@ class TomaSPCAdapter {
 
         crsService.serviceType = CONFIG.crs.serviceTypes.hotel;
         crsService.serviceCode = service.destination;
-        crsService.quantity = service.roomQuantity;
-        crsService.occupancy = service.roomOccupancy;
         crsService.accommodation = [service.roomCode, service.mealCode].join(' ');
+        crsService.occupancy = service.roomOccupancy;
+        crsService.quantity = service.roomQuantity;
         crsService.fromDate = dateFrom.isValid() ? dateFrom.format(CONFIG.crs.dateFormat) : service.dateFrom;
         crsService.toDate = dateTo.isValid() ? dateTo.format(CONFIG.crs.dateFormat) : service.dateTo;
         crsService.travellerAssociation = '1' + ((service.roomOccupancy > 1) ? '-' + service.roomOccupancy : '');
