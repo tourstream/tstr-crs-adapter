@@ -485,7 +485,7 @@ describe('TomaAdapter', () => {
             it('setData() should set full car service', () => {
                 let expectXml = createTomaXml(
                     '<Action>BA</Action>' +
-                    '<Remark>remark,CS3YRS|GPS|BS,pu h.address pu h.number|do h.name|do h.address do h.number</Remark>' +
+                    '<Remark>remark,CS3YRS;GPS;BS,pu h.address pu h.number;do h.name;do h.address do h.number</Remark>' +
                     '<NoOfPersons>1</NoOfPersons>' +
                     '<KindOfService.1>MW</KindOfService.1>' +
                     '<ServiceCode.1>rent.codevehicle.type.code/from.loc-to.loc</ServiceCode.1>' +
@@ -532,7 +532,7 @@ describe('TomaAdapter', () => {
             it('setData() should set extras of car service', () => {
                 let expectXml = createTomaXml(
                     '<Action>BA</Action>' +
-                    '<Remark>CS3YRS|GPS|BS</Remark>' +
+                    '<Remark>CS3YRS;GPS;BS</Remark>' +
                     '<NoOfPersons>1</NoOfPersons>' +
                     '<KindOfService.1>MW</KindOfService.1>' +
                     '<ServiceCode.1>rent.codevehicle.type.code/from.loc-to.loc</ServiceCode.1>' +

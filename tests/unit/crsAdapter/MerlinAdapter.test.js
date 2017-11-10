@@ -126,7 +126,7 @@ describe('MerlinAdapter', () => {
 
         it('setData() should send complete car data', (done) => {
             let expectation = createXML(
-                '<Remarks>my.remark,CS3YRS|GPS|BS,pu h.address pu h.number;do h.name;do h.address do h.number</Remarks>' +
+                '<Remarks>my.remark,CS3YRS;GPS;BS,pu h.address pu h.number;do h.name;do h.address do h.number</Remarks>' +
                 '<NoOfPersons>1</NoOfPersons>' +
                 '<ServiceBlock>' +
                     '<ServiceRow positionNo="1">' +

@@ -545,7 +545,7 @@ class TomaAdapter {
      */
     assignCarServiceFromAdapterObjectToXmlObject(service, xml, lineNumber) {
         const reduceExtrasList = (extras) => {
-            return (extras || []).join('|')
+            return (extras || []).join(';')
                 .replace(/navigationSystem/g, 'GPS')
                 .replace(/childCareSeat0/g, 'BS')
                 .replace(/childCareSeat((\d){1,2})/g, 'CS$1YRS');
@@ -597,7 +597,7 @@ class TomaAdapter {
                 hotelData.push([service.dropOffHotelAddress, service.dropOffHotelPhoneNumber].filter(Boolean).join(' '));
             }
 
-            return hotelData.filter(Boolean).join('|');
+            return hotelData.filter(Boolean).join(';');
         };
 
         let pickUpDate = moment(service.pickUpDate, this.options.useDateFormat);

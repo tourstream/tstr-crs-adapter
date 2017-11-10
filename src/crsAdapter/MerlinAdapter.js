@@ -269,7 +269,7 @@ class MerlinAdapter {
      */
     assignCarServiceFromAdapterObjectToXmlObject(service, xmlService, xml) {
         const reduceExtrasList = (extras) => {
-            return (extras || []).join('|')
+            return (extras || []).join(';')
                 .replace(/childCareSeat0/g, 'BS')
                 .replace(/childCareSeat((\d){1,2})/g, 'CS$1YRS');
         };

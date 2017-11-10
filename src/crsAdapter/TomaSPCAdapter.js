@@ -564,7 +564,7 @@ class TomaSPCAdapter {
      */
     assignCarServiceFromAdapterObjectToCrsObject(adapterService, crsService, crsObject) {
         const reduceExtrasList = (extras) => {
-            return (extras || []).join('|')
+            return (extras || []).join(';')
                 .replace(/navigationSystem/g, 'GPS')
                 .replace(/childCareSeat0/g, 'BS')
                 .replace(/childCareSeat((\d){1,2})/g, 'CS$1YRS');
@@ -616,7 +616,7 @@ class TomaSPCAdapter {
                 hotelData.push([service.dropOffHotelAddress, service.dropOffHotelPhoneNumber].filter(Boolean).join(' '));
             }
 
-            return hotelData.filter(Boolean).join('|');
+            return hotelData.filter(Boolean).join(';');
         };
 
         let pickUpDate = moment(adapterService.pickUpDate, this.options.useDateFormat);

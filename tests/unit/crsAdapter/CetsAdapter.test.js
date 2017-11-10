@@ -401,7 +401,7 @@ describe('CetsAdapter', () => {
                     '<Faq ServiceType="Q">' +
                     '<Code>MISC</Code>' +
                     '<Persons>1</Persons>' +
-                    '<TextV>pick.up.hotel.name 799103116 pick.up.hotel.address|drop.off.hotel.name 799103115 drop.off.hotel.address</TextV>' +
+                    '<TextV>pick.up.hotel.name 799103116 pick.up.hotel.address;drop.off.hotel.name 799103115 drop.off.hotel.address</TextV>' +
                     '</Faq>';
 
                 let expectedXml = createResponseXml(service);
