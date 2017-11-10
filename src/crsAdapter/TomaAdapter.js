@@ -485,7 +485,7 @@ class TomaAdapter {
         xmlTom.NoOfPersons = dataObject.numberOfTravellers || (xmlTom.NoOfPersons && xmlTom.NoOfPersons[CONFIG.parserOptions.textNodeName]) || CONFIG.crs.defaultValues.numberOfTravellers;
 
         (dataObject.services || []).forEach((service) => {
-            let lineNumber = this.getMarkedLineNumberForService(xmlTom, service) || this.getNextEmptyLineNumber(xmlTom);
+            let lineNumber = this.getMarkedLineNumberForService(xmlTom, service) || this.getNextEmptyServiceLineNumber(xmlTom);
 
             switch (service.type) {
                 case SERVICE_TYPES.car: {
@@ -507,6 +507,7 @@ class TomaAdapter {
                 }
                 case SERVICE_TYPES.roundTrip: {
                     this.assignRoundTripServiceFromAdapterObjectToXmlObject(service, xmlTom, lineNumber);
+                    this.assignRoundTripTravellers(service, xmlTom, lineNumber);
                     break;
                 }
                 default: this.logger.warn('type ' + service.type + ' is not supported by the TOMA adapter');
@@ -607,7 +608,7 @@ class TomaAdapter {
         let hotelName = service.pickUpHotelName || service.dropOffHotelName;
 
         if (hotelName) {
-            let lineNumber = this.getNextEmptyLineNumber(xml);
+            let lineNumber = this.getNextEmptyServiceLineNumber(xml);
 
             xml['KindOfService.' + lineNumber] = CONFIG.crs.serviceTypes.carExtra;
             xml['ServiceCode.' + lineNumber] = hotelName;
@@ -721,9 +722,21 @@ class TomaAdapter {
         xml['Count.' + lineNumber] = service.numberOfPassengers;
         xml['From.' + lineNumber] = startDate.isValid() ? startDate.format(CONFIG.crs.dateFormat) : service.startDate;
         xml['To.' + lineNumber] = endDate.isValid() ? endDate.format(CONFIG.crs.dateFormat) : service.endDate;
-        xml['Title.' + lineNumber] = service.salutation;
-        xml['Name.' + lineNumber] = service.name;
-        xml['Reduction.' + lineNumber] = service.birthday || service.age;
+    }
+
+    /**
+     * @private
+     * @param service object
+     * @param xml object
+     * @param lineNumber number
+     */
+    assignRoundTripTravellers(service, xml, lineNumber) {
+        let travellerLineNumber = this.getNextEmptyTravellerLineNumber(xml);
+
+        xml['TravAssociation.' + lineNumber] = travellerLineNumber;
+        xml['Title.' + travellerLineNumber] = service.salutation;
+        xml['Name.' + travellerLineNumber] = service.name;
+        xml['Reduction.' + travellerLineNumber] = service.birthday || service.age;
     }
 
     /**
@@ -771,7 +784,7 @@ class TomaAdapter {
             : moment(service.pickUpDate, this.options.useDateFormat).add(service.duration, 'days');
 
         (service.extras || []).forEach((extra) => {
-            let lineNumber = this.getNextEmptyLineNumber(xml);
+            let lineNumber = this.getNextEmptyServiceLineNumber(xml);
             let extraParts = extra.split('.');
 
             xml['KindOfService.' + lineNumber] = CONFIG.crs.serviceTypes.camperExtra;
@@ -787,7 +800,7 @@ class TomaAdapter {
      * @param xml object
      * @returns {number}
      */
-    getNextEmptyLineNumber(xml) {
+    getNextEmptyServiceLineNumber(xml) {
         let lineNumber = 1;
 
         do {
@@ -800,6 +813,20 @@ class TomaAdapter {
             }
         } while (lineNumber++);
     }
+
+    getNextEmptyTravellerLineNumber(xml) {
+        let lineNumber = 1;
+
+        do {
+            let title = xml['Title.' + lineNumber];
+            let name = xml['Name.' + lineNumber];
+            let reduction = xml['Reduction.' + lineNumber];
+
+            if (!title && !name && !reduction) {
+                return lineNumber;
+            }
+        } while (lineNumber++);
+    };
 }
 
 export default TomaAdapter;
