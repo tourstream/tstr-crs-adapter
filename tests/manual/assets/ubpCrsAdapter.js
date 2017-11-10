@@ -29699,6 +29699,11 @@ var CONFIG = {
             action: 'BA',
             numberOfTravellers: 1
         },
+        salutations: {
+            mr: 'H',
+            mrs: 'F',
+            kid: 'K'
+        },
         lineNumberMap: ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h']
     },
     services: {
@@ -29858,7 +29863,8 @@ var BewotecExpertAdapter = function () {
             crsObject.p = dataObject.numberOfTravellers || CONFIG.crs.defaultValues.numberOfTravellers;
 
             (dataObject.services || []).forEach(function (service) {
-                var lineNumber = _this3.getNextEmptyLineNumber(crsObject);
+                var markedLineNumber = _this3.getMarkedLineNumberForService(crsObject, service);
+                var lineNumber = markedLineNumber === void 0 ? _this3.getNextEmptyLineNumber(crsObject) : markedLineNumber;
 
                 switch (service.type) {
                     case _UbpCrsAdapter.SERVICE_TYPES.car:
@@ -29869,6 +29875,7 @@ var BewotecExpertAdapter = function () {
                     case _UbpCrsAdapter.SERVICE_TYPES.hotel:
                         {
                             _this3.assignHotelServiceFromAdapterObjectToCrsObject(service, crsObject, lineNumber);
+                            _this3.assignChildrenData(service, crsObject, lineNumber);
                             break;
                         }
                     case _UbpCrsAdapter.SERVICE_TYPES.camper:
@@ -29980,14 +29987,96 @@ var BewotecExpertAdapter = function () {
          * @param lineNumber int
          */
         value: function assignHotelServiceFromAdapterObjectToCrsObject(service, crsObject, lineNumber) {
+            var emptyRelatedTravellers = function emptyRelatedTravellers() {
+                var startLineNumber = parseInt(travellerAssociation.substr(0, 1), 10);
+                var endLineNumber = parseInt(travellerAssociation.substr(-1), 10);
+
+                if (!startLineNumber) return;
+
+                do {
+                    var startLineIndex = CONFIG.crs.lineNumberMap[startLineNumber - 1];
+
+                    crsObject['ta' + startLineIndex] = void 0;
+                    crsObject['tn' + startLineIndex] = void 0;
+                    crsObject['te' + startLineIndex] = void 0;
+                } while (++startLineNumber <= endLineNumber);
+            };
+
+            var lineIndex = CONFIG.crs.lineNumberMap[lineNumber];
+
             var dateFrom = (0, _moment2.default)(service.dateFrom, this.options.useDateFormat);
             var dateTo = (0, _moment2.default)(service.dateTo, this.options.useDateFormat);
+            var travellerAssociation = crsObject['d' + lineNumber] || '';
 
-            crsObject['n' + CONFIG.crs.lineNumberMap[lineNumber]] = CONFIG.crs.serviceTypes.hotel;
-            crsObject['l' + CONFIG.crs.lineNumberMap[lineNumber]] = service.destination;
-            crsObject['u' + CONFIG.crs.lineNumberMap[lineNumber]] = [service.roomCode, service.mealCode].filter(Boolean).join(' ');
-            crsObject['s' + CONFIG.crs.lineNumberMap[lineNumber]] = dateFrom.isValid() ? dateFrom.format(CONFIG.crs.dateFormat) : service.dateFrom;
-            crsObject['i' + CONFIG.crs.lineNumberMap[lineNumber]] = dateTo.isValid() ? dateTo.format(CONFIG.crs.dateFormat) : service.dateTo;
+            service.roomOccupancy = Math.max(service.roomOccupancy || 1, (service.children || []).length);
+
+            crsObject['n' + lineIndex] = CONFIG.crs.serviceTypes.hotel;
+            crsObject['l' + lineIndex] = service.destination;
+            crsObject['u' + lineIndex] = [service.roomCode, service.mealCode].filter(Boolean).join(' ');
+            crsObject['z' + lineIndex] = service.roomQuantity;
+            crsObject['e' + lineIndex] = service.roomOccupancy;
+            crsObject['s' + lineIndex] = dateFrom.isValid() ? dateFrom.format(CONFIG.crs.dateFormat) : service.dateFrom;
+            crsObject['i' + lineIndex] = dateTo.isValid() ? dateTo.format(CONFIG.crs.dateFormat) : service.dateTo;
+            crsObject['d' + lineIndex] = '1' + (service.roomOccupancy > 1 ? '-' + service.roomOccupancy : '');
+
+            emptyRelatedTravellers();
+
+            crsObject.p = Math.max(crsObject.p, service.roomOccupancy);
+        }
+
+        /**
+         * @private
+         * @param service object
+         * @param crsObject object
+         * @param lineNumber number
+         */
+
+    }, {
+        key: 'assignChildrenData',
+        value: function assignChildrenData(service, crsObject, lineNumber) {
+            if (!service.children || !service.children.length) {
+                return;
+            }
+
+            var lineIndex = CONFIG.crs.lineNumberMap[lineNumber];
+
+            var getNextEmptyTravellerIndex = function getNextEmptyTravellerIndex() {
+                var lineNumber = 0;
+
+                do {
+                    var _lineIndex = CONFIG.crs.lineNumberMap[lineNumber];
+
+                    var title = crsObject['ta' + _lineIndex];
+                    var name = crsObject['tn' + _lineIndex];
+                    var reduction = crsObject['te' + _lineIndex];
+
+                    if (!title && !name && !reduction) {
+                        return lineNumber;
+                    }
+                } while (++lineNumber);
+            };
+
+            var addTravellerAllocation = function addTravellerAllocation() {
+                var lastTravellerLineNumber = Math.max(service.roomOccupancy, travellerLineNumber);
+                var firstTravellerLineNumber = 1 + lastTravellerLineNumber - service.roomOccupancy;
+
+                crsObject['d' + lineIndex] = firstTravellerLineNumber === lastTravellerLineNumber ? firstTravellerLineNumber : firstTravellerLineNumber + '-' + lastTravellerLineNumber;
+            };
+
+            var travellerLineNumber = void 0;
+
+            service.children.forEach(function (child) {
+                var travellerIndex = getNextEmptyTravellerIndex();
+                var travellerLineIndex = CONFIG.crs.lineNumberMap[travellerIndex];
+
+                travellerLineNumber = travellerIndex + 1;
+
+                crsObject['ta' + travellerLineIndex] = CONFIG.crs.salutations.kid;
+                crsObject['tn' + travellerLineIndex] = child.name;
+                crsObject['te' + travellerLineIndex] = child.age;
+            });
+
+            addTravellerAllocation();
         }
 
         /**
@@ -30065,6 +30154,35 @@ var BewotecExpertAdapter = function () {
                 crsObject['i' + CONFIG.crs.lineNumberMap[lineNumber]] = dropOffDate.isValid() ? dropOffDate.format(CONFIG.crs.dateFormat) : service.dropOffDate;
                 crsObject['d' + CONFIG.crs.lineNumberMap[lineNumber]] = '1' + (extraParts[1] > 1 ? '-' + extraParts[1] : '');
             });
+        }
+
+        /**
+         * @private
+         * @param crsObject object
+         * @param service object
+         * @returns {number}
+         */
+
+    }, {
+        key: 'getMarkedLineNumberForService',
+        value: function getMarkedLineNumberForService(crsObject, service) {
+            var lineNumber = 0;
+            var markedLineNumber = void 0;
+
+            do {
+                var lineIndex = CONFIG.crs.lineNumberMap[lineNumber];
+                var kindOfService = crsObject['n' + lineIndex];
+
+                if (!kindOfService) {
+                    return markedLineNumber;
+                }
+
+                if (kindOfService !== CONFIG.crs.serviceTypes[service.type]) continue;
+
+                if (crsObject['m' + lineIndex]) {
+                    return lineNumber;
+                }
+            } while (++lineNumber);
         }
 
         /**
@@ -30815,7 +30933,7 @@ var CetsAdapter = function () {
 
             var xmlFaq = (_xmlFaq = {}, _defineProperty(_xmlFaq, CONFIG.builderOptions.attrkey, {
                 ServiceType: CONFIG.defaults.serviceType.customerRequest
-            }), _defineProperty(_xmlFaq, 'Code', CONFIG.crs.hotelLocationCode), _defineProperty(_xmlFaq, 'Persons', CONFIG.defaults.personCount), _defineProperty(_xmlFaq, 'TextV', [[service.pickUpHotelName, service.pickUpHotelPhoneNumber, service.pickUpHotelAddress].filter(Boolean).join(' '), [service.dropOffHotelName, service.dropOffHotelPhoneNumber, service.dropOffHotelAddress].filter(Boolean).join(' ')].filter(Boolean).join('|')), _xmlFaq);
+            }), _defineProperty(_xmlFaq, 'Code', CONFIG.crs.hotelLocationCode), _defineProperty(_xmlFaq, 'Persons', CONFIG.defaults.personCount), _defineProperty(_xmlFaq, 'TextV', [[service.pickUpHotelName, service.pickUpHotelPhoneNumber, service.pickUpHotelAddress].filter(Boolean).join(' '), [service.dropOffHotelName, service.dropOffHotelPhoneNumber, service.dropOffHotelAddress].filter(Boolean).join(' ')].filter(Boolean).join(';')), _xmlFaq);
 
             xml.Faq.push(xmlFaq);
         }
@@ -30877,6 +30995,11 @@ var CONFIG = {
         defaultValues: {
             action: 'BA',
             numberOfTravellers: '1'
+        },
+        salutations: {
+            mr: 'H',
+            mrs: 'F',
+            kid: 'K'
         }
     },
     services: {
@@ -30988,9 +31111,11 @@ var MerlinAdapter = function () {
     }, {
         key: 'createConnection',
         value: function createConnection() {
+            _axios2.default.defaults.headers.post['Content-Type'] = 'text/plain';
+
             return {
                 post: function post() {
-                    var data = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+                    var data = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : '';
                     return _axios2.default.post(CONFIG.crs.connectionUrl, data);
                 }
             };
@@ -31059,9 +31184,11 @@ var MerlinAdapter = function () {
             xmlImport.Remarks = dataObject.remark;
             xmlImport.NoOfPersons = dataObject.numberOfTravellers || CONFIG.crs.defaultValues.numberOfTravellers;
 
-            if ((dataObject.services || []).length) {
-                xmlImport.ServiceBlock = { ServiceRow: [] };
-            }
+            try {
+                if (dataObject.services.length) {
+                    xmlImport.ServiceBlock = { ServiceRow: [] };
+                }
+            } catch (ignore) {}
 
             (dataObject.services || []).forEach(function (service) {
                 var xmlService = createServiceIfNotExists(service);
@@ -31070,11 +31197,13 @@ var MerlinAdapter = function () {
                     case _UbpCrsAdapter.SERVICE_TYPES.car:
                         {
                             _this3.assignCarServiceFromAdapterObjectToXmlObject(service, xmlService, xmlImport);
+                            _this3.assignHotelData(service, xmlImport);
                             break;
                         }
                     case _UbpCrsAdapter.SERVICE_TYPES.hotel:
                         {
-                            _this3.assignHotelServiceFromAdapterObjectToXmlObject(service, xmlService);
+                            _this3.assignHotelServiceFromAdapterObjectToXmlObject(service, xmlService, xmlImport);
+                            _this3.assignChildrenData(service, xmlService, xmlImport);
                             break;
                         }
                     default:
@@ -31086,11 +31215,13 @@ var MerlinAdapter = function () {
                 }
 
                 xmlService.MarkField = service.marked ? 'X' : void 0;
+            });
 
-                if ((xmlImport.ServiceBlock.ServiceRow || []).length === 0) {
+            try {
+                if (xmlImport.ServiceBlock.ServiceRow.length === 0) {
                     delete xmlImport.ServiceBlock;
                 }
-            });
+            } catch (ignore) {}
         }
     }, {
         key: 'getMarkedServiceForServiceType',
@@ -31162,24 +31293,35 @@ var MerlinAdapter = function () {
          * @param xml object
          */
         value: function assignCarServiceFromAdapterObjectToXmlObject(service, xmlService, xml) {
-            var _this5 = this;
-
-            var calculateDropOffDate = function calculateDropOffDate(service) {
-                if (service.dropOffDate) {
-                    var dropOffDate = (0, _moment2.default)(service.dropOffDate, _this5.options.useDateFormat);
-
-                    return dropOffDate.isValid() ? dropOffDate.format(CONFIG.crs.dateFormat) : service.dropOffDate;
-                }
-
-                var pickUpDate = (0, _moment2.default)(service.pickUpDate, _this5.options.useDateFormat);
-
-                return pickUpDate.isValid() ? pickUpDate.add(service.duration, 'days').format(CONFIG.crs.dateFormat) : service.pickUpDate;
-            };
-
             var reduceExtrasList = function reduceExtrasList(extras) {
-                return (extras || []).join('|').replace(/childCareSeat0/g, 'BS').replace(/childCareSeat((\d){1,2})/g, 'CS$1YRS');
+                return (extras || []).join(';').replace(/childCareSeat0/g, 'BS').replace(/childCareSeat((\d){1,2})/g, 'CS$1YRS');
             };
 
+            var pickUpDate = (0, _moment2.default)(service.pickUpDate, this.options.useDateFormat);
+            var pickUpTime = (0, _moment2.default)(service.pickUpTime, this.options.useTimeFormat);
+            var dropOffDate = service.dropOffDate ? (0, _moment2.default)(service.dropOffDate, this.options.useDateFormat) : (0, _moment2.default)(service.pickUpDate, this.options.useDateFormat).add(service.duration, 'days');
+
+            xmlService.KindOfService = CONFIG.crs.serviceTypes.car;
+
+            // USA96A4/MIA1-TPA
+            xmlService.Service = [service.rentalCode, service.vehicleTypeCode, '/', service.pickUpLocation, '-', service.dropOffLocation].join('');
+
+            xmlService.FromDate = pickUpDate.isValid() ? pickUpDate.format(CONFIG.crs.dateFormat) : service.pickUpDate;
+            xmlService.EndDate = dropOffDate.isValid() ? dropOffDate.format(CONFIG.crs.dateFormat) : service.dropOffDate;
+            xmlService.Accommodation = pickUpTime.isValid() ? pickUpTime.format(CONFIG.crs.timeFormat) : service.pickUpTime;
+
+            xml.Remarks = [xml.Remarks, reduceExtrasList(service.extras)].filter(Boolean).join(',') || void 0;
+        }
+    }, {
+        key: 'assignHotelData',
+
+
+        /**
+         * @private
+         * @param service object
+         * @param xml object
+         */
+        value: function assignHotelData(service, xml) {
             var reduceHotelDataToRemarkString = function reduceHotelDataToRemarkString(service) {
                 var hotelData = [];
 
@@ -31199,18 +31341,7 @@ var MerlinAdapter = function () {
             };
 
             var pickUpDate = (0, _moment2.default)(service.pickUpDate, this.options.useDateFormat);
-            var pickUpTime = (0, _moment2.default)(service.pickUpTime, this.options.useTimeFormat);
-            var calculatedDropOffDate = calculateDropOffDate(service);
-
-            xmlService.KindOfService = CONFIG.crs.serviceTypes.car;
-
-            // USA96A4/MIA1-TPA
-            xmlService.Service = [service.rentalCode, service.vehicleTypeCode, '/', service.pickUpLocation, '-', service.dropOffLocation].join('');
-
-            xmlService.FromDate = pickUpDate.isValid() ? pickUpDate.format(CONFIG.crs.dateFormat) : service.pickUpDate;
-            xmlService.EndDate = calculatedDropOffDate;
-            xmlService.Accommodation = pickUpTime.isValid() ? pickUpTime.format(CONFIG.crs.timeFormat) : service.pickUpTime;
-
+            var dropOffDate = service.dropOffDate ? (0, _moment2.default)(service.dropOffDate, this.options.useDateFormat) : (0, _moment2.default)(service.pickUpDate, this.options.useDateFormat).add(service.duration, 'days');
             var hotelName = service.pickUpHotelName || service.dropOffHotelName;
 
             if (hotelName) {
@@ -31221,29 +31352,121 @@ var MerlinAdapter = function () {
                 emptyService.KindOfService = CONFIG.crs.serviceTypes.extras;
                 emptyService.Service = hotelName;
                 emptyService.FromDate = pickUpDate.isValid() ? pickUpDate.format(CONFIG.crs.dateFormat) : service.pickUpDate;
-                emptyService.EndDate = calculatedDropOffDate;
+                emptyService.EndDate = dropOffDate.isValid() ? dropOffDate.format(CONFIG.crs.dateFormat) : service.dropOffDate;
             }
 
-            xml.Remarks = [xml.Remarks, reduceExtrasList(service.extras), reduceHotelDataToRemarkString(service)].filter(Boolean).join(',') || void 0;
+            xml.Remarks = [xml.Remarks, reduceHotelDataToRemarkString(service)].filter(Boolean).join(',') || void 0;
         }
-    }, {
-        key: 'assignHotelServiceFromAdapterObjectToXmlObject',
-
 
         /**
          * @private
          * @param service object
          * @param xmlService object
+         * @param xml object
          */
-        value: function assignHotelServiceFromAdapterObjectToXmlObject(service, xmlService) {
+
+    }, {
+        key: 'assignHotelServiceFromAdapterObjectToXmlObject',
+        value: function assignHotelServiceFromAdapterObjectToXmlObject(service, xmlService, xml) {
+            var emptyRelatedTravellers = function emptyRelatedTravellers() {
+                var startLineNumber = parseInt(travellerAssociation.substr(0, 1) || 0, 10);
+                var endLineNumber = parseInt(travellerAssociation.substr(-1) || 0, 10);
+
+                if (!startLineNumber) return;
+
+                do {
+                    try {
+                        var traveller = xml.TravellerBlock.PersonBlock.PersonRow[startLineNumber - 1];
+
+                        traveller.Salutation = void 0;
+                        traveller.Name = void 0;
+                        traveller.Age = void 0;
+                    } catch (ignore) {}
+                } while (++startLineNumber <= endLineNumber);
+            };
+
             var dateFrom = (0, _moment2.default)(service.dateFrom, this.options.useDateFormat);
             var dateTo = (0, _moment2.default)(service.dateTo, this.options.useDateFormat);
+            var travellerAssociation = xmlService.TravellerAllocation || '';
+
+            service.roomOccupancy = Math.max(service.roomOccupancy || 1, (service.children || []).length);
 
             xmlService.KindOfService = CONFIG.crs.serviceTypes.hotel;
             xmlService.Service = service.destination;
             xmlService.Accommodation = [service.roomCode, service.mealCode].filter(Boolean).join(' ');
+            xmlService.Occupancy = service.roomOccupancy;
+            xmlService.NoOfServices = service.roomQuantity;
             xmlService.FromDate = dateFrom.isValid() ? dateFrom.format(CONFIG.crs.dateFormat) : service.dateFrom;
             xmlService.EndDate = dateTo.isValid() ? dateTo.format(CONFIG.crs.dateFormat) : service.dateTo;
+            xmlService.TravellerAllocation = '1' + (service.roomOccupancy > 1 ? '-' + service.roomOccupancy : '');
+
+            emptyRelatedTravellers();
+
+            xml.NoOfPersons = Math.max(xml.NoOfPersons, service.roomOccupancy);
+        }
+
+        /**
+         * @private
+         * @param service object
+         * @param xmlService object
+         * @param xml object
+         */
+
+    }, {
+        key: 'assignChildrenData',
+        value: function assignChildrenData(service, xmlService, xml) {
+            if (!service.children || !service.children.length) {
+                return;
+            }
+
+            var getNextEmptyTravellerIndex = function getNextEmptyTravellerIndex() {
+                xml.TravellerBlock = xml.TravellerBlock || { PersonBlock: void 0 };
+                xml.TravellerBlock.PersonBlock = xml.TravellerBlock.PersonBlock || { PersonRow: void 0 };
+                xml.TravellerBlock.PersonBlock.PersonRow = xml.TravellerBlock.PersonBlock.PersonRow || [];
+
+                var personRows = xml.TravellerBlock.PersonBlock.PersonRow;
+                var travellerIndex = void 0;
+
+                personRows.some(function (traveller, index) {
+                    if (!traveller.Salutation && !traveller.Name && !traveller.Age) {
+                        travellerIndex = index;
+
+                        return true;
+                    }
+                });
+
+                if (travellerIndex !== void 0) {
+                    return travellerIndex;
+                }
+
+                personRows.push(_defineProperty({}, CONFIG.builderOptions.attrkey, {
+                    travellerNo: personRows.length + 1
+                }));
+
+                return personRows.length - 1;
+            };
+
+            var addTravellerAllocation = function addTravellerAllocation() {
+                var lastTravellerLineNumber = Math.max(service.roomOccupancy, travellerLineNumber);
+                var firstTravellerLineNumber = 1 + lastTravellerLineNumber - service.roomOccupancy;
+
+                xmlService.TravellerAllocation = firstTravellerLineNumber === lastTravellerLineNumber ? firstTravellerLineNumber : firstTravellerLineNumber + '-' + lastTravellerLineNumber;
+            };
+
+            var travellerLineNumber = void 0;
+
+            service.children.forEach(function (child) {
+                var travellerIndex = getNextEmptyTravellerIndex();
+                var traveller = xml.TravellerBlock.PersonBlock.PersonRow[travellerIndex];
+
+                travellerLineNumber = travellerIndex + 1;
+
+                traveller.Salutation = CONFIG.crs.salutations.kid;
+                traveller.Name = child.name;
+                traveller.Age = child.age;
+            });
+
+            addTravellerAllocation();
         }
 
         /**
@@ -31323,6 +31546,11 @@ var CONFIG = {
         defaultValues: {
             action: 'BA',
             numberOfTravellers: '1'
+        },
+        salutations: {
+            mr: 'H',
+            mrs: 'F',
+            kid: 'K'
         }
     },
     services: {
@@ -31636,13 +31864,37 @@ var TomaAdapter = function () {
     }, {
         key: 'mapHotelServiceFromXmlObjectToAdapterObject',
         value: function mapHotelServiceFromXmlObjectToAdapterObject(xml, lineNumber) {
-            var serviceCodes = xml['Accommodation.' + lineNumber].split(' ');
+            var collectChildren = function collectChildren() {
+                var children = [];
+                var travellerAssociation = xml['TravAssociation.' + lineNumber] || '';
+
+                var startLineNumber = parseInt(travellerAssociation.substr(0, 1), 10);
+                var endLineNumber = parseInt(travellerAssociation.substr(-1), 10);
+
+                if (!startLineNumber) return;
+
+                do {
+                    if (xml['Title.' + startLineNumber] !== CONFIG.crs.salutations.kid) continue;
+
+                    children.push({
+                        name: xml['Name.' + startLineNumber],
+                        age: xml['Reduction.' + startLineNumber]
+                    });
+                } while (++startLineNumber <= endLineNumber);
+
+                return children;
+            };
+
+            var serviceCodes = (xml['Accommodation.' + lineNumber] || '').split(' ');
             var dateFrom = (0, _moment2.default)(xml['From.' + lineNumber], CONFIG.crs.dateFormat);
             var dateTo = (0, _moment2.default)(xml['To.' + lineNumber], CONFIG.crs.dateFormat);
 
             return {
                 roomCode: serviceCodes[0] || void 0,
                 mealCode: serviceCodes[1] || void 0,
+                roomQuantity: xml['Count.' + lineNumber],
+                roomOccupancy: xml['Occupancy.' + lineNumber],
+                children: collectChildren(),
                 destination: xml['ServiceCode.' + lineNumber],
                 dateFrom: dateFrom.isValid() ? dateFrom.format(this.options.useDateFormat) : xml['From.' + lineNumber],
                 dateTo: dateTo.isValid() ? dateTo.format(this.options.useDateFormat) : xml['To.' + lineNumber],
@@ -31822,6 +32074,7 @@ var TomaAdapter = function () {
                     case _UbpCrsAdapter.SERVICE_TYPES.hotel:
                         {
                             _this2.assignHotelServiceFromAdapterObjectToXmlObject(service, xmlTom, lineNumber);
+                            _this2.assignChildrenData(service, xmlTom, lineNumber);
                             break;
                         }
                     case _UbpCrsAdapter.SERVICE_TYPES.camper:
@@ -31879,7 +32132,7 @@ var TomaAdapter = function () {
         key: 'assignCarServiceFromAdapterObjectToXmlObject',
         value: function assignCarServiceFromAdapterObjectToXmlObject(service, xml, lineNumber) {
             var reduceExtrasList = function reduceExtrasList(extras) {
-                return (extras || []).join('|').replace(/navigationSystem/g, 'GPS').replace(/childCareSeat0/g, 'BS').replace(/childCareSeat((\d){1,2})/g, 'CS$1YRS');
+                return (extras || []).join(';').replace(/navigationSystem/g, 'GPS').replace(/childCareSeat0/g, 'BS').replace(/childCareSeat((\d){1,2})/g, 'CS$1YRS');
             };
 
             var pickUpDate = (0, _moment2.default)(service.pickUpDate, this.options.useDateFormat);
@@ -31891,9 +32144,9 @@ var TomaAdapter = function () {
             // USA96A4/MIA1-TPA
             xml['ServiceCode.' + lineNumber] = [service.rentalCode, service.vehicleTypeCode, '/', service.pickUpLocation, '-', service.dropOffLocation].join('');
 
+            xml['Accommodation.' + lineNumber] = pickUpTime.isValid() ? pickUpTime.format(CONFIG.crs.timeFormat) : service.pickUpTime;
             xml['From.' + lineNumber] = pickUpDate.isValid ? pickUpDate.format(CONFIG.crs.dateFormat) : service.pickUpDate;
             xml['To.' + lineNumber] = dropOffDate.isValid() ? dropOffDate.format(CONFIG.crs.dateFormat) : service.dropOffDate;
-            xml['Accommodation.' + lineNumber] = pickUpTime.isValid() ? pickUpTime.format(CONFIG.crs.timeFormat) : service.pickUpTime;
 
             xml.Remark = [xml.Remark, reduceExtrasList(service.extras)].filter(Boolean).join(',') || void 0;
         }
@@ -31922,7 +32175,7 @@ var TomaAdapter = function () {
                     hotelData.push([service.dropOffHotelAddress, service.dropOffHotelPhoneNumber].filter(Boolean).join(' '));
                 }
 
-                return hotelData.filter(Boolean).join('|');
+                return hotelData.filter(Boolean).join(';');
             };
 
             var pickUpDate = (0, _moment2.default)(service.pickUpDate, this.options.useDateFormat);
@@ -31951,14 +32204,85 @@ var TomaAdapter = function () {
     }, {
         key: 'assignHotelServiceFromAdapterObjectToXmlObject',
         value: function assignHotelServiceFromAdapterObjectToXmlObject(service, xml, lineNumber) {
+            var emptyRelatedTravellers = function emptyRelatedTravellers() {
+                var startLineNumber = parseInt(travellerAssociation.substr(0, 1), 10);
+                var endLineNumber = parseInt(travellerAssociation.substr(-1), 10);
+
+                if (!startLineNumber) return;
+
+                do {
+                    xml['Title.' + startLineNumber] = void 0;
+                    xml['Name.' + startLineNumber] = void 0;
+                    xml['Reduction.' + startLineNumber] = void 0;
+                } while (++startLineNumber <= endLineNumber);
+            };
+
             var dateFrom = (0, _moment2.default)(service.dateFrom, this.options.useDateFormat);
             var dateTo = (0, _moment2.default)(service.dateTo, this.options.useDateFormat);
+            var travellerAssociation = xml['TravAssociation.' + lineNumber] || '';
+
+            service.roomOccupancy = Math.max(service.roomOccupancy || 1, (service.children || []).length);
 
             xml['KindOfService.' + lineNumber] = CONFIG.crs.serviceTypes.hotel;
             xml['ServiceCode.' + lineNumber] = service.destination;
             xml['Accommodation.' + lineNumber] = [service.roomCode, service.mealCode].join(' ');
+            xml['Occupancy.' + lineNumber] = service.roomOccupancy;
+            xml['Count.' + lineNumber] = service.roomQuantity;
             xml['From.' + lineNumber] = dateFrom.isValid() ? dateFrom.format(CONFIG.crs.dateFormat) : service.dateFrom;
             xml['To.' + lineNumber] = dateTo.isValid() ? dateTo.format(CONFIG.crs.dateFormat) : service.dateTo;
+            xml['TravAssociation.' + lineNumber] = '1' + (service.roomOccupancy > 1 ? '-' + service.roomOccupancy : '');
+
+            emptyRelatedTravellers();
+
+            xml.NoOfPersons = Math.max(xml.NoOfPersons, service.roomOccupancy);
+        }
+
+        /**
+         * @private
+         * @param service object
+         * @param xml object
+         * @param lineNumber number
+         */
+
+    }, {
+        key: 'assignChildrenData',
+        value: function assignChildrenData(service, xml, lineNumber) {
+            if (!service.children || !service.children.length) {
+                return;
+            }
+
+            var getNextEmptyTravellerLineNumber = function getNextEmptyTravellerLineNumber() {
+                var lineNumber = 1;
+
+                do {
+                    var title = xml['Title.' + lineNumber];
+                    var name = xml['Name.' + lineNumber];
+                    var reduction = xml['Reduction.' + lineNumber];
+
+                    if (!title && !name && !reduction) {
+                        return lineNumber;
+                    }
+                } while (lineNumber++);
+            };
+
+            var addTravellerAllocation = function addTravellerAllocation() {
+                var lastTravellerLineNumber = Math.max(service.roomOccupancy, travellerLineNumber);
+                var firstTravellerLineNumber = 1 + lastTravellerLineNumber - service.roomOccupancy;
+
+                xml['TravAssociation.' + lineNumber] = firstTravellerLineNumber === lastTravellerLineNumber ? firstTravellerLineNumber : firstTravellerLineNumber + '-' + lastTravellerLineNumber;
+            };
+
+            var travellerLineNumber = void 0;
+
+            service.children.forEach(function (child) {
+                travellerLineNumber = getNextEmptyTravellerLineNumber();
+
+                xml['Title.' + travellerLineNumber] = CONFIG.crs.salutations.kid;
+                xml['Name.' + travellerLineNumber] = child.name;
+                xml['Reduction.' + travellerLineNumber] = child.age;
+            });
+
+            addTravellerAllocation();
         }
 
         /**
@@ -32004,11 +32328,11 @@ var TomaAdapter = function () {
             // PRT02FS/LIS1-LIS2
             xml['ServiceCode.' + lineNumber] = [service.renterCode, service.camperCode, '/', service.pickUpLocation, '-', service.dropOffLocation].join('');
 
-            xml['From.' + lineNumber] = pickUpDate.isValid() ? pickUpDate.format(CONFIG.crs.dateFormat) : service.pickUpDate;
-            xml['To.' + lineNumber] = dropOffDate.isValid() ? dropOffDate.format(CONFIG.crs.dateFormat) : service.dropOffDate;
             xml['Accommodation' + lineNumber] = pickUpTime.isValid() ? pickUpTime.format(CONFIG.crs.timeFormat) : service.pickUpTime;
             xml['Count.' + lineNumber] = service.milesIncludedPerDay;
             xml['Occupancy.' + lineNumber] = service.milesPackagesIncluded;
+            xml['From.' + lineNumber] = pickUpDate.isValid() ? pickUpDate.format(CONFIG.crs.dateFormat) : service.pickUpDate;
+            xml['To.' + lineNumber] = dropOffDate.isValid() ? dropOffDate.format(CONFIG.crs.dateFormat) : service.dropOffDate;
             xml['TravAssociation.' + lineNumber] = '1' + (xml.NoOfPersons > 1 ? '-' + xml.NoOfPersons : '');
         }
 
@@ -32117,6 +32441,11 @@ var CONFIG = {
         defaultValues: {
             action: 'BA',
             numberOfTravellers: 1
+        },
+        salutations: {
+            mr: 'H',
+            mrs: 'F',
+            kid: 'K'
         }
     },
     services: {
@@ -32418,7 +32747,7 @@ var TomaSPCAdapter = function () {
                         }
                     case CONFIG.crs.serviceTypes.hotel:
                         {
-                            service = _this9.mapHotelServiceFromCrsObjectToAdapterObject(crsService);
+                            service = _this9.mapHotelServiceFromCrsObjectToAdapterObject(crsService, crsObject);
                             break;
                         }
                     case CONFIG.crs.serviceTypes.camper:
@@ -32493,12 +32822,36 @@ var TomaSPCAdapter = function () {
         /**
          * @private
          * @param crsService object
-         * @returns {object}
+         * @param crsObject object
+         * @returns {{roomCode: *, mealCode: *, roomQuantity: (*|string|string), roomOccupancy: (*|string|string|string), children, destination: *, dateFrom: string, dateTo: string, type: string}}
          */
 
     }, {
         key: 'mapHotelServiceFromCrsObjectToAdapterObject',
-        value: function mapHotelServiceFromCrsObjectToAdapterObject(crsService) {
+        value: function mapHotelServiceFromCrsObjectToAdapterObject(crsService, crsObject) {
+            var collectChildren = function collectChildren() {
+                var children = [];
+                var travellerAssociation = crsService.travellerAssociation || '';
+
+                var startLineNumber = parseInt(travellerAssociation.substr(0, 1), 10);
+                var endLineNumber = parseInt(travellerAssociation.substr(-1), 10);
+
+                if (!startLineNumber) return;
+
+                do {
+                    var traveller = crsObject.travellers[startLineNumber - 1];
+
+                    if (traveller.title !== CONFIG.crs.salutations.kid) continue;
+
+                    children.push({
+                        name: traveller.name,
+                        age: traveller.discount
+                    });
+                } while (++startLineNumber <= endLineNumber);
+
+                return children;
+            };
+
             var serviceCodes = (crsService.accommodation || '').split(' ');
             var dateFrom = (0, _moment2.default)(crsService.fromDate, CONFIG.crs.dateFormat);
             var dateTo = (0, _moment2.default)(crsService.toDate, CONFIG.crs.dateFormat);
@@ -32506,6 +32859,9 @@ var TomaSPCAdapter = function () {
             return {
                 roomCode: serviceCodes[0] || void 0,
                 mealCode: serviceCodes[1] || void 0,
+                roomQuantity: crsService.quantity,
+                roomOccupancy: crsService.occupancy,
+                children: collectChildren(),
                 destination: crsService.serviceCode,
                 dateFrom: dateFrom.isValid() ? dateFrom.format(this.options.useDateFormat) : crsService.fromDate,
                 dateTo: dateTo.isValid() ? dateTo.format(this.options.useDateFormat) : crsService.toDate,
@@ -32641,7 +32997,8 @@ var TomaSPCAdapter = function () {
                         }
                     case _UbpCrsAdapter.SERVICE_TYPES.hotel:
                         {
-                            _this10.assignHotelServiceFromAdapterObjectToCrsObject(adapterService, service);
+                            _this10.assignHotelServiceFromAdapterObjectToCrsObject(adapterService, service, crsObject);
+                            _this10.assignChildrenData(adapterService, service, crsObject);
                             break;
                         }
                     case _UbpCrsAdapter.SERVICE_TYPES.camper:
@@ -32709,7 +33066,7 @@ var TomaSPCAdapter = function () {
         key: 'assignCarServiceFromAdapterObjectToCrsObject',
         value: function assignCarServiceFromAdapterObjectToCrsObject(adapterService, crsService, crsObject) {
             var reduceExtrasList = function reduceExtrasList(extras) {
-                return (extras || []).join('|').replace(/navigationSystem/g, 'GPS').replace(/childCareSeat0/g, 'BS').replace(/childCareSeat((\d){1,2})/g, 'CS$1YRS');
+                return (extras || []).join(';').replace(/navigationSystem/g, 'GPS').replace(/childCareSeat0/g, 'BS').replace(/childCareSeat((\d){1,2})/g, 'CS$1YRS');
             };
 
             var pickUpDate = (0, _moment2.default)(adapterService.pickUpDate, this.options.useDateFormat);
@@ -32752,7 +33109,7 @@ var TomaSPCAdapter = function () {
                     hotelData.push([service.dropOffHotelAddress, service.dropOffHotelPhoneNumber].filter(Boolean).join(' '));
                 }
 
-                return hotelData.filter(Boolean).join('|');
+                return hotelData.filter(Boolean).join(';');
             };
 
             var pickUpDate = (0, _moment2.default)(adapterService.pickUpDate, this.options.useDateFormat);
@@ -32773,21 +33130,106 @@ var TomaSPCAdapter = function () {
 
         /**
          * @private
-         * @param adapterService object
+         * @param service object
          * @param crsService object
+         * @param crsObject object
          */
 
     }, {
         key: 'assignHotelServiceFromAdapterObjectToCrsObject',
-        value: function assignHotelServiceFromAdapterObjectToCrsObject(adapterService, crsService) {
-            var dateFrom = (0, _moment2.default)(adapterService.dateFrom, this.options.useDateFormat);
-            var dateTo = (0, _moment2.default)(adapterService.dateTo, this.options.useDateFormat);
+        value: function assignHotelServiceFromAdapterObjectToCrsObject(service, crsService, crsObject) {
+            var emptyRelatedTravellers = function emptyRelatedTravellers() {
+                if (!crsObject.travellers) return;
+
+                var startLineNumber = parseInt(travellerAssociation.substr(0, 1), 10);
+                var endLineNumber = parseInt(travellerAssociation.substr(-1), 10);
+
+                if (!startLineNumber) return;
+
+                do {
+                    var traveller = crsObject.travellers[startLineNumber - 1];
+
+                    traveller.title = void 0;
+                    traveller.name = void 0;
+                    traveller.discount = void 0;
+                } while (++startLineNumber <= endLineNumber);
+            };
+
+            var dateFrom = (0, _moment2.default)(service.dateFrom, this.options.useDateFormat);
+            var dateTo = (0, _moment2.default)(service.dateTo, this.options.useDateFormat);
+            var travellerAssociation = crsService.travellerAssociation || '';
+
+            service.roomOccupancy = Math.max(service.roomOccupancy || 1, (service.children || []).length);
 
             crsService.serviceType = CONFIG.crs.serviceTypes.hotel;
-            crsService.serviceCode = adapterService.destination;
-            crsService.accommodation = [adapterService.roomCode, adapterService.mealCode].join(' ');
-            crsService.fromDate = dateFrom.isValid() ? dateFrom.format(CONFIG.crs.dateFormat) : adapterService.dateFrom;
-            crsService.toDate = dateTo.isValid() ? dateTo.format(CONFIG.crs.dateFormat) : adapterService.dateTo;
+            crsService.serviceCode = service.destination;
+            crsService.accommodation = [service.roomCode, service.mealCode].join(' ');
+            crsService.occupancy = service.roomOccupancy;
+            crsService.quantity = service.roomQuantity;
+            crsService.fromDate = dateFrom.isValid() ? dateFrom.format(CONFIG.crs.dateFormat) : service.dateFrom;
+            crsService.toDate = dateTo.isValid() ? dateTo.format(CONFIG.crs.dateFormat) : service.dateTo;
+            crsService.travellerAssociation = '1' + (service.roomOccupancy > 1 ? '-' + service.roomOccupancy : '');
+
+            emptyRelatedTravellers();
+
+            crsObject.numTravellers = Math.max(crsObject.numTravellers, service.roomOccupancy);
+        }
+
+        /**
+         * @private
+         * @param service object
+         * @param crsService object
+         * @param crsObject object
+         */
+
+    }, {
+        key: 'assignChildrenData',
+        value: function assignChildrenData(service, crsService, crsObject) {
+            if (!service.children || !service.children.length) {
+                return;
+            }
+
+            var getNextEmptyTravellerIndex = function getNextEmptyTravellerIndex() {
+                crsObject.travellers = crsObject.travellers || [];
+
+                var travellerIndex = void 0;
+
+                crsObject.travellers.some(function (traveller, index) {
+                    if (!traveller.title && !traveller.name && !traveller.discount) {
+                        travellerIndex = index;
+
+                        return true;
+                    }
+                });
+
+                if (travellerIndex !== void 0) return travellerIndex;
+
+                crsObject.travellers.push({});
+
+                return crsObject.travellers.length - 1;
+            };
+
+            var addTravellerAllocation = function addTravellerAllocation() {
+                var lastTravellerLineNumber = Math.max(service.roomOccupancy, travellerLineNumber);
+                var firstTravellerLineNumber = 1 + lastTravellerLineNumber - service.roomOccupancy;
+
+                crsService.travellerAssociation = firstTravellerLineNumber === lastTravellerLineNumber ? firstTravellerLineNumber : firstTravellerLineNumber + '-' + lastTravellerLineNumber;
+            };
+
+            var travellerLineNumber = void 0;
+
+            service.children.forEach(function (child) {
+                var travellerIndex = getNextEmptyTravellerIndex();
+                var traveller = crsObject.travellers[travellerIndex];
+
+                travellerLineNumber = travellerIndex + 1;
+
+                traveller.title = CONFIG.crs.salutations.kid;
+                traveller.name = child.name;
+                traveller.discount = child.age;
+            });
+
+            addTravellerAllocation();
         }
 
         /**
@@ -42157,7 +42599,7 @@ function config (name) {
 
 module.exports = {
 	"name": "ubp-crs-adapter",
-	"version": "0.0.14",
+	"version": "0.0.15",
 	"description": "This library provides connections to different travel CRSs. It also let you read and write data from/to them.",
 	"main": "dist/ubpCrsAdapter.js",
 	"directories": {
