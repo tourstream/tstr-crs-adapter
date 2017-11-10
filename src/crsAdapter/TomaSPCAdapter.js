@@ -675,6 +675,8 @@ class TomaSPCAdapter {
         crsService.travellerAssociation = '1' + ((service.roomOccupancy > 1) ? '-' + service.roomOccupancy : '');
 
         emptyRelatedTravellers();
+
+        crsObject.numTravellers = Math.max(crsObject.numTravellers, service.roomOccupancy || 0);
     }
 
     /**
@@ -711,8 +713,8 @@ class TomaSPCAdapter {
         const addTravellerAllocation = () => {
             if (!travellerLineNumber) return;
 
-            let lastTravellerLineNumber = Math.max(service.roomOccupancy, travellerLineNumber);
-            let firstTravellerLineNumber = lastTravellerLineNumber - service.roomOccupancy + 1;
+            let lastTravellerLineNumber = Math.max(service.roomOccupancy || 0, travellerLineNumber);
+            let firstTravellerLineNumber = lastTravellerLineNumber - Math.max(service.roomOccupancy || 0, service.children.length) + 1;
 
             crsService.travellerAssociation = firstTravellerLineNumber === lastTravellerLineNumber
                 ? firstTravellerLineNumber
@@ -733,6 +735,8 @@ class TomaSPCAdapter {
         });
 
         addTravellerAllocation();
+
+        crsObject.numTravellers = Math.max(crsObject.numTravellers, service.children.length, travellerLineNumber || 0);
     }
 
     /**

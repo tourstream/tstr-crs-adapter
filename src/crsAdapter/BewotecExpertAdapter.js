@@ -301,6 +301,8 @@ class BewotecExpertAdapter {
         crsObject['d' + lineIndex] = '1' + ((service.roomOccupancy > 1) ? '-' + service.roomOccupancy : '');
 
         emptyRelatedTravellers();
+
+        crsObject.p = Math.max(crsObject.p, service.roomOccupancy || 0);
     }
 
     /**
@@ -333,8 +335,8 @@ class BewotecExpertAdapter {
         };
 
         const addTravellerAllocation = () => {
-            let lastTravellerLineNumber = Math.max(service.roomOccupancy, travellerLineNumber);
-            let firstTravellerLineNumber = lastTravellerLineNumber - service.roomOccupancy + 1;
+            let lastTravellerLineNumber = Math.max(service.roomOccupancy || 0, travellerLineNumber);
+            let firstTravellerLineNumber = lastTravellerLineNumber - Math.max(service.roomOccupancy || 0, service.children.length) + 1;
 
             crsObject['d' + lineIndex] = firstTravellerLineNumber === lastTravellerLineNumber
                 ? firstTravellerLineNumber
@@ -354,6 +356,8 @@ class BewotecExpertAdapter {
         });
 
         addTravellerAllocation();
+
+        crsObject.p = Math.max(crsObject.p, service.children.length, travellerLineNumber || 0);
     }
 
     /**

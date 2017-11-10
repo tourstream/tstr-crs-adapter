@@ -652,6 +652,8 @@ class TomaAdapter {
         xml['TravAssociation.' + lineNumber] = '1' + ((service.roomOccupancy > 1) ? '-' + service.roomOccupancy : '');
 
         emptyRelatedTravellers();
+
+        xml.NoOfPersons = Math.max(xml.NoOfPersons, service.roomOccupancy || 0);
     }
 
     /**
@@ -682,8 +684,8 @@ class TomaAdapter {
         const addTravellerAllocation = () => {
             if (!travellerLineNumber) return;
 
-            let lastTravellerLineNumber = Math.max(service.roomOccupancy, travellerLineNumber);
-            let firstTravellerLineNumber = lastTravellerLineNumber - service.roomOccupancy + 1;
+            let lastTravellerLineNumber = Math.max(service.roomOccupancy || 0, travellerLineNumber);
+            let firstTravellerLineNumber = lastTravellerLineNumber - Math.max(service.roomOccupancy || 0, service.children.length) + 1;
 
             xml['TravAssociation.' + lineNumber] = firstTravellerLineNumber === lastTravellerLineNumber
                 ? firstTravellerLineNumber
@@ -701,6 +703,8 @@ class TomaAdapter {
         });
 
         addTravellerAllocation();
+
+        xml.NoOfPersons = Math.max(xml.NoOfPersons, service.children.length, travellerLineNumber || 0);
     }
 
     /**

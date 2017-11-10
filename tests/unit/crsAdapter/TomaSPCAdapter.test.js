@@ -849,7 +849,7 @@ describe('TomaSPCAdapter', () => {
 
             let expected = {
                 action: 'BA',
-                numTravellers: 1,
+                numTravellers: 4,
                 services: [
                     {
                         serviceType: 'H',

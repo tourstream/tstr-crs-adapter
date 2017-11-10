@@ -564,12 +564,12 @@ describe('TomaAdapter', () => {
             it('setData() should set hotel service', () => {
                 let expectXml = createTomaXml(
                     '<Action>BA</Action>' +
-                    '<NoOfPersons>2</NoOfPersons>' +
+                    '<NoOfPersons>4</NoOfPersons>' +
                     '<KindOfService.1>H</KindOfService.1>' +
                     '<ServiceCode.1>destination</ServiceCode.1>' +
                     '<Accommodation.1>room.code meal.code</Accommodation.1>' +
-                    '<Count.1>2</Count.1>' +
                     '<Occupancy.1>4</Occupancy.1>' +
+                    '<Count.1>2</Count.1>' +
                     '<From.1>100218</From.1>' +
                     '<To.1>150218</To.1>' +
                     '<TravAssociation.1>1-4</TravAssociation.1>' +
@@ -610,8 +610,8 @@ describe('TomaAdapter', () => {
                     '<NoOfPersons>2</NoOfPersons>' +
                     '<ServiceCode.1>destination</ServiceCode.1>' +
                     '<Accommodation.1>room.code meal.code</Accommodation.1>' +
-                    '<Count.1>2</Count.1>' +
                     '<Occupancy.1>1</Occupancy.1>' +
+                    '<Count.1>2</Count.1>' +
                     '<From.1>100218</From.1>' +
                     '<To.1>150218</To.1>'
                 );

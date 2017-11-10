@@ -375,14 +375,14 @@ class MerlinAdapter {
         xmlService.Service = service.destination;
         xmlService.Accommodation = [service.roomCode, service.mealCode].filter(Boolean).join(' ');
         xmlService.Occupancy = service.roomOccupancy;
-        xmlService.Quantity = service.roomQuantity;
+        xmlService.NoOfServices = service.roomQuantity;
         xmlService.FromDate = dateFrom.isValid() ? dateFrom.format(CONFIG.crs.dateFormat) : service.dateFrom;
         xmlService.EndDate = dateTo.isValid() ? dateTo.format(CONFIG.crs.dateFormat) : service.dateTo;
         xmlService.TravellerAllocation = '1' + ((service.roomOccupancy > 1) ? '-' + service.roomOccupancy : '');
 
         emptyRelatedTravellers();
 
-        xml.NoOfPersons = Math.max(xml.NoOfPersons, service.roomOccupancy);
+        xml.NoOfPersons = Math.max(xml.NoOfPersons, service.roomOccupancy || 0);
     }
 
     /**
@@ -428,8 +428,8 @@ class MerlinAdapter {
         const addTravellerAllocation = () => {
             if (!travellerLineNumber) return;
 
-            let lastTravellerLineNumber = Math.max(service.roomOccupancy, travellerLineNumber || 0);
-            let firstTravellerLineNumber = lastTravellerLineNumber - Math.max(service.roomOccupancy, (service.children || []).length) + 1;
+            let lastTravellerLineNumber = Math.max(service.roomOccupancy || 0, travellerLineNumber);
+            let firstTravellerLineNumber = lastTravellerLineNumber - Math.max(service.roomOccupancy || 0, service.children.length) + 1;
 
             xmlService.TravellerAllocation = firstTravellerLineNumber === lastTravellerLineNumber
                 ? firstTravellerLineNumber
@@ -451,7 +451,7 @@ class MerlinAdapter {
 
         addTravellerAllocation();
 
-        xml.NoOfPersons = Math.max(xml.NoOfPersons, service.children.length, travellerLineNumber);
+        xml.NoOfPersons = Math.max(xml.NoOfPersons, service.children.length, travellerLineNumber || 0);
     }
 
     /**

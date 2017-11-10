@@ -314,14 +314,14 @@ describe('MerlinAdapter', () => {
 
         it('setData() should send hotel data', (done) => {
             let expectation = createXML(
-                '<NoOfPersons>1</NoOfPersons>' +
+                '<NoOfPersons>4</NoOfPersons>' +
                 '<ServiceBlock>' +
                     '<ServiceRow positionNo="1">' +
                         '<KindOfService>H</KindOfService>' +
                         '<Service>dest</Service>' +
                         '<Accommodation>rc mc</Accommodation>' +
-                        '<StealBoarding>2</StealBoarding>' +
                         '<Occupancy>4</Occupancy>' +
+                        '<NoOfServices>2</NoOfServices>' +
                         '<FromDate>231218</FromDate>' +
                         '<EndDate>040119</EndDate>' +
                         '<TravellerAllocation>1-4</TravellerAllocation>' +
@@ -372,7 +372,7 @@ describe('MerlinAdapter', () => {
 
         it('setData() should replace hotel data', (done) => {
             let expectation = createXML(
-                '<NoOfPersons>1</NoOfPersons>' +
+                '<NoOfPersons>3</NoOfPersons>' +
                 '<ServiceBlock>' +
                 '<ServiceRow positionNo="1">' +
                 '<KindOfService>H</KindOfService>' +
