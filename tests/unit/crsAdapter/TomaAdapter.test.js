@@ -668,6 +668,7 @@ describe('TomaAdapter', () => {
                     '<Count.1>1</Count.1>' +
                     '<From.1>051217</From.1>' +
                     '<To.1>161217</To.1>' +
+                    '<TravAssociation.1>1</TravAssociation.1>' +
                     '<Title.1>H</Title.1>' +
                     '<Name.1>DOE/JOHN</Name.1>' +
                     '<Reduction.1>040485</Reduction.1>'
