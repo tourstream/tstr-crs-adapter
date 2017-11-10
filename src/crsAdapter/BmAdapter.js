@@ -111,6 +111,22 @@ class BmAdapter {
         service.dropOffDate = dropOffDate.isValid() ? dropOffDate.format(CONFIG.dateFormat) : service.dropOffDate;
         service.pickUpTime = pickUpTime.isValid() ? pickUpTime.format(CONFIG.timeFormat) : service.pickUpTime;
         service.dropOffTime = dropOffTime.isValid() ? dropOffTime.format(CONFIG.timeFormat) : service.dropOffTime;
+
+        if (!service.durationInMinutes) {
+            let pickUpDateTime = moment(
+                service.pickUpDate + service.pickUpTime,
+                CONFIG.dateFormat + CONFIG.timeFormat
+            );
+
+            let dropOffDateTime = moment(
+                service.dropOffDate + service.dropOffTime,
+                CONFIG.dateFormat + CONFIG.timeFormat
+            );
+
+            service.durationInMinutes = pickUpDateTime.isValid() && dropOffDateTime.isValid()
+                ? Math.ceil(dropOffDateTime.diff(pickUpDateTime, 'minutes', true))
+                : Math.ceil(dropOffDate.diff(pickUpDate, 'minutes', true));
+        }
     }
 }
 

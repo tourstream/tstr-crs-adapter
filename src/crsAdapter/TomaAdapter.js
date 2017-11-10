@@ -601,13 +601,13 @@ class TomaAdapter {
             return hotelData.filter(Boolean).join(';');
         };
 
-        let pickUpDate = moment(service.pickUpDate, this.options.useDateFormat);
-        let dropOffDate = (service.dropOffDate)
-            ? moment(service.dropOffDate, this.options.useDateFormat)
-            : moment(service.pickUpDate, this.options.useDateFormat).add(service.duration, 'days');
         let hotelName = service.pickUpHotelName || service.dropOffHotelName;
 
         if (hotelName) {
+            let pickUpDate = moment(service.pickUpDate, this.options.useDateFormat);
+            let dropOffDate = (service.dropOffDate)
+                ? moment(service.dropOffDate, this.options.useDateFormat)
+                : moment(service.pickUpDate, this.options.useDateFormat).add(service.duration, 'days');
             let lineNumber = this.getNextEmptyServiceLineNumber(xml);
 
             xml['KindOfService.' + lineNumber] = CONFIG.crs.serviceTypes.carExtra;

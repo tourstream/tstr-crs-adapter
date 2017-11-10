@@ -79,7 +79,8 @@ describe('BmAdapter', () => {
                     pickUpDate: '2018-07-12',
                     pickUpTime: '09:45',
                     dropOffDate: '2018-07-16',
-                    dropOffTime: '17:20'
+                    dropOffTime: '17:20',
+                    durationInMinutes: 6215,
                 }],
             };
 
@@ -108,7 +109,8 @@ describe('BmAdapter', () => {
                     pickUpDate: '2018-07-12',
                     pickUpTime: '09:45',
                     dropOffDate: '2018-07-16',
-                    dropOffTime: '09:45'
+                    dropOffTime: '09:45',
+                    durationInMinutes: 5760,
                 }],
             };
 
@@ -137,7 +139,8 @@ describe('BmAdapter', () => {
                     pickUpDate: '2018-07-12',
                     pickUpTime: '09:45',
                     dropOffDate: '2018-07-16',
-                    dropOffTime: '17:20'
+                    dropOffTime: '17:20',
+                    durationInMinutes: 6215,
                 }],
             };
 
