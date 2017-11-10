@@ -26,6 +26,11 @@ const CONFIG = {
             action: 'BA',
             numberOfTravellers: '1',
         },
+        salutations: {
+            mr: 'H',
+            mrs: 'F',
+            kid: 'K',
+        },
     },
     services: {
         car: {
@@ -301,13 +306,37 @@ class TomaAdapter {
      * @returns {object}
      */
     mapHotelServiceFromXmlObjectToAdapterObject(xml, lineNumber) {
-        let serviceCodes = xml['Accommodation.' + lineNumber].split(' ');
+        const collectChildren = () => {
+            let children = [];
+            let travellerAssociation = xml['TravAssociation.' + lineNumber] || '';
+
+            let startLineNumber = parseInt(travellerAssociation.substr(0, 1), 10);
+            let endLineNumber = parseInt(travellerAssociation.substr(-1), 10);
+
+            if (!startLineNumber) return;
+
+            do {
+                if (xml['Title.' + startLineNumber] !== CONFIG.crs.salutations.kid) continue;
+
+                children.push({
+                    name: xml['Name.' + startLineNumber],
+                    age: xml['Reduction.' + startLineNumber],
+                });
+            } while (++startLineNumber <= endLineNumber);
+
+            return children;
+        };
+
+        let serviceCodes = (xml['Accommodation.' + lineNumber] || '').split(' ');
         let dateFrom = moment(xml['From.' + lineNumber], CONFIG.crs.dateFormat);
         let dateTo = moment(xml['To.' + lineNumber], CONFIG.crs.dateFormat);
 
         return {
             roomCode: serviceCodes[0] || void 0,
             mealCode: serviceCodes[1] || void 0,
+            roomQuantity: xml['Count.' + lineNumber],
+            roomOccupancy: xml['Occupancy.' + lineNumber],
+            children: collectChildren(),
             destination: xml['ServiceCode.' + lineNumber],
             dateFrom: dateFrom.isValid() ? dateFrom.format(this.options.useDateFormat) : xml['From.' + lineNumber],
             dateTo: dateTo.isValid() ? dateTo.format(this.options.useDateFormat) : xml['To.' + lineNumber],
@@ -467,6 +496,7 @@ class TomaAdapter {
                 }
                 case SERVICE_TYPES.hotel: {
                     this.assignHotelServiceFromAdapterObjectToXmlObject(service, xmlTom, lineNumber);
+                    this.assignChildrenData(service, xmlTom, lineNumber);
                     break;
                 }
                 case SERVICE_TYPES.camper: {
@@ -515,7 +545,7 @@ class TomaAdapter {
      */
     assignCarServiceFromAdapterObjectToXmlObject(service, xml, lineNumber) {
         const reduceExtrasList = (extras) => {
-            return (extras || []).join('|')
+            return (extras || []).join(';')
                 .replace(/navigationSystem/g, 'GPS')
                 .replace(/childCareSeat0/g, 'BS')
                 .replace(/childCareSeat((\d){1,2})/g, 'CS$1YRS');
@@ -539,9 +569,9 @@ class TomaAdapter {
             service.dropOffLocation,
         ].join('');
 
+        xml['Accommodation.' + lineNumber] = pickUpTime.isValid() ? pickUpTime.format(CONFIG.crs.timeFormat) : service.pickUpTime;
         xml['From.' + lineNumber] = pickUpDate.isValid ? pickUpDate.format(CONFIG.crs.dateFormat) : service.pickUpDate;
         xml['To.' + lineNumber] = dropOffDate.isValid() ? dropOffDate.format(CONFIG.crs.dateFormat) : service.dropOffDate;
-        xml['Accommodation.' + lineNumber] = pickUpTime.isValid() ? pickUpTime.format(CONFIG.crs.timeFormat) : service.pickUpTime;
 
         xml.Remark = [xml.Remark, reduceExtrasList(service.extras)].filter(Boolean).join(',') || void 0;
     };
@@ -567,7 +597,7 @@ class TomaAdapter {
                 hotelData.push([service.dropOffHotelAddress, service.dropOffHotelPhoneNumber].filter(Boolean).join(' '));
             }
 
-            return hotelData.filter(Boolean).join('|');
+            return hotelData.filter(Boolean).join(';');
         };
 
         let pickUpDate = moment(service.pickUpDate, this.options.useDateFormat);
@@ -595,14 +625,84 @@ class TomaAdapter {
      * @param lineNumber number
      */
     assignHotelServiceFromAdapterObjectToXmlObject(service, xml, lineNumber) {
+        const emptyRelatedTravellers = () => {
+            let startLineNumber = parseInt(travellerAssociation.substr(0, 1), 10);
+            let endLineNumber = parseInt(travellerAssociation.substr(-1), 10);
+
+            if (!startLineNumber) return;
+
+            do {
+                xml['Title.' + startLineNumber] = void 0;
+                xml['Name.' + startLineNumber] = void 0;
+                xml['Reduction.' + startLineNumber] = void 0;
+            } while (++startLineNumber <= endLineNumber);
+        };
+
         let dateFrom = moment(service.dateFrom, this.options.useDateFormat);
         let dateTo = moment(service.dateTo, this.options.useDateFormat);
+        let travellerAssociation = xml['TravAssociation.' + lineNumber] || '';
+
+        service.roomOccupancy = Math.max(service.roomOccupancy || 1, (service.children || []).length);
 
         xml['KindOfService.' + lineNumber] = CONFIG.crs.serviceTypes.hotel;
         xml['ServiceCode.' + lineNumber] = service.destination;
         xml['Accommodation.' + lineNumber] = [service.roomCode, service.mealCode].join(' ');
+        xml['Occupancy.' + lineNumber] = service.roomOccupancy;
+        xml['Count.' + lineNumber] = service.roomQuantity;
         xml['From.' + lineNumber] = dateFrom.isValid() ? dateFrom.format(CONFIG.crs.dateFormat) : service.dateFrom;
         xml['To.' + lineNumber] = dateTo.isValid() ? dateTo.format(CONFIG.crs.dateFormat) : service.dateTo;
+        xml['TravAssociation.' + lineNumber] = '1' + ((service.roomOccupancy > 1) ? '-' + service.roomOccupancy : '');
+
+        emptyRelatedTravellers();
+
+        xml.NoOfPersons = Math.max(xml.NoOfPersons, service.roomOccupancy);
+    }
+
+    /**
+     * @private
+     * @param service object
+     * @param xml object
+     * @param lineNumber number
+     */
+    assignChildrenData(service, xml, lineNumber) {
+        if (!service.children || !service.children.length) {
+            return;
+        }
+
+        const getNextEmptyTravellerLineNumber = () => {
+            let lineNumber = 1;
+
+            do {
+                let title = xml['Title.' + lineNumber];
+                let name = xml['Name.' + lineNumber];
+                let reduction = xml['Reduction.' + lineNumber];
+
+                if (!title && !name && !reduction) {
+                    return lineNumber;
+                }
+            } while (lineNumber++)
+        };
+
+        const addTravellerAllocation = () => {
+            let lastTravellerLineNumber = Math.max(service.roomOccupancy, travellerLineNumber);
+            let firstTravellerLineNumber = 1 + lastTravellerLineNumber - service.roomOccupancy;
+
+            xml['TravAssociation.' + lineNumber] = firstTravellerLineNumber === lastTravellerLineNumber
+                ? firstTravellerLineNumber
+                : firstTravellerLineNumber + '-' + lastTravellerLineNumber;
+        };
+
+        let travellerLineNumber = void 0;
+
+        service.children.forEach((child) => {
+            travellerLineNumber = getNextEmptyTravellerLineNumber();
+
+            xml['Title.' + travellerLineNumber] = CONFIG.crs.salutations.kid;
+            xml['Name.' + travellerLineNumber] = child.name;
+            xml['Reduction.' + travellerLineNumber] = child.age;
+        });
+
+        addTravellerAllocation();
     }
 
     /**
@@ -651,11 +751,11 @@ class TomaAdapter {
             service.dropOffLocation,
         ].join('');
 
-        xml['From.' + lineNumber] = pickUpDate.isValid() ? pickUpDate.format(CONFIG.crs.dateFormat) : service.pickUpDate;
-        xml['To.' + lineNumber] = dropOffDate.isValid() ? dropOffDate.format(CONFIG.crs.dateFormat) : service.dropOffDate;
         xml['Accommodation' + lineNumber] = pickUpTime.isValid() ? pickUpTime.format(CONFIG.crs.timeFormat) : service.pickUpTime;
         xml['Count.' + lineNumber] = service.milesIncludedPerDay;
         xml['Occupancy.' + lineNumber] = service.milesPackagesIncluded;
+        xml['From.' + lineNumber] = pickUpDate.isValid() ? pickUpDate.format(CONFIG.crs.dateFormat) : service.pickUpDate;
+        xml['To.' + lineNumber] = dropOffDate.isValid() ? dropOffDate.format(CONFIG.crs.dateFormat) : service.dropOffDate;
         xml['TravAssociation.' + lineNumber] = '1' + ((xml.NoOfPersons > 1) ? '-' + xml.NoOfPersons : '');
     }
 

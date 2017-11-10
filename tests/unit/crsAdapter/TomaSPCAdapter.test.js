@@ -350,6 +350,57 @@ describe('TomaSPCAdapter', () => {
                         dateFrom: '11122017',
                         dateTo: '22122017',
                         marked: false,
+                        children: [
+                            { name: 'john doe', age: '13' },
+                            { name: 'jane doe', age: '9' },
+                        ],
+                        roomQuantity: 2,
+                        roomOccupancy: 4,
+                    }
+                ],
+            };
+
+            crsData = {
+                services: [
+                    {
+                        marker: false,
+                        serviceType: 'H',
+                        serviceCode: 'destination',
+                        quantity: 2,
+                        occupancy: 4,
+                        accommodation: 'rc mc',
+                        fromDate: '111217',
+                        toDate: '221217',
+                        travellerAssociation: '1-4'
+                    }
+                ],
+                travellers: [
+                    {},
+                    { title: 'K', name: 'john doe', discount: '13' },
+                    { title: 'K', name: 'jane doe', discount: '9' },
+                    { title: 'F', name: 'tinker bell', discount: '102' },
+                ],
+            };
+
+            adapter.getData().then((data) => {
+                expect(data).toEqual(expected);
+                done();
+            }, (error) => {
+                done.fail(error);
+            });
+        });
+
+        it('getData() should parse minimal hotel service data', (done) => {
+            let expected = {
+                services: [
+                    {
+                        type: SERVICE_TYPES.hotel,
+                        roomCode: 'rc',
+                        mealCode: 'mc',
+                        destination: 'destination',
+                        dateFrom: '11122017',
+                        dateTo: '22122017',
+                        marked: false,
                     }
                 ],
             };
@@ -664,7 +715,7 @@ describe('TomaSPCAdapter', () => {
             let expected = {
                 action: 'BA',
                 numTravellers: 1,
-                remark: 'GPS|BS|childCarSeat10|roofRack,puh address puh number|doh name|doh address doh number',
+                remark: 'GPS;BS;childCarSeat10;roofRack,puh address puh number;doh name;doh address doh number',
                 services: [
                     {
                         serviceType: 'MW',
@@ -784,8 +835,62 @@ describe('TomaSPCAdapter', () => {
                         destination: 'destination',
                         roomCode: 'rc',
                         mealCode: 'mc',
+                        roomQuantity: 2,
+                        roomOccupancy: 4,
                         dateFrom: '01012018',
                         dateTo: '08012018',
+                        children: [
+                            { name: 'john doe', age: 8 },
+                            { name: 'jane doe', age: 14 },
+                        ],
+                    },
+                ],
+            };
+
+            let expected = {
+                action: 'BA',
+                numTravellers: 4,
+                services: [
+                    {
+                        serviceType: 'H',
+                        serviceCode: 'destination',
+                        accommodation: 'rc mc',
+                        fromDate: '010118',
+                        toDate: '080118',
+                        quantity: 2,
+                        occupancy: 4,
+                        travellerAssociation: '1-4',
+                    },
+                ],
+                travellers: [
+                    { title: 'K', name: 'john doe', discount: 8 },
+                    { title: 'K', name: 'jane doe', discount: 14 },
+                ],
+            };
+
+            crsData = {
+                travellers: [{}],
+            };
+
+            adapter.setData(adapterObject).then(() => {
+                expect(requestData).toEqual([expected]);
+                done();
+            }, (error) => {
+                done.fail(error);
+            });
+        });
+
+        it('setData() should replace with hotel data', (done) => {
+            let adapterObject = {
+                services: [
+                    {
+                        type: SERVICE_TYPES.hotel,
+                        destination: 'destination',
+                        roomCode: 'rc',
+                        mealCode: 'mc',
+                        dateFrom: '01012018',
+                        dateTo: '08012018',
+                        children: [],
                     },
                 ],
             };
@@ -798,9 +903,31 @@ describe('TomaSPCAdapter', () => {
                         serviceType: 'H',
                         serviceCode: 'destination',
                         accommodation: 'rc mc',
+                        occupancy: 1,
                         fromDate: '010118',
                         toDate: '080118',
+                        marker: true,
+                        travellerAssociation: '1',
                     },
+                ],
+                travellers: [{}, {}],
+            };
+
+            crsData = {
+                services: [
+                    {
+                        marker: true,
+                        serviceType: 'H',
+                        serviceCode: 'destination',
+                        accommodation: 'rc mc',
+                        fromDate: '111217',
+                        toDate: '221217',
+                        travellerAssociation: '2',
+                    }
+                ],
+                travellers: [
+                    {},
+                    { title: 'K', name: 'jane doe', discount: '3' },
                 ],
             };
 
@@ -927,8 +1054,10 @@ describe('TomaSPCAdapter', () => {
                         serviceType: 'H',
                         serviceCode: 'destination',
                         accommodation: 'rc mc',
+                        occupancy: 1,
                         fromDate: '010118',
                         toDate: '080118',
+                        travellerAssociation: '1',
                     },
                 ],
             };

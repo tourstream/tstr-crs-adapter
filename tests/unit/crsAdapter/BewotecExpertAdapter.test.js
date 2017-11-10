@@ -295,11 +295,21 @@ describe('BewotecExpertAdapter', () => {
 
         it('setData() should send complete hotel data', (done) => {
             let expectation = createParams({
+                p: 4,
                 n0: 'H',
                 l0: 'dest',
                 s0: '231218',
                 i0: '040119',
                 u0: 'rc mc',
+                z0: 2,
+                e0: 4,
+                d0: '1-4',
+                ta0: 'K',
+                tn0: 'john doe',
+                te0: '7',
+                ta1: 'K',
+                tn1: 'jane doe',
+                te1: '11',
             });
 
             let data = {
@@ -309,8 +319,14 @@ describe('BewotecExpertAdapter', () => {
                         destination: 'dest',
                         roomCode: 'rc',
                         mealCode: 'mc',
+                        roomOccupancy: 4,
+                        roomQuantity: 2,
                         dateFrom: '23122018',
                         dateTo: '04012019',
+                        children: [
+                            { name: 'john doe', age: '7' },
+                            { name: 'jane doe', age: '11' },
+                        ],
                     },
                 ],
             };
@@ -323,7 +339,93 @@ describe('BewotecExpertAdapter', () => {
             });
         });
 
-        it('setData() should send complete hotel data', (done) => {
+        it('setData() should send minimal hotel data', (done) => {
+            let expectation = createParams({
+                n0: 'H',
+                l0: 'dest',
+                s0: '231218',
+                i0: '040119',
+                u0: 'rc mc',
+                e0: 1,
+                d0: '1',
+            });
+
+            let data = {
+                services: [
+                    {
+                        type: 'hotel',
+                        destination: 'dest',
+                        roomCode: 'rc',
+                        mealCode: 'mc',
+                        dateFrom: '23122018',
+                        dateTo: '04012019',
+                        children: [],
+                    },
+                ],
+            };
+
+            adapter.setData(data).then(() => {
+                done.fail('unexpected result');
+            }, () => {
+                expect(requestParameter).toEqual(expectation);
+                done();
+            });
+        });
+
+        it('setData() should replace hotel data', (done) => {
+            let expectation = createParams({
+                p: 4,
+                n0: 'H',
+                l0: 'neverland',
+                s0: '011218',
+                i0: '051218',
+                u0: 'xs ss',
+                e0: 1,
+                d0: '1',
+                n1: 'MW',
+                l1: '/-',
+            });
+
+            let data = {
+                services: [
+                    {
+                        type: 'hotel',
+                        destination: 'dest',
+                        roomCode: 'rc',
+                        mealCode: 'mc',
+                        roomOccupancy: 4,
+                        roomQuantity: 2,
+                        dateFrom: '23122018',
+                        dateTo: '04012019',
+                        children: [
+                            { name: 'john doe', age: '7' },
+                            { name: 'jane doe', age: '11' },
+                        ],
+                        marked: true,
+                    },
+                    {
+                        type: 'car',
+                    },
+                    {
+                        type: 'hotel',
+                        destination: 'neverland',
+                        roomCode: 'xs',
+                        mealCode: 'ss',
+                        dateFrom: '01122018',
+                        dateTo: '05122018',
+                    },
+                ],
+            };
+
+            adapter.setData(data).then(() => {
+                done.fail('unexpected result');
+            }, () => {
+                expect(requestParameter).toEqual(expectation);
+                done();
+            });
+        });
+
+        it('setData() should send complete round trip data', (done) => {
             let expectation = createParams({
                 n0: 'R',
                 l0: 'NEZE2784NQXTHEN',

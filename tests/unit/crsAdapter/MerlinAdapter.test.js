@@ -20,13 +20,13 @@ describe('MerlinAdapter', () => {
     beforeEach(() => {
         logService = require('tests/unit/_mocks/LogService')();
 
-        // as the connection to the Merlin mask is not properly implemented by Sabre we have to assume
-        // that every connection/transfer request results in an error but the logic works nevertheless
         axios = require('tests/unit/_mocks/Axios')();
+
+        axios.defaults = {headers: {post: {}}};
         axios.post.and.callFake((url, parameter) => {
             requestParameter = parameter;
 
-            return Promise.reject(new Error('network.error'));
+            return Promise.resolve();
         });
 
         MerlinAdapter = injector({
@@ -37,6 +37,8 @@ describe('MerlinAdapter', () => {
     });
 
     it('connect() should create connection on error', (done) => {
+        axios.post.and.returnValue(Promise.reject(new Error('network.error')));
+
         adapter.connect().then(() => {
             done.fail('unexpected result');
         }, () => {
@@ -46,8 +48,6 @@ describe('MerlinAdapter', () => {
     });
 
     it('connect() should create connection on success', (done) => {
-        axios.post.and.returnValue(Promise.resolve());
-
         adapter.connect().then(() => {
             expect(adapter.connection).toBeTruthy();
             done();
@@ -68,6 +68,8 @@ describe('MerlinAdapter', () => {
     describe('adapter is connected', () => {
         beforeEach(() => {
             adapter.connect();
+
+            expect(axios.defaults.headers.post['Content-Type']).toBe('text/plain');
         });
 
         it('getData() should return nothing as it is not possible to get any data from the merlin mask', (done) => {
@@ -79,14 +81,25 @@ describe('MerlinAdapter', () => {
             });
         });
 
+        it('setData() throw exception on sending data error', (done) => {
+            axios.post.and.returnValue(Promise.reject(new Error('network.error')));
+
+            adapter.setData().then(() => {
+                done.fail('unexpected result');
+            }, (error) => {
+                expect(error.toString()).toEqual('Error: network.error');
+                done();
+            });
+        });
+
         it('setData() without data should send base data', (done) => {
             let expectation = createXML('<NoOfPersons>1</NoOfPersons>');
 
             adapter.setData().then(() => {
-                done.fail('unexpected result');
-            }, () => {
                 expect(requestParameter).toEqual(expectation);
                 done();
+            }, () => {
+                done.fail('unexpected result');
             });
         });
 
@@ -103,17 +116,17 @@ describe('MerlinAdapter', () => {
             };
 
             adapter.setData(data).then(() => {
-                done.fail('unexpected result');
-            }, () => {
                 expect(requestParameter).toEqual(expectation);
                 expect(logService.warn).toHaveBeenCalledWith('type unknown is not supported by the Merlin adapter');
                 done();
+            }, () => {
+                done.fail('unexpected result');
             });
         });
 
         it('setData() should send complete car data', (done) => {
             let expectation = createXML(
-                '<Remarks>my.remark,CS3YRS|GPS|BS,pu h.address pu h.number;do h.name;do h.address do h.number</Remarks>' +
+                '<Remarks>my.remark,CS3YRS;GPS;BS,pu h.address pu h.number;do h.name;do h.address do h.number</Remarks>' +
                 '<NoOfPersons>1</NoOfPersons>' +
                 '<ServiceBlock>' +
                     '<ServiceRow positionNo="1">' +
@@ -158,10 +171,10 @@ describe('MerlinAdapter', () => {
             };
 
             adapter.setData(data).then(() => {
-                done.fail('unexpected result');
-            }, () => {
                 expect(requestParameter).toEqual(expectation);
                 done();
+            }, () => {
+                done.fail('unexpected result');
             });
         });
 
@@ -196,10 +209,10 @@ describe('MerlinAdapter', () => {
             };
 
             adapter.setData(data).then(() => {
-                done.fail('unexpected result');
-            }, () => {
                 expect(requestParameter).toEqual(expectation);
                 done();
+            }, () => {
+                done.fail('unexpected result');
             });
         });
 
@@ -244,10 +257,10 @@ describe('MerlinAdapter', () => {
             };
 
             adapter.setData(data).then(() => {
-                done.fail('unexpected result');
-            }, () => {
                 expect(requestParameter).toEqual(expectation);
                 done();
+            }, () => {
+                done.fail('unexpected result');
             });
         });
 
@@ -292,25 +305,42 @@ describe('MerlinAdapter', () => {
             };
 
             adapter.setData(data).then(() => {
-                done.fail('unexpected result');
-            }, () => {
                 expect(requestParameter).toEqual(expectation);
                 done();
+            }, () => {
+                done.fail('unexpected result');
             });
         });
 
-        it('setData() should send complete hotel data', (done) => {
+        it('setData() should send hotel data', (done) => {
             let expectation = createXML(
-                '<NoOfPersons>1</NoOfPersons>' +
+                '<NoOfPersons>4</NoOfPersons>' +
                 '<ServiceBlock>' +
                     '<ServiceRow positionNo="1">' +
                         '<KindOfService>H</KindOfService>' +
                         '<Service>dest</Service>' +
                         '<Accommodation>rc mc</Accommodation>' +
+                        '<Occupancy>4</Occupancy>' +
+                        '<NoOfServices>2</NoOfServices>' +
                         '<FromDate>231218</FromDate>' +
                         '<EndDate>040119</EndDate>' +
+                        '<TravellerAllocation>1-4</TravellerAllocation>' +
                     '</ServiceRow>' +
-                '</ServiceBlock>'
+                '</ServiceBlock>' +
+                '<TravellerBlock>' +
+                    '<PersonBlock>' +
+                        '<PersonRow travellerNo="1">' +
+                            '<Salutation>K</Salutation>' +
+                            '<Name>john doe</Name>' +
+                            '<Age>8</Age>' +
+                        '</PersonRow>' +
+                        '<PersonRow travellerNo="2">' +
+                            '<Salutation>K</Salutation>' +
+                            '<Name>jane doe</Name>' +
+                            '<Age>14</Age>' +
+                        '</PersonRow>' +
+                    '</PersonBlock>' +
+                '</TravellerBlock>'
             );
 
             let data = {
@@ -320,17 +350,97 @@ describe('MerlinAdapter', () => {
                         destination: 'dest',
                         roomCode: 'rc',
                         mealCode: 'mc',
+                        roomQuantity: 2,
+                        roomOccupancy: 4,
                         dateFrom: '23122018',
                         dateTo: '04012019',
+                        children: [
+                            { name: 'john doe', age: 8 },
+                            { name: 'jane doe', age: 14 },
+                        ],
                     },
                 ],
             };
 
             adapter.setData(data).then(() => {
-                done.fail('unexpected result');
-            }, () => {
                 expect(requestParameter).toEqual(expectation);
                 done();
+            }, () => {
+                done.fail('unexpected result');
+            });
+        });
+
+        it('setData() should replace hotel data', (done) => {
+            let expectation = createXML(
+                '<NoOfPersons>3</NoOfPersons>' +
+                '<ServiceBlock>' +
+                '<ServiceRow positionNo="1">' +
+                '<KindOfService>H</KindOfService>' +
+                '<Service>wonderland</Service>' +
+                '<Accommodation>xs dr</Accommodation>' +
+                '<Occupancy>3</Occupancy>' +
+                '<FromDate>231218</FromDate>' +
+                '<EndDate>040119</EndDate>' +
+                '<TravellerAllocation>1-3</TravellerAllocation>' +
+                '</ServiceRow>' +
+                '</ServiceBlock>' +
+                '<TravellerBlock>' +
+                '<PersonBlock>' +
+                '<PersonRow travellerNo="1">' +
+                '<Salutation>K</Salutation>' +
+                '<Name>john doe</Name>' +
+                '<Age>11</Age>' +
+                '</PersonRow>' +
+                '</PersonBlock>' +
+                '</TravellerBlock>'
+            );
+
+            let data = {
+                services: [
+                    {
+                        type: 'hotel',
+                        destination: 'neverland',
+                        roomCode: 'oak',
+                        mealCode: 'bg',
+                        roomOccupancy: 2,
+                        dateFrom: '23122018',
+                        dateTo: '04012019',
+                        children: [
+                            { name: 'jane doe', age: 3 },
+                        ],
+                        marked: true,
+                    },
+                    {
+                        type: 'hotel',
+                        destination: 'dest',
+                        roomCode: 'rc',
+                        mealCode: 'mc',
+                        roomOccupancy: 1,
+                        dateFrom: '23122018',
+                        dateTo: '04012019',
+                        marked: true,
+                        children: [],
+                    },
+                    {
+                        type: 'hotel',
+                        destination: 'wonderland',
+                        roomCode: 'xs',
+                        mealCode: 'dr',
+                        roomOccupancy: 3,
+                        dateFrom: '23122018',
+                        dateTo: '04012019',
+                        children: [
+                            { name: 'john doe', age: 11 },
+                        ],
+                    },
+                ],
+            };
+
+            adapter.setData(data).then(() => {
+                expect(requestParameter).toEqual(expectation);
+                done();
+            }, () => {
+                done.fail('unexpected result');
             });
         });
 
@@ -346,11 +456,15 @@ describe('MerlinAdapter', () => {
                         '<KindOfService>H</KindOfService>' +
                         '<Service>dest.5</Service>' +
                         '<Accommodation>rc.5 mc.5</Accommodation>' +
+                        '<Occupancy>1</Occupancy>' +
+                        '<TravellerAllocation>1</TravellerAllocation>' +
                     '</ServiceRow>' +
                     '<ServiceRow positionNo="3">' +
                         '<KindOfService>H</KindOfService>' +
                         '<Service>dest.6</Service>' +
                         '<Accommodation>rc.6 mc.6</Accommodation>' +
+                        '<Occupancy>1</Occupancy>' +
+                        '<TravellerAllocation>1</TravellerAllocation>' +
                     '</ServiceRow>' +
                 '</ServiceBlock>'
             );
@@ -369,10 +483,10 @@ describe('MerlinAdapter', () => {
             };
 
             adapter.setData(data).then(() => {
-                done.fail('unexpected result');
-            }, () => {
                 expect(requestParameter).toEqual(expectation);
                 done();
+            }, () => {
+                done.fail('unexpected result');
             });
         });
 

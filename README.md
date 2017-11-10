@@ -137,7 +137,7 @@ JackPlus   | X     | X     | X         | X
 |       | .dropOffLocation         | 'MUC' 
 |       | .dropOffDate             | '04012018'
 |       | .dropOffTime             | '1720' 
-|       | .duration                | '9' 
+|       | .duration                | '9' (in days)
 |       | .pickUpHotelName         | 'Best Hotel' 
 |       | .pickUpHotelAddress      | 'hotel street 1, 12345 hotel city' 
 |       | .pickUpHotelPhoneNumber  | '+49 172 678 0832 09' 
@@ -148,13 +148,16 @@ JackPlus   | X     | X     | X         | X
 
 _note: if .dropOffDate is not set, it will be calculated with .pickUpDate + .duration_
 
-| type    | fields       | example
-| :---    | :---         | :---
-| hotel   | .roomCode    | 'DZ' 
-|         | .mealCode    | 'U' 
-|         | .destination | 'LAX20S' 
-|         | .dateFrom    | '20092017' 
-|         | .dateTo      | '20092017' 
+| type    | fields         | example
+| :---    | :---           | :---
+| hotel   | .roomCode      | 'DZ' 
+|         | .mealCode      | 'U' 
+|         | .roomQuantity  | '2'
+|         | .roomOccupancy | '4'
+|         | .destination   | 'LAX20S' 
+|         | .dateFrom      | '20092017' 
+|         | .dateTo        | '20092017' 
+|         | .children      | [ { name: 'john', age: '11' }, ... ] 
 
 | type      | fields              | example
 | :---      | :---                | :---
@@ -254,6 +257,12 @@ than you can drag'n'drop the test file directly into that view.
 _precondition:_ the Sabre portal "ShopHolidays" is open, the Merlin mask is visible and the import is enabled
 
 Open the test file in parallel to the Merlin mask in another Tab.
+
+###### ... in myJack / Jack+
+
+_precondition:_ the Bewotec application (myJack/Jack+) is open, the Expert mask is visible
+
+Open the test file in parallel to the Expert mask in a browser.
 
 
 ## You have questions or problems with the implementation?

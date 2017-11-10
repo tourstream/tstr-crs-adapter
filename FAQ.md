@@ -40,7 +40,9 @@ See section above.
 
 #### I get the error "... Error: Permission denied" What can I do?
 
-Close all debug windows and try again.
+See section above.
+
+Additionally you should allow popups to be opened.
 
 
 #### How does the data look like for the Booking Manager?

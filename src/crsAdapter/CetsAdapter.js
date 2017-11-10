@@ -508,7 +508,7 @@ class CetsAdapter {
                     service.dropOffHotelPhoneNumber,
                     service.dropOffHotelAddress,
                 ].filter(Boolean).join(' '),
-            ].filter(Boolean).join('|'),
+            ].filter(Boolean).join(';'),
         };
 
         xml.Faq.push(xmlFaq);
