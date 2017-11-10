@@ -291,6 +291,8 @@ class BewotecExpertAdapter {
         let dateTo = moment(service.dateTo, this.options.useDateFormat);
         let travellerAssociation = crsObject['d' + lineNumber] || '';
 
+        service.roomOccupancy = Math.max(service.roomOccupancy || 1, (service.children || []).length);
+
         crsObject['n' + lineIndex] = CONFIG.crs.serviceTypes.hotel;
         crsObject['l' + lineIndex] = service.destination;
         crsObject['u' + lineIndex] = [service.roomCode, service.mealCode].filter(Boolean).join(' ');
@@ -302,7 +304,7 @@ class BewotecExpertAdapter {
 
         emptyRelatedTravellers();
 
-        crsObject.p = Math.max(crsObject.p, service.roomOccupancy || 0);
+        crsObject.p = Math.max(crsObject.p, service.roomOccupancy);
     }
 
     /**
@@ -318,7 +320,7 @@ class BewotecExpertAdapter {
 
         const lineIndex = CONFIG.crs.lineNumberMap[lineNumber];
 
-        const getNextEmptyTravellerLineNumber = () => {
+        const getNextEmptyTravellerIndex = () => {
             let lineNumber = 0;
 
             do {
@@ -335,8 +337,8 @@ class BewotecExpertAdapter {
         };
 
         const addTravellerAllocation = () => {
-            let lastTravellerLineNumber = Math.max(service.roomOccupancy || 0, travellerLineNumber);
-            let firstTravellerLineNumber = lastTravellerLineNumber - Math.max(service.roomOccupancy || 0, service.children.length) + 1;
+            let lastTravellerLineNumber = Math.max(service.roomOccupancy, travellerLineNumber);
+            let firstTravellerLineNumber = 1 + lastTravellerLineNumber - service.roomOccupancy;
 
             crsObject['d' + lineIndex] = firstTravellerLineNumber === lastTravellerLineNumber
                 ? firstTravellerLineNumber
@@ -346,9 +348,10 @@ class BewotecExpertAdapter {
         let travellerLineNumber = void 0;
 
         service.children.forEach((child) => {
-            travellerLineNumber = getNextEmptyTravellerLineNumber();
+            let travellerIndex = getNextEmptyTravellerIndex();
+            let travellerLineIndex = CONFIG.crs.lineNumberMap[travellerIndex];
 
-            let travellerLineIndex = CONFIG.crs.lineNumberMap[travellerLineNumber];
+            travellerLineNumber = travellerIndex + 1;
 
             crsObject['ta' + travellerLineIndex] = CONFIG.crs.salutations.kid;
             crsObject['tn' + travellerLineIndex] = child.name;
@@ -356,8 +359,6 @@ class BewotecExpertAdapter {
         });
 
         addTravellerAllocation();
-
-        crsObject.p = Math.max(crsObject.p, service.children.length, travellerLineNumber || 0);
     }
 
     /**

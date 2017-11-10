@@ -456,12 +456,14 @@ describe('MerlinAdapter', () => {
                         '<KindOfService>H</KindOfService>' +
                         '<Service>dest.5</Service>' +
                         '<Accommodation>rc.5 mc.5</Accommodation>' +
+                        '<Occupancy>1</Occupancy>' +
                         '<TravellerAllocation>1</TravellerAllocation>' +
                     '</ServiceRow>' +
                     '<ServiceRow positionNo="3">' +
                         '<KindOfService>H</KindOfService>' +
                         '<Service>dest.6</Service>' +
                         '<Accommodation>rc.6 mc.6</Accommodation>' +
+                        '<Occupancy>1</Occupancy>' +
                         '<TravellerAllocation>1</TravellerAllocation>' +
                     '</ServiceRow>' +
                 '</ServiceBlock>'

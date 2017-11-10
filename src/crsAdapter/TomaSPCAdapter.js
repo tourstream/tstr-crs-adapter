@@ -665,6 +665,8 @@ class TomaSPCAdapter {
         let dateTo = moment(service.dateTo, this.options.useDateFormat);
         let travellerAssociation = crsService.travellerAssociation || '';
 
+        service.roomOccupancy = Math.max(service.roomOccupancy || 1, (service.children || []).length);
+
         crsService.serviceType = CONFIG.crs.serviceTypes.hotel;
         crsService.serviceCode = service.destination;
         crsService.accommodation = [service.roomCode, service.mealCode].join(' ');
@@ -676,7 +678,7 @@ class TomaSPCAdapter {
 
         emptyRelatedTravellers();
 
-        crsObject.numTravellers = Math.max(crsObject.numTravellers, service.roomOccupancy || 0);
+        crsObject.numTravellers = Math.max(crsObject.numTravellers, service.roomOccupancy);
     }
 
     /**
@@ -686,7 +688,7 @@ class TomaSPCAdapter {
      * @param crsObject object
      */
     assignChildrenData(service, crsService, crsObject) {
-        if (!service.children) {
+        if (!service.children || !service.children.length) {
             return;
         }
 
@@ -711,10 +713,8 @@ class TomaSPCAdapter {
         };
 
         const addTravellerAllocation = () => {
-            if (!travellerLineNumber) return;
-
-            let lastTravellerLineNumber = Math.max(service.roomOccupancy || 0, travellerLineNumber);
-            let firstTravellerLineNumber = lastTravellerLineNumber - Math.max(service.roomOccupancy || 0, service.children.length) + 1;
+            let lastTravellerLineNumber = Math.max(service.roomOccupancy, travellerLineNumber);
+            let firstTravellerLineNumber = 1 + lastTravellerLineNumber - service.roomOccupancy;
 
             crsService.travellerAssociation = firstTravellerLineNumber === lastTravellerLineNumber
                 ? firstTravellerLineNumber
@@ -735,8 +735,6 @@ class TomaSPCAdapter {
         });
 
         addTravellerAllocation();
-
-        crsObject.numTravellers = Math.max(crsObject.numTravellers, service.children.length, travellerLineNumber || 0);
     }
 
     /**

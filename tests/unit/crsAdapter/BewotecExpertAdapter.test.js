@@ -346,6 +346,7 @@ describe('BewotecExpertAdapter', () => {
                 s0: '231218',
                 i0: '040119',
                 u0: 'rc mc',
+                e0: 1,
                 d0: '1',
             });
 
@@ -379,6 +380,7 @@ describe('BewotecExpertAdapter', () => {
                 s0: '011218',
                 i0: '051218',
                 u0: 'xs ss',
+                e0: 1,
                 d0: '1',
                 n1: 'MW',
                 l1: '/-',

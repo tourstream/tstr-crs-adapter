@@ -642,6 +642,8 @@ class TomaAdapter {
         let dateTo = moment(service.dateTo, this.options.useDateFormat);
         let travellerAssociation = xml['TravAssociation.' + lineNumber] || '';
 
+        service.roomOccupancy = Math.max(service.roomOccupancy || 1, (service.children || []).length);
+
         xml['KindOfService.' + lineNumber] = CONFIG.crs.serviceTypes.hotel;
         xml['ServiceCode.' + lineNumber] = service.destination;
         xml['Accommodation.' + lineNumber] = [service.roomCode, service.mealCode].join(' ');
@@ -653,7 +655,7 @@ class TomaAdapter {
 
         emptyRelatedTravellers();
 
-        xml.NoOfPersons = Math.max(xml.NoOfPersons, service.roomOccupancy || 0);
+        xml.NoOfPersons = Math.max(xml.NoOfPersons, service.roomOccupancy);
     }
 
     /**
@@ -663,11 +665,11 @@ class TomaAdapter {
      * @param lineNumber number
      */
     assignChildrenData(service, xml, lineNumber) {
-        if (!service.children) {
+        if (!service.children || !service.children.length) {
             return;
         }
 
-        const getNextEmptyTravellerLine = () => {
+        const getNextEmptyTravellerLineNumber = () => {
             let lineNumber = 1;
 
             do {
@@ -682,10 +684,8 @@ class TomaAdapter {
         };
 
         const addTravellerAllocation = () => {
-            if (!travellerLineNumber) return;
-
-            let lastTravellerLineNumber = Math.max(service.roomOccupancy || 0, travellerLineNumber);
-            let firstTravellerLineNumber = lastTravellerLineNumber - Math.max(service.roomOccupancy || 0, service.children.length) + 1;
+            let lastTravellerLineNumber = Math.max(service.roomOccupancy, travellerLineNumber);
+            let firstTravellerLineNumber = 1 + lastTravellerLineNumber - service.roomOccupancy;
 
             xml['TravAssociation.' + lineNumber] = firstTravellerLineNumber === lastTravellerLineNumber
                 ? firstTravellerLineNumber
@@ -695,7 +695,7 @@ class TomaAdapter {
         let travellerLineNumber = void 0;
 
         service.children.forEach((child) => {
-            travellerLineNumber = getNextEmptyTravellerLine();
+            travellerLineNumber = getNextEmptyTravellerLineNumber();
 
             xml['Title.' + travellerLineNumber] = CONFIG.crs.salutations.kid;
             xml['Name.' + travellerLineNumber] = child.name;
@@ -703,8 +703,6 @@ class TomaAdapter {
         });
 
         addTravellerAllocation();
-
-        xml.NoOfPersons = Math.max(xml.NoOfPersons, service.children.length, travellerLineNumber || 0);
     }
 
     /**
