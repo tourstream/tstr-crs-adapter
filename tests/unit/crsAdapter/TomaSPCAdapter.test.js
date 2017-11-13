@@ -559,15 +559,102 @@ describe('TomaSPCAdapter', () => {
         });
 
         it('getData() should parse camper service with no service code', (done) => {
-            let expected = {services: [{
-                type: SERVICE_TYPES.camper,
-                marked: true,
-            }]};
+            let expected = {
+                services: [{
+                    type: SERVICE_TYPES.camper,
+                    marked: true,
+                }]
+            };
 
             crsData = {
                 services: [{
                     serviceType: 'WM',
                 }]
+            };
+
+            adapter.getData().then((data) => {
+                expect(data).toEqual(expected);
+                done();
+            }, (error) => {
+                done.fail(error);
+            });
+        });
+
+        it('getData() should parse round-trip services', (done) => {
+            let expected = {
+                services: [{
+                    type: 'roundTrip',
+                    bookingId: 'NEZE2784NQXTHEN',
+                    destination: 'YYZ',
+                    numberOfPassengers: '1',
+                    startDate: '05122017',
+                    endDate: '16122017',
+                    salutation: 'H',
+                    name: 'DOE/JOHN',
+                    birthdate: '040485',
+                }]
+            };
+
+            crsData = {
+                services: [{
+                    serviceType: 'R',
+                    serviceCode: 'NEZE2784NQXTHEN',
+                    accommodation: 'YYZ',
+                    quantity: '1',
+                    fromDate: '051217',
+                    toDate: '161217',
+                    travellerAssociation: 2,
+                }],
+                travellers: [
+                    {},
+                    {
+                        title: 'H',
+                        name: 'DOE/JOHN',
+                        discount: '040485',
+                    },
+                ]
+            };
+
+            adapter.getData().then((data) => {
+                expect(data).toEqual(expected);
+                done();
+            }, (error) => {
+                done.fail(error);
+            });
+        });
+
+        it('getData() should parse round-trip services and returns age field instead of birthDate', (done) => {
+            let expected = {
+                services: [{
+                    type: 'roundTrip',
+                    bookingId: 'NEZE2784NQXTHEN',
+                    destination: 'YYZ',
+                    numberOfPassengers: '1',
+                    startDate: '05122017',
+                    endDate: '16122017',
+                    salutation: 'H',
+                    name: 'DOE/JOHN',
+                    age: '32',
+                }]
+            };
+
+            crsData = {
+                services: [{
+                    serviceType: 'R',
+                    serviceCode: 'NEZE2784NQXTHEN',
+                    accommodation: 'YYZ',
+                    quantity: '1',
+                    fromDate: '051217',
+                    toDate: '161217',
+                    travellerAssociation: 1,
+                }],
+                travellers: [
+                    {
+                        title: 'H',
+                        name: 'DOE/JOHN',
+                        discount: '32',
+                    },
+                ]
             };
 
             adapter.getData().then((data) => {
@@ -929,6 +1016,53 @@ describe('TomaSPCAdapter', () => {
                     {},
                     { title: 'K', name: 'jane doe', discount: '3' },
                 ],
+            };
+
+            adapter.setData(adapterObject).then(() => {
+                expect(requestData).toEqual([expected]);
+                done();
+            }, (error) => {
+                done.fail(error);
+            });
+        });
+
+        it('setData() should convert round-trip data to crs object correct', (done) => {
+            let adapterObject = {
+                numberOfTravellers: 1,
+                services: [
+                    {
+                        type: 'roundTrip',
+                        marked: '',
+                        bookingId: 'NEZE2784NQXTHEN',
+                        destination: 'YYZ',
+                        numberOfPassengers: '1',
+                        startDate: '05122017',
+                        endDate: '16122017',
+                        salutation: 'H',
+                        name: 'DOE/JOHN',
+                        age: '32',
+                        birthday: '040485',
+                    },
+                ],
+            };
+
+            let expected = {
+                action: 'BA',
+                numTravellers: 1,
+                services: [{
+                    serviceType: 'R',
+                    serviceCode: 'NEZE2784NQXTHEN',
+                    accommodation: 'YYZ',
+                    quantity: '1',
+                    fromDate: '051217',
+                    toDate: '161217',
+                    travellerAssociation: 1,
+                }],
+                travellers: [{
+                    title: 'H',
+                    name: 'DOE/JOHN',
+                    discount: '040485',
+                }],
             };
 
             adapter.setData(adapterObject).then(() => {

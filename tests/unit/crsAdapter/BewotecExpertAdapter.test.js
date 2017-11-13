@@ -433,6 +433,7 @@ describe('BewotecExpertAdapter', () => {
                 s0: '051217',
                 i0: '161217',
                 z0: '1',
+                d0: 1,
                 ta0: 'H',
                 tn0: 'DOE/JOHN',
                 te0: '040485',

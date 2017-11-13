@@ -148,28 +148,29 @@ class BewotecExpertAdapter {
         crsObject.p = dataObject.numberOfTravellers || CONFIG.crs.defaultValues.numberOfTravellers;
 
         (dataObject.services || []).forEach((service) => {
-            let markedLineNumber = this.getMarkedLineNumberForService(crsObject, service);
-            let lineNumber = markedLineNumber === void 0 ? this.getNextEmptyLineNumber(crsObject) : markedLineNumber;
+            let markedLineIndex= this.getMarkedLineIndexForService(crsObject, service);
+            let lineIndex = markedLineIndex === void 0 ? this.getNextEmptyServiceLineIndex(crsObject) : markedLineIndex;
 
             switch (service.type) {
                 case SERVICE_TYPES.car: {
-                    this.assignCarServiceFromAdapterObjectToCrsObject(service, crsObject, lineNumber);
+                    this.assignCarServiceFromAdapterObjectToCrsObject(service, crsObject, lineIndex);
                     this.assignHotelData(service, crsObject);
                     break;
                 }
                 case SERVICE_TYPES.hotel: {
-                    this.assignHotelServiceFromAdapterObjectToCrsObject(service, crsObject, lineNumber);
-                    this.assignChildrenData(service, crsObject, lineNumber);
+                    this.assignHotelServiceFromAdapterObjectToCrsObject(service, crsObject, lineIndex);
+                    this.assignChildrenData(service, crsObject, lineIndex);
                     break;
                 }
                 case SERVICE_TYPES.camper: {
-                    this.assignCamperServiceFromAdapterObjectToCrsObject(service, crsObject, lineNumber);
+                    this.assignCamperServiceFromAdapterObjectToCrsObject(service, crsObject, lineIndex);
                     this.assignCamperExtras(service, crsObject);
 
                     break;
                 }
                 case SERVICE_TYPES.roundTrip: {
-                    this.assignRoundTripServiceFromAdapterObjectToCrsObject(service, crsObject, lineNumber);
+                    this.assignRoundTripServiceFromAdapterObjectToCrsObject(service, crsObject, lineIndex);
+                    this.assignRoundTripTravellers(service, crsObject, lineIndex);
                     break;
                 }
                 default: {
@@ -178,7 +179,7 @@ class BewotecExpertAdapter {
                 }
             }
 
-            crsObject['m' + CONFIG.crs.lineNumberMap[lineNumber]] = service.marked ? 'X' : void 0;
+            crsObject['m' + CONFIG.crs.lineNumberMap[lineIndex]] = service.marked ? 'X' : void 0;
         });
 
         return JSON.parse(JSON.stringify(crsObject));
@@ -188,9 +189,9 @@ class BewotecExpertAdapter {
      * @private
      * @param service object
      * @param crsObject object
-     * @param lineNumber int
+     * @param lineIndex int
      */
-    assignCarServiceFromAdapterObjectToCrsObject(service, crsObject, lineNumber) {
+    assignCarServiceFromAdapterObjectToCrsObject(service, crsObject, lineIndex) {
         const reduceExtrasList = (extras) => {
             return (extras || []).join(',')
                 .replace(/childCareSeat0/g, 'BS')
@@ -203,10 +204,10 @@ class BewotecExpertAdapter {
             ? moment(service.dropOffDate, this.options.useDateFormat)
             : moment(service.pickUpDate, this.options.useDateFormat).add(service.duration, 'days');
 
-        crsObject['n' + CONFIG.crs.lineNumberMap[lineNumber]] = CONFIG.crs.serviceTypes.car;
+        crsObject['n' + CONFIG.crs.lineNumberMap[lineIndex]] = CONFIG.crs.serviceTypes.car;
 
         // USA96A4/MIA1-TPA
-        crsObject['l' + CONFIG.crs.lineNumberMap[lineNumber]] = [
+        crsObject['l' + CONFIG.crs.lineNumberMap[lineIndex]] = [
             service.rentalCode,
             service.vehicleTypeCode,
             '/',
@@ -215,9 +216,9 @@ class BewotecExpertAdapter {
             service.dropOffLocation,
         ].join('');
 
-        crsObject['s' + CONFIG.crs.lineNumberMap[lineNumber]] = pickUpDate.isValid() ? pickUpDate.format(CONFIG.crs.dateFormat) : service.pickUpDate;
-        crsObject['i' + CONFIG.crs.lineNumberMap[lineNumber]] = dropOffDate.isValid() ? dropOffDate.format(CONFIG.crs.dateFormat) : service.dropOffDate;
-        crsObject['u' + CONFIG.crs.lineNumberMap[lineNumber]] = pickUpTime.isValid() ? pickUpTime.format(CONFIG.crs.timeFormat) : service.pickUpTime;
+        crsObject['s' + CONFIG.crs.lineNumberMap[lineIndex]] = pickUpDate.isValid() ? pickUpDate.format(CONFIG.crs.dateFormat) : service.pickUpDate;
+        crsObject['i' + CONFIG.crs.lineNumberMap[lineIndex]] = dropOffDate.isValid() ? dropOffDate.format(CONFIG.crs.dateFormat) : service.dropOffDate;
+        crsObject['u' + CONFIG.crs.lineNumberMap[lineIndex]] = pickUpTime.isValid() ? pickUpTime.format(CONFIG.crs.timeFormat) : service.pickUpTime;
 
         crsObject.rem = [crsObject.rem, reduceExtrasList(service.extras)].filter(Boolean).join(';') || void 0;
     };
@@ -253,12 +254,12 @@ class BewotecExpertAdapter {
             let dropOffDate = (service.dropOffDate)
                 ? moment(service.dropOffDate, this.options.useDateFormat)
                 : moment(service.pickUpDate, this.options.useDateFormat).add(service.duration, 'days');
-            let lineNumber = this.getNextEmptyLineNumber(crsObject);
+            let lineIndex = this.getNextEmptyServiceLineIndex(crsObject);
 
-            crsObject['n' + CONFIG.crs.lineNumberMap[lineNumber]] = CONFIG.crs.serviceTypes.carExtras;
-            crsObject['l' + CONFIG.crs.lineNumberMap[lineNumber]] = hotelName;
-            crsObject['s' + CONFIG.crs.lineNumberMap[lineNumber]] = pickUpDate.isValid() ? pickUpDate.format(CONFIG.crs.dateFormat) : service.pickUpDate;
-            crsObject['i' + CONFIG.crs.lineNumberMap[lineNumber]] = dropOffDate.isValid() ? dropOffDate.format(CONFIG.crs.dateFormat) : service.dropOffDate;
+            crsObject['n' + CONFIG.crs.lineNumberMap[lineIndex]] = CONFIG.crs.serviceTypes.carExtras;
+            crsObject['l' + CONFIG.crs.lineNumberMap[lineIndex]] = hotelName;
+            crsObject['s' + CONFIG.crs.lineNumberMap[lineIndex]] = pickUpDate.isValid() ? pickUpDate.format(CONFIG.crs.dateFormat) : service.pickUpDate;
+            crsObject['i' + CONFIG.crs.lineNumberMap[lineIndex]] = dropOffDate.isValid() ? dropOffDate.format(CONFIG.crs.dateFormat) : service.dropOffDate;
         }
 
         crsObject.rem = [crsObject.rem, reduceHotelDataToRemarkString(service)].filter(Boolean).join(';') || void 0;
@@ -269,9 +270,9 @@ class BewotecExpertAdapter {
      *
      * @param service object
      * @param crsObject object
-     * @param lineNumber int
+     * @param lineIndex int
      */
-    assignHotelServiceFromAdapterObjectToCrsObject(service, crsObject, lineNumber) {
+    assignHotelServiceFromAdapterObjectToCrsObject(service, crsObject, lineIndex) {
         const emptyRelatedTravellers = () => {
             let startLineNumber = parseInt(travellerAssociation.substr(0, 1), 10);
             let endLineNumber = parseInt(travellerAssociation.substr(-1), 10);
@@ -287,7 +288,7 @@ class BewotecExpertAdapter {
             } while (++startLineNumber <= endLineNumber);
         };
 
-        const lineIndex = CONFIG.crs.lineNumberMap[lineNumber];
+        const lineNumber = CONFIG.crs.lineNumberMap[lineIndex];
 
         let dateFrom = moment(service.dateFrom, this.options.useDateFormat);
         let dateTo = moment(service.dateTo, this.options.useDateFormat);
@@ -295,14 +296,14 @@ class BewotecExpertAdapter {
 
         service.roomOccupancy = Math.max(service.roomOccupancy || 1, (service.children || []).length);
 
-        crsObject['n' + lineIndex] = CONFIG.crs.serviceTypes.hotel;
-        crsObject['l' + lineIndex] = service.destination;
-        crsObject['u' + lineIndex] = [service.roomCode, service.mealCode].filter(Boolean).join(' ');
-        crsObject['z' + lineIndex] = service.roomQuantity;
-        crsObject['e' + lineIndex] = service.roomOccupancy;
-        crsObject['s' + lineIndex] = dateFrom.isValid() ? dateFrom.format(CONFIG.crs.dateFormat) : service.dateFrom;
-        crsObject['i' + lineIndex] = dateTo.isValid() ? dateTo.format(CONFIG.crs.dateFormat) : service.dateTo;
-        crsObject['d' + lineIndex] = '1' + ((service.roomOccupancy > 1) ? '-' + service.roomOccupancy : '');
+        crsObject['n' + lineNumber] = CONFIG.crs.serviceTypes.hotel;
+        crsObject['l' + lineNumber] = service.destination;
+        crsObject['u' + lineNumber] = [service.roomCode, service.mealCode].filter(Boolean).join(' ');
+        crsObject['z' + lineNumber] = service.roomQuantity;
+        crsObject['e' + lineNumber] = service.roomOccupancy;
+        crsObject['s' + lineNumber] = dateFrom.isValid() ? dateFrom.format(CONFIG.crs.dateFormat) : service.dateFrom;
+        crsObject['i' + lineNumber] = dateTo.isValid() ? dateTo.format(CONFIG.crs.dateFormat) : service.dateTo;
+        crsObject['d' + lineNumber] = '1' + ((service.roomOccupancy > 1) ? '-' + service.roomOccupancy : '');
 
         emptyRelatedTravellers();
 
@@ -313,51 +314,35 @@ class BewotecExpertAdapter {
      * @private
      * @param service object
      * @param crsObject object
-     * @param lineNumber number
+     * @param lineIndex number
      */
-    assignChildrenData(service, crsObject, lineNumber) {
+    assignChildrenData(service, crsObject, lineIndex) {
         if (!service.children || !service.children.length) {
             return;
         }
 
-        const lineIndex = CONFIG.crs.lineNumberMap[lineNumber];
-
-        const getNextEmptyTravellerIndex = () => {
-            let lineNumber = 0;
-
-            do {
-                let lineIndex = CONFIG.crs.lineNumberMap[lineNumber];
-
-                let title = crsObject['ta' + lineIndex];
-                let name = crsObject['tn' + lineIndex];
-                let reduction = crsObject['te' + lineIndex];
-
-                if (!title && !name && !reduction) {
-                    return lineNumber;
-                }
-            } while (++lineNumber)
-        };
+        const lineNumber = CONFIG.crs.lineNumberMap[lineIndex];
 
         const addTravellerAllocation = () => {
-            let lastTravellerLineNumber = Math.max(service.roomOccupancy, travellerLineNumber);
-            let firstTravellerLineNumber = 1 + lastTravellerLineNumber - service.roomOccupancy;
+            let lastTravellerAllocationNumber = Math.max(service.roomOccupancy, travellerAllocationNumber);
+            let firstTravellerAllocationNumber = 1 + lastTravellerAllocationNumber - service.roomOccupancy;
 
-            crsObject['d' + lineIndex] = firstTravellerLineNumber === lastTravellerLineNumber
-                ? firstTravellerLineNumber
-                : firstTravellerLineNumber + '-' + lastTravellerLineNumber;
+            crsObject['d' + lineNumber] = firstTravellerAllocationNumber === lastTravellerAllocationNumber
+                ? firstTravellerAllocationNumber
+                : firstTravellerAllocationNumber + '-' + lastTravellerAllocationNumber;
         };
 
-        let travellerLineNumber = void 0;
+        let travellerAllocationNumber = void 0;
 
         service.children.forEach((child) => {
-            let travellerIndex = getNextEmptyTravellerIndex();
-            let travellerLineIndex = CONFIG.crs.lineNumberMap[travellerIndex];
+            let travellerIndex = this.getNextEmptyTravellerLineIndex(crsObject);
+            let travellerNumber = CONFIG.crs.lineNumberMap[travellerIndex];
 
-            travellerLineNumber = travellerIndex + 1;
+            travellerAllocationNumber = travellerIndex + 1;
 
-            crsObject['ta' + travellerLineIndex] = CONFIG.crs.salutations.kid;
-            crsObject['tn' + travellerLineIndex] = child.name;
-            crsObject['te' + travellerLineIndex] = child.age;
+            crsObject['ta' + travellerNumber] = CONFIG.crs.salutations.kid;
+            crsObject['tn' + travellerNumber] = child.name;
+            crsObject['te' + travellerNumber] = child.age;
         });
 
         addTravellerAllocation();
@@ -367,40 +352,52 @@ class BewotecExpertAdapter {
      * @private
      * @param service object
      * @param crsObject object
-     * @param lineNumber number
+     * @param lineIndex number
      */
-    assignRoundTripServiceFromAdapterObjectToCrsObject(service, crsObject, lineNumber) {
+    assignRoundTripServiceFromAdapterObjectToCrsObject(service, crsObject, lineIndex) {
         let startDate = moment(service.startDate, this.options.useDateFormat);
         let endDate = moment(service.endDate, this.options.useDateFormat);
 
-        crsObject['n' + CONFIG.crs.lineNumberMap[lineNumber]] = CONFIG.crs.serviceTypes.roundTrip;
-        crsObject['l' + CONFIG.crs.lineNumberMap[lineNumber]] = service.bookingId;
-        crsObject['u' + CONFIG.crs.lineNumberMap[lineNumber]] = service.destination;
-        crsObject['z' + CONFIG.crs.lineNumberMap[lineNumber]] = service.numberOfPassengers;
-        crsObject['s' + CONFIG.crs.lineNumberMap[lineNumber]] = startDate.isValid() ? startDate.format(CONFIG.crs.dateFormat) : service.startDate;
-        crsObject['i' + CONFIG.crs.lineNumberMap[lineNumber]] = endDate.isValid() ? endDate.format(CONFIG.crs.dateFormat) : service.endDate;
-        crsObject['ta' + CONFIG.crs.lineNumberMap[lineNumber]] = service.salutation;
-        crsObject['tn' + CONFIG.crs.lineNumberMap[lineNumber]] = service.name;
-        crsObject['te' + CONFIG.crs.lineNumberMap[lineNumber]] = service.birthday || service.age;
+        crsObject['n' + CONFIG.crs.lineNumberMap[lineIndex]] = CONFIG.crs.serviceTypes.roundTrip;
+        crsObject['l' + CONFIG.crs.lineNumberMap[lineIndex]] = service.bookingId;
+        crsObject['u' + CONFIG.crs.lineNumberMap[lineIndex]] = service.destination;
+        crsObject['z' + CONFIG.crs.lineNumberMap[lineIndex]] = service.numberOfPassengers;
+        crsObject['s' + CONFIG.crs.lineNumberMap[lineIndex]] = startDate.isValid() ? startDate.format(CONFIG.crs.dateFormat) : service.startDate;
+        crsObject['i' + CONFIG.crs.lineNumberMap[lineIndex]] = endDate.isValid() ? endDate.format(CONFIG.crs.dateFormat) : service.endDate;
     }
 
     /**
      * @private
      * @param service object
      * @param crsObject object
-     * @param lineNumber number
+     * @param lineIndex number
      */
-    assignCamperServiceFromAdapterObjectToCrsObject(service, crsObject, lineNumber) {
+    assignRoundTripTravellers(service, crsObject, lineIndex) {
+        let travellerLineIndex = this.getNextEmptyTravellerLineIndex(crsObject);
+
+        crsObject['d' + CONFIG.crs.lineNumberMap[lineIndex]] = travellerLineIndex + 1;
+        crsObject['ta' + CONFIG.crs.lineNumberMap[travellerLineIndex]] = service.salutation;
+        crsObject['tn' + CONFIG.crs.lineNumberMap[travellerLineIndex]] = service.name;
+        crsObject['te' + CONFIG.crs.lineNumberMap[travellerLineIndex]] = service.birthday || service.age;
+    }
+
+    /**
+     * @private
+     * @param service object
+     * @param crsObject object
+     * @param lineIndex number
+     */
+    assignCamperServiceFromAdapterObjectToCrsObject(service, crsObject, lineIndex) {
         let pickUpDate = moment(service.pickUpDate, this.options.useDateFormat);
         let dropOffDate = (service.dropOffDate)
             ? moment(service.dropOffDate, this.options.useDateFormat)
             : moment(service.pickUpDate, this.options.useDateFormat).add(service.duration, 'days');
         let pickUpTime = moment(service.pickUpTime, this.options.useTimeFormat);
 
-        crsObject['n' + CONFIG.crs.lineNumberMap[lineNumber]] = CONFIG.crs.serviceTypes.camper;
+        crsObject['n' + CONFIG.crs.lineNumberMap[lineIndex]] = CONFIG.crs.serviceTypes.camper;
 
         // PRT02FS/LIS1-LIS2
-        crsObject['l' + CONFIG.crs.lineNumberMap[lineNumber]] = [
+        crsObject['l' + CONFIG.crs.lineNumberMap[lineIndex]] = [
             service.renterCode,
             service.camperCode,
             '/',
@@ -409,12 +406,12 @@ class BewotecExpertAdapter {
             service.dropOffLocation,
         ].join('');
 
-        crsObject['s' + CONFIG.crs.lineNumberMap[lineNumber]] = pickUpDate.isValid() ? pickUpDate.format(CONFIG.crs.dateFormat) : service.pickUpDate;
-        crsObject['i' + CONFIG.crs.lineNumberMap[lineNumber]] = dropOffDate.isValid() ? dropOffDate.format(CONFIG.crs.dateFormat) : service.dropOffDate;
-        crsObject['u' + CONFIG.crs.lineNumberMap[lineNumber]] = pickUpTime.isValid() ? pickUpTime.format(CONFIG.crs.timeFormat) : service.pickUpTime;
-        crsObject['c' + CONFIG.crs.lineNumberMap[lineNumber]] = service.milesIncludedPerDay;
-        crsObject['e' + CONFIG.crs.lineNumberMap[lineNumber]] = service.milesPackagesIncluded;
-        crsObject['d' + CONFIG.crs.lineNumberMap[lineNumber]] = '1' + ((crsObject.NoOfPersons > 1) ? '-' + crsObject.NoOfPersons : '');
+        crsObject['s' + CONFIG.crs.lineNumberMap[lineIndex]] = pickUpDate.isValid() ? pickUpDate.format(CONFIG.crs.dateFormat) : service.pickUpDate;
+        crsObject['i' + CONFIG.crs.lineNumberMap[lineIndex]] = dropOffDate.isValid() ? dropOffDate.format(CONFIG.crs.dateFormat) : service.dropOffDate;
+        crsObject['u' + CONFIG.crs.lineNumberMap[lineIndex]] = pickUpTime.isValid() ? pickUpTime.format(CONFIG.crs.timeFormat) : service.pickUpTime;
+        crsObject['c' + CONFIG.crs.lineNumberMap[lineIndex]] = service.milesIncludedPerDay;
+        crsObject['e' + CONFIG.crs.lineNumberMap[lineIndex]] = service.milesPackagesIncluded;
+        crsObject['d' + CONFIG.crs.lineNumberMap[lineIndex]] = '1' + ((crsObject.NoOfPersons > 1) ? '-' + crsObject.NoOfPersons : '');
     }
 
     /**
@@ -429,14 +426,14 @@ class BewotecExpertAdapter {
             : moment(service.pickUpDate, this.options.useDateFormat).add(service.duration, 'days');
 
         (service.extras || []).forEach((extra) => {
-            let lineNumber = this.getNextEmptyLineNumber(crsObject);
+            let lineIndex = this.getNextEmptyServiceLineIndex(crsObject);
             let extraParts = extra.split('.');
 
-            crsObject['n' + CONFIG.crs.lineNumberMap[lineNumber]] = CONFIG.crs.serviceTypes.camperExtra;
-            crsObject['l' + CONFIG.crs.lineNumberMap[lineNumber]] = extraParts[0];
-            crsObject['s' + CONFIG.crs.lineNumberMap[lineNumber]] = pickUpDate.isValid() ? pickUpDate.format(CONFIG.crs.dateFormat) : service.pickUpDate;
-            crsObject['i' + CONFIG.crs.lineNumberMap[lineNumber]] = dropOffDate.isValid() ? dropOffDate.format(CONFIG.crs.dateFormat) : service.dropOffDate;
-            crsObject['d' + CONFIG.crs.lineNumberMap[lineNumber]] = '1' + ((extraParts[1] > 1) ? '-' + extraParts[1] : '');
+            crsObject['n' + CONFIG.crs.lineNumberMap[lineIndex]] = CONFIG.crs.serviceTypes.camperExtra;
+            crsObject['l' + CONFIG.crs.lineNumberMap[lineIndex]] = extraParts[0];
+            crsObject['s' + CONFIG.crs.lineNumberMap[lineIndex]] = pickUpDate.isValid() ? pickUpDate.format(CONFIG.crs.dateFormat) : service.pickUpDate;
+            crsObject['i' + CONFIG.crs.lineNumberMap[lineIndex]] = dropOffDate.isValid() ? dropOffDate.format(CONFIG.crs.dateFormat) : service.dropOffDate;
+            crsObject['d' + CONFIG.crs.lineNumberMap[lineIndex]] = '1' + ((extraParts[1] > 1) ? '-' + extraParts[1] : '');
         });
     }
 
@@ -446,24 +443,24 @@ class BewotecExpertAdapter {
      * @param service object
      * @returns {number}
      */
-    getMarkedLineNumberForService(crsObject, service) {
-        let lineNumber = 0;
-        let markedLineNumber = void 0;
+    getMarkedLineIndexForService(crsObject, service) {
+        let lineIndex = 0;
+        let markedLineIndex = void 0;
 
         do {
-            let lineIndex = CONFIG.crs.lineNumberMap[lineNumber];
-            let kindOfService = crsObject['n' + lineIndex];
+            let lineNumber = CONFIG.crs.lineNumberMap[lineIndex];
+            let kindOfService = crsObject['n' + lineNumber];
 
             if (!kindOfService) {
-                return markedLineNumber;
+                return markedLineIndex;
             }
 
             if (kindOfService !== CONFIG.crs.serviceTypes[service.type]) continue;
 
-            if (crsObject['m' + lineIndex]) {
-                return lineNumber;
+            if (crsObject['m' + lineNumber]) {
+                return lineIndex;
             }
-        } while (++lineNumber);
+        } while (++lineIndex);
     }
 
     /**
@@ -471,19 +468,40 @@ class BewotecExpertAdapter {
      * @param crsObject object
      * @returns {number}
      */
-    getNextEmptyLineNumber(crsObject) {
-        let lineNumber = 0;
+    getNextEmptyServiceLineIndex(crsObject) {
+        let index = 0;
 
         do {
-            let markerField = crsObject['m' + CONFIG.crs.lineNumberMap[lineNumber]];
-            let serviceType = crsObject['n' + CONFIG.crs.lineNumberMap[lineNumber]];
-            let serviceCode = crsObject['l' + CONFIG.crs.lineNumberMap[lineNumber]];
+            let markerField = crsObject['m' + CONFIG.crs.lineNumberMap[index]];
+            let serviceType = crsObject['n' + CONFIG.crs.lineNumberMap[index]];
+            let serviceCode = crsObject['l' + CONFIG.crs.lineNumberMap[index]];
 
             if (!markerField && !serviceType && !serviceCode) {
-                return lineNumber;
+                return index;
             }
-        } while (++lineNumber);
+        } while (++index);
     }
+
+    /**
+     * @private
+     * @param crsObject object
+     * @returns {number}
+     */
+    getNextEmptyTravellerLineIndex(crsObject) {
+        let index = 0;
+
+        do {
+            let lineNumber = CONFIG.crs.lineNumberMap[index];
+
+            let title = crsObject['ta' + lineNumber];
+            let name = crsObject['tn' + lineNumber];
+            let reduction = crsObject['te' + lineNumber];
+
+            if (!title && !name && !reduction) {
+                return index;
+            }
+        } while (++index)
+    };
 }
 
 export default BewotecExpertAdapter;
