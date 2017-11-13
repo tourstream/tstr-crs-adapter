@@ -32061,7 +32061,7 @@ var TomaAdapter = function () {
             xmlTom.NoOfPersons = dataObject.numberOfTravellers || xmlTom.NoOfPersons && xmlTom.NoOfPersons[CONFIG.parserOptions.textNodeName] || CONFIG.crs.defaultValues.numberOfTravellers;
 
             (dataObject.services || []).forEach(function (service) {
-                var lineNumber = _this2.getMarkedLineNumberForService(xmlTom, service) || _this2.getNextEmptyLineNumber(xmlTom);
+                var lineNumber = _this2.getMarkedLineNumberForService(xmlTom, service) || _this2.getNextEmptyServiceLineNumber(xmlTom);
 
                 switch (service.type) {
                     case _UbpCrsAdapter.SERVICE_TYPES.car:
@@ -32087,6 +32087,7 @@ var TomaAdapter = function () {
                     case _UbpCrsAdapter.SERVICE_TYPES.roundTrip:
                         {
                             _this2.assignRoundTripServiceFromAdapterObjectToXmlObject(service, xmlTom, lineNumber);
+                            _this2.assignRoundTripTravellers(service, xmlTom, lineNumber);
                             break;
                         }
                     default:
@@ -32183,7 +32184,7 @@ var TomaAdapter = function () {
             var hotelName = service.pickUpHotelName || service.dropOffHotelName;
 
             if (hotelName) {
-                var lineNumber = this.getNextEmptyLineNumber(xml);
+                var lineNumber = this.getNextEmptyServiceLineNumber(xml);
 
                 xml['KindOfService.' + lineNumber] = CONFIG.crs.serviceTypes.carExtra;
                 xml['ServiceCode.' + lineNumber] = hotelName;
@@ -32304,9 +32305,24 @@ var TomaAdapter = function () {
             xml['Count.' + lineNumber] = service.numberOfPassengers;
             xml['From.' + lineNumber] = startDate.isValid() ? startDate.format(CONFIG.crs.dateFormat) : service.startDate;
             xml['To.' + lineNumber] = endDate.isValid() ? endDate.format(CONFIG.crs.dateFormat) : service.endDate;
-            xml['Title.' + lineNumber] = service.salutation;
-            xml['Name.' + lineNumber] = service.name;
-            xml['Reduction.' + lineNumber] = service.birthday || service.age;
+        }
+
+        /**
+         * @private
+         * @param service object
+         * @param xml object
+         * @param lineNumber number
+         */
+
+    }, {
+        key: 'assignRoundTripTravellers',
+        value: function assignRoundTripTravellers(service, xml, lineNumber) {
+            var travellerLineNumber = this.getNextEmptyTravellerLineNumber(xml);
+
+            xml['TravAssociation.' + lineNumber] = travellerLineNumber;
+            xml['Title.' + travellerLineNumber] = service.salutation;
+            xml['Name.' + travellerLineNumber] = service.name;
+            xml['Reduction.' + travellerLineNumber] = service.birthday || service.age;
         }
 
         /**
@@ -32351,7 +32367,7 @@ var TomaAdapter = function () {
             var dropOffDate = service.dropOffDate ? (0, _moment2.default)(service.dropOffDate, this.options.useDateFormat) : (0, _moment2.default)(service.pickUpDate, this.options.useDateFormat).add(service.duration, 'days');
 
             (service.extras || []).forEach(function (extra) {
-                var lineNumber = _this3.getNextEmptyLineNumber(xml);
+                var lineNumber = _this3.getNextEmptyServiceLineNumber(xml);
                 var extraParts = extra.split('.');
 
                 xml['KindOfService.' + lineNumber] = CONFIG.crs.serviceTypes.camperExtra;
@@ -32369,8 +32385,8 @@ var TomaAdapter = function () {
          */
 
     }, {
-        key: 'getNextEmptyLineNumber',
-        value: function getNextEmptyLineNumber(xml) {
+        key: 'getNextEmptyServiceLineNumber',
+        value: function getNextEmptyServiceLineNumber(xml) {
             var lineNumber = 1;
 
             do {
@@ -32379,6 +32395,21 @@ var TomaAdapter = function () {
                 var serviceCode = xml['ServiceCode.' + lineNumber];
 
                 if (!markerField && !xmlServiceType && !serviceCode) {
+                    return lineNumber;
+                }
+            } while (lineNumber++);
+        }
+    }, {
+        key: 'getNextEmptyTravellerLineNumber',
+        value: function getNextEmptyTravellerLineNumber(xml) {
+            var lineNumber = 1;
+
+            do {
+                var title = xml['Title.' + lineNumber];
+                var name = xml['Name.' + lineNumber];
+                var reduction = xml['Reduction.' + lineNumber];
+
+                if (!title && !name && !reduction) {
                     return lineNumber;
                 }
             } while (lineNumber++);
@@ -42599,7 +42630,7 @@ function config (name) {
 
 module.exports = {
 	"name": "ubp-crs-adapter",
-	"version": "0.0.15",
+	"version": "0.0.16",
 	"description": "This library provides connections to different travel CRSs. It also let you read and write data from/to them.",
 	"main": "dist/ubpCrsAdapter.js",
 	"directories": {
