@@ -275,10 +275,10 @@ class MerlinAdapter {
         };
 
         let pickUpDate = moment(service.pickUpDate, this.options.useDateFormat);
-        let pickUpTime = moment(service.pickUpTime, this.options.useTimeFormat);
         let dropOffDate = (service.dropOffDate)
             ? moment(service.dropOffDate, this.options.useDateFormat)
             : moment(service.pickUpDate, this.options.useDateFormat).add(service.duration, 'days');
+        let pickUpTime = moment(service.pickUpTime, this.options.useTimeFormat);
 
         xmlService.KindOfService = CONFIG.crs.serviceTypes.car;
 
@@ -323,13 +323,13 @@ class MerlinAdapter {
             return hotelData.filter(Boolean).join(';');
         };
 
-        let pickUpDate = moment(service.pickUpDate, this.options.useDateFormat);
-        let dropOffDate = (service.dropOffDate)
-            ? moment(service.dropOffDate, this.options.useDateFormat)
-            : moment(service.pickUpDate, this.options.useDateFormat).add(service.duration, 'days');
         let hotelName = service.pickUpHotelName || service.dropOffHotelName;
 
         if (hotelName) {
+            let pickUpDate = moment(service.pickUpDate, this.options.useDateFormat);
+            let dropOffDate = (service.dropOffDate)
+                ? moment(service.dropOffDate, this.options.useDateFormat)
+                : moment(service.pickUpDate, this.options.useDateFormat).add(service.duration, 'days');
             let emptyService = this.createEmptyService(xml.ServiceBlock.ServiceRow);
 
             xml.ServiceBlock.ServiceRow.push(emptyService);

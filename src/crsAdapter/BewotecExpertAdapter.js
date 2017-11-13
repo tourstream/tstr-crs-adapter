@@ -154,6 +154,7 @@ class BewotecExpertAdapter {
             switch (service.type) {
                 case SERVICE_TYPES.car: {
                     this.assignCarServiceFromAdapterObjectToCrsObject(service, crsObject, lineNumber);
+                    this.assignHotelData(service, crsObject);
                     break;
                 }
                 case SERVICE_TYPES.hotel: {
@@ -190,26 +191,43 @@ class BewotecExpertAdapter {
      * @param lineNumber int
      */
     assignCarServiceFromAdapterObjectToCrsObject(service, crsObject, lineNumber) {
-        const calculateDropOffDate = (service) => {
-            if (service.dropOffDate) {
-                let dropOffDate = moment(service.dropOffDate, this.options.useDateFormat);
-
-                return dropOffDate.isValid() ? dropOffDate.format(CONFIG.crs.dateFormat) : service.dropOffDate;
-            }
-
-            let pickUpDate = moment(service.pickUpDate, this.options.useDateFormat);
-
-            return pickUpDate.isValid()
-                ? pickUpDate.add(service.duration, 'days').format(CONFIG.crs.dateFormat)
-                : service.pickUpDate;
-        };
-
         const reduceExtrasList = (extras) => {
             return (extras || []).join(',')
                 .replace(/childCareSeat0/g, 'BS')
                 .replace(/childCareSeat((\d){1,2})/g, 'CS$1YRS');
         };
 
+        let pickUpDate = moment(service.pickUpDate, this.options.useDateFormat);
+        let pickUpTime = moment(service.pickUpTime, this.options.useTimeFormat);
+        let dropOffDate = (service.dropOffDate)
+            ? moment(service.dropOffDate, this.options.useDateFormat)
+            : moment(service.pickUpDate, this.options.useDateFormat).add(service.duration, 'days');
+
+        crsObject['n' + CONFIG.crs.lineNumberMap[lineNumber]] = CONFIG.crs.serviceTypes.car;
+
+        // USA96A4/MIA1-TPA
+        crsObject['l' + CONFIG.crs.lineNumberMap[lineNumber]] = [
+            service.rentalCode,
+            service.vehicleTypeCode,
+            '/',
+            service.pickUpLocation,
+            '-',
+            service.dropOffLocation,
+        ].join('');
+
+        crsObject['s' + CONFIG.crs.lineNumberMap[lineNumber]] = pickUpDate.isValid() ? pickUpDate.format(CONFIG.crs.dateFormat) : service.pickUpDate;
+        crsObject['i' + CONFIG.crs.lineNumberMap[lineNumber]] = dropOffDate.isValid() ? dropOffDate.format(CONFIG.crs.dateFormat) : service.dropOffDate;
+        crsObject['u' + CONFIG.crs.lineNumberMap[lineNumber]] = pickUpTime.isValid() ? pickUpTime.format(CONFIG.crs.timeFormat) : service.pickUpTime;
+
+        crsObject.rem = [crsObject.rem, reduceExtrasList(service.extras)].filter(Boolean).join(';') || void 0;
+    };
+
+    /**
+     * @private
+     * @param service object
+     * @param crsObject object
+     */
+    assignHotelData(service, crsObject) {
         const reduceHotelDataToRemarkString = (service) => {
             let hotelData = [];
 
@@ -228,39 +246,23 @@ class BewotecExpertAdapter {
             return hotelData.filter(Boolean).join(',');
         };
 
-        let pickUpDate = moment(service.pickUpDate, this.options.useDateFormat);
-        let pickUpTime = moment(service.pickUpTime, this.options.useTimeFormat);
-        let calculatedDropOffDate = calculateDropOffDate(service);
-
-        crsObject['n' + CONFIG.crs.lineNumberMap[lineNumber]] = CONFIG.crs.serviceTypes.car;
-
-        // USA96A4/MIA1-TPA
-        crsObject['l' + CONFIG.crs.lineNumberMap[lineNumber]] = [
-            service.rentalCode,
-            service.vehicleTypeCode,
-            '/',
-            service.pickUpLocation,
-            '-',
-            service.dropOffLocation,
-        ].join('');
-
-        crsObject['s' + CONFIG.crs.lineNumberMap[lineNumber]] = pickUpDate.isValid() ? pickUpDate.format(CONFIG.crs.dateFormat) : service.pickUpDate;
-        crsObject['i' + CONFIG.crs.lineNumberMap[lineNumber]] = calculatedDropOffDate;
-        crsObject['u' + CONFIG.crs.lineNumberMap[lineNumber]] = pickUpTime.isValid() ? pickUpTime.format(CONFIG.crs.timeFormat) : service.pickUpTime;
-
         let hotelName = service.pickUpHotelName || service.dropOffHotelName;
 
         if (hotelName) {
-            lineNumber = this.getNextEmptyLineNumber(crsObject);
+            let pickUpDate = moment(service.pickUpDate, this.options.useDateFormat);
+            let dropOffDate = (service.dropOffDate)
+                ? moment(service.dropOffDate, this.options.useDateFormat)
+                : moment(service.pickUpDate, this.options.useDateFormat).add(service.duration, 'days');
+            let lineNumber = this.getNextEmptyLineNumber(crsObject);
 
             crsObject['n' + CONFIG.crs.lineNumberMap[lineNumber]] = CONFIG.crs.serviceTypes.carExtras;
             crsObject['l' + CONFIG.crs.lineNumberMap[lineNumber]] = hotelName;
             crsObject['s' + CONFIG.crs.lineNumberMap[lineNumber]] = pickUpDate.isValid() ? pickUpDate.format(CONFIG.crs.dateFormat) : service.pickUpDate;
-            crsObject['i' + CONFIG.crs.lineNumberMap[lineNumber]] = calculatedDropOffDate;
+            crsObject['i' + CONFIG.crs.lineNumberMap[lineNumber]] = dropOffDate.isValid() ? dropOffDate.format(CONFIG.crs.dateFormat) : service.dropOffDate;
         }
 
-        crsObject.rem = [crsObject.rem, reduceExtrasList(service.extras), reduceHotelDataToRemarkString(service)].filter(Boolean).join(';') || void 0;
-    };
+        crsObject.rem = [crsObject.rem, reduceHotelDataToRemarkString(service)].filter(Boolean).join(';') || void 0;
+    }
 
     /**
      * @private

@@ -619,13 +619,13 @@ class TomaSPCAdapter {
             return hotelData.filter(Boolean).join(';');
         };
 
-        let pickUpDate = moment(adapterService.pickUpDate, this.options.useDateFormat);
-        let dropOffDate = (adapterService.dropOffDate)
-            ? moment(adapterService.dropOffDate, this.options.useDateFormat)
-            : moment(adapterService.pickUpDate, this.options.useDateFormat).add(adapterService.duration, 'days');
         let hotelName = adapterService.pickUpHotelName || adapterService.dropOffHotelName;
 
         if (hotelName) {
+            let pickUpDate = moment(adapterService.pickUpDate, this.options.useDateFormat);
+            let dropOffDate = (adapterService.dropOffDate)
+                ? moment(adapterService.dropOffDate, this.options.useDateFormat)
+                : moment(adapterService.pickUpDate, this.options.useDateFormat).add(adapterService.duration, 'days');
             let emptyService = this.createAndAssignEmptyService(crsObject);
 
             emptyService.serviceType = CONFIG.crs.serviceTypes.carExtra;
