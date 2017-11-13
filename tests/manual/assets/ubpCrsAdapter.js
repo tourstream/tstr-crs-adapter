@@ -29870,6 +29870,7 @@ var BewotecExpertAdapter = function () {
                     case _UbpCrsAdapter.SERVICE_TYPES.car:
                         {
                             _this3.assignCarServiceFromAdapterObjectToCrsObject(service, crsObject, lineNumber);
+                            _this3.assignHotelData(service, crsObject);
                             break;
                         }
                     case _UbpCrsAdapter.SERVICE_TYPES.hotel:
@@ -29913,24 +29914,35 @@ var BewotecExpertAdapter = function () {
          * @param lineNumber int
          */
         value: function assignCarServiceFromAdapterObjectToCrsObject(service, crsObject, lineNumber) {
-            var _this4 = this;
-
-            var calculateDropOffDate = function calculateDropOffDate(service) {
-                if (service.dropOffDate) {
-                    var dropOffDate = (0, _moment2.default)(service.dropOffDate, _this4.options.useDateFormat);
-
-                    return dropOffDate.isValid() ? dropOffDate.format(CONFIG.crs.dateFormat) : service.dropOffDate;
-                }
-
-                var pickUpDate = (0, _moment2.default)(service.pickUpDate, _this4.options.useDateFormat);
-
-                return pickUpDate.isValid() ? pickUpDate.add(service.duration, 'days').format(CONFIG.crs.dateFormat) : service.pickUpDate;
-            };
-
             var reduceExtrasList = function reduceExtrasList(extras) {
                 return (extras || []).join(',').replace(/childCareSeat0/g, 'BS').replace(/childCareSeat((\d){1,2})/g, 'CS$1YRS');
             };
 
+            var pickUpDate = (0, _moment2.default)(service.pickUpDate, this.options.useDateFormat);
+            var pickUpTime = (0, _moment2.default)(service.pickUpTime, this.options.useTimeFormat);
+            var dropOffDate = service.dropOffDate ? (0, _moment2.default)(service.dropOffDate, this.options.useDateFormat) : (0, _moment2.default)(service.pickUpDate, this.options.useDateFormat).add(service.duration, 'days');
+
+            crsObject['n' + CONFIG.crs.lineNumberMap[lineNumber]] = CONFIG.crs.serviceTypes.car;
+
+            // USA96A4/MIA1-TPA
+            crsObject['l' + CONFIG.crs.lineNumberMap[lineNumber]] = [service.rentalCode, service.vehicleTypeCode, '/', service.pickUpLocation, '-', service.dropOffLocation].join('');
+
+            crsObject['s' + CONFIG.crs.lineNumberMap[lineNumber]] = pickUpDate.isValid() ? pickUpDate.format(CONFIG.crs.dateFormat) : service.pickUpDate;
+            crsObject['i' + CONFIG.crs.lineNumberMap[lineNumber]] = dropOffDate.isValid() ? dropOffDate.format(CONFIG.crs.dateFormat) : service.dropOffDate;
+            crsObject['u' + CONFIG.crs.lineNumberMap[lineNumber]] = pickUpTime.isValid() ? pickUpTime.format(CONFIG.crs.timeFormat) : service.pickUpTime;
+
+            crsObject.rem = [crsObject.rem, reduceExtrasList(service.extras)].filter(Boolean).join(';') || void 0;
+        }
+    }, {
+        key: 'assignHotelData',
+
+
+        /**
+         * @private
+         * @param service object
+         * @param crsObject object
+         */
+        value: function assignHotelData(service, crsObject) {
             var reduceHotelDataToRemarkString = function reduceHotelDataToRemarkString(service) {
                 var hotelData = [];
 
@@ -29949,35 +29961,21 @@ var BewotecExpertAdapter = function () {
                 return hotelData.filter(Boolean).join(',');
             };
 
-            var pickUpDate = (0, _moment2.default)(service.pickUpDate, this.options.useDateFormat);
-            var pickUpTime = (0, _moment2.default)(service.pickUpTime, this.options.useTimeFormat);
-            var calculatedDropOffDate = calculateDropOffDate(service);
-
-            crsObject['n' + CONFIG.crs.lineNumberMap[lineNumber]] = CONFIG.crs.serviceTypes.car;
-
-            // USA96A4/MIA1-TPA
-            crsObject['l' + CONFIG.crs.lineNumberMap[lineNumber]] = [service.rentalCode, service.vehicleTypeCode, '/', service.pickUpLocation, '-', service.dropOffLocation].join('');
-
-            crsObject['s' + CONFIG.crs.lineNumberMap[lineNumber]] = pickUpDate.isValid() ? pickUpDate.format(CONFIG.crs.dateFormat) : service.pickUpDate;
-            crsObject['i' + CONFIG.crs.lineNumberMap[lineNumber]] = calculatedDropOffDate;
-            crsObject['u' + CONFIG.crs.lineNumberMap[lineNumber]] = pickUpTime.isValid() ? pickUpTime.format(CONFIG.crs.timeFormat) : service.pickUpTime;
-
             var hotelName = service.pickUpHotelName || service.dropOffHotelName;
 
             if (hotelName) {
-                lineNumber = this.getNextEmptyLineNumber(crsObject);
+                var pickUpDate = (0, _moment2.default)(service.pickUpDate, this.options.useDateFormat);
+                var dropOffDate = service.dropOffDate ? (0, _moment2.default)(service.dropOffDate, this.options.useDateFormat) : (0, _moment2.default)(service.pickUpDate, this.options.useDateFormat).add(service.duration, 'days');
+                var lineNumber = this.getNextEmptyLineNumber(crsObject);
 
                 crsObject['n' + CONFIG.crs.lineNumberMap[lineNumber]] = CONFIG.crs.serviceTypes.carExtras;
                 crsObject['l' + CONFIG.crs.lineNumberMap[lineNumber]] = hotelName;
                 crsObject['s' + CONFIG.crs.lineNumberMap[lineNumber]] = pickUpDate.isValid() ? pickUpDate.format(CONFIG.crs.dateFormat) : service.pickUpDate;
-                crsObject['i' + CONFIG.crs.lineNumberMap[lineNumber]] = calculatedDropOffDate;
+                crsObject['i' + CONFIG.crs.lineNumberMap[lineNumber]] = dropOffDate.isValid() ? dropOffDate.format(CONFIG.crs.dateFormat) : service.dropOffDate;
             }
 
-            crsObject.rem = [crsObject.rem, reduceExtrasList(service.extras), reduceHotelDataToRemarkString(service)].filter(Boolean).join(';') || void 0;
+            crsObject.rem = [crsObject.rem, reduceHotelDataToRemarkString(service)].filter(Boolean).join(';') || void 0;
         }
-    }, {
-        key: 'assignHotelServiceFromAdapterObjectToCrsObject',
-
 
         /**
          * @private
@@ -29986,6 +29984,9 @@ var BewotecExpertAdapter = function () {
          * @param crsObject object
          * @param lineNumber int
          */
+
+    }, {
+        key: 'assignHotelServiceFromAdapterObjectToCrsObject',
         value: function assignHotelServiceFromAdapterObjectToCrsObject(service, crsObject, lineNumber) {
             var emptyRelatedTravellers = function emptyRelatedTravellers() {
                 var startLineNumber = parseInt(travellerAssociation.substr(0, 1), 10);
@@ -30139,13 +30140,13 @@ var BewotecExpertAdapter = function () {
     }, {
         key: 'assignCamperExtras',
         value: function assignCamperExtras(service, crsObject) {
-            var _this5 = this;
+            var _this4 = this;
 
             var pickUpDate = (0, _moment2.default)(service.pickUpDate, this.options.useDateFormat);
             var dropOffDate = service.dropOffDate ? (0, _moment2.default)(service.dropOffDate, this.options.useDateFormat) : (0, _moment2.default)(service.pickUpDate, this.options.useDateFormat).add(service.duration, 'days');
 
             (service.extras || []).forEach(function (extra) {
-                var lineNumber = _this5.getNextEmptyLineNumber(crsObject);
+                var lineNumber = _this4.getNextEmptyLineNumber(crsObject);
                 var extraParts = extra.split('.');
 
                 crsObject['n' + CONFIG.crs.lineNumberMap[lineNumber]] = CONFIG.crs.serviceTypes.camperExtra;
@@ -30374,6 +30375,14 @@ var BmAdapter = function () {
             service.dropOffDate = dropOffDate.isValid() ? dropOffDate.format(CONFIG.dateFormat) : service.dropOffDate;
             service.pickUpTime = pickUpTime.isValid() ? pickUpTime.format(CONFIG.timeFormat) : service.pickUpTime;
             service.dropOffTime = dropOffTime.isValid() ? dropOffTime.format(CONFIG.timeFormat) : service.dropOffTime;
+
+            if (!service.durationInMinutes) {
+                var pickUpDateTime = (0, _moment2.default)(service.pickUpDate + service.pickUpTime, CONFIG.dateFormat + CONFIG.timeFormat);
+
+                var dropOffDateTime = (0, _moment2.default)(service.dropOffDate + service.dropOffTime, CONFIG.dateFormat + CONFIG.timeFormat);
+
+                service.durationInMinutes = pickUpDateTime.isValid() && dropOffDateTime.isValid() ? Math.ceil(dropOffDateTime.diff(pickUpDateTime, 'minutes', true)) : Math.ceil(dropOffDate.diff(pickUpDate, 'minutes', true));
+            }
         }
     }]);
 
@@ -31298,8 +31307,8 @@ var MerlinAdapter = function () {
             };
 
             var pickUpDate = (0, _moment2.default)(service.pickUpDate, this.options.useDateFormat);
-            var pickUpTime = (0, _moment2.default)(service.pickUpTime, this.options.useTimeFormat);
             var dropOffDate = service.dropOffDate ? (0, _moment2.default)(service.dropOffDate, this.options.useDateFormat) : (0, _moment2.default)(service.pickUpDate, this.options.useDateFormat).add(service.duration, 'days');
+            var pickUpTime = (0, _moment2.default)(service.pickUpTime, this.options.useTimeFormat);
 
             xmlService.KindOfService = CONFIG.crs.serviceTypes.car;
 
@@ -31340,11 +31349,11 @@ var MerlinAdapter = function () {
                 return hotelData.filter(Boolean).join(';');
             };
 
-            var pickUpDate = (0, _moment2.default)(service.pickUpDate, this.options.useDateFormat);
-            var dropOffDate = service.dropOffDate ? (0, _moment2.default)(service.dropOffDate, this.options.useDateFormat) : (0, _moment2.default)(service.pickUpDate, this.options.useDateFormat).add(service.duration, 'days');
             var hotelName = service.pickUpHotelName || service.dropOffHotelName;
 
             if (hotelName) {
+                var pickUpDate = (0, _moment2.default)(service.pickUpDate, this.options.useDateFormat);
+                var dropOffDate = service.dropOffDate ? (0, _moment2.default)(service.dropOffDate, this.options.useDateFormat) : (0, _moment2.default)(service.pickUpDate, this.options.useDateFormat).add(service.duration, 'days');
                 var emptyService = this.createEmptyService(xml.ServiceBlock.ServiceRow);
 
                 xml.ServiceBlock.ServiceRow.push(emptyService);
@@ -32179,11 +32188,11 @@ var TomaAdapter = function () {
                 return hotelData.filter(Boolean).join(';');
             };
 
-            var pickUpDate = (0, _moment2.default)(service.pickUpDate, this.options.useDateFormat);
-            var dropOffDate = service.dropOffDate ? (0, _moment2.default)(service.dropOffDate, this.options.useDateFormat) : (0, _moment2.default)(service.pickUpDate, this.options.useDateFormat).add(service.duration, 'days');
             var hotelName = service.pickUpHotelName || service.dropOffHotelName;
 
             if (hotelName) {
+                var pickUpDate = (0, _moment2.default)(service.pickUpDate, this.options.useDateFormat);
+                var dropOffDate = service.dropOffDate ? (0, _moment2.default)(service.dropOffDate, this.options.useDateFormat) : (0, _moment2.default)(service.pickUpDate, this.options.useDateFormat).add(service.duration, 'days');
                 var lineNumber = this.getNextEmptyServiceLineNumber(xml);
 
                 xml['KindOfService.' + lineNumber] = CONFIG.crs.serviceTypes.carExtra;
@@ -33143,11 +33152,11 @@ var TomaSPCAdapter = function () {
                 return hotelData.filter(Boolean).join(';');
             };
 
-            var pickUpDate = (0, _moment2.default)(adapterService.pickUpDate, this.options.useDateFormat);
-            var dropOffDate = adapterService.dropOffDate ? (0, _moment2.default)(adapterService.dropOffDate, this.options.useDateFormat) : (0, _moment2.default)(adapterService.pickUpDate, this.options.useDateFormat).add(adapterService.duration, 'days');
             var hotelName = adapterService.pickUpHotelName || adapterService.dropOffHotelName;
 
             if (hotelName) {
+                var pickUpDate = (0, _moment2.default)(adapterService.pickUpDate, this.options.useDateFormat);
+                var dropOffDate = adapterService.dropOffDate ? (0, _moment2.default)(adapterService.dropOffDate, this.options.useDateFormat) : (0, _moment2.default)(adapterService.pickUpDate, this.options.useDateFormat).add(adapterService.duration, 'days');
                 var emptyService = this.createAndAssignEmptyService(crsObject);
 
                 emptyService.serviceType = CONFIG.crs.serviceTypes.carExtra;
@@ -42630,7 +42639,7 @@ function config (name) {
 
 module.exports = {
 	"name": "ubp-crs-adapter",
-	"version": "0.0.16",
+	"version": "0.0.17",
 	"description": "This library provides connections to different travel CRSs. It also let you read and write data from/to them.",
 	"main": "dist/ubpCrsAdapter.js",
 	"directories": {
