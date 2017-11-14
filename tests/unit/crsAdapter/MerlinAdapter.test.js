@@ -444,6 +444,121 @@ describe('MerlinAdapter', () => {
             });
         });
 
+        it('setData() should convert round-trip data to crs object correct', (done) => {
+            let expectation = createXML(
+                '<NoOfPersons>1</NoOfPersons>' +
+                '<ServiceBlock>' +
+                '<ServiceRow positionNo="1">' +
+                '<KindOfService>R</KindOfService>' +
+                '<Service>NEZE2784NQXTHEN</Service>' +
+                '<Accommodation>YYZ</Accommodation>' +
+                '<NoOfServices>1</NoOfServices>' +
+                '<FromDate>051217</FromDate>' +
+                '<EndDate>161217</EndDate>' +
+                '<TravellerAllocation>1</TravellerAllocation>' +
+                '</ServiceRow>' +
+                '</ServiceBlock>' +
+                '<TravellerBlock>' +
+                '<PersonBlock>' +
+                '<PersonRow travellerNo="1">' +
+                '<Salutation>H</Salutation>' +
+                '<Name>DOE/JOHN</Name>' +
+                '<Age>040485</Age>' +
+                '</PersonRow>' +
+                '</PersonBlock>' +
+                '</TravellerBlock>'
+            );
+
+            let data = {
+                numberOfTravellers: 1,
+                services: [
+                    {
+                        type: 'roundTrip',
+                        marked: '',
+                        bookingId: 'NEZE2784NQXTHEN',
+                        destination: 'YYZ',
+                        numberOfPassengers: '1',
+                        startDate: '05122017',
+                        endDate: '16122017',
+                        salutation: 'H',
+                        name: 'DOE/JOHN',
+                        age: '32',
+                        birthday: '040485',
+                    },
+                ],
+            };
+
+            adapter.setData(data).then(() => {
+                expect(requestParameter).toEqual(expectation);
+                done();
+            }, () => {
+                done.fail('unexpected result');
+            });
+        });
+
+        it('setData() should convert camper data to crs object correct', (done) => {
+            let expectation = createXML(
+                '<NoOfPersons>2</NoOfPersons>' +
+                '<ServiceBlock>' +
+
+                '<ServiceRow positionNo="1">' +
+                '<KindOfService>WM</KindOfService>' +
+                '<Service>USA89A4/MIA1-TPA</Service>' +
+                '<Accommodation>1730</Accommodation>' +
+                '<NoOfServices>200</NoOfServices>' +
+                '<Occupancy>4</Occupancy>' +
+                '<FromDate>040518</FromDate>' +
+                '<EndDate>070518</EndDate>' +
+                '<TravellerAllocation>1-2</TravellerAllocation>' +
+                '</ServiceRow>' +
+
+                '<ServiceRow positionNo="2">' +
+                '<KindOfService>TA</KindOfService>' +
+                '<Service>extra</Service>' +
+                '<FromDate>040518</FromDate>' +
+                '<EndDate>070518</EndDate>' +
+                '<TravellerAllocation>1-3</TravellerAllocation>' +
+                '</ServiceRow>' +
+
+                '<ServiceRow positionNo="3">' +
+                '<KindOfService>TA</KindOfService>' +
+                '<Service>special</Service>' +
+                '<FromDate>040518</FromDate>' +
+                '<EndDate>070518</EndDate>' +
+                '<TravellerAllocation>1</TravellerAllocation>' +
+                '</ServiceRow>' +
+
+                '</ServiceBlock>'
+            );
+
+            let data = {
+                numberOfTravellers: 2,
+                services: [
+                    {
+                        type: 'camper',
+                        renterCode: 'USA89',
+                        camperCode: 'A4',
+                        pickUpLocation: 'MIA1',
+                        dropOffLocation: 'TPA',
+                        pickUpDate: '04052018',
+                        dropOffDate: '07052018',
+                        duration: 14,
+                        pickUpTime: '1730',
+                        milesIncludedPerDay: '200',
+                        milesPackagesIncluded: '4',
+                        extras: ['extra.3', 'special'],
+                    },
+                ],
+            };
+
+            adapter.setData(data).then(() => {
+                expect(requestParameter).toEqual(expectation);
+                done();
+            }, () => {
+                done.fail('unexpected result');
+            });
+        });
+
         it('setData() should overwrite not complete data row', (done) => {
             let expectation = createXML(
                 '<NoOfPersons>1</NoOfPersons>' +

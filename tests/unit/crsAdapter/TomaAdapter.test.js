@@ -349,9 +349,10 @@ describe('TomaAdapter', () => {
                 '<Count.1>1</Count.1>' +
                 '<From.1>051217</From.1>' +
                 '<To.1>161217</To.1>' +
-                '<Title.1>H</Title.1>' +
-                '<Name.1>DOE/JOHN</Name.1>' +
-                '<Reduction.1>040485</Reduction.1>'
+                '<TravAssociation.1>2</TravAssociation.1>' +
+                '<Title.2>H</Title.2>' +
+                '<Name.2>DOE/JOHN</Name.2>' +
+                '<Reduction.2>040485</Reduction.2>'
             );
 
             let roundTripService = {
@@ -384,6 +385,7 @@ describe('TomaAdapter', () => {
                 '<Count.1>1</Count.1>' +
                 '<From.1>051217</From.1>' +
                 '<To.1>161217</To.1>' +
+                '<TravAssociation.1>1</TravAssociation.1>' +
                 '<Title.1>H</Title.1>' +
                 '<Name.1>DOE/JOHN</Name.1>' +
                 '<Reduction.1>32</Reduction.1>'
@@ -410,7 +412,6 @@ describe('TomaAdapter', () => {
                 ]
             });
         });
-
 
         it('setData() should throw error if connection can not put data', () => {
             TomaConnection.FIFramePutData.and.throwError('error');

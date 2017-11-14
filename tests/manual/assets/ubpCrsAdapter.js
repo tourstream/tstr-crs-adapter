@@ -15600,7 +15600,7 @@ function parseValue(val,conversion){
 var attrsRegx = new RegExp("(\\S+)\\s*=\\s*(['\"])(.*?)\\2","g");
 function buildAttributesArr(attrStr,ignore,prefix,ignoreNS){
     attrStr = attrStr || attrStr.trim();
-    
+
     if(!ignore && attrStr.length > 3){
 
         var matches = getAllMatches(attrStr,attrsRegx);
@@ -29863,7 +29863,7 @@ var BewotecExpertAdapter = function () {
             crsObject.p = dataObject.numberOfTravellers || CONFIG.crs.defaultValues.numberOfTravellers;
 
             (dataObject.services || []).forEach(function (service) {
-                var markedLineNumber = _this3.getMarkedLineNumberForService(crsObject, service);
+                var markedLineNumber = _this3.getMarkedLineIndexForService(crsObject, service);
                 var lineNumber = markedLineNumber === void 0 ? _this3.getNextEmptyLineNumber(crsObject) : markedLineNumber;
 
                 switch (service.type) {
@@ -32070,7 +32070,7 @@ var TomaAdapter = function () {
             xmlTom.NoOfPersons = dataObject.numberOfTravellers || xmlTom.NoOfPersons && xmlTom.NoOfPersons[CONFIG.parserOptions.textNodeName] || CONFIG.crs.defaultValues.numberOfTravellers;
 
             (dataObject.services || []).forEach(function (service) {
-                var lineNumber = _this2.getMarkedLineNumberForService(xmlTom, service) || _this2.getNextEmptyServiceLineNumber(xmlTom);
+                var lineNumber = _this2.getMarkedLineIndexForService(xmlTom, service) || _this2.getNextEmptyServiceLineNumber(xmlTom);
 
                 switch (service.type) {
                     case _UbpCrsAdapter.SERVICE_TYPES.car:
@@ -34987,12 +34987,12 @@ exports.validate = function(xmlData){
     if(xmlData.indexOf("<![CDATA[") > 0 || xmlData.indexOf("<!--") > 0 ) return false;
     var tags = util.getAllMatches(xmlData,tagsPattern);
     if(tags.length === 0) return false; //non xml string
-    
-    var result = checkForMatchingTag(tags,0);
-    
 
-    if(result !== true) return false; else return true; 
-    
+    var result = checkForMatchingTag(tags,0);
+
+
+    if(result !== true) return false; else return true;
+
 }
 
 
@@ -35010,7 +35010,7 @@ var attrPattern = new RegExp("\\s+([\\w:\-]+)\\s*=\\s*(['\"])(.*?)\\2","g");
 function validateAttributes(xmlData){
     var attrStrings = util.getAllMatches(xmlData,attrStringPattern);
     for (i=0;i<attrStrings.length;i++){
-        if(attrStrings[i][1].trim().length > 0 && attrStrings[i][1].trim().length < 4){ //invalid attributes 
+        if(attrStrings[i][1].trim().length > 0 && attrStrings[i][1].trim().length < 4){ //invalid attributes
             return false;
         }else if(attrStrings[i][1].trim().length !== 0){
             var attrsList = util.getAllMatches(attrStrings[i][1],attrPattern);

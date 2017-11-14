@@ -120,12 +120,11 @@ You can check the currently supported service types with `UbpCrsAdapter.SERVICE_
 ---        | :---: | :---: | :---:     | :---:
 CETS       | X     |       |           | 
 TOMA (old) | X     | X     | X         | X 
-TOMA (new) | X     | X     |           | X
-Merlin     | X     | X     |           | 
-TBM        |       |       |           | 
-NEO        |       |       |           | 
+TOMA (new) | X     | X     | X         | X
+Merlin     | X     | X     | X         | X
 MyJack     | X     | X     | X         | X
 JackPlus   | X     | X     | X         | X
+
 
 | type  | fields                   | example
 | :---  | :---                     | :---
