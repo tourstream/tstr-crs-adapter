@@ -7,12 +7,12 @@
     "doc": "docs"
   },
   "scripts": {
-    "build": "npm run build:dev && npm run build:prod",
-    "build:dev": "rimraf build && webpack --config webpack.config.dev.js && cp build/ubpCrsAdapter.js tests/manual/assets/ubpCrsAdapter.js",
-    "build:prod": "rimraf dist && webpack --config webpack.config.prod.js",
+    "build": "npm run build:dev && webpack --config webpack.config.prod.js",
+    "build:dev": "rimraf dist && webpack --config webpack.config.dev.js && cp dist/ubpCrsAdapter.js tests/manual/assets/ubpCrsAdapter.js",
+    "postbuild": "node prepare-gcs.js",
     "test": "karma start karma.config.js --single-run",
     "preversion": "npm test",
-    "version": "npm run build && cp -R build/* dist/ && git add -A dist tests/manual",
+    "version": "npm run build && git add -A tests/manual",
     "postversion": "git push && git push --tags",
     "serve": "npm run build:dev && ws --https --hostname localhost --port 1337 --directory ./tests/manual --static.index crsTest.html"
   },
@@ -22,13 +22,9 @@
   },
   "keywords": [
     "UBP",
-    "CRS",
-    "travel",
-    "toma",
-    "cets",
-    "sabre"
+    "CRS"
   ],
-  "author": "Steve Reichenbach",
+  "author": "FTI",
   "license": "MIT",
   "homepage": "https://github.com/tourstream/tstr-crs-adapter#readme",
   "devDependencies": {

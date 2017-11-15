@@ -2,7 +2,13 @@
 
 This project provides a JS module to enable an web-application to communicate with a CRS (TOMA, SABRE, CETS, ...).
 
+
 ## How to install
+
+There are different ways to use this package.
+
+
+#### per package manager
 
 `npm install ubp-crs-adapter --save`
 
@@ -12,9 +18,11 @@ import UbpCrsAdapter from 'ubp-crs-adapter';
 let ubpCrsAdapter = new UbpCrsAdapter(adapterOptions);
 ```
 
-Or for applications without loader:
+
+#### or link the source
+
 ```
-<script src="[path/to/script/ubpCrsAdapter.js]"></script>
+<script src="https://assets.gcloud.fti-group.com/tstr-crs-adapter/latest/ubpCrsAdapter.js"></script>
 
 <script>
   var ubpCrsAdapter = new UbpCrsAdapter.default(adapterOptions);
@@ -214,12 +222,14 @@ It will open an extra window for debug outputs.
 Write a test and execute `npm run test` - the unit tests will tell you, if everything is fine. 
 Personal goal: Try to increase the test coverage to ~100%.
 
+
 #### ... the adapter
 
 We prepared a test file, which can be opened directly in the CRS systems.
 The file is located in __test/manual__: *[crsTest.html](tests/manual/crsTest.html)*
 
 It depends on the CRS how to use the test file.
+
 
 ###### ... in (old) TOMA
 
@@ -228,6 +238,7 @@ _precondition:_ the Amadeus application is started and the TOMA mask is visible
 If you already have an "browser view" open (basically after an external search), 
 you can drag'n'drop the test file directly into that view.
 Alternatively you can open the test file in parallel to the TOMA mask in an IE and use the test file from there.
+
 
 ###### ... in (new) TOMA SPC
 
@@ -241,6 +252,7 @@ Then you have to request an already embedded IBE (like the drive IBE)
 and replace the iFrame URL with the URL of the test file. 
 This is because Amadeus whitelist the domains which have access to the CRS.
 
+
 ###### ... in CETS
 
 _precondition:_ the CETS application is started
@@ -248,11 +260,13 @@ _precondition:_ the CETS application is started
 You have to open the "browser view" (basically via an external search) -
 than you can drag'n'drop the test file directly into that view.
 
+
 ###### ... in Merlin
 
 _precondition:_ the Sabre portal "ShopHolidays" is open, the Merlin mask is visible and the import is enabled
 
 Open the test file in parallel to the Merlin mask in another Tab.
+
 
 ###### ... in myJack / Jack+
 

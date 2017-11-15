@@ -1,8 +1,7 @@
 .idea
+npm-debug.log
+package-lock.json
 
-/node_modules/
 /coverage/
-/build/
-
-/npm-debug.log
-/package-lock.json
+/dist*/
+/node_modules/

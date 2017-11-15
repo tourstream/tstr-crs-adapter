@@ -16,7 +16,8 @@ module.exports = {
     output: {
         library: 'UbpCrsAdapter',
         libraryTarget: 'umd',
-        umdNamedDefine: true
+        umdNamedDefine: true,
+        path: path.resolve(__dirname, 'dist')
     },
     resolve: {
         modules: [
