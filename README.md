@@ -1,6 +1,6 @@
 # UBP CRS Adapter
 
-This project provides a JS module to enable an web-application to communicate with a CRS (TOMA, SABRE, CETS, ...).
+This project provides a JS module to enable a web-application to communicate with a CRS (TOMA, SABRE, CETS, ...).
 
 
 ## How to install
