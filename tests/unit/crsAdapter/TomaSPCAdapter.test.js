@@ -22,73 +22,20 @@ describe('TomaSPCAdapter', () => {
         window.history.replaceState({}, '', 0);
     });
 
-    it('connect() should result in correct script.src', (done) => {
-        let expectedSrc = 'https://www.em1.sellingplatformconnect.amadeus.com/ExternalCatalog.js';
-        let expectedDest = 'https://www.em1.sellingplatformconnect.amadeus.com';
-
+    it('connect() should result in error when no connection url is detected', (done) => {
         adapter.connect().then(() => {
-            let scriptElement = documentHeadAppendChildSpy.calls.mostRecent().args[0];
-
-            expect(scriptElement.src).toBe(expectedSrc);
-            expect(TomaSPCConnection.dest).toBe(expectedDest);
-            done();
+            done.fail('unexpected result');
         }, (error) => {
-            done.fail(error);
+            expect(error.toString()).toBe('Error: could not detect any Amadeus SeCo URL to connect to');
+            done();
         });
     });
 
-    it('connect() with option.crsUrl should result in correct script.src', (done) => {
-        let expectedSrc = 'https://crsurl/ExternalCatalog.js';
-        let expectedDest = 'https://crsUrl';
+    it('connect() with option.connectionUrl should result in correct script.src', (done) => {
+        let expectedSrc = 'https://conn-url.example/ExternalCatalog.js';
+        let expectedDest = 'https://conn-url.example';
 
-        adapter.connect({crsUrl: 'http://crsUrl'}).then(() => {
-            let scriptElement = documentHeadAppendChildSpy.calls.mostRecent().args[0];
-
-            expect(scriptElement.src).toBe(expectedSrc);
-            expect(TomaSPCConnection.dest).toBe(expectedDest);
-            done();
-        }, (error) => {
-            done.fail(error);
-        });
-    });
-
-    it('connect() with option.env "test" should result in correct script.src', (done) => {
-        let expectedSrc = 'https://acceptance.emea1.sellingplatformconnect.amadeus.com/ExternalCatalog.js';
-        let expectedDest = 'https://acceptance.emea1.sellingplatformconnect.amadeus.com';
-
-        adapter.connect({env: 'test'}).then(() => {
-            let scriptElement = documentHeadAppendChildSpy.calls.mostRecent().args[0];
-
-            expect(scriptElement.src).toBe(expectedSrc);
-            expect(TomaSPCConnection.dest).toBe(expectedDest);
-            done();
-        }, (error) => {
-            done.fail(error);
-        });
-    });
-
-    it('connect() with option.env "prod" should result in correct script.src', (done) => {
-        let expectedSrc = 'https://www.em1.sellingplatformconnect.amadeus.com/ExternalCatalog.js';
-        let expectedDest = 'https://www.em1.sellingplatformconnect.amadeus.com';
-
-        adapter.connect({env: 'prod'}).then(() => {
-            let scriptElement = documentHeadAppendChildSpy.calls.mostRecent().args[0];
-
-            expect(scriptElement.src).toBe(expectedSrc);
-            expect(TomaSPCConnection.dest).toBe(expectedDest);
-            done();
-        }, (error) => {
-            done.fail(error);
-        });
-    });
-
-    it('connect() with URL parameter crs_url should result in correct script.src', (done) => {
-        let expectedSrc = 'https://crsurl/ExternalCatalog.js';
-        let expectedDest = 'https://crsUrl';
-
-        window.history.replaceState({}, '', '?crs_url=http://crsUrl');
-
-        adapter.connect().then(() => {
+        adapter.connect({ connectionUrl: 'https://conn-url.example' }).then(() => {
             let scriptElement = documentHeadAppendChildSpy.calls.mostRecent().args[0];
 
             expect(scriptElement.src).toBe(expectedSrc);
@@ -100,10 +47,10 @@ describe('TomaSPCAdapter', () => {
     });
 
     it('connect() with option.externalCatalogVersion should result in correct script.src', (done) => {
-        let expectedSrc = 'https://www.em1.sellingplatformconnect.amadeus.com/ExternalCatalog.js?version=externalCatalogVersion';
-        let expectedDest = 'https://www.em1.sellingplatformconnect.amadeus.com';
+        let expectedSrc = 'https://conn-url.example/ExternalCatalog.js?version=externalCatalogVersion';
+        let expectedDest = 'https://conn-url.example';
 
-        adapter.connect({externalCatalogVersion: 'externalCatalogVersion'}).then(() => {
+        adapter.connect({ connectionUrl: 'https://conn-url.example', externalCatalogVersion: 'externalCatalogVersion' }).then(() => {
             let scriptElement = documentHeadAppendChildSpy.calls.mostRecent().args[0];
 
             expect(scriptElement.src).toBe(expectedSrc);
@@ -115,12 +62,12 @@ describe('TomaSPCAdapter', () => {
     });
 
     it('connect() with URL parameter EXTERNAL_CATALOG_VERSION should result in correct script.src', (done) => {
-        let expectedSrc = 'https://www.em1.sellingplatformconnect.amadeus.com/ExternalCatalog.js?version=url.catalogVersion';
-        let expectedDest = 'https://www.em1.sellingplatformconnect.amadeus.com';
+        let expectedSrc = 'https://conn-url.example/ExternalCatalog.js?version=url.catalogVersion';
+        let expectedDest = 'https://conn-url.example';
 
         window.history.replaceState({}, '', '?EXTERNAL_CATALOG_VERSION=url.catalogVersion');
 
-        adapter.connect().then(() => {
+        adapter.connect({ connectionUrl: 'https://conn-url.example' }).then(() => {
             let scriptElement = documentHeadAppendChildSpy.calls.mostRecent().args[0];
 
             expect(scriptElement.src).toBe(expectedSrc);
@@ -152,7 +99,7 @@ describe('TomaSPCAdapter', () => {
 
             crsData = responseWarnings = responseError = requestData = void 0;
 
-            adapter.connect();
+            adapter.connect({ connectionUrl: 'connectionUrl' });
         });
 
         it('getData() should parse base data', (done) => {
