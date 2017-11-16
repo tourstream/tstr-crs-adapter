@@ -5,10 +5,6 @@ import { SERVICE_TYPES } from '../UbpCrsAdapter';
 
 const CONFIG = {
     crs: {
-        baseUrlMap: {
-            prod: 'www.em1.sellingplatformconnect.amadeus.com',
-            test: 'acceptance.emea1.sellingplatformconnect.amadeus.com',
-        },
         catalogFileName: 'ExternalCatalog.js',
         dateFormat: 'DDMMYY',
         timeFormat: 'HHmm',
@@ -47,7 +43,7 @@ class TomaSPCAdapter {
     }
 
     /**
-     * @param options <{externalCatalogVersion?: string, crsUrl?: string, env?: 'test' || 'prod'}>
+     * @param options <{externalCatalogVersion?: string, connectionUrl?: string}>
      * @returns {Promise}
      */
     connect(options) {
@@ -114,7 +110,7 @@ class TomaSPCAdapter {
                 let callbackObject = this.createCallbackObject(
                     resolve,
                     () => {
-                        this.logger.log('connected to TOMA Selling Platform Connect');
+                        this.logger.info('connected to TOMA Selling Platform Connect');
                         this.connection = window.catalog;
                     },
                     'connection not possible'
@@ -122,24 +118,29 @@ class TomaSPCAdapter {
 
                 callbackObject.scope = window;
 
-                window.catalog.dest = baseUrl;
+                window.catalog.dest = connectionUrl;
                 window.catalog.connect(callbackObject);
             };
 
-            const getBaseUrlFromReferrer = () => {
-                let url = document.referrer.replace(/https?:\/\//, '').split('/')[0];
+            const getConnectionUrlFromReferrer = () => {
+                let url = (document.referrer || '').replace(/https?:\/\//, '').split('/')[0];
 
-                return (Object.values(CONFIG.crs.baseUrlMap).indexOf(url) > -1) ? url : void 0;
+                return url.indexOf('.sellingplatformconnect.amadeus.com') > -1 ? 'https://' + url : void 0;
             };
 
-            let baseUrl = 'https://' + (options.crsUrl
-                || CONFIG.crs.baseUrlMap[options.env]
-                || this.getUrlParameter('crs_url')
-                || getBaseUrlFromReferrer()
-                || CONFIG.crs.baseUrlMap.prod).replace(/https?:\/\//, '').split('/')[0];
+            let connectionUrl = getConnectionUrlFromReferrer() || options.connectionUrl;
+
+            if (!connectionUrl) {
+                const message = 'could not detect any Amadeus SeCo URL to connect to';
+
+                this.logger.error(message);
+                throw new Error(message);
+            }
+
+            this.logger.info('use ' + connectionUrl + ' as connection url');
 
             let catalogVersion = options.externalCatalogVersion || this.getUrlParameter('EXTERNAL_CATALOG_VERSION');
-            let filePath = baseUrl + '/' + CONFIG.crs.catalogFileName + (catalogVersion ? '?version=' + catalogVersion : '');
+            let filePath = connectionUrl + '/' + CONFIG.crs.catalogFileName + (catalogVersion ? '?version=' + catalogVersion : '');
             let script = document.createElement('script');
 
             script.src = filePath;

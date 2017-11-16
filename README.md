@@ -94,17 +94,13 @@ CRS            | connectionType | connectionOptions                | exitOptions
 CETS           | 'cets'         | -                                | -
 TOMA (old)     | 'toma'         | .providerKey: string             | -
 TOMA SPC (new) | 'toma2'        | .externalCatalogVersion?: string | .popupId?: string
-|              |                | .crsUrl?: string                 |
-|              |                | .env?: ['test' OR 'prod']        |
+|              |                | .connectionUrl?: string          |
 Merlin         | 'merlin'       | -                                | -
 MyJack         | 'myJack'       | token: string                    | -
 Jack+          | 'jackPlus'     | token: string                    | -
 
 For some connections you need credentials or other connection data,
 which you can set in the `connectionOptions`.
-
-For TOMA SPC there is one crsUrl for each environment preconfigured. 
-If no environment is set, the production crsUrl is used.
 
 
 ### `.services` object structure

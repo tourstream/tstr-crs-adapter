@@ -54,7 +54,7 @@ class LogService {
             while (!this.debugWindow.document) {}
 
             if (this.debugWindow.document.body && this.debugWindow.document.body.innerHTML) {
-                this.debugWindow.document.writeln('<hr><hr>');
+                this.debugWindow.document.writeln('<hr>');
 
                 return;
             }
@@ -67,6 +67,7 @@ class LogService {
                 '.boolean { color: blue; }' +
                 '.null { color: magenta; }' +
                 '.key { color: gray; }' +
+                '.error { color: red; }' +
                 '</style>'
             );
 
@@ -96,7 +97,7 @@ class LogService {
         }
 
         this.debugWindow.document.writeln([
-            '<div>',
+            '<div class="' + type.toLowerCase() + '">',
             '<small>' + (new Date()).toUTCString() + '@v' + this.adapterVersion + '</small>',
             '<strong>[' + type.toUpperCase() + ']</strong>:',
             '<pre>' + this.syntaxHighlight(stringified) + '</pre>',
