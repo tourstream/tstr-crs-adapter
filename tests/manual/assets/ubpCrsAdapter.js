@@ -29585,12 +29585,12 @@ var LogService = function () {
                 while (!this.debugWindow.document) {}
 
                 if (this.debugWindow.document.body && this.debugWindow.document.body.innerHTML) {
-                    this.debugWindow.document.writeln('<hr><hr>');
+                    this.debugWindow.document.writeln('<hr>');
 
                     return;
                 }
 
-                this.debugWindow.document.writeln('<style>' + 'pre { outline: 1px solid #ccc; padding: 5px; margin: 5px; }' + '.string { color: green; }' + '.number { color: darkorange; }' + '.boolean { color: blue; }' + '.null { color: magenta; }' + '.key { color: gray; }' + '</style>');
+                this.debugWindow.document.writeln('<style>' + 'pre { outline: 1px solid #ccc; padding: 5px; margin: 5px; }' + '.string { color: green; }' + '.number { color: darkorange; }' + '.boolean { color: blue; }' + '.null { color: magenta; }' + '.key { color: gray; }' + '.error { color: red; }' + '</style>');
 
                 this.debugWindow.document.writeln('<h2>CRS Debug Mode</h2>');
             } catch (error) {
@@ -29618,7 +29618,7 @@ var LogService = function () {
                 stringified = JSON.stringify(message, additionalProperties, 2);
             }
 
-            this.debugWindow.document.writeln(['<div>', '<small>' + new Date().toUTCString() + '@v' + this.adapterVersion + '</small>', '<strong>[' + type.toUpperCase() + ']</strong>:', '<pre>' + this.syntaxHighlight(stringified) + '</pre>', '</div>'].join(' '));
+            this.debugWindow.document.writeln(['<div class="' + type.toLowerCase() + '">', '<small>' + new Date().toUTCString() + '@v' + this.adapterVersion + '</small>', '<strong>[' + type.toUpperCase() + ']</strong>:', '<pre>' + this.syntaxHighlight(stringified) + '</pre>', '</div>'].join(' '));
         }
     }, {
         key: 'syntaxHighlight',
@@ -32597,10 +32597,6 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 
 var CONFIG = {
     crs: {
-        baseUrlMap: {
-            prod: 'www.em1.sellingplatformconnect.amadeus.com',
-            test: 'acceptance.emea1.sellingplatformconnect.amadeus.com'
-        },
         catalogFileName: 'ExternalCatalog.js',
         dateFormat: 'DDMMYY',
         timeFormat: 'HHmm',
@@ -32643,7 +32639,7 @@ var TomaSPCAdapter = function () {
     }
 
     /**
-     * @param options <{externalCatalogVersion?: string, crsUrl?: string, env?: 'test' || 'prod'}>
+     * @param options <{externalCatalogVersion?: string, connectionUrl?: string}>
      * @returns {Promise}
      */
 
@@ -32726,26 +32722,35 @@ var TomaSPCAdapter = function () {
             return new Promise(function (resolve) {
                 var connectToSPC = function connectToSPC() {
                     var callbackObject = _this4.createCallbackObject(resolve, function () {
-                        _this4.logger.log('connected to TOMA Selling Platform Connect');
+                        _this4.logger.info('connected to TOMA Selling Platform Connect');
                         _this4.connection = window.catalog;
                     }, 'connection not possible');
 
                     callbackObject.scope = window;
 
-                    window.catalog.dest = baseUrl;
+                    window.catalog.dest = connectionUrl;
                     window.catalog.connect(callbackObject);
                 };
 
-                var getBaseUrlFromReferrer = function getBaseUrlFromReferrer() {
-                    var url = document.referrer.replace(/https?:\/\//, '').split('/')[0];
+                var getConnectionUrlFromReferrer = function getConnectionUrlFromReferrer() {
+                    var url = (document.referrer || '').replace(/https?:\/\//, '').split('/')[0];
 
-                    return Object.values(CONFIG.crs.baseUrlMap).indexOf(url) > -1 ? url : void 0;
+                    return url.indexOf('.sellingplatformconnect.amadeus.com') > -1 ? 'https://' + url : void 0;
                 };
 
-                var baseUrl = 'https://' + (options.crsUrl || CONFIG.crs.baseUrlMap[options.env] || _this4.getUrlParameter('crs_url') || getBaseUrlFromReferrer() || CONFIG.crs.baseUrlMap.prod).replace(/https?:\/\//, '').split('/')[0];
+                var connectionUrl = getConnectionUrlFromReferrer() || options.connectionUrl;
+
+                if (!connectionUrl) {
+                    var message = 'could not detect any Amadeus SeCo URL to connect to';
+
+                    _this4.logger.error(message);
+                    throw new Error(message);
+                }
+
+                _this4.logger.info('use ' + connectionUrl + ' as connection url');
 
                 var catalogVersion = options.externalCatalogVersion || _this4.getUrlParameter('EXTERNAL_CATALOG_VERSION');
-                var filePath = baseUrl + '/' + CONFIG.crs.catalogFileName + (catalogVersion ? '?version=' + catalogVersion : '');
+                var filePath = connectionUrl + '/' + CONFIG.crs.catalogFileName + (catalogVersion ? '?version=' + catalogVersion : '');
                 var script = document.createElement('script');
 
                 script.src = filePath;
@@ -42870,7 +42875,7 @@ function config (name) {
 
 module.exports = {
 	"name": "ubp-crs-adapter",
-	"version": "0.0.18",
+	"version": "0.0.19",
 	"description": "This library provides connections to different travel CRSs. It also let you read and write data from/to them.",
 	"main": "dist/ubpCrsAdapter.js",
 	"directories": {
