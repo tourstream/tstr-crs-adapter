@@ -32,10 +32,10 @@ describe('TomaSPCAdapter', () => {
     });
 
     it('connect() with option.connectionUrl should result in correct script.src', (done) => {
-        let expectedSrc = 'https://conn-url/ExternalCatalog.js';
-        let expectedDest = 'https://conn-url';
+        let expectedSrc = 'https://conn-url.example/ExternalCatalog.js';
+        let expectedDest = 'https://conn-url.example';
 
-        adapter.connect({ connectionUrl: 'https://conn-url' }).then(() => {
+        adapter.connect({ connectionUrl: 'https://conn-url.example' }).then(() => {
             let scriptElement = documentHeadAppendChildSpy.calls.mostRecent().args[0];
 
             expect(scriptElement.src).toBe(expectedSrc);
@@ -47,10 +47,10 @@ describe('TomaSPCAdapter', () => {
     });
 
     it('connect() with option.externalCatalogVersion should result in correct script.src', (done) => {
-        let expectedSrc = 'https://conn-url/ExternalCatalog.js?version=externalCatalogVersion';
-        let expectedDest = 'https://conn-url';
+        let expectedSrc = 'https://conn-url.example/ExternalCatalog.js?version=externalCatalogVersion';
+        let expectedDest = 'https://conn-url.example';
 
-        adapter.connect({ connectionUrl: 'https://conn-url', externalCatalogVersion: 'externalCatalogVersion' }).then(() => {
+        adapter.connect({ connectionUrl: 'https://conn-url.example', externalCatalogVersion: 'externalCatalogVersion' }).then(() => {
             let scriptElement = documentHeadAppendChildSpy.calls.mostRecent().args[0];
 
             expect(scriptElement.src).toBe(expectedSrc);
@@ -62,12 +62,12 @@ describe('TomaSPCAdapter', () => {
     });
 
     it('connect() with URL parameter EXTERNAL_CATALOG_VERSION should result in correct script.src', (done) => {
-        let expectedSrc = 'https://conn-url/ExternalCatalog.js?version=url.catalogVersion';
-        let expectedDest = 'https://conn-url';
+        let expectedSrc = 'https://conn-url.example/ExternalCatalog.js?version=url.catalogVersion';
+        let expectedDest = 'https://conn-url.example';
 
         window.history.replaceState({}, '', '?EXTERNAL_CATALOG_VERSION=url.catalogVersion');
 
-        adapter.connect({ connectionUrl: 'https://conn-url' }).then(() => {
+        adapter.connect({ connectionUrl: 'https://conn-url.example' }).then(() => {
             let scriptElement = documentHeadAppendChildSpy.calls.mostRecent().args[0];
 
             expect(scriptElement.src).toBe(expectedSrc);
