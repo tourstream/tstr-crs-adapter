@@ -1,10 +1,5 @@
 ## FAQ
 
-#### Is it possible to update the adapter version on Windows OS?
-
-No unfortunately not. Because we use husky for our git-hooks.
-
-
 #### I try to connect via the adapter to my CRS but nothing happened. What can I do?
 
 First of all: [enable debugging](#how-can-i-enable-debugging) to see what happens! 
