@@ -17,6 +17,7 @@ const CONFIG = {
         serviceType: {
             car: 'C',
             customerRequest: 'Q',
+            roundTrip: 'R',
         },
         pickUp: {
             walkIn: {
@@ -220,6 +221,10 @@ class CetsAdapter {
                         service = this.mapCarServiceFromXmlObjectToAdapterObject(xmlService);
                         break;
                     }
+                    case CONFIG.defaults.serviceType.roundTrip: {
+                        service = this.mapRoundTripServiceFromXmlObjectToAdapterObject(xmlService);
+                        break;
+                    }
                     default:
                         break;
                 }
@@ -238,6 +243,10 @@ class CetsAdapter {
                     service = this.mapCarServiceFromXmlObjectToAdapterObject(xmlRequest.Avl);
                     break;
                 }
+                case CONFIG.defaults.serviceType.roundTrip: {
+                    service = this.mapRoundTripServiceFromXmlObjectToAdapterObject(xmlRequest.Avl);
+                    break;
+                }
                 default:
                     break;
             }
@@ -251,27 +260,24 @@ class CetsAdapter {
         return dataObject;
     }
 
+    /**
+     * @private
+     * @param xmlService
+     * @returns {{pickUpDate: *, dropOffDate: string, pickUpLocation: *, duration: *, rentalCode: *, vehicleTypeCode: *, type: string}}
+     */
     mapCarServiceFromXmlObjectToAdapterObject(xmlService) {
-        const addDropOffDate = (service) => {
-            let pickUpDate = moment(service.pickUpDate, CONFIG.crs.dateFormat);
-
-            service.dropOffDate = pickUpDate.isValid()
-                ? pickUpDate.add(service.duration, 'days').format(this.options.useDateFormat)
-                : '';
-        };
-
         let pickUpDate = moment(xmlService.StartDate, CONFIG.crs.dateFormat);
+        let dropOffDate = pickUpDate.clone().add(xmlService.Duration, 'days');
 
         let service = {
             pickUpDate: pickUpDate.isValid() ? pickUpDate.format(this.options.useDateFormat) : xmlService.StartDate,
+            dropOffDate: dropOffDate.isValid() ? dropOffDate.format(this.options.useDateFormat) : '',
             pickUpLocation: xmlService.Destination,
             duration: xmlService.Duration,
             rentalCode: xmlService.Product,
             vehicleTypeCode: xmlService.Room,
             type: SERVICE_TYPES.car,
         };
-
-        addDropOffDate(service);
 
         if (xmlService.CarDetails) {
             let pickUpTime = moment(xmlService.CarDetails.PickUp.Time, CONFIG.crs.timeFormat);
@@ -284,6 +290,25 @@ class CetsAdapter {
         }
 
         return service;
+    }
+
+    /**
+     * @private
+     * @param xmlService
+     * @returns {{type: string, bookingId: *, destination: *, numberOfPassengers: (number|*), startDate: string, endDate: string}}
+     */
+    mapRoundTripServiceFromXmlObjectToAdapterObject(xmlService) {
+        let startDate = moment(xmlService.StartDate, CONFIG.crs.dateFormat);
+        let endDate = startDate.clone().add(xmlService.Duration, 'days');
+
+        return {
+            type: SERVICE_TYPES.roundTrip,
+            bookingId: xmlService.Destination + xmlService.Product,
+            destination: xmlService.Room,
+            numberOfPassengers: xmlService.Persons,
+            startDate: startDate.isValid() ? startDate.format(this.options.useDateFormat) : xmlService.StartDate,
+            endDate: endDate.isValid() ? endDate.format(this.options.useDateFormat) : '',
+        };
     }
 
     /**
@@ -378,6 +403,12 @@ class CetsAdapter {
 
                     break;
                 }
+                case SERVICE_TYPES.roundTrip: {
+                    this.assignRoundTripServiceFromAdapterObjectToXmlObject(service, xmlRequest);
+                    this.assignRoundTripTravellers(service, xmlRequest);
+
+                    break;
+                }
                 default: this.logger.warn('type ' + service.type + ' is not supported by the CETS adapter');
             }
         });
@@ -398,21 +429,6 @@ class CetsAdapter {
      * @param xml object
      */
     assignCarServiceFromAdapterObjectToXmlObject(service, xml) {
-        const calculateDuration = (service) => {
-            if (service.duration) {
-                return service.duration;
-            }
-
-            if (service.dropOffDate) {
-                let pickUpDate = moment(service.pickUpDate, this.options.useDateFormat);
-                let dropOffDate = moment(service.dropOffDate, this.options.useDateFormat);
-
-                if (pickUpDate.isValid() && dropOffDate.isValid()) {
-                    return Math.ceil(dropOffDate.diff(pickUpDate, 'days', true));
-                }
-            }
-        };
-
         const normalizeService = (service) => {
             service.vehicleTypeCode = service.vehicleTypeCode.toUpperCase();
             service.rentalCode = service.rentalCode.toUpperCase();
@@ -432,7 +448,7 @@ class CetsAdapter {
                 Key: service.vehicleTypeCode + '/' + service.pickUpLocation + '-' + service.dropOffLocation,
             },
             StartDate: pickUpDate.isValid() ? pickUpDate.format(CONFIG.crs.dateFormat) : service.pickUpDate,
-            Duration: calculateDuration(service),
+            Duration: service.duration || this.calculateDuration(service.pickUpDate, service.dropOffDate),
             Destination: service.pickUpLocation,
             Product: service.rentalCode,
             Room: service.vehicleTypeCode,
@@ -513,6 +529,39 @@ class CetsAdapter {
 
         xml.Faq.push(xmlFaq);
     }
+
+    assignRoundTripServiceFromAdapterObjectToXmlObject(service, xml) {
+        let startDate = moment(service.startDate, this.options.useDateFormat);
+
+        let xmlService = {
+            [CONFIG.builderOptions.attrkey]: {
+                ServiceType: CONFIG.defaults.serviceType.roundTrip,
+            },
+            Product: service.bookingId.substring(3),
+            Destination: service.bookingId.substring(0, 3),
+            Room: service.destination,
+            Persons: service.numberOfPassengers,
+            StartDate: startDate.isValid() ? startDate.format(CONFIG.crs.dateFormat) : service.startDate,
+            Duration: service.duration || this.calculateDuration(service.startDate, service.endDate),
+        };
+
+        xml.Fah.push(xmlService);
+    }
+
+    assignRoundTripTravellers(service, xml) {
+
+    }
+
+    calculateDuration(startDate, endDate) {
+        if (endDate) {
+            let startDateObject = moment(startDate, this.options.useDateFormat);
+            let endDateObject = moment(endDate, this.options.useDateFormat);
+
+            if (startDateObject.isValid() && endDateObject.isValid()) {
+                return Math.ceil(endDateObject.diff(startDateObject, 'days', true));
+            }
+        }
+    };
 }
 
 export default CetsAdapter;

@@ -33,6 +33,9 @@ class LogService {
         this.writeToExternalOutput(message, type);
     }
 
+    /**
+     * we use an external window because in the CRS CETS there is no console.* possible
+     */
     openExternalOutput() {
         if (this.debugWindow && !this.debugWindow.closed) {
             this.debugWindow.focus();
