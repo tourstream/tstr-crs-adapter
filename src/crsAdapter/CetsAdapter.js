@@ -303,8 +303,8 @@ class CetsAdapter {
 
         return {
             type: SERVICE_TYPES.roundTrip,
-            bookingId: xmlService.Destination + xmlService.Product,
-            destination: xmlService.Room,
+            bookingId: xmlService.Destination === 'NEZ' ? xmlService.Product : void 0,
+            destination: xmlService.Destination === 'NEZ' ? xmlService.Room : xmlService.Product,
             numberOfPassengers: xmlService.Persons,
             startDate: startDate.isValid() ? startDate.format(this.options.useDateFormat) : xmlService.StartDate,
             endDate: endDate.isValid() ? endDate.format(this.options.useDateFormat) : '',
@@ -524,8 +524,8 @@ class CetsAdapter {
             [CONFIG.builderOptions.attrkey]: {
                 ServiceType: CONFIG.defaults.serviceType.roundTrip,
             },
-            Product: service.bookingId.substring(3),
-            Destination: service.bookingId.substring(0, 3),
+            Product: service.bookingId,
+            Destination: 'NEZ',
             Room: service.destination,
             Persons: service.numberOfPassengers,
             StartDate: startDate.isValid() ? startDate.format(CONFIG.crs.dateFormat) : service.startDate,

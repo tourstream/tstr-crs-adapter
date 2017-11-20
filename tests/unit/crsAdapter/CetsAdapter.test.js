@@ -209,18 +209,17 @@ describe('CetsAdapter', () => {
                 '<Catalog>DCH</Catalog>' +
                 '<StartDate>02072017</StartDate>' +
                 '<Duration>7</Duration>' +
-                '<Destination>DEST</Destination>' +
-                '<Product>Product</Product>' +
-                '<Room>Room</Room>' +
+                '<Destination>NEZ</Destination>' +
+                '<Product>bookingId</Product>' +
+                '<Room>DEST</Room>' +
                 '<Persons>persons</Persons>' +
                 '<Adults>1</Adults>' +
                 '</Avl>' +
+
                 '<Fah ServiceType="R">' +
                 '<StartDate>04072017</StartDate>' +
                 '<Duration>7</Duration>' +
-                '<Destination>LAX</Destination>' +
                 '<Product>USA95</Product>' +
-                '<Room>C4</Room>' +
                 '<Persons>1</Persons>' +
                 '</Fah>'
             );
@@ -233,16 +232,16 @@ describe('CetsAdapter', () => {
                 services: [
                     {
                         type: 'roundTrip',
-                        bookingId: 'LAXUSA95',
-                        destination: 'C4',
+                        bookingId: void 0,
+                        destination: 'USA95',
                         numberOfPassengers: '1',
                         startDate: '04072017',
                         endDate: '11072017',
                     },
                     {
                         type: 'roundTrip',
-                        bookingId: 'DESTProduct',
-                        destination: 'Room',
+                        bookingId: 'bookingId',
+                        destination: 'DEST',
                         numberOfPassengers: 'persons',
                         startDate: '02072017',
                         endDate: '09072017',
@@ -603,8 +602,8 @@ describe('CetsAdapter', () => {
                     '<TOCode>FTI</TOCode>' +
                     '<Adults>1</Adults>' +
                     '<Fah ServiceType="R">' +
-                    '<Product>kingId</Product>' +
-                    '<Destination>boo</Destination>' +
+                    '<Product>bookingId</Product>' +
+                    '<Destination>NEZ</Destination>' +
                     '<Room>destination</Room>' +
                     '<Persons>NOP</Persons>' +
                     '<StartDate>12122017</StartDate>' +

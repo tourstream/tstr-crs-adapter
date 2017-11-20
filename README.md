@@ -165,7 +165,7 @@ _note: .durationInMinutes is only used for "bm" transfer_
 
 | type      | fields              | example
 | :---      | :---                | :---
-| roundTrip | .bookingId          | 'NEZE2784NQXTHEN' 
+| roundTrip | .bookingId          | 'E2784NQXTHEN' 
 |           | .destination        | 'YYZ' 
 |           | .numberOfPassengers | '1' 
 |           | .startDate          | '05122017' 
