@@ -5,3 +5,4 @@ package-lock.json
 /coverage/
 /dist*/
 /node_modules/
+/tests/manual/assets/ubpCrsAdapter.js*
