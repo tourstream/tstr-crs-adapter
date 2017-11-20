@@ -146,6 +146,8 @@ class CetsAdapter {
 
         this.assignAdapterObjectToXmlObject(normalizedXmlObject, dataObject);
 
+        this.cleanUpXmlObject(normalizedXmlObject);
+
         this.logger.info('XML OBJECT:');
         this.logger.info(normalizedXmlObject);
 
@@ -212,28 +214,26 @@ class CetsAdapter {
             services: [],
         };
 
-        if (xmlRequest.Fab.Fah) {
-            xmlRequest.Fab.Fah.forEach((xmlService) => {
-                let service;
+        xmlRequest.Fab.Fah.forEach((xmlService) => {
+            let service;
 
-                switch (xmlService[CONFIG.parserOptions.attrPrefix].ServiceType) {
-                    case CONFIG.defaults.serviceType.car: {
-                        service = this.mapCarServiceFromXmlObjectToAdapterObject(xmlService);
-                        break;
-                    }
-                    case CONFIG.defaults.serviceType.roundTrip: {
-                        service = this.mapRoundTripServiceFromXmlObjectToAdapterObject(xmlService);
-                        break;
-                    }
-                    default:
-                        break;
+            switch (xmlService[CONFIG.parserOptions.attrPrefix].ServiceType) {
+                case CONFIG.defaults.serviceType.car: {
+                    service = this.mapCarServiceFromXmlObjectToAdapterObject(xmlService);
+                    break;
                 }
+                case CONFIG.defaults.serviceType.roundTrip: {
+                    service = this.mapRoundTripServiceFromXmlObjectToAdapterObject(xmlService);
+                    break;
+                }
+                default:
+                    break;
+            }
 
-                if (service) {
-                    dataObject.services.push(service);
-                }
-            });
-        }
+            if (service) {
+                dataObject.services.push(service);
+            }
+        });
 
         if (xmlRequest.Avl) {
             let service;
@@ -348,13 +348,13 @@ class CetsAdapter {
             xmlObject = addFabNode(xmlObject);
         }
 
-        if (xmlObject.Request.Fab.Fah && !Array.isArray(xmlObject.Request.Fab.Fah)) {
-            xmlObject.Request.Fab.Fah = [xmlObject.Request.Fab.Fah];
-        }
+        ['Fah', 'Faq', 'Fap'].forEach((node) => {
+            xmlObject.Request.Fab[node] = xmlObject.Request.Fab[node] || [];
 
-        if (xmlObject.Request.Fab.Faq && !Array.isArray(xmlObject.Request.Fab.Faq)) {
-            xmlObject.Request.Fab.Faq = [xmlObject.Request.Fab.Faq];
-        }
+            if (!Array.isArray(xmlObject.Request.Fab[node])) {
+                xmlObject.Request.Fab[node] = [xmlObject.Request.Fab[node]];
+            }
+        });
 
         return xmlObject;
     }
@@ -390,9 +390,6 @@ class CetsAdapter {
 
         let xmlRequest = xmlObject.Request.Fab;
 
-        xmlRequest.Fah = xmlRequest.Fah || [];
-        xmlRequest.Faq = xmlRequest.Faq || [];
-
         (dataObject.services || []).forEach(service => {
             removeLimitedServices(service);
 
@@ -412,14 +409,6 @@ class CetsAdapter {
                 default: this.logger.warn('type ' + service.type + ' is not supported by the CETS adapter');
             }
         });
-
-        if (!xmlRequest.Fah.length) {
-            delete xmlRequest.Fah;
-        }
-
-        if (!xmlRequest.Faq.length) {
-            delete xmlRequest.Faq;
-        }
     }
 
     /**
@@ -505,8 +494,6 @@ class CetsAdapter {
             xmlService.CarDetails.DropOff.Info = service.dropOffHotelName;
         }
 
-        xml.Faq = xml.Faq || [];
-
         let xmlFaq = {
             [CONFIG.builderOptions.attrkey]: {
                 ServiceType: CONFIG.defaults.serviceType.customerRequest,
@@ -549,7 +536,23 @@ class CetsAdapter {
     }
 
     assignRoundTripTravellers(service, xml) {
+        let xmlFap = {
+            [CONFIG.builderOptions.attrkey]: {
+                ID: xml.Fap.length + 1,
+            },
+            PersonType: service.title,
+            Name: service.name,
+        };
 
+        xml.Fap.push(xmlFap);
+    }
+
+    cleanUpXmlObject(xmlObject) {
+        ['Fah', 'Faq', 'Fap'].forEach((node) => {
+            if (!xmlObject.Request.Fab[node].length) {
+                delete xmlObject.Request.Fab[node];
+            }
+        });
     }
 
     calculateDuration(startDate, endDate) {

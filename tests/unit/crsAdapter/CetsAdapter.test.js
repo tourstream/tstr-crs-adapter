@@ -105,7 +105,7 @@ describe('CetsAdapter', () => {
             expect(adapter.getData()).toBeUndefined();
         });
 
-        it('getData() should return crs model without unsupported services', () => {
+        it('getData() should return car model without unsupported services', () => {
             let xml = createRequestXml(
                 '<Avl ServiceType="U">' +
                 '<TOCode>FTI</TOCode>' +
@@ -132,7 +132,7 @@ describe('CetsAdapter', () => {
             expect(adapter.getData()).toEqual(expectation);
         });
 
-        it('getData() should return crs model with shopping cart data', () => {
+        it('getData() should return car model with shopping cart data', () => {
             let xml = createRequestXml(
                 '<Avl ServiceType="C">' +
                 '<TOCode>FTI</TOCode>' +
@@ -192,6 +192,60 @@ describe('CetsAdapter', () => {
                         vehicleTypeCode: void 0,
                         dropOffDate: '09072017',
                         type: 'car',
+                        marked: true,
+                    },
+                ],
+            };
+
+            CetsConnection.getXmlRequest.and.returnValue(xml);
+
+            expect(adapter.getData()).toEqual(expectation);
+        });
+
+        it('getData() should return round trip model', () => {
+            let xml = createRequestXml(
+                '<Avl ServiceType="R">' +
+                '<TOCode>FTI</TOCode>' +
+                '<Catalog>DCH</Catalog>' +
+                '<StartDate>02072017</StartDate>' +
+                '<Duration>7</Duration>' +
+                '<Destination>DEST</Destination>' +
+                '<Product>Product</Product>' +
+                '<Room>Room</Room>' +
+                '<Persons>persons</Persons>' +
+                '<Adults>1</Adults>' +
+                '</Avl>' +
+                '<Fah ServiceType="R">' +
+                '<StartDate>04072017</StartDate>' +
+                '<Duration>7</Duration>' +
+                '<Destination>LAX</Destination>' +
+                '<Product>USA95</Product>' +
+                '<Room>C4</Room>' +
+                '<Persons>1</Persons>' +
+                '</Fah>'
+            );
+
+            let expectation = {
+                operator: 'FTI',
+                agencyNumber: '549870',
+                travelType: 'DRIV',
+                numberOfTravellers: '1',
+                services: [
+                    {
+                        type: 'roundTrip',
+                        bookingId: 'LAXUSA95',
+                        destination: 'C4',
+                        numberOfPassengers: '1',
+                        startDate: '04072017',
+                        endDate: '11072017',
+                    },
+                    {
+                        type: 'roundTrip',
+                        bookingId: 'DESTProduct',
+                        destination: 'Room',
+                        numberOfPassengers: 'persons',
+                        startDate: '02072017',
+                        endDate: '09072017',
                         marked: true,
                     },
                 ],
@@ -514,6 +568,50 @@ describe('CetsAdapter', () => {
                     '</Faq>';
 
                 let expectedXml = createResponseXml(service);
+
+                adapter.setData(data);
+
+                expect(CetsConnection.returnBooking).toHaveBeenCalledWith(expectedXml);
+            });
+
+            it('setData() should send round trip service correct', () => {
+                let data = {
+                    services: [
+                        {
+                            type: 'roundTrip',
+                            bookingId: 'bookingId',
+                            destination: 'destination',
+                            numberOfPassengers: 'NOP',
+                            startDate: '12122017',
+                            endDate: '19122017',
+                            title: 'T',
+                            name: 'John Doe',
+                            age: '32',
+                        },
+                    ],
+                };
+
+                let service = '<Fap ID="1">' +
+                    '<PersonType>M</PersonType>' +
+                    '<Name>NTBAA</Name>' +
+                    '<FirstName>NN</FirstName>' +
+                    '</Fap><Fap ID="2">' +
+                    '<PersonType>T</PersonType>' +
+                    '<Name>John Doe</Name>' +
+                    '</Fap>' +
+                    '<Catalog>DCH</Catalog>' +
+                    '<TOCode>FTI</TOCode>' +
+                    '<Adults>1</Adults>' +
+                    '<Fah ServiceType="R">' +
+                    '<Product>kingId</Product>' +
+                    '<Destination>boo</Destination>' +
+                    '<Room>destination</Room>' +
+                    '<Persons>NOP</Persons>' +
+                    '<StartDate>12122017</StartDate>' +
+                    '<Duration>7</Duration>' +
+                    '</Fah>';
+
+                let expectedXml = createCustomResponseXml(service);
 
                 adapter.setData(data);
 
