@@ -8,6 +8,7 @@ script:
 
 deploy:
   - provider: npm
+    skip_cleanup: true
     email: $NPM_EMAIL
     api_key:
       secure: MjeU/tpUSS3z3yaw9EzrHk3yUpgfUPxHmxYv3FWydmcu/P1UsPSw5aSWtU7xRQSr1RBd19aptyk0HvV15NDXtfiky0dJzZYiRGuH9YsjJVx3t8N92JWLzK0wquWF9D0dRrLO2sxaMbaKFiWXCKT2kce5XiBx6TW9I+a8JjKh6ownwfi+3kxaNupSt/JugAkAO3Cc851+3qThRGYgh2gDiCbOu//5GJ2TSULx7KDviLNtL5Tuxjcghptqv4hjS40r4i0DGEZQ6stjklS5IqejtCRI3Na6n3hx/2q4MWUiqb6SqhLJg4JmCmlQEfdbU4fy2xWdSd1NqITgJc4SfMbuF34+W5jy3k+jnoaSTvEWkPjNrzolXNq7OBBv6xn9QfeVx602OBbLV7XTiuEfLLQ+6SrnG9fVaripBXQIZoMhFN2n4SktlzZ29TQnYEMmscw6VUmZ+YlDWlz9ouaiccbt4MtdLH3SvNhoe4f+ZrHNgiVjXBs+qqhWXzc1KRQUYFGrAs/gf/MZT8sM57fZdK8GvbxDclhzygSEjwG8ts2tV7qUn2zLVASge0ZWCtp3oI5KhdBnv9M4MJAf+BJNM544l730SQZMTOgtioZclkIKcAQVDwGwOIXW3/ZI43wWiNjShR7ti9uDEPq/7yodVlrlBT2hinkzE2kw9V2nxY95OOo=

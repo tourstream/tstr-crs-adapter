@@ -13,6 +13,8 @@ class BmAdapter {
         this.logger = logger;
 
         Penpal.debug = options.debug;
+
+        this.logger.warn('DEPRECATION: the Booking Manager support will be removed in the next major version. Please use the package @tourstream/tstr-booking-manager-connector');
     }
 
     connect() {
