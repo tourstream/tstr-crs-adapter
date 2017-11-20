@@ -354,10 +354,12 @@ class TomaAdapter {
         let startDate = moment(xml['From.' + lineNumber], CONFIG.crs.dateFormat);
         let endDate = moment(xml['To.' + lineNumber], CONFIG.crs.dateFormat);
 
+        const hasBookingId = xml['ServiceCode.' + lineNumber].indexOf('NEZ') === 0;
+
         let service = {
             type: SERVICE_TYPES.roundTrip,
-            bookingId: xml['ServiceCode.' + lineNumber],
-            destination: xml['Accommodation.' + lineNumber],
+            bookingId: hasBookingId ? xml['ServiceCode.' + lineNumber].substring(3) : void 0,
+            destination: hasBookingId ? xml['Accommodation.' + lineNumber] : xml['ServiceCode.' + lineNumber],
             numberOfPassengers: xml['Count.' + lineNumber],
             startDate: startDate.isValid() ? startDate.format(this.options.useDateFormat) : xml['From.' + lineNumber],
             endDate: endDate.isValid() ? endDate.format(this.options.useDateFormat) : xml['To.' + lineNumber],
@@ -467,7 +469,7 @@ class TomaAdapter {
             case SERVICE_TYPES.roundTrip: {
                 let bookingId = xml['ServiceCode.' + lineNumber];
 
-                return !bookingId || bookingId === service.bookingId;
+                return !bookingId || bookingId.indexOf(service.bookingId) > -1;
             }
         }
     };
@@ -708,7 +710,7 @@ class TomaAdapter {
         let endDate = moment(service.endDate, this.options.useDateFormat);
 
         xml['KindOfService.' + lineNumber] = CONFIG.crs.serviceTypes.roundTrip;
-        xml['ServiceCode.' + lineNumber] = service.bookingId;
+        xml['ServiceCode.' + lineNumber] = 'NEZ' + service.bookingId;
         xml['Accommodation.' + lineNumber] = service.destination;
         xml['Count.' + lineNumber] = service.numberOfPassengers;
         xml['From.' + lineNumber] = startDate.isValid() ? startDate.format(CONFIG.crs.dateFormat) : service.startDate;

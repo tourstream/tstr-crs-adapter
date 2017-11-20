@@ -447,7 +447,7 @@ class MerlinAdapter {
         let endDate = moment(service.endDate, this.options.useDateFormat);
 
         xmlService.KindOfService = CONFIG.crs.serviceTypes.roundTrip;
-        xmlService.Service = service.bookingId;
+        xmlService.Service = 'NEZ' + service.bookingId;
         xmlService.Accommodation = service.destination;
         xmlService.NoOfServices = service.numberOfPassengers;
         xmlService.FromDate = startDate.isValid() ? startDate.format(CONFIG.crs.dateFormat) : service.startDate;

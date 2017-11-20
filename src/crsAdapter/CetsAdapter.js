@@ -257,7 +257,7 @@ class CetsAdapter {
             }
         }
 
-        return dataObject;
+        return JSON.parse(JSON.stringify(dataObject));
     }
 
     /**

@@ -357,7 +357,7 @@ describe('TomaAdapter', () => {
 
             let roundTripService = {
                 type: 'roundTrip',
-                bookingId: 'NEZE2784NQXTHEN',
+                bookingId: 'E2784NQXTHEN',
                 destination: 'YYZ',
                 numberOfPassengers: '1',
                 startDate: '05122017',
@@ -380,8 +380,7 @@ describe('TomaAdapter', () => {
         it('getData() should parse round-trip services and returns age field instead of birthDate', () => {
             let xml = createTomaXml(
                 '<KindOfService.1>R</KindOfService.1>' +
-                '<ServiceCode.1>NEZE2784NQXTHEN</ServiceCode.1>' +
-                '<Accommodation.1>YYZ</Accommodation.1>' +
+                '<ServiceCode.1>YYZ</ServiceCode.1>' +
                 '<Count.1>1</Count.1>' +
                 '<From.1>051217</From.1>' +
                 '<To.1>161217</To.1>' +
@@ -393,7 +392,6 @@ describe('TomaAdapter', () => {
 
             let roundTripService = {
                 type: 'roundTrip',
-                bookingId: 'NEZE2784NQXTHEN',
                 destination: 'YYZ',
                 numberOfPassengers: '1',
                 startDate: '05122017',
@@ -681,7 +679,7 @@ describe('TomaAdapter', () => {
                         {
                             type: 'roundTrip',
                             marked: '',
-                            bookingId: 'NEZE2784NQXTHEN',
+                            bookingId: 'E2784NQXTHEN',
                             destination: 'YYZ',
                             numberOfPassengers: '1',
                             startDate: '05122017',

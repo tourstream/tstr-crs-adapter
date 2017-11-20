@@ -188,8 +188,6 @@ describe('CetsAdapter', () => {
                         pickUpLocation: 'LAX',
                         pickUpDate: '02072017',
                         duration: '7',
-                        rentalCode: void 0,
-                        vehicleTypeCode: void 0,
                         dropOffDate: '09072017',
                         type: 'car',
                         marked: true,
@@ -232,7 +230,6 @@ describe('CetsAdapter', () => {
                 services: [
                     {
                         type: 'roundTrip',
-                        bookingId: void 0,
                         destination: 'USA95',
                         numberOfPassengers: '1',
                         startDate: '04072017',

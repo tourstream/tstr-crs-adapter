@@ -980,7 +980,7 @@ describe('TomaSPCAdapter', () => {
                     {
                         type: 'roundTrip',
                         marked: '',
-                        bookingId: 'NEZE2784NQXTHEN',
+                        bookingId: 'E2784NQXTHEN',
                         destination: 'YYZ',
                         numberOfPassengers: '1',
                         startDate: '05122017',
