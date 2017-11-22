@@ -295,7 +295,7 @@ class CetsAdapter {
     /**
      * @private
      * @param xmlService
-     * @returns {{type: string, bookingId: *, destination: *, numberOfPassengers: (number|*), startDate: string, endDate: string}}
+     * @returns {{type: string, bookingId: *, destination: *, startDate: string, endDate: string}}
      */
     mapRoundTripServiceFromXmlObjectToAdapterObject(xmlService) {
         let startDate = moment(xmlService.StartDate, CONFIG.crs.dateFormat);
@@ -305,7 +305,6 @@ class CetsAdapter {
             type: SERVICE_TYPES.roundTrip,
             bookingId: xmlService.Destination === 'NEZ' ? xmlService.Product : void 0,
             destination: xmlService.Destination === 'NEZ' ? xmlService.Room : xmlService.Product,
-            numberOfPassengers: xmlService.Persons,
             startDate: startDate.isValid() ? startDate.format(this.options.useDateFormat) : xmlService.StartDate,
             endDate: endDate.isValid() ? endDate.format(this.options.useDateFormat) : '',
         };
@@ -444,7 +443,7 @@ class CetsAdapter {
             Norm: CONFIG.defaults.personCount,
             MaxAdults: CONFIG.defaults.personCount,
             Meal: CONFIG.defaults.serviceCode.car,
-            Persons: CONFIG.defaults.personCount,
+            Persons: 1,
             CarDetails: {
                 PickUp: {
                     [CONFIG.builderOptions.attrkey]: {
@@ -499,7 +498,7 @@ class CetsAdapter {
                 ServiceType: CONFIG.defaults.serviceType.customerRequest,
             },
             Code: CONFIG.crs.hotelLocationCode,
-            Persons: CONFIG.defaults.personCount,
+            Persons: 1,
             TextV: [
                 [
                     service.pickUpHotelName,
@@ -525,9 +524,9 @@ class CetsAdapter {
                 ServiceType: CONFIG.defaults.serviceType.roundTrip,
             },
             Product: service.bookingId,
+            Program: 'BAUSTEIN',
             Destination: 'NEZ',
             Room: service.destination,
-            Persons: service.numberOfPassengers,
             StartDate: startDate.isValid() ? startDate.format(CONFIG.crs.dateFormat) : service.startDate,
             Duration: service.duration || this.calculateDuration(service.startDate, service.endDate),
         };
@@ -545,6 +544,8 @@ class CetsAdapter {
         };
 
         xml.Fap.push(xmlFap);
+
+        xml.Fah[xml.Fah.length - 1].Persons = xml.Fap.length;
     }
 
     cleanUpXmlObject(xmlObject) {

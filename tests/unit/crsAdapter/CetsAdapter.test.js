@@ -231,7 +231,6 @@ describe('CetsAdapter', () => {
                     {
                         type: 'roundTrip',
                         destination: 'USA95',
-                        numberOfPassengers: '1',
                         startDate: '04072017',
                         endDate: '11072017',
                     },
@@ -239,7 +238,6 @@ describe('CetsAdapter', () => {
                         type: 'roundTrip',
                         bookingId: 'bookingId',
                         destination: 'DEST',
-                        numberOfPassengers: 'persons',
                         startDate: '02072017',
                         endDate: '09072017',
                         marked: true,
@@ -577,7 +575,6 @@ describe('CetsAdapter', () => {
                             type: 'roundTrip',
                             bookingId: 'bookingId',
                             destination: 'destination',
-                            numberOfPassengers: 'NOP',
                             startDate: '12122017',
                             endDate: '19122017',
                             title: 'T',
@@ -600,11 +597,12 @@ describe('CetsAdapter', () => {
                     '<Adults>1</Adults>' +
                     '<Fah ServiceType="R">' +
                     '<Product>bookingId</Product>' +
+                    '<Program>BAUSTEIN</Program>' +
                     '<Destination>NEZ</Destination>' +
                     '<Room>destination</Room>' +
-                    '<Persons>NOP</Persons>' +
                     '<StartDate>12122017</StartDate>' +
                     '<Duration>7</Duration>' +
+                    '<Persons>2</Persons>' +
                     '</Fah>';
 
                 let expectedXml = createCustomResponseXml(service);
