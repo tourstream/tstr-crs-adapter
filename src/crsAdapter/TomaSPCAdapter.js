@@ -418,7 +418,6 @@ class TomaSPCAdapter {
             type: SERVICE_TYPES.roundTrip,
             bookingId: hasBookingId ? crsService.serviceCode : void 0,
             destination: hasBookingId ? crsService.accommodation : crsService.serviceCode,
-            numberOfPassengers: crsService.quantity,
             startDate: startDate.isValid() ? startDate.format(this.options.useDateFormat) : crsService.fromDate,
             endDate: endDate.isValid() ? endDate.format(this.options.useDateFormat) : crsService.toDate,
         };
@@ -780,7 +779,6 @@ class TomaSPCAdapter {
         crsService.serviceType = CONFIG.crs.serviceTypes.roundTrip;
         crsService.serviceCode = 'NEZ' + adapterService.bookingId;
         crsService.accommodation = adapterService.destination;
-        crsService.quantity = adapterService.numberOfPassengers;
         crsService.fromDate = startDate.isValid() ? startDate.format(CONFIG.crs.dateFormat) : adapterService.startDate;
         crsService.toDate = endDate.isValid() ? endDate.format(CONFIG.crs.dateFormat) : adapterService.endDate;
     }

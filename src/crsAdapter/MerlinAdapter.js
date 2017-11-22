@@ -449,7 +449,6 @@ class MerlinAdapter {
         xmlService.KindOfService = CONFIG.crs.serviceTypes.roundTrip;
         xmlService.Service = 'NEZ' + service.bookingId;
         xmlService.Accommodation = service.destination;
-        xmlService.NoOfServices = service.numberOfPassengers;
         xmlService.FromDate = startDate.isValid() ? startDate.format(CONFIG.crs.dateFormat) : service.startDate;
         xmlService.EndDate = endDate.isValid() ? endDate.format(CONFIG.crs.dateFormat) : service.endDate;
     }

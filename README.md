@@ -167,7 +167,6 @@ _note: .durationInMinutes is only used for "bm" transfer_
 | :---      | :---                | :---
 | roundTrip | .bookingId          | 'E2784NQXTHEN' 
 |           | .destination        | 'YYZ' 
-|           | .numberOfPassengers | '1' 
 |           | .startDate          | '05122017' 
 |           | .endDate            | '16122017'
 |           | .title              | 'H'

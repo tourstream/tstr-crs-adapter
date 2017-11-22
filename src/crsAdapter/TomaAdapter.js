@@ -360,7 +360,6 @@ class TomaAdapter {
             type: SERVICE_TYPES.roundTrip,
             bookingId: hasBookingId ? xml['ServiceCode.' + lineNumber].substring(3) : void 0,
             destination: hasBookingId ? xml['Accommodation.' + lineNumber] : xml['ServiceCode.' + lineNumber],
-            numberOfPassengers: xml['Count.' + lineNumber],
             startDate: startDate.isValid() ? startDate.format(this.options.useDateFormat) : xml['From.' + lineNumber],
             endDate: endDate.isValid() ? endDate.format(this.options.useDateFormat) : xml['To.' + lineNumber],
         };
@@ -712,7 +711,6 @@ class TomaAdapter {
         xml['KindOfService.' + lineNumber] = CONFIG.crs.serviceTypes.roundTrip;
         xml['ServiceCode.' + lineNumber] = 'NEZ' + service.bookingId;
         xml['Accommodation.' + lineNumber] = service.destination;
-        xml['Count.' + lineNumber] = service.numberOfPassengers;
         xml['From.' + lineNumber] = startDate.isValid() ? startDate.format(CONFIG.crs.dateFormat) : service.startDate;
         xml['To.' + lineNumber] = endDate.isValid() ? endDate.format(CONFIG.crs.dateFormat) : service.endDate;
     }

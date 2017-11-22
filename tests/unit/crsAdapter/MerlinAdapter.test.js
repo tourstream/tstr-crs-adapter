@@ -452,7 +452,6 @@ describe('MerlinAdapter', () => {
                 '<KindOfService>R</KindOfService>' +
                 '<Service>NEZE2784NQXTHEN</Service>' +
                 '<Accommodation>YYZ</Accommodation>' +
-                '<NoOfServices>1</NoOfServices>' +
                 '<FromDate>051217</FromDate>' +
                 '<EndDate>161217</EndDate>' +
                 '<TravellerAllocation>1</TravellerAllocation>' +
@@ -477,7 +476,6 @@ describe('MerlinAdapter', () => {
                         marked: '',
                         bookingId: 'E2784NQXTHEN',
                         destination: 'YYZ',
-                        numberOfPassengers: '1',
                         startDate: '05122017',
                         endDate: '16122017',
                         salutation: 'H',

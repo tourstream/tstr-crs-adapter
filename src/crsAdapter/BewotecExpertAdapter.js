@@ -367,7 +367,6 @@ class BewotecExpertAdapter {
         crsObject['n' + lineNumber] = CONFIG.crs.serviceTypes.roundTrip;
         crsObject['l' + lineNumber] = 'NEZ' + service.bookingId;
         crsObject['u' + lineNumber] = service.destination;
-        crsObject['z' + lineNumber] = service.numberOfPassengers;
         crsObject['s' + lineNumber] = startDate.isValid() ? startDate.format(CONFIG.crs.dateFormat) : service.startDate;
         crsObject['i' + lineNumber] = endDate.isValid() ? endDate.format(CONFIG.crs.dateFormat) : service.endDate;
     }
