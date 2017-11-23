@@ -15,6 +15,9 @@
     "postversion": "git push && git push --tags",
     "serve": "npm run build:dev && ws --https --hostname localhost --port 1337 --directory ./tests/manual --static.index crsTest.html"
   },
+  "files": [
+    "/dist/"
+  ],
   "repository": {
     "type": "git",
     "url": "git+ssh://git@github.com:tourstream/tstr-crs-adapter.git"
