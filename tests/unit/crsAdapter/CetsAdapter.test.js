@@ -585,10 +585,6 @@ describe('CetsAdapter', () => {
                 };
 
                 let service = '<Fap ID="1">' +
-                    '<PersonType>M</PersonType>' +
-                    '<Name>NTBAA</Name>' +
-                    '<FirstName>NN</FirstName>' +
-                    '</Fap><Fap ID="2">' +
                     '<PersonType>T</PersonType>' +
                     '<Name>John Doe</Name>' +
                     '</Fap>' +
@@ -602,7 +598,7 @@ describe('CetsAdapter', () => {
                     '<Room>destination</Room>' +
                     '<StartDate>12122017</StartDate>' +
                     '<Duration>7</Duration>' +
-                    '<Persons>2</Persons>' +
+                    '<Persons>1</Persons>' +
                     '</Fah>';
 
                 let expectedXml = createCustomResponseXml(service);

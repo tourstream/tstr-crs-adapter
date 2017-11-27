@@ -535,17 +535,15 @@ class CetsAdapter {
     }
 
     assignRoundTripTravellers(service, xml) {
-        let xmlFap = {
+        xml.Fap = [{
             [CONFIG.builderOptions.attrkey]: {
-                ID: xml.Fap.length + 1,
+                ID: 1,
             },
             PersonType: service.title,
             Name: service.name,
-        };
+        }];
 
-        xml.Fap.push(xmlFap);
-
-        xml.Fah[xml.Fah.length - 1].Persons = xml.Fap.length;
+        xml.Fah[xml.Fah.length - 1].Persons = 1;
     }
 
     cleanUpXmlObject(xmlObject) {
