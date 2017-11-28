@@ -46,6 +46,25 @@ describe('TomaSPCAdapter', () => {
         });
     });
 
+    it('connect() with option.connectionUrl should result in correct script.src when anchor tag has no modern support', (done) => {
+        let expectedSrc = 'https://conn-url.example/ExternalCatalog.js';
+        let expectedDest = 'https://conn-url.example';
+
+        let documentCreateElementSpy = spyOn(document, 'createElement');
+
+        documentCreateElementSpy.and.returnValue({});
+
+        adapter.connect({ connectionUrl: 'https://conn-url.example' }).then(() => {
+            let scriptElement = documentHeadAppendChildSpy.calls.mostRecent().args[0];
+
+            expect(scriptElement.src).toBe(expectedSrc);
+            expect(TomaSPCConnection.dest).toBe(expectedDest);
+            done();
+        }, (error) => {
+            done.fail(error);
+        });
+    });
+
     it('connect() with option.externalCatalogVersion should result in correct script.src', (done) => {
         let expectedSrc = 'https://conn-url.example/ExternalCatalog.js?version=externalCatalogVersion';
         let expectedDest = 'https://conn-url.example';
@@ -535,9 +554,9 @@ describe('TomaSPCAdapter', () => {
                     destination: 'YYZ',
                     startDate: '05122017',
                     endDate: '16122017',
-                    salutation: 'H',
+                    title: 'H',
                     name: 'DOE/JOHN',
-                    birthdate: '040485',
+                    birthday: '040485',
                 }]
             };
 
@@ -576,7 +595,7 @@ describe('TomaSPCAdapter', () => {
                     destination: 'YYZ',
                     startDate: '05122017',
                     endDate: '16122017',
-                    salutation: 'H',
+                    title: 'H',
                     name: 'DOE/JOHN',
                     age: '32',
                 }]
@@ -980,7 +999,7 @@ describe('TomaSPCAdapter', () => {
                         destination: 'YYZ',
                         startDate: '05122017',
                         endDate: '16122017',
-                        salutation: 'H',
+                        title: 'H',
                         name: 'DOE/JOHN',
                         age: '32',
                         birthday: '040485',
@@ -1002,7 +1021,7 @@ describe('TomaSPCAdapter', () => {
                 travellers: [{
                     title: 'H',
                     name: 'DOE/JOHN',
-                    discount: '040485',
+                    discount: 32,
                 }],
             };
 

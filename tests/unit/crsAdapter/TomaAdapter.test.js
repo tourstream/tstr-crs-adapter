@@ -360,9 +360,9 @@ describe('TomaAdapter', () => {
                 destination: 'YYZ',
                 startDate: '05122017',
                 endDate: '16122017',
-                salutation: 'H',
+                title: 'H',
                 name: 'DOE/JOHN',
-                birthdate: '040485',
+                birthday: '040485',
                 marked: false,
             };
 
@@ -392,7 +392,7 @@ describe('TomaAdapter', () => {
                 destination: 'YYZ',
                 startDate: '05122017',
                 endDate: '16122017',
-                salutation: 'H',
+                title: 'H',
                 name: 'DOE/JOHN',
                 age: '32',
                 marked: false,
@@ -665,7 +665,7 @@ describe('TomaAdapter', () => {
                     '<TravAssociation.1>1</TravAssociation.1>' +
                     '<Title.1>H</Title.1>' +
                     '<Name.1>DOE/JOHN</Name.1>' +
-                    '<Reduction.1>040485</Reduction.1>'
+                    '<Reduction.1>32</Reduction.1>'
                 );
 
                 adapter.setData({
@@ -678,7 +678,7 @@ describe('TomaAdapter', () => {
                             destination: 'YYZ',
                             startDate: '05122017',
                             endDate: '16122017',
-                            salutation: 'H',
+                            title: 'H',
                             name: 'DOE/JOHN',
                             age: '32',
                             birthday: '040485',

@@ -435,7 +435,7 @@ describe('BewotecExpertAdapter', () => {
                 d0: 1,
                 ta0: 'H',
                 tn0: 'DOE/JOHN',
-                te0: '040485',
+                te0: 32,
             });
 
             let data = {
@@ -446,7 +446,7 @@ describe('BewotecExpertAdapter', () => {
                         destination: 'YYZ',
                         startDate: '05122017',
                         endDate: '16122017',
-                        salutation: 'H',
+                        title: 'H',
                         name: 'DOE/JOHN',
                         age: '32',
                         birthday: '040485',

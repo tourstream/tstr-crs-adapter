@@ -3,6 +3,7 @@ import xml2js from 'xml2js';
 import fastXmlParser from 'fast-xml-parser';
 import moment from 'moment';
 import {SERVICE_TYPES} from '../UbpCrsAdapter';
+import RoundTripHelper from '../helper/RoundTripHelper';
 
 const CONFIG = {
     crs: {
@@ -42,6 +43,14 @@ const CONFIG = {
         '360C': 'BAUS',
         '360E': 'BAUS',
     },
+    gender2SalutationMap: {
+        male: 'M',
+        female: 'F',
+        kid: 'K',
+    },
+    title2SalutationMap: {
+        H: 'M',
+    },
     limitedCatalogs: ['DCH', 'CCH', 'DRI', 'DRIV', 'CARS'],
     parserOptions: {
         attrPrefix: '__attributes',
@@ -76,6 +85,13 @@ class CetsAdapter {
     constructor(logger, options = {}) {
         this.options = options;
         this.logger = logger;
+        this.helper = {
+            roundTrip: new RoundTripHelper(Object.assign({}, options, {
+                crsDateFormat: CONFIG.crs.dateFormat,
+                gender2SalutationMap: CONFIG.gender2SalutationMap,
+                title2SalutationMap: CONFIG.title2SalutationMap,
+            })),
+        };
 
         this.xmlParser = {
             parse: (xmlString) => {
@@ -535,12 +551,15 @@ class CetsAdapter {
     }
 
     assignRoundTripTravellers(service, xml) {
+        const traveller = this.helper.roundTrip.normalizeTraveller(service);
+
         xml.Fap = [{
             [CONFIG.builderOptions.attrkey]: {
                 ID: 1,
             },
-            PersonType: service.title,
-            Name: service.name,
+            PersonType: traveller.salutation,
+            Name: traveller.name,
+            Birth: traveller.birthday,
         }];
 
         xml.Fah[xml.Fah.length - 1].Persons = 1;

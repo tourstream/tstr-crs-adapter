@@ -2,6 +2,7 @@ import es6shim from 'es6-shim';
 import moment from 'moment';
 import axios from 'axios';
 import { SERVICE_TYPES } from '../UbpCrsAdapter';
+import RoundTripHelper from '../helper/RoundTripHelper';
 
 const CONFIG = {
     crs: {
@@ -25,6 +26,11 @@ const CONFIG = {
             mrs: 'F',
             kid: 'K',
         },
+        gender2SalutationMap: {
+            male: 'H',
+            female: 'F',
+            kid: 'K',
+        },
         lineNumberMap: ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'],
     },
     services: {
@@ -38,6 +44,12 @@ class BewotecExpertAdapter {
     constructor(logger, options = {}) {
         this.options = options;
         this.logger = logger;
+        this.helper = {
+            roundTrip: new RoundTripHelper(Object.assign({}, options, {
+                crsDateFormat: CONFIG.crs.dateFormat,
+                gender2SalutationMap: CONFIG.gender2SalutationMap,
+            })),
+        };
     }
 
     connect(options) {
@@ -379,15 +391,16 @@ class BewotecExpertAdapter {
      */
     assignRoundTripTravellers(service, crsObject, lineIndex) {
         const lineNumber = CONFIG.crs.lineNumberMap[lineIndex];
+        const traveller = this.helper.roundTrip.normalizeTraveller(service);
 
         let travellerLineIndex = this.getNextEmptyTravellerLineIndex(crsObject);
 
         const travellerLineNumber = CONFIG.crs.lineNumberMap[travellerLineIndex];
 
         crsObject['d' + lineNumber] = travellerLineIndex + 1;
-        crsObject['ta' + travellerLineNumber] = service.salutation;
-        crsObject['tn' + travellerLineNumber] = service.name;
-        crsObject['te' + travellerLineNumber] = service.birthday || service.age;
+        crsObject['ta' + travellerLineNumber] = traveller.salutation;
+        crsObject['tn' + travellerLineNumber] = traveller.name;
+        crsObject['te' + travellerLineNumber] = traveller.age;
     }
 
     /**

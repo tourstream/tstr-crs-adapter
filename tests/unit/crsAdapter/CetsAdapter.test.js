@@ -587,6 +587,7 @@ describe('CetsAdapter', () => {
                 let service = '<Fap ID="1">' +
                     '<PersonType>T</PersonType>' +
                     '<Name>John Doe</Name>' +
+                    '<Birth/>' +
                     '</Fap>' +
                     '<Catalog>DCH</Catalog>' +
                     '<TOCode>FTI</TOCode>' +

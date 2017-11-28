@@ -138,8 +138,8 @@ JackPlus   | X     | X     | X         | X
 |       | .pickUpDate              | '28122017' 
 |       | .pickUpTime              | '0915' 
 |       | .dropOffLocation         | 'MUC' 
-|       | .dropOffDate             | '04012018' (deprecated)
-|       | .dropOffTime             | '1720' (deprecated)
+|       | .dropOffDate             | '04012018'   (**deprecated**)
+|       | .dropOffTime             | '1720'       (**deprecated**)
 |       | .duration                | '9' (in days)
 |       | .durationInMinutes       | '12960'
 |       | .pickUpHotelName         | 'Best Hotel' 
@@ -169,10 +169,11 @@ _note: .durationInMinutes is only used for "bm" transfer_
 |           | .destination        | 'YYZ' 
 |           | .startDate          | '05122017' 
 |           | .endDate            | '16122017'
-|           | .title              | 'H'
+|           | .title              | 'H' OR 'F' OR 'K'   (**deprecated**)
+|           | .gender             | 'male' OR 'female' OR 'kid'
 |           | .name               | 'DOE/JOHN'
-|           | .age                | '32'
-|           | .birthday*          | '040485'
+|           | .age                | '32'                (**deprecated**)
+|           | .birthday           | '040485'
 
 *In case "age" and "birthday" are set "birthday" is preferred.
  

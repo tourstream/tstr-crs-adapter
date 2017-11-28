@@ -462,7 +462,7 @@ describe('MerlinAdapter', () => {
                 '<PersonRow travellerNo="1">' +
                 '<Salutation>H</Salutation>' +
                 '<Name>DOE/JOHN</Name>' +
-                '<Age>040485</Age>' +
+                '<Age>32</Age>' +
                 '</PersonRow>' +
                 '</PersonBlock>' +
                 '</TravellerBlock>'
@@ -478,7 +478,7 @@ describe('MerlinAdapter', () => {
                         destination: 'YYZ',
                         startDate: '05122017',
                         endDate: '16122017',
-                        salutation: 'H',
+                        title: 'H',
                         name: 'DOE/JOHN',
                         age: '32',
                         birthday: '040485',

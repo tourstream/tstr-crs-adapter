@@ -3,6 +3,7 @@ import xml2js from 'xml2js';
 import fastXmlParser from 'fast-xml-parser';
 import moment from 'moment';
 import {SERVICE_TYPES} from '../UbpCrsAdapter';
+import RoundTripHelper from '../helper/RoundTripHelper';
 
 /**
  * need to be true:
@@ -29,6 +30,11 @@ const CONFIG = {
         salutations: {
             mr: 'H',
             mrs: 'F',
+            kid: 'K',
+        },
+        gender2SalutationMap: {
+            male: 'H',
+            female: 'F',
             kid: 'K',
         },
     },
@@ -73,6 +79,12 @@ class TomaAdapter {
     constructor(logger, options = {}) {
         this.options = options;
         this.logger = logger;
+        this.helper = {
+            roundTrip: new RoundTripHelper(Object.assign({}, options, {
+                crsDateFormat: CONFIG.crs.dateFormat,
+                gender2SalutationMap: CONFIG.gender2SalutationMap,
+            })),
+        };
 
         this.xmlParser = {
             parse: xmlString => fastXmlParser.parse(xmlString, CONFIG.parserOptions)
@@ -367,13 +379,13 @@ class TomaAdapter {
         if (xml['TravAssociation.' + lineNumber]) {
             let travellerLineNumber = xml['TravAssociation.' + lineNumber];
 
-            service.salutation = xml['Title.' + travellerLineNumber];
+            service.title = xml['Title.' + travellerLineNumber];
             service.name = xml['Name.' + travellerLineNumber];
 
             if (xml['Reduction.' + travellerLineNumber].match(CONFIG.services.roundTrip.ageRegEx)){
                 service.age = xml['Reduction.' + travellerLineNumber]
             } else {
-                service.birthdate = xml['Reduction.' + travellerLineNumber];
+                service.birthday = xml['Reduction.' + travellerLineNumber];
             }
         }
 
@@ -722,12 +734,14 @@ class TomaAdapter {
      * @param lineNumber number
      */
     assignRoundTripTravellers(service, xml, lineNumber) {
+        const traveller = this.helper.roundTrip.normalizeTraveller(service);
+
         let travellerLineNumber = this.getNextEmptyTravellerLineNumber(xml);
 
         xml['TravAssociation.' + lineNumber] = travellerLineNumber;
-        xml['Title.' + travellerLineNumber] = service.salutation;
-        xml['Name.' + travellerLineNumber] = service.name;
-        xml['Reduction.' + travellerLineNumber] = service.birthday || service.age;
+        xml['Title.' + travellerLineNumber] = traveller.salutation;
+        xml['Name.' + travellerLineNumber] = traveller.name;
+        xml['Reduction.' + travellerLineNumber] = traveller.age;
     }
 
     /**
