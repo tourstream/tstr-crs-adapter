@@ -107,6 +107,8 @@ TOMA SPC (new) | 'toma2'        | .externalCatalogVersion?: string | '20.5'
 Merlin         | 'merlin'       |                                  | 
 MyJack         | 'myJack'       | token: string                    | 'token0123456789abcdef'
 Jack+          | 'jackPlus'     | token: string                    | 'token0123456789abcdef'
+Cosmo          | 'cosmo'        |                                  | 
+CosmoNaut      | 'cosmoNaut'    |                                  |
 
 For some connections you need credentials or other connection data,
 which you can set in the `connectionOptions`.
