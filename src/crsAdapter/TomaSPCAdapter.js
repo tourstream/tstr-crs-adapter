@@ -21,15 +21,10 @@ const CONFIG = {
             action: 'BA',
             numberOfTravellers: 1,
         },
-        salutations: {
-            mr: 'H',
-            mrs: 'F',
-            kid: 'K',
-        },
         gender2SalutationMap: {
             male: 'H',
             female: 'D',
-            kid: 'K',
+            child: 'K',
         },
     },
     services: {
@@ -412,7 +407,7 @@ class TomaSPCAdapter {
             do {
                 let traveller = crsObject.travellers[startLineNumber - 1];
 
-                if (traveller.title !== CONFIG.crs.salutations.kid) continue;
+                if (traveller.title !== CONFIG.crs.gender2SalutationMap.child) continue;
 
                 children.push({
                     name: traveller.name,
@@ -797,7 +792,7 @@ class TomaSPCAdapter {
 
             travellerLineNumber = travellerIndex + 1;
 
-            traveller.title = CONFIG.crs.salutations.kid;
+            traveller.title = CONFIG.crs.gender2SalutationMap.child;
             traveller.name = child.name;
             traveller.discount = child.age;
         });

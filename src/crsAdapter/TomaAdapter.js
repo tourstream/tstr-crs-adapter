@@ -27,15 +27,10 @@ const CONFIG = {
             action: 'BA',
             numberOfTravellers: '1',
         },
-        salutations: {
-            mr: 'H',
-            mrs: 'F',
-            kid: 'K',
-        },
         gender2SalutationMap: {
             male: 'H',
             female: 'F',
-            kid: 'K',
+            child: 'K',
         },
     },
     services: {
@@ -328,7 +323,7 @@ class TomaAdapter {
             if (!startLineNumber) return;
 
             do {
-                if (xml['Title.' + startLineNumber] !== CONFIG.crs.salutations.kid) continue;
+                if (xml['Title.' + startLineNumber] !== CONFIG.crs.gender2SalutationMap.child) continue;
 
                 children.push({
                     name: xml['Name.' + startLineNumber],
@@ -702,7 +697,7 @@ class TomaAdapter {
         service.children.forEach((child) => {
             travellerLineNumber = this.getNextEmptyTravellerLineNumber(xml);
 
-            xml['Title.' + travellerLineNumber] = CONFIG.crs.salutations.kid;
+            xml['Title.' + travellerLineNumber] = CONFIG.crs.gender2SalutationMap.child;
             xml['Name.' + travellerLineNumber] = child.name;
             xml['Reduction.' + travellerLineNumber] = child.age;
         });

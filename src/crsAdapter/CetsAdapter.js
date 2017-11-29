@@ -46,7 +46,7 @@ const CONFIG = {
     gender2SalutationMap: {
         male: 'M',
         female: 'F',
-        kid: 'C',
+        child: 'C',
     },
     title2SalutationMap: {
         H: 'M',

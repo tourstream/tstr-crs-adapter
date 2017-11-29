@@ -173,7 +173,7 @@ _note: .durationInMinutes is only used for "bm" transfer_
 |           | .startDate          | '05122017' 
 |           | .endDate            | '16122017'
 |           | .title              | 'H' OR 'F' OR 'K'   (**deprecated**)
-|           | .gender             | 'male' OR 'female' OR 'kid'
+|           | .gender             | 'male' OR 'female' OR 'child'
 |           | .name               | 'DOE/JOHN'
 |           | .age                | '32'                (**deprecated**)
 |           | .birthday           | '040485'

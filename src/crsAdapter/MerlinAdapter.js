@@ -23,15 +23,10 @@ const CONFIG = {
             action: 'BA',
             numberOfTravellers: '1',
         },
-        salutations: {
-            mr: 'H',
-            mrs: 'F',
-            kid: 'K',
-        },
         gender2SalutationMap: {
             male: 'H',
             female: 'F',
-            kid: 'K',
+            child: 'K',
         },
     },
     services: {
@@ -442,7 +437,7 @@ class MerlinAdapter {
 
             travellerLineNumber = travellerIndex + 1;
 
-            traveller.Salutation = CONFIG.crs.salutations.kid;
+            traveller.Salutation = CONFIG.crs.gender2SalutationMap.child;
             traveller.Name = child.name;
             traveller.Age = child.age;
         });

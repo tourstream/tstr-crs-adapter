@@ -21,15 +21,10 @@ const CONFIG = {
             action: 'BA',
             numberOfTravellers: 1,
         },
-        salutations: {
-            mr: 'H',
-            mrs: 'F',
-            kid: 'K',
-        },
         gender2SalutationMap: {
             male: 'H',
             female: 'F',
-            kid: 'K',
+            child: 'K',
         },
         lineNumberMap: ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'],
     },
@@ -356,7 +351,7 @@ class BewotecExpertAdapter {
 
             travellerAllocationNumber = travellerIndex + 1;
 
-            crsObject['ta' + travellerNumber] = CONFIG.crs.salutations.kid;
+            crsObject['ta' + travellerNumber] = CONFIG.crs.gender2SalutationMap.child;
             crsObject['tn' + travellerNumber] = child.name;
             crsObject['te' + travellerNumber] = child.age;
         });
