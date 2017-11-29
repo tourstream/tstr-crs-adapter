@@ -199,7 +199,7 @@ Additionally every service has a `.marked` field which is by default falsy.
 But if this service is either "marked" in the crs or detected as "marked" (depends on the type) it will be true.
 
 
-## === Booking Manager ===
+## === Booking Manager (**deprecated**) ===
 
 This adapter supports also the connection to the so called _FTI360 Booking Manager_.
 Use `adapter.connect('bm')` and you unlock the full functionality of it:
