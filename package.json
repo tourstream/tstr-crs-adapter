@@ -8,14 +8,16 @@
   },
   "scripts": {
     "build": "npm run build:dev && webpack --config webpack.config.prod.js",
-    "build:dev": "rimraf dist && webpack --config webpack.config.dev.js && cp dist/ubpCrsAdapter.js tests/manual/assets/ubpCrsAdapter.js",
+    "build:dev": "rimraf dist && webpack --config webpack.config.dev.js && cp dist/** tests/manual/assets/ && cp dist/ubpCrsAdapter.js.map tests/manual/assets/ubpCrsAdapter.js.map",
     "postbuild": "node prepare-gcs.js",
     "test": "karma start karma.config.js --single-run",
     "preversion": "npm test",
-    "version": "npm run build && git add -A tests/manual",
     "postversion": "git push && git push --tags",
     "serve": "npm run build:dev && ws --https --hostname localhost --port 1337 --directory ./tests/manual --static.index crsTest.html"
   },
+  "files": [
+    "/dist/"
+  ],
   "repository": {
     "type": "git",
     "url": "git+ssh://git@github.com:tourstream/tstr-crs-adapter.git"

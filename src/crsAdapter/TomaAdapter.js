@@ -3,6 +3,7 @@ import xml2js from 'xml2js';
 import fastXmlParser from 'fast-xml-parser';
 import moment from 'moment';
 import {SERVICE_TYPES} from '../UbpCrsAdapter';
+import RoundTripHelper from '../helper/RoundTripHelper';
 
 /**
  * need to be true:
@@ -26,10 +27,10 @@ const CONFIG = {
             action: 'BA',
             numberOfTravellers: '1',
         },
-        salutations: {
-            mr: 'H',
-            mrs: 'F',
-            kid: 'K',
+        gender2SalutationMap: {
+            male: 'H',
+            female: 'F',
+            child: 'K',
         },
     },
     services: {
@@ -73,6 +74,12 @@ class TomaAdapter {
     constructor(logger, options = {}) {
         this.options = options;
         this.logger = logger;
+        this.helper = {
+            roundTrip: new RoundTripHelper(Object.assign({}, options, {
+                crsDateFormat: CONFIG.crs.dateFormat,
+                gender2SalutationMap: CONFIG.gender2SalutationMap,
+            })),
+        };
 
         this.xmlParser = {
             parse: xmlString => fastXmlParser.parse(xmlString, CONFIG.parserOptions)
@@ -316,7 +323,7 @@ class TomaAdapter {
             if (!startLineNumber) return;
 
             do {
-                if (xml['Title.' + startLineNumber] !== CONFIG.crs.salutations.kid) continue;
+                if (xml['Title.' + startLineNumber] !== CONFIG.crs.gender2SalutationMap.child) continue;
 
                 children.push({
                     name: xml['Name.' + startLineNumber],
@@ -354,11 +361,12 @@ class TomaAdapter {
         let startDate = moment(xml['From.' + lineNumber], CONFIG.crs.dateFormat);
         let endDate = moment(xml['To.' + lineNumber], CONFIG.crs.dateFormat);
 
+        const hasBookingId = xml['ServiceCode.' + lineNumber].indexOf('NEZ') === 0;
+
         let service = {
             type: SERVICE_TYPES.roundTrip,
-            bookingId: xml['ServiceCode.' + lineNumber],
-            destination: xml['Accommodation.' + lineNumber],
-            numberOfPassengers: xml['Count.' + lineNumber],
+            bookingId: hasBookingId ? xml['ServiceCode.' + lineNumber].substring(3) : void 0,
+            destination: hasBookingId ? xml['Accommodation.' + lineNumber] : xml['ServiceCode.' + lineNumber],
             startDate: startDate.isValid() ? startDate.format(this.options.useDateFormat) : xml['From.' + lineNumber],
             endDate: endDate.isValid() ? endDate.format(this.options.useDateFormat) : xml['To.' + lineNumber],
         };
@@ -366,13 +374,13 @@ class TomaAdapter {
         if (xml['TravAssociation.' + lineNumber]) {
             let travellerLineNumber = xml['TravAssociation.' + lineNumber];
 
-            service.salutation = xml['Title.' + travellerLineNumber];
+            service.title = xml['Title.' + travellerLineNumber];
             service.name = xml['Name.' + travellerLineNumber];
 
             if (xml['Reduction.' + travellerLineNumber].match(CONFIG.services.roundTrip.ageRegEx)){
                 service.age = xml['Reduction.' + travellerLineNumber]
             } else {
-                service.birthdate = xml['Reduction.' + travellerLineNumber];
+                service.birthday = xml['Reduction.' + travellerLineNumber];
             }
         }
 
@@ -467,7 +475,7 @@ class TomaAdapter {
             case SERVICE_TYPES.roundTrip: {
                 let bookingId = xml['ServiceCode.' + lineNumber];
 
-                return !bookingId || bookingId === service.bookingId;
+                return !bookingId || bookingId.indexOf(service.bookingId) > -1;
             }
         }
     };
@@ -689,7 +697,7 @@ class TomaAdapter {
         service.children.forEach((child) => {
             travellerLineNumber = this.getNextEmptyTravellerLineNumber(xml);
 
-            xml['Title.' + travellerLineNumber] = CONFIG.crs.salutations.kid;
+            xml['Title.' + travellerLineNumber] = CONFIG.crs.gender2SalutationMap.child;
             xml['Name.' + travellerLineNumber] = child.name;
             xml['Reduction.' + travellerLineNumber] = child.age;
         });
@@ -708,9 +716,8 @@ class TomaAdapter {
         let endDate = moment(service.endDate, this.options.useDateFormat);
 
         xml['KindOfService.' + lineNumber] = CONFIG.crs.serviceTypes.roundTrip;
-        xml['ServiceCode.' + lineNumber] = service.bookingId;
+        xml['ServiceCode.' + lineNumber] = 'NEZ' + service.bookingId;
         xml['Accommodation.' + lineNumber] = service.destination;
-        xml['Count.' + lineNumber] = service.numberOfPassengers;
         xml['From.' + lineNumber] = startDate.isValid() ? startDate.format(CONFIG.crs.dateFormat) : service.startDate;
         xml['To.' + lineNumber] = endDate.isValid() ? endDate.format(CONFIG.crs.dateFormat) : service.endDate;
     }
@@ -722,12 +729,14 @@ class TomaAdapter {
      * @param lineNumber number
      */
     assignRoundTripTravellers(service, xml, lineNumber) {
+        const traveller = this.helper.roundTrip.normalizeTraveller(service);
+
         let travellerLineNumber = this.getNextEmptyTravellerLineNumber(xml);
 
         xml['TravAssociation.' + lineNumber] = travellerLineNumber;
-        xml['Title.' + travellerLineNumber] = service.salutation;
-        xml['Name.' + travellerLineNumber] = service.name;
-        xml['Reduction.' + travellerLineNumber] = service.birthday || service.age;
+        xml['Title.' + travellerLineNumber] = traveller.salutation;
+        xml['Name.' + travellerLineNumber] = traveller.name;
+        xml['Reduction.' + travellerLineNumber] = traveller.age;
     }
 
     /**

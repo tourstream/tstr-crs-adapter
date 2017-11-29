@@ -97,18 +97,21 @@ useTimeFormat | 'HHmm' (according to [momentjs date format](https://momentjs.com
 You can check the currently supported CRSs with `UbpCrsAdapter.CRS_TYPES`.
 Currently this module supports the connection to following CRS masks:
 
-CRS            | connectionType | connectionOptions                | exitOptions
+CRS            | connectionType | connectionOptions                | example
 :---           | :---           | :---                             | :---
-CETS           | 'cets'         | -                                | -
-TOMA (old)     | 'toma'         | .providerKey: string             | -
-TOMA SPC (new) | 'toma2'        | .externalCatalogVersion?: string | .popupId?: string
-|              |                | .connectionUrl?: string          |
-Merlin         | 'merlin'       | -                                | -
-MyJack         | 'myJack'       | token: string                    | -
-Jack+          | 'jackPlus'     | token: string                    | -
+CETS           | 'cets'         |                                  | 
+TOMA (old)     | 'toma'         | .providerKey: string             | 'ABC'
+TOMA SPC (new) | 'toma2'        | .externalCatalogVersion?: string | '20.5'
+|              |                | .connectionUrl?: string          | 'https://acceptance.emea1.sellingplatformconnect.amadeus.com'
+|              |                | .popupId?: string                | 'popup_id0123456789abcdef'
+Merlin         | 'merlin'       |                                  | 
+MyJack         | 'myJack'       | token: string                    | 'token0123456789abcdef'
+Jack+          | 'jackPlus'     | token: string                    | 'token0123456789abcdef'
 
 For some connections you need credentials or other connection data,
 which you can set in the `connectionOptions`.
+
+*hint: TOMA SPC needs additional connectionOptions if the website which uses the adapter is not directly the site which is requested by the TOMA application*
 
 
 ### `.services` object structure
@@ -138,8 +141,8 @@ JackPlus   | X     | X     | X         | X
 |       | .pickUpDate              | '28122017' 
 |       | .pickUpTime              | '0915' 
 |       | .dropOffLocation         | 'MUC' 
-|       | .dropOffDate             | '04012018' (deprecated)
-|       | .dropOffTime             | '1720' (deprecated)
+|       | .dropOffDate             | '04012018'   (**deprecated**)
+|       | .dropOffTime             | '1720'       (**deprecated**)
 |       | .duration                | '9' (in days)
 |       | .durationInMinutes       | '12960'
 |       | .pickUpHotelName         | 'Best Hotel' 
@@ -165,15 +168,15 @@ _note: .durationInMinutes is only used for "bm" transfer_
 
 | type      | fields              | example
 | :---      | :---                | :---
-| roundTrip | .bookingId          | 'NEZE2784NQXTHEN' 
+| roundTrip | .bookingId          | 'E2784NQXTHEN' 
 |           | .destination        | 'YYZ' 
-|           | .numberOfPassengers | '1' 
 |           | .startDate          | '05122017' 
 |           | .endDate            | '16122017'
-|           | .title              | 'H'
+|           | .title              | 'H' OR 'F' OR 'K'   (**deprecated**)
+|           | .gender             | 'male' OR 'female' OR 'child'
 |           | .name               | 'DOE/JOHN'
-|           | .age                | '32'
-|           | .birthday*          | '040485'
+|           | .age                | '32'                (**deprecated**)
+|           | .birthday           | '040485'
 
 *In case "age" and "birthday" are set "birthday" is preferred.
  
@@ -196,7 +199,7 @@ Additionally every service has a `.marked` field which is by default falsy.
 But if this service is either "marked" in the crs or detected as "marked" (depends on the type) it will be true.
 
 
-## === Booking Manager ===
+## === Booking Manager (**deprecated**) ===
 
 This adapter supports also the connection to the so called _FTI360 Booking Manager_.
 Use `adapter.connect('bm')` and you unlock the full functionality of it:

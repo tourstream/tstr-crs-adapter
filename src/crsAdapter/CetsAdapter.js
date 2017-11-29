@@ -3,6 +3,7 @@ import xml2js from 'xml2js';
 import fastXmlParser from 'fast-xml-parser';
 import moment from 'moment';
 import {SERVICE_TYPES} from '../UbpCrsAdapter';
+import RoundTripHelper from '../helper/RoundTripHelper';
 
 const CONFIG = {
     crs: {
@@ -17,6 +18,7 @@ const CONFIG = {
         serviceType: {
             car: 'C',
             customerRequest: 'Q',
+            roundTrip: 'R',
         },
         pickUp: {
             walkIn: {
@@ -40,6 +42,14 @@ const CONFIG = {
         '360': 'BAUS',
         '360C': 'BAUS',
         '360E': 'BAUS',
+    },
+    gender2SalutationMap: {
+        male: 'M',
+        female: 'F',
+        child: 'C',
+    },
+    title2SalutationMap: {
+        H: 'M',
     },
     limitedCatalogs: ['DCH', 'CCH', 'DRI', 'DRIV', 'CARS'],
     parserOptions: {
@@ -75,6 +85,13 @@ class CetsAdapter {
     constructor(logger, options = {}) {
         this.options = options;
         this.logger = logger;
+        this.helper = {
+            roundTrip: new RoundTripHelper(Object.assign({}, options, {
+                crsDateFormat: CONFIG.crs.dateFormat,
+                gender2SalutationMap: CONFIG.gender2SalutationMap,
+                title2SalutationMap: CONFIG.title2SalutationMap,
+            })),
+        };
 
         this.xmlParser = {
             parse: (xmlString) => {
@@ -145,6 +162,8 @@ class CetsAdapter {
 
         this.assignAdapterObjectToXmlObject(normalizedXmlObject, dataObject);
 
+        this.cleanUpXmlObject(normalizedXmlObject);
+
         this.logger.info('XML OBJECT:');
         this.logger.info(normalizedXmlObject);
 
@@ -211,24 +230,26 @@ class CetsAdapter {
             services: [],
         };
 
-        if (xmlRequest.Fab.Fah) {
-            xmlRequest.Fab.Fah.forEach((xmlService) => {
-                let service;
+        xmlRequest.Fab.Fah.forEach((xmlService) => {
+            let service;
 
-                switch (xmlService[CONFIG.parserOptions.attrPrefix].ServiceType) {
-                    case CONFIG.defaults.serviceType.car: {
-                        service = this.mapCarServiceFromXmlObjectToAdapterObject(xmlService);
-                        break;
-                    }
-                    default:
-                        break;
+            switch (xmlService[CONFIG.parserOptions.attrPrefix].ServiceType) {
+                case CONFIG.defaults.serviceType.car: {
+                    service = this.mapCarServiceFromXmlObjectToAdapterObject(xmlService);
+                    break;
                 }
+                case CONFIG.defaults.serviceType.roundTrip: {
+                    service = this.mapRoundTripServiceFromXmlObjectToAdapterObject(xmlService);
+                    break;
+                }
+                default:
+                    break;
+            }
 
-                if (service) {
-                    dataObject.services.push(service);
-                }
-            });
-        }
+            if (service) {
+                dataObject.services.push(service);
+            }
+        });
 
         if (xmlRequest.Avl) {
             let service;
@@ -236,6 +257,10 @@ class CetsAdapter {
             switch (xmlRequest.Avl[CONFIG.parserOptions.attrPrefix].ServiceType) {
                 case CONFIG.defaults.serviceType.car: {
                     service = this.mapCarServiceFromXmlObjectToAdapterObject(xmlRequest.Avl);
+                    break;
+                }
+                case CONFIG.defaults.serviceType.roundTrip: {
+                    service = this.mapRoundTripServiceFromXmlObjectToAdapterObject(xmlRequest.Avl);
                     break;
                 }
                 default:
@@ -248,30 +273,27 @@ class CetsAdapter {
             }
         }
 
-        return dataObject;
+        return JSON.parse(JSON.stringify(dataObject));
     }
 
+    /**
+     * @private
+     * @param xmlService
+     * @returns {{pickUpDate: *, dropOffDate: string, pickUpLocation: *, duration: *, rentalCode: *, vehicleTypeCode: *, type: string}}
+     */
     mapCarServiceFromXmlObjectToAdapterObject(xmlService) {
-        const addDropOffDate = (service) => {
-            let pickUpDate = moment(service.pickUpDate, CONFIG.crs.dateFormat);
-
-            service.dropOffDate = pickUpDate.isValid()
-                ? pickUpDate.add(service.duration, 'days').format(this.options.useDateFormat)
-                : '';
-        };
-
         let pickUpDate = moment(xmlService.StartDate, CONFIG.crs.dateFormat);
+        let dropOffDate = pickUpDate.clone().add(xmlService.Duration, 'days');
 
         let service = {
             pickUpDate: pickUpDate.isValid() ? pickUpDate.format(this.options.useDateFormat) : xmlService.StartDate,
+            dropOffDate: dropOffDate.isValid() ? dropOffDate.format(this.options.useDateFormat) : '',
             pickUpLocation: xmlService.Destination,
             duration: xmlService.Duration,
             rentalCode: xmlService.Product,
             vehicleTypeCode: xmlService.Room,
             type: SERVICE_TYPES.car,
         };
-
-        addDropOffDate(service);
 
         if (xmlService.CarDetails) {
             let pickUpTime = moment(xmlService.CarDetails.PickUp.Time, CONFIG.crs.timeFormat);
@@ -284,6 +306,24 @@ class CetsAdapter {
         }
 
         return service;
+    }
+
+    /**
+     * @private
+     * @param xmlService
+     * @returns {{type: string, bookingId: *, destination: *, startDate: string, endDate: string}}
+     */
+    mapRoundTripServiceFromXmlObjectToAdapterObject(xmlService) {
+        let startDate = moment(xmlService.StartDate, CONFIG.crs.dateFormat);
+        let endDate = startDate.clone().add(xmlService.Duration, 'days');
+
+        return {
+            type: SERVICE_TYPES.roundTrip,
+            bookingId: xmlService.Destination === 'NEZ' ? xmlService.Product : void 0,
+            destination: xmlService.Destination === 'NEZ' ? xmlService.Room : xmlService.Product,
+            startDate: startDate.isValid() ? startDate.format(this.options.useDateFormat) : xmlService.StartDate,
+            endDate: endDate.isValid() ? endDate.format(this.options.useDateFormat) : '',
+        };
     }
 
     /**
@@ -323,13 +363,13 @@ class CetsAdapter {
             xmlObject = addFabNode(xmlObject);
         }
 
-        if (xmlObject.Request.Fab.Fah && !Array.isArray(xmlObject.Request.Fab.Fah)) {
-            xmlObject.Request.Fab.Fah = [xmlObject.Request.Fab.Fah];
-        }
+        ['Fah', 'Faq', 'Fap'].forEach((node) => {
+            xmlObject.Request.Fab[node] = xmlObject.Request.Fab[node] || [];
 
-        if (xmlObject.Request.Fab.Faq && !Array.isArray(xmlObject.Request.Fab.Faq)) {
-            xmlObject.Request.Fab.Faq = [xmlObject.Request.Fab.Faq];
-        }
+            if (!Array.isArray(xmlObject.Request.Fab[node])) {
+                xmlObject.Request.Fab[node] = [xmlObject.Request.Fab[node]];
+            }
+        });
 
         return xmlObject;
     }
@@ -365,9 +405,6 @@ class CetsAdapter {
 
         let xmlRequest = xmlObject.Request.Fab;
 
-        xmlRequest.Fah = xmlRequest.Fah || [];
-        xmlRequest.Faq = xmlRequest.Faq || [];
-
         (dataObject.services || []).forEach(service => {
             removeLimitedServices(service);
 
@@ -378,17 +415,15 @@ class CetsAdapter {
 
                     break;
                 }
+                case SERVICE_TYPES.roundTrip: {
+                    this.assignRoundTripServiceFromAdapterObjectToXmlObject(service, xmlRequest);
+                    this.assignRoundTripTravellers(service, xmlRequest);
+
+                    break;
+                }
                 default: this.logger.warn('type ' + service.type + ' is not supported by the CETS adapter');
             }
         });
-
-        if (!xmlRequest.Fah.length) {
-            delete xmlRequest.Fah;
-        }
-
-        if (!xmlRequest.Faq.length) {
-            delete xmlRequest.Faq;
-        }
     }
 
     /**
@@ -398,21 +433,6 @@ class CetsAdapter {
      * @param xml object
      */
     assignCarServiceFromAdapterObjectToXmlObject(service, xml) {
-        const calculateDuration = (service) => {
-            if (service.duration) {
-                return service.duration;
-            }
-
-            if (service.dropOffDate) {
-                let pickUpDate = moment(service.pickUpDate, this.options.useDateFormat);
-                let dropOffDate = moment(service.dropOffDate, this.options.useDateFormat);
-
-                if (pickUpDate.isValid() && dropOffDate.isValid()) {
-                    return Math.ceil(dropOffDate.diff(pickUpDate, 'days', true));
-                }
-            }
-        };
-
         const normalizeService = (service) => {
             service.vehicleTypeCode = service.vehicleTypeCode.toUpperCase();
             service.rentalCode = service.rentalCode.toUpperCase();
@@ -432,14 +452,14 @@ class CetsAdapter {
                 Key: service.vehicleTypeCode + '/' + service.pickUpLocation + '-' + service.dropOffLocation,
             },
             StartDate: pickUpDate.isValid() ? pickUpDate.format(CONFIG.crs.dateFormat) : service.pickUpDate,
-            Duration: calculateDuration(service),
+            Duration: service.duration || this.calculateDuration(service.pickUpDate, service.dropOffDate),
             Destination: service.pickUpLocation,
             Product: service.rentalCode,
             Room: service.vehicleTypeCode,
             Norm: CONFIG.defaults.personCount,
             MaxAdults: CONFIG.defaults.personCount,
             Meal: CONFIG.defaults.serviceCode.car,
-            Persons: CONFIG.defaults.personCount,
+            Persons: 1,
             CarDetails: {
                 PickUp: {
                     [CONFIG.builderOptions.attrkey]: {
@@ -489,14 +509,12 @@ class CetsAdapter {
             xmlService.CarDetails.DropOff.Info = service.dropOffHotelName;
         }
 
-        xml.Faq = xml.Faq || [];
-
         let xmlFaq = {
             [CONFIG.builderOptions.attrkey]: {
                 ServiceType: CONFIG.defaults.serviceType.customerRequest,
             },
             Code: CONFIG.crs.hotelLocationCode,
-            Persons: CONFIG.defaults.personCount,
+            Persons: 1,
             TextV: [
                 [
                     service.pickUpHotelName,
@@ -513,6 +531,58 @@ class CetsAdapter {
 
         xml.Faq.push(xmlFaq);
     }
+
+    assignRoundTripServiceFromAdapterObjectToXmlObject(service, xml) {
+        let startDate = moment(service.startDate, this.options.useDateFormat);
+
+        let xmlService = {
+            [CONFIG.builderOptions.attrkey]: {
+                ServiceType: CONFIG.defaults.serviceType.roundTrip,
+            },
+            Product: service.bookingId,
+            Program: 'BAUSTEIN',
+            Destination: 'NEZ',
+            Room: service.destination,
+            StartDate: startDate.isValid() ? startDate.format(CONFIG.crs.dateFormat) : service.startDate,
+            Duration: service.duration || this.calculateDuration(service.startDate, service.endDate),
+        };
+
+        xml.Fah.push(xmlService);
+    }
+
+    assignRoundTripTravellers(service, xml) {
+        const traveller = this.helper.roundTrip.normalizeTraveller(service);
+
+        xml.Fap = [{
+            [CONFIG.builderOptions.attrkey]: {
+                ID: 1,
+            },
+            PersonType: traveller.salutation,
+            Name: traveller.name,
+            Birth: traveller.birthday,
+        }];
+
+        xml.Fah[xml.Fah.length - 1].Persons = 1;
+    }
+
+    cleanUpXmlObject(xmlObject) {
+        ['Fah', 'Faq', 'Fap'].forEach((node) => {
+            if (!xmlObject.Request.Fab[node].length) {
+                delete xmlObject.Request.Fab[node];
+            }
+        });
+    }
+
+    calculateDuration(startDate, endDate) {
+        if (endDate) {
+            let startDateObject = moment(startDate, this.options.useDateFormat);
+            let endDateObject = moment(endDate, this.options.useDateFormat);
+
+            if (startDateObject.isValid() && endDateObject.isValid()) {
+                return Math.ceil(endDateObject.diff(startDateObject, 'days', true));
+            }
+        }
+    };
 }
 
 export default CetsAdapter;

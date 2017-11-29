@@ -346,7 +346,6 @@ describe('TomaAdapter', () => {
                 '<KindOfService.1>R</KindOfService.1>' +
                 '<ServiceCode.1>NEZE2784NQXTHEN</ServiceCode.1>' +
                 '<Accommodation.1>YYZ</Accommodation.1>' +
-                '<Count.1>1</Count.1>' +
                 '<From.1>051217</From.1>' +
                 '<To.1>161217</To.1>' +
                 '<TravAssociation.1>2</TravAssociation.1>' +
@@ -357,14 +356,13 @@ describe('TomaAdapter', () => {
 
             let roundTripService = {
                 type: 'roundTrip',
-                bookingId: 'NEZE2784NQXTHEN',
+                bookingId: 'E2784NQXTHEN',
                 destination: 'YYZ',
-                numberOfPassengers: '1',
                 startDate: '05122017',
                 endDate: '16122017',
-                salutation: 'H',
+                title: 'H',
                 name: 'DOE/JOHN',
-                birthdate: '040485',
+                birthday: '040485',
                 marked: false,
             };
 
@@ -380,9 +378,7 @@ describe('TomaAdapter', () => {
         it('getData() should parse round-trip services and returns age field instead of birthDate', () => {
             let xml = createTomaXml(
                 '<KindOfService.1>R</KindOfService.1>' +
-                '<ServiceCode.1>NEZE2784NQXTHEN</ServiceCode.1>' +
-                '<Accommodation.1>YYZ</Accommodation.1>' +
-                '<Count.1>1</Count.1>' +
+                '<ServiceCode.1>YYZ</ServiceCode.1>' +
                 '<From.1>051217</From.1>' +
                 '<To.1>161217</To.1>' +
                 '<TravAssociation.1>1</TravAssociation.1>' +
@@ -393,12 +389,10 @@ describe('TomaAdapter', () => {
 
             let roundTripService = {
                 type: 'roundTrip',
-                bookingId: 'NEZE2784NQXTHEN',
                 destination: 'YYZ',
-                numberOfPassengers: '1',
                 startDate: '05122017',
                 endDate: '16122017',
-                salutation: 'H',
+                title: 'H',
                 name: 'DOE/JOHN',
                 age: '32',
                 marked: false,
@@ -666,13 +660,12 @@ describe('TomaAdapter', () => {
                     '<KindOfService.1>R</KindOfService.1>' +
                     '<ServiceCode.1>NEZE2784NQXTHEN</ServiceCode.1>' +
                     '<Accommodation.1>YYZ</Accommodation.1>' +
-                    '<Count.1>1</Count.1>' +
                     '<From.1>051217</From.1>' +
                     '<To.1>161217</To.1>' +
                     '<TravAssociation.1>1</TravAssociation.1>' +
                     '<Title.1>H</Title.1>' +
                     '<Name.1>DOE/JOHN</Name.1>' +
-                    '<Reduction.1>040485</Reduction.1>'
+                    '<Reduction.1>32</Reduction.1>'
                 );
 
                 adapter.setData({
@@ -681,12 +674,11 @@ describe('TomaAdapter', () => {
                         {
                             type: 'roundTrip',
                             marked: '',
-                            bookingId: 'NEZE2784NQXTHEN',
+                            bookingId: 'E2784NQXTHEN',
                             destination: 'YYZ',
-                            numberOfPassengers: '1',
                             startDate: '05122017',
                             endDate: '16122017',
-                            salutation: 'H',
+                            title: 'H',
                             name: 'DOE/JOHN',
                             age: '32',
                             birthday: '040485',

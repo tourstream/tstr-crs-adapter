@@ -452,7 +452,6 @@ describe('MerlinAdapter', () => {
                 '<KindOfService>R</KindOfService>' +
                 '<Service>NEZE2784NQXTHEN</Service>' +
                 '<Accommodation>YYZ</Accommodation>' +
-                '<NoOfServices>1</NoOfServices>' +
                 '<FromDate>051217</FromDate>' +
                 '<EndDate>161217</EndDate>' +
                 '<TravellerAllocation>1</TravellerAllocation>' +
@@ -463,7 +462,7 @@ describe('MerlinAdapter', () => {
                 '<PersonRow travellerNo="1">' +
                 '<Salutation>H</Salutation>' +
                 '<Name>DOE/JOHN</Name>' +
-                '<Age>040485</Age>' +
+                '<Age>32</Age>' +
                 '</PersonRow>' +
                 '</PersonBlock>' +
                 '</TravellerBlock>'
@@ -475,12 +474,11 @@ describe('MerlinAdapter', () => {
                     {
                         type: 'roundTrip',
                         marked: '',
-                        bookingId: 'NEZE2784NQXTHEN',
+                        bookingId: 'E2784NQXTHEN',
                         destination: 'YYZ',
-                        numberOfPassengers: '1',
                         startDate: '05122017',
                         endDate: '16122017',
-                        salutation: 'H',
+                        title: 'H',
                         name: 'DOE/JOHN',
                         age: '32',
                         birthday: '040485',

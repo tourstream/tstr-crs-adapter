@@ -3,6 +3,8 @@ import xml2js from 'xml2js';
 import moment from 'moment';
 import axios from 'axios';
 import { SERVICE_TYPES } from '../UbpCrsAdapter';
+import RoundTripHelper from '../helper/RoundTripHelper';
+
 
 const CONFIG = {
     crs: {
@@ -21,10 +23,10 @@ const CONFIG = {
             action: 'BA',
             numberOfTravellers: '1',
         },
-        salutations: {
-            mr: 'H',
-            mrs: 'F',
-            kid: 'K',
+        gender2SalutationMap: {
+            male: 'H',
+            female: 'F',
+            child: 'K',
         },
     },
     services: {
@@ -56,6 +58,12 @@ class MerlinAdapter {
     constructor(logger, options = {}) {
         this.options = options;
         this.logger = logger;
+        this.helper = {
+            roundTrip: new RoundTripHelper(Object.assign({}, options, {
+                crsDateFormat: CONFIG.crs.dateFormat,
+                gender2SalutationMap: CONFIG.gender2SalutationMap,
+            })),
+        };
 
         this.xmlBuilder = {
             build: (xmlObject) => (new xml2js.Builder(CONFIG.builderOptions)).buildObject(JSON.parse(JSON.stringify(xmlObject)))
@@ -429,7 +437,7 @@ class MerlinAdapter {
 
             travellerLineNumber = travellerIndex + 1;
 
-            traveller.Salutation = CONFIG.crs.salutations.kid;
+            traveller.Salutation = CONFIG.crs.gender2SalutationMap.child;
             traveller.Name = child.name;
             traveller.Age = child.age;
         });
@@ -447,9 +455,8 @@ class MerlinAdapter {
         let endDate = moment(service.endDate, this.options.useDateFormat);
 
         xmlService.KindOfService = CONFIG.crs.serviceTypes.roundTrip;
-        xmlService.Service = service.bookingId;
+        xmlService.Service = 'NEZ' + service.bookingId;
         xmlService.Accommodation = service.destination;
-        xmlService.NoOfServices = service.numberOfPassengers;
         xmlService.FromDate = startDate.isValid() ? startDate.format(CONFIG.crs.dateFormat) : service.startDate;
         xmlService.EndDate = endDate.isValid() ? endDate.format(CONFIG.crs.dateFormat) : service.endDate;
     }
@@ -461,14 +468,16 @@ class MerlinAdapter {
      * @param xml object
      */
     assignRoundTripTravellers(service, xmlService, xml) {
+        const travellerData = this.helper.roundTrip.normalizeTraveller(service);
+
         let travellerIndex = this.getNextEmptyTravellerIndex(xml);
         let traveller = xml.TravellerBlock.PersonBlock.PersonRow[travellerIndex];
 
         xmlService.TravellerAllocation = travellerIndex + 1;
 
-        traveller.Salutation = service.salutation;
-        traveller.Name = service.name;
-        traveller.Age = service.birthday || service.age;
+        traveller.Salutation = travellerData.salutation;
+        traveller.Name = travellerData.name;
+        traveller.Age = travellerData.age;
     }
 
     /**

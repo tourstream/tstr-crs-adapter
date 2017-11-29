@@ -2,6 +2,7 @@ import es6shim from 'es6-shim';
 import es7shim from 'es7-shim';
 import moment from 'moment';
 import { SERVICE_TYPES } from '../UbpCrsAdapter';
+import RoundTripHelper from '../helper/RoundTripHelper';
 
 const CONFIG = {
     crs: {
@@ -20,10 +21,10 @@ const CONFIG = {
             action: 'BA',
             numberOfTravellers: 1,
         },
-        salutations: {
-            mr: 'H',
-            mrs: 'F',
-            kid: 'K',
+        gender2SalutationMap: {
+            male: 'H',
+            female: 'D',
+            child: 'K',
         },
     },
     services: {
@@ -40,13 +41,22 @@ class TomaSPCAdapter {
     constructor(logger, options = {}) {
         this.options = options;
         this.logger = logger;
+        this.connectionOptions = {};
+        this.helper = {
+            roundTrip: new RoundTripHelper(Object.assign({}, options, {
+                crsDateFormat: CONFIG.crs.dateFormat,
+                gender2SalutationMap: CONFIG.gender2SalutationMap,
+            })),
+        };
     }
 
     /**
-     * @param options <{externalCatalogVersion?: string, connectionUrl?: string}>
+     * @param options <{externalCatalogVersion?: string, connectionUrl?: string, popupId?: string}>
      * @returns {Promise}
      */
     connect(options) {
+        this.connectionOptions = options;
+
         return this.createConnection(options);
     }
 
@@ -80,7 +90,10 @@ class TomaSPCAdapter {
 
     exit(options = {}) {
         return new Promise((resolve) => {
-            let popupId = options.popupId || this.getUrlParameter('POPUP_ID');
+            // BM-134 remove support for options.popupId
+            this.logger.warn('options.popupId is deprecated use the connectionOptions.popupId instead');
+
+            let popupId = this.getUrlParameter('POPUP_ID') || options.popupId || this.connectionOptions.popupId;
 
             if (!popupId) {
                 throw new Error('can not exit - popupId is missing');
@@ -122,13 +135,33 @@ class TomaSPCAdapter {
                 window.catalog.connect(callbackObject);
             };
 
+            const cleanUrl = (url = '') => {
+                if (!url) return;
+
+                const extractConnectionUrl = (url) => {
+                    const domain = url.replace(/https?:\/\//, '').split('/')[0];
+
+                    return domain ? 'https://' + domain : void 0;
+                };
+
+                const link = document.createElement('a');
+
+                link.href = url;
+
+                if (link.protocol && link.hostname) {
+                    return link.protocol + '//' + link.hostname;
+                }
+
+                return extractConnectionUrl(url) || url;
+            };
+
             const getConnectionUrlFromReferrer = () => {
-                let url = (document.referrer || '').replace(/https?:\/\//, '').split('/')[0];
+                let url = cleanUrl(document.referrer);
 
                 return url.indexOf('.sellingplatformconnect.amadeus.com') > -1 ? 'https://' + url : void 0;
             };
 
-            let connectionUrl = getConnectionUrlFromReferrer() || options.connectionUrl;
+            let connectionUrl = getConnectionUrlFromReferrer() || cleanUrl(options.connectionUrl);
 
             if (!connectionUrl) {
                 const message = 'could not detect any Amadeus SeCo URL to connect to';
@@ -139,7 +172,7 @@ class TomaSPCAdapter {
 
             this.logger.info('use ' + connectionUrl + ' as connection url');
 
-            let catalogVersion = options.externalCatalogVersion || this.getUrlParameter('EXTERNAL_CATALOG_VERSION');
+            let catalogVersion = this.getUrlParameter('EXTERNAL_CATALOG_VERSION') || options.externalCatalogVersion;
             let filePath = connectionUrl + '/' + CONFIG.crs.catalogFileName + (catalogVersion ? '?version=' + catalogVersion : '');
             let script = document.createElement('script');
 
@@ -374,7 +407,7 @@ class TomaSPCAdapter {
             do {
                 let traveller = crsObject.travellers[startLineNumber - 1];
 
-                if (traveller.title !== CONFIG.crs.salutations.kid) continue;
+                if (traveller.title !== CONFIG.crs.gender2SalutationMap.child) continue;
 
                 children.push({
                     name: traveller.name,
@@ -412,11 +445,12 @@ class TomaSPCAdapter {
         let startDate = moment(crsService.fromDate, CONFIG.crs.dateFormat);
         let endDate = moment(crsService.toDate, CONFIG.crs.dateFormat);
 
+        const hasBookingId = crsService.serviceCode.indexOf('NEZ') === 0;
+
         let service = {
             type: SERVICE_TYPES.roundTrip,
-            bookingId: crsService.serviceCode,
-            destination: crsService.accommodation,
-            numberOfPassengers: crsService.quantity,
+            bookingId: hasBookingId ? crsService.serviceCode : void 0,
+            destination: hasBookingId ? crsService.accommodation : crsService.serviceCode,
             startDate: startDate.isValid() ? startDate.format(this.options.useDateFormat) : crsService.fromDate,
             endDate: endDate.isValid() ? endDate.format(this.options.useDateFormat) : crsService.toDate,
         };
@@ -424,13 +458,13 @@ class TomaSPCAdapter {
         if (crsService.travellerAssociation) {
             let traveller = crsObject.travellers[crsService.travellerAssociation - 1];
 
-            service.salutation = traveller.title;
+            service.title = traveller.title;
             service.name = traveller.name;
 
             if (traveller.discount.match(CONFIG.services.roundTrip.ageRegEx)){
                 service.age = traveller.discount
             } else {
-                service.birthdate = traveller.discount;
+                service.birthday = traveller.discount;
             }
         }
 
@@ -758,7 +792,7 @@ class TomaSPCAdapter {
 
             travellerLineNumber = travellerIndex + 1;
 
-            traveller.title = CONFIG.crs.salutations.kid;
+            traveller.title = CONFIG.crs.gender2SalutationMap.child;
             traveller.name = child.name;
             traveller.discount = child.age;
         });
@@ -776,9 +810,8 @@ class TomaSPCAdapter {
         let endDate = moment(adapterService.endDate, this.options.useDateFormat);
 
         crsService.serviceType = CONFIG.crs.serviceTypes.roundTrip;
-        crsService.serviceCode = adapterService.bookingId;
+        crsService.serviceCode = 'NEZ' + adapterService.bookingId;
         crsService.accommodation = adapterService.destination;
-        crsService.quantity = adapterService.numberOfPassengers;
         crsService.fromDate = startDate.isValid() ? startDate.format(CONFIG.crs.dateFormat) : adapterService.startDate;
         crsService.toDate = endDate.isValid() ? endDate.format(CONFIG.crs.dateFormat) : adapterService.endDate;
     }
@@ -790,14 +823,16 @@ class TomaSPCAdapter {
      * @param crsObject object
      */
     assignRoundTripTravellers(adapterService, crsService, crsObject) {
+        const travellerData = this.helper.roundTrip.normalizeTraveller(adapterService);
+
         let travellerIndex = this.getNextEmptyTravellerIndex(crsObject);
         let traveller = crsObject.travellers[travellerIndex];
 
         crsService.travellerAssociation = travellerIndex + 1;
 
-        traveller.title = adapterService.salutation;
-        traveller.name = adapterService.name;
-        traveller.discount = adapterService.birthday || adapterService.age;
+        traveller.title = travellerData.salutation;
+        traveller.name = travellerData.name;
+        traveller.discount = travellerData.age;
     }
 
     /**
