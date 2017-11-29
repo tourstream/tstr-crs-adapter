@@ -97,18 +97,21 @@ useTimeFormat | 'HHmm' (according to [momentjs date format](https://momentjs.com
 You can check the currently supported CRSs with `UbpCrsAdapter.CRS_TYPES`.
 Currently this module supports the connection to following CRS masks:
 
-CRS            | connectionType | connectionOptions                | exitOptions
+CRS            | connectionType | connectionOptions                | example
 :---           | :---           | :---                             | :---
-CETS           | 'cets'         | -                                | -
-TOMA (old)     | 'toma'         | .providerKey: string             | -
-TOMA SPC (new) | 'toma2'        | .externalCatalogVersion?: string | .popupId?: string
-|              |                | .connectionUrl?: string          |
-Merlin         | 'merlin'       | -                                | -
-MyJack         | 'myJack'       | token: string                    | -
-Jack+          | 'jackPlus'     | token: string                    | -
+CETS           | 'cets'         |                                  | 
+TOMA (old)     | 'toma'         | .providerKey: string             | 'ABC'
+TOMA SPC (new) | 'toma2'        | .externalCatalogVersion?: string | '20.5'
+|              |                | .connectionUrl?: string          | 'https://acceptance.emea1.sellingplatformconnect.amadeus.com'
+|              |                | .popupId?: string                | 'popup_id0123456789abcdef'
+Merlin         | 'merlin'       |                                  | 
+MyJack         | 'myJack'       | token: string                    | 'token0123456789abcdef'
+Jack+          | 'jackPlus'     | token: string                    | 'token0123456789abcdef'
 
 For some connections you need credentials or other connection data,
 which you can set in the `connectionOptions`.
+
+*hint: TOMA SPC needs additional connectionOptions if the website which uses the adapter is not directly the site which is requested by the TOMA application*
 
 
 ### `.services` object structure
