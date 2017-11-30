@@ -69,7 +69,7 @@ describe('MerlinAdapter', () => {
         beforeEach(() => {
             adapter.connect();
 
-            expect(axios.defaults.headers.post['Content-Type']).toBe('text/plain');
+            expect(axios.defaults.headers.post['Content-Type']).toBe('application/xml');
         });
 
         it('getData() should return nothing as it is not possible to get any data from the merlin mask', (done) => {

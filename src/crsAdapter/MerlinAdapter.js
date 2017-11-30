@@ -124,7 +124,7 @@ class MerlinAdapter {
      * @returns {{post: (function(*=): AxiosPromise)}}
      */
     createConnection() {
-        axios.defaults.headers.post['Content-Type'] = 'text/plain';
+        axios.defaults.headers.post['Content-Type'] = 'application/xml';
 
         return {
             post: (data = '') => axios.post(CONFIG.crs.connectionUrl, data),
