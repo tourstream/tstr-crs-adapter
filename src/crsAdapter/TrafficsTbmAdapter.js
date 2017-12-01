@@ -1,7 +1,9 @@
 import es6shim from 'es6-shim';
 import moment from 'moment';
 import axios from 'axios';
+import querystring from 'querystring';
 import { SERVICE_TYPES } from '../UbpCrsAdapter';
+import RoundTripHelper from '../helper/RoundTripHelper';
 
 const CONFIG = {
     crs: {
@@ -15,40 +17,52 @@ const CONFIG = {
             camper: 'WM',
             camperExtra: 'TA',
         },
-        connectionUrl: 'cosmonaut://params',
+        connectionUrl: 'cosmonaut://params/#tbm&file=',
         defaultValues: {
             action: 'BA',
             numberOfTravellers: 1,
         },
-        salutations: {
-            mr: 'H',
-            mrs: 'F',
-            kid: 'K',
+        gender2SalutationMap: {
+            male: 'H',
+            female: 'F',
+            child: 'K',
         },
-        lineNumberMap: ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'],
+        exportUrls: {
+            live: 'https://tbm.traffics.de',
+            test: 'https://cosmo-staging.traffics-switch.de',
+        }
     },
     services: {
         car: {
             serviceCodeRegEx: /([A-Z]*[0-9]*)?([A-Z]*[0-9]*)?(\/)?([A-Z]*[0-9]*)?(-)?([A-Z]*[0-9]*)?/,
         },
     },
+    supportedConnectionOptions: ['dataSourceUrl', 'environment', 'exportId']
 };
 
 class TrafficsTbmAdapter {
     constructor(logger, options = {}) {
         this.options = options;
         this.logger = logger;
+        this.helper = {
+            roundTrip: new RoundTripHelper(Object.assign({}, options, {
+                crsDateFormat: CONFIG.crs.dateFormat,
+                gender2SalutationMap: CONFIG.gender2SalutationMap,
+            })),
+        };
     }
 
     connect(options) {
-        if (!options || !options.token) {
-            throw new Error('No token found in connectionOptions.');
-        }
+        CONFIG.supportedConnectionOptions.forEach((optionName) => {
+            if (!options || !options[optionName]) {
+                throw new Error('No ' + optionName + ' found in connectionOptions.');
+            }
+        });
 
         this.connection = this.createConnection(options);
 
         return this.connection.get().then(() => {
-            this.logger.log('BewotecExpert (' + this.options.crsType + ') connection available');
+            this.logger.log('TrafficsTBM (' + this.options.crsType + ') connection available');
         }, (error) => {
             this.logger.error(error.message);
             this.logger.info('response is: ' + error.response);
@@ -58,7 +72,7 @@ class TrafficsTbmAdapter {
     }
 
     getData() {
-        this.logger.warn('BewotecExpert (' + this.options.crsType + ') has no mechanism for getting the data');
+        this.logger.warn('TrafficsTBM (' + this.options.crsType + ') has no mechanism for getting the data');
 
         return this.getConnection().get().then((data) => {
             return Promise.resolve(data);
@@ -87,7 +101,7 @@ class TrafficsTbmAdapter {
     }
 
     exit() {
-        this.logger.warn('BewotecExpert (' + this.options.crsType + ') has no exit mechanism');
+        this.logger.warn('TrafficsTBM (' + this.options.crsType + ') has no exit mechanism');
 
         return Promise.resolve();
     }
@@ -99,23 +113,13 @@ class TrafficsTbmAdapter {
      * @returns {{send: (function(*=): AxiosPromise)}}
      */
     createConnection(options) {
-        const extendSendData = (data = {}) => {
-            data.token = options.token;
-            data.merge = true;
-
-            return data;
-        };
-
         return {
-            // does not work well - we get a "Network error" as long as we have the CORS issue
-            get: () => axios.get(CONFIG.crs.connectionUrl + '/expert', {
-                params: {
-                    token: options.token,
-                },
-            }),
-            send: (data = {}) => axios.get(CONFIG.crs.connectionUrl + '/fill', {
-                params: extendSendData(data),
-            }),
+            send: (data = {}) => axios.get(
+                CONFIG.crs.connectionUrl + btoa(options.dataSourceUrl + '?' + querystring.stringify(data))
+            ),
+            get: () => axios.get(
+                CONFIG.crs.exportUrls[options.environment] + '/tbmExport?id=' + options.exportId
+            ),
         };
     }
 
@@ -128,13 +132,13 @@ class TrafficsTbmAdapter {
             return this.connection;
         }
 
-        throw new Error('No connection available - please connect to Bewotec application first.');
+        throw new Error('No connection available - please connect to Traffics application first.');
     }
 
     createBaseCrsObject() {
         return {
-            a: CONFIG.crs.defaultValues.action,
-            v: 'FTI',
+            'TbmXml.admin.operator.$.act': CONFIG.crs.defaultValues.action,
+            'TbmXml.admin.operator.$.toc': 'FTI',
         };
     }
 
@@ -144,8 +148,8 @@ class TrafficsTbmAdapter {
      * @param dataObject object
      */
     assignDataObjectToCrsObject(crsObject, dataObject = {}) {
-        crsObject.rem = dataObject.remark;
-        crsObject.p = dataObject.numberOfTravellers || CONFIG.crs.defaultValues.numberOfTravellers;
+        crsObject['TbmXml.admin.customer.$.rmk'] = dataObject.remark;
+        crsObject['TbmXml.admin.customer.$.psn'] = dataObject.numberOfTravellers || CONFIG.crs.defaultValues.numberOfTravellers;
 
         (dataObject.services || []).forEach((service) => {
             let markedLineIndex= this.getMarkedLineIndexForService(crsObject, service);
@@ -174,7 +178,7 @@ class TrafficsTbmAdapter {
                     break;
                 }
                 default: {
-                    this.logger.warn('type ' + service.type + ' is not supported by the BewotecExpert (' + this.options.crsType + ') adapter');
+                    this.logger.warn('type ' + service.type + ' is not supported by the TrafficsTBM (' + this.options.crsType + ') adapter');
                     return;
                 }
             }

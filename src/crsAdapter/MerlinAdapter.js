@@ -5,7 +5,6 @@ import axios from 'axios';
 import { SERVICE_TYPES } from '../UbpCrsAdapter';
 import RoundTripHelper from '../helper/RoundTripHelper';
 
-
 const CONFIG = {
     crs: {
         dateFormat: 'DDMMYY',
