@@ -487,7 +487,7 @@ class TrafficsTbmAdapter {
                 }
             }
 
-            crsObject['m' + CONFIG.crs.lineNumberMap[lineIndex]] = service.marked ? 'X' : void 0;
+            crsObject['TbmXml.admin.services.service.' + lineIndex + '.$.mrk'] = service.marked ? 'X' : void 0;
         });
 
         return JSON.parse(JSON.stringify(crsObject));

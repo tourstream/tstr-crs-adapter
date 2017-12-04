@@ -19,7 +19,7 @@ body  {
     width: 100%;
 }
 
-input {
+input, select {
     left: 200px;
     position: sticky;
     width: 50%;
