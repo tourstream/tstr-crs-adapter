@@ -133,12 +133,14 @@ You can check the currently supported service types with `UbpCrsAdapter.SERVICE_
 
 |          | car   | hotel | roundtrip | camper 
 ---        | :---: | :---: | :---:     | :---:
-CETS       | X     |       |           | 
+CETS       | X     |       | X         | 
 TOMA (old) | X     | X     | X         | X 
 TOMA (new) | X     | X     | X         | X
 Merlin     | X     | X     | X         | X
 MyJack     | X     | X     | X         | X
 JackPlus   | X     | X     | X         | X
+cosmo      | X     | X     | X         | X
+cosmoNaut  | X     | X     | X         | X
 
 
 | type  | fields                   | example
