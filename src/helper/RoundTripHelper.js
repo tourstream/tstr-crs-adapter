@@ -5,7 +5,7 @@ class RoundTripHelper {
         this.config = config;
     }
 
-    normalizeTraveller(service) {
+    normalizeTraveller(service = {}) {
         const gender = (service.gender || '').toLowerCase();
         const title = (service.title || '').toUpperCase();
 

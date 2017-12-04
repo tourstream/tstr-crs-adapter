@@ -4,6 +4,9 @@ import axios from 'axios';
 import querystring from 'querystring';
 import { SERVICE_TYPES } from '../UbpCrsAdapter';
 import RoundTripHelper from '../helper/RoundTripHelper';
+import CarHelper from '../helper/CarHelper';
+import CamperHelper from '../helper/CamperHelper';
+import HotelHelper from '../helper/HotelHelper';
 
 const CONFIG = {
     crs: {
@@ -37,25 +40,41 @@ const CONFIG = {
             serviceCodeRegEx: /([A-Z]*[0-9]*)?([A-Z]*[0-9]*)?(\/)?([A-Z]*[0-9]*)?(-)?([A-Z]*[0-9]*)?/,
         },
     },
-    supportedConnectionOptions: ['dataSourceUrl', 'environment', 'exportId']
+    supportedConnectionOptions: {
+        dataSourceUrl: void 0,
+        environment: ['live', 'test'],
+        exportId: void 0,
+    }
 };
 
 class TrafficsTbmAdapter {
     constructor(logger, options = {}) {
         this.options = options;
         this.logger = logger;
+
+        const helperOptions = Object.assign({}, options, {
+            crsDateFormat: CONFIG.crs.dateFormat,
+            gender2SalutationMap: CONFIG.gender2SalutationMap,
+        });
+
         this.helper = {
-            roundTrip: new RoundTripHelper(Object.assign({}, options, {
-                crsDateFormat: CONFIG.crs.dateFormat,
-                gender2SalutationMap: CONFIG.gender2SalutationMap,
-            })),
+            roundTrip: new RoundTripHelper(helperOptions),
+            car: new CarHelper(helperOptions),
+            camper: new CamperHelper(helperOptions),
+            hotel: new HotelHelper(helperOptions),
         };
     }
 
     connect(options) {
-        CONFIG.supportedConnectionOptions.forEach((optionName) => {
+        Object.keys(CONFIG.supportedConnectionOptions).forEach((optionName) => {
             if (!options || !options[optionName]) {
                 throw new Error('No ' + optionName + ' found in connectionOptions.');
+            }
+
+            if (!CONFIG.supportedConnectionOptions[optionName]) return;
+
+            if (!CONFIG.supportedConnectionOptions[optionName].includes(options[optionName])) {
+                throw new Error('Value ' + options[optionName] + ' is not allowed for ' + optionName + '.');
             }
         });
 
@@ -196,35 +215,19 @@ class TrafficsTbmAdapter {
      * @param lineIndex int
      */
     assignCarServiceFromAdapterObjectToCrsObject(service, crsObject, lineIndex) {
-        const reduceExtrasList = (extras) => {
-            return (extras || []).join(',')
-                .replace(/childCareSeat0/g, 'BS')
-                .replace(/childCareSeat((\d){1,2})/g, 'CS$1YRS');
-        };
-
         let pickUpDate = moment(service.pickUpDate, this.options.useDateFormat);
         let pickUpTime = moment(service.pickUpTime, this.options.useTimeFormat);
         let dropOffDate = (service.dropOffDate)
             ? moment(service.dropOffDate, this.options.useDateFormat)
             : moment(service.pickUpDate, this.options.useDateFormat).add(service.duration, 'days');
 
-        crsObject['n' + CONFIG.crs.lineNumberMap[lineIndex]] = CONFIG.crs.serviceTypes.car;
+        crsObject['TbmXml.admin.services.service.' + lineIndex + '.$.typ'] = CONFIG.crs.serviceTypes.car;
+        crsObject['TbmXml.admin.services.service.' + lineIndex + '.$.cod'] = this.helper.car.createServiceCode(service);
+        crsObject['TbmXml.admin.services.service.' + lineIndex + '.$.vnd'] = pickUpDate.isValid() ? pickUpDate.format(CONFIG.crs.dateFormat) : service.pickUpDate;
+        crsObject['TbmXml.admin.services.service.' + lineIndex + '.$.bsd'] = dropOffDate.isValid() ? dropOffDate.format(CONFIG.crs.dateFormat) : service.dropOffDate;
+        crsObject['TbmXml.admin.services.service.' + lineIndex + '.$.opt'] = pickUpTime.isValid() ? pickUpTime.format(CONFIG.crs.timeFormat) : service.pickUpTime;
 
-        // USA96A4/MIA1-TPA
-        crsObject['l' + CONFIG.crs.lineNumberMap[lineIndex]] = [
-            service.rentalCode,
-            service.vehicleTypeCode,
-            '/',
-            service.pickUpLocation,
-            '-',
-            service.dropOffLocation,
-        ].join('');
-
-        crsObject['s' + CONFIG.crs.lineNumberMap[lineIndex]] = pickUpDate.isValid() ? pickUpDate.format(CONFIG.crs.dateFormat) : service.pickUpDate;
-        crsObject['i' + CONFIG.crs.lineNumberMap[lineIndex]] = dropOffDate.isValid() ? dropOffDate.format(CONFIG.crs.dateFormat) : service.dropOffDate;
-        crsObject['u' + CONFIG.crs.lineNumberMap[lineIndex]] = pickUpTime.isValid() ? pickUpTime.format(CONFIG.crs.timeFormat) : service.pickUpTime;
-
-        crsObject.rem = [crsObject.rem, reduceExtrasList(service.extras)].filter(Boolean).join(';') || void 0;
+        crsObject['TbmXml.admin.customer.$.rmk'] = [crsObject['TbmXml.admin.customer.$.rmk'], this.helper.car.reduceExtras(service.extras)].filter(Boolean).join(';') || void 0;
     };
 
     /**
@@ -233,24 +236,6 @@ class TrafficsTbmAdapter {
      * @param crsObject object
      */
     assignHotelData(service, crsObject) {
-        const reduceHotelDataToRemarkString = (service) => {
-            let hotelData = [];
-
-            if (service.pickUpHotelName) {
-                hotelData.push([service.pickUpHotelAddress, service.pickUpHotelPhoneNumber].filter(Boolean).join(' '));
-            }
-
-            if (service.dropOffHotelName) {
-                if (service.pickUpHotelName) {
-                    hotelData.push(service.dropOffHotelName);
-                }
-
-                hotelData.push([service.dropOffHotelAddress, service.dropOffHotelPhoneNumber].filter(Boolean).join(' '));
-            }
-
-            return hotelData.filter(Boolean).join(',');
-        };
-
         let hotelName = service.pickUpHotelName || service.dropOffHotelName;
 
         if (hotelName) {
@@ -259,14 +244,15 @@ class TrafficsTbmAdapter {
                 ? moment(service.dropOffDate, this.options.useDateFormat)
                 : moment(service.pickUpDate, this.options.useDateFormat).add(service.duration, 'days');
             let lineIndex = this.getNextEmptyServiceLineIndex(crsObject);
+            let hotelDataString = this.helper.car.reduceHotelData(service);
 
-            crsObject['n' + CONFIG.crs.lineNumberMap[lineIndex]] = CONFIG.crs.serviceTypes.carExtras;
-            crsObject['l' + CONFIG.crs.lineNumberMap[lineIndex]] = hotelName;
-            crsObject['s' + CONFIG.crs.lineNumberMap[lineIndex]] = pickUpDate.isValid() ? pickUpDate.format(CONFIG.crs.dateFormat) : service.pickUpDate;
-            crsObject['i' + CONFIG.crs.lineNumberMap[lineIndex]] = dropOffDate.isValid() ? dropOffDate.format(CONFIG.crs.dateFormat) : service.dropOffDate;
+            crsObject['TbmXml.admin.services.service.' + lineIndex + '.$.typ'] = CONFIG.crs.serviceTypes.carExtras;
+            crsObject['TbmXml.admin.services.service.' + lineIndex + '.$.cod'] = hotelName;
+            crsObject['TbmXml.admin.services.service.' + lineIndex + '.$.vnd'] = pickUpDate.isValid() ? pickUpDate.format(CONFIG.crs.dateFormat) : service.pickUpDate;
+            crsObject['TbmXml.admin.services.service.' + lineIndex + '.$.bsd'] = dropOffDate.isValid() ? dropOffDate.format(CONFIG.crs.dateFormat) : service.dropOffDate;
+
+            crsObject['TbmXml.admin.customer.$.rmk'] = [crsObject['TbmXml.admin.customer.$.rmk'], hotelDataString].filter(Boolean).join(';') || void 0;
         }
-
-        crsObject.rem = [crsObject.rem, reduceHotelDataToRemarkString(service)].filter(Boolean).join(';') || void 0;
     }
 
     /**
@@ -277,7 +263,7 @@ class TrafficsTbmAdapter {
      * @param lineIndex int
      */
     assignHotelServiceFromAdapterObjectToCrsObject(service, crsObject, lineIndex) {
-        const emptyRelatedTravellers = () => {
+        const emptyRelatedTravellers = (crsObject, travellerAssociation) => {
             let startLineNumber = parseInt(travellerAssociation.substr(0, 1), 10);
             let endLineNumber = parseInt(travellerAssociation.substr(-1), 10);
 
@@ -286,32 +272,30 @@ class TrafficsTbmAdapter {
             do {
                 let startLineIndex = CONFIG.crs.lineNumberMap[startLineNumber - 1];
 
-                crsObject['ta' + startLineIndex] = void 0;
-                crsObject['tn' + startLineIndex] = void 0;
-                crsObject['te' + startLineIndex] = void 0;
+                crsObject['TbmXml.admin.travellers.traveller.' + startLineIndex + '.$.typ'] = void 0;
+                crsObject['TbmXml.admin.travellers.traveller.' + startLineIndex + '.$.sur'] = void 0;
+                crsObject['TbmXml.admin.travellers.traveller.' + startLineIndex + '.$.age'] = void 0;
             } while (++startLineNumber <= endLineNumber);
         };
 
-        const lineNumber = CONFIG.crs.lineNumberMap[lineIndex];
-
         let dateFrom = moment(service.dateFrom, this.options.useDateFormat);
         let dateTo = moment(service.dateTo, this.options.useDateFormat);
-        let travellerAssociation = crsObject['d' + lineNumber] || '';
+        let travellerAssociation = crsObject['TbmXml.admin.services.service.' + lineIndex + '.$.agn'] || '';
 
         service.roomOccupancy = Math.max(service.roomOccupancy || 1, (service.children || []).length);
 
-        crsObject['n' + lineNumber] = CONFIG.crs.serviceTypes.hotel;
-        crsObject['l' + lineNumber] = service.destination;
-        crsObject['u' + lineNumber] = [service.roomCode, service.mealCode].filter(Boolean).join(' ');
-        crsObject['z' + lineNumber] = service.roomQuantity;
-        crsObject['e' + lineNumber] = service.roomOccupancy;
-        crsObject['s' + lineNumber] = dateFrom.isValid() ? dateFrom.format(CONFIG.crs.dateFormat) : service.dateFrom;
-        crsObject['i' + lineNumber] = dateTo.isValid() ? dateTo.format(CONFIG.crs.dateFormat) : service.dateTo;
-        crsObject['d' + lineNumber] = '1' + ((service.roomOccupancy > 1) ? '-' + service.roomOccupancy : '');
+        crsObject['TbmXml.admin.services.service.' + lineIndex + '.$.typ'] = CONFIG.crs.serviceTypes.hotel;
+        crsObject['TbmXml.admin.services.service.' + lineIndex + '.$.cod'] = service.destination;
+        crsObject['TbmXml.admin.services.service.' + lineIndex + '.$.opt'] = [service.roomCode, service.mealCode].filter(Boolean).join(' ');
+        crsObject['TbmXml.admin.services.service.' + lineIndex + '.$.cnt'] = service.roomQuantity;
+        crsObject['TbmXml.admin.services.service.' + lineIndex + '.$.alc'] = service.roomOccupancy;
+        crsObject['TbmXml.admin.services.service.' + lineIndex + '.$.vnd'] = dateFrom.isValid() ? dateFrom.format(CONFIG.crs.dateFormat) : service.dateFrom;
+        crsObject['TbmXml.admin.services.service.' + lineIndex + '.$.bsd'] = dateTo.isValid() ? dateTo.format(CONFIG.crs.dateFormat) : service.dateTo;
+        crsObject['TbmXml.admin.services.service.' + lineIndex + '.$.agn'] = '1' + ((service.roomOccupancy > 1) ? '-' + service.roomOccupancy : '');
 
-        emptyRelatedTravellers();
+        emptyRelatedTravellers(crsObject, travellerAssociation);
 
-        crsObject.p = Math.max(crsObject.p, service.roomOccupancy);
+        crsObject['TbmXml.admin.operator.$.psn'] = Math.max(crsObject['TbmXml.admin.operator.$.psn'], service.roomOccupancy);
     }
 
     /**
@@ -325,31 +309,19 @@ class TrafficsTbmAdapter {
             return;
         }
 
-        const lineNumber = CONFIG.crs.lineNumberMap[lineIndex];
-
-        const addTravellerAllocation = () => {
-            let lastTravellerAllocationNumber = Math.max(service.roomOccupancy, travellerAllocationNumber);
-            let firstTravellerAllocationNumber = 1 + lastTravellerAllocationNumber - service.roomOccupancy;
-
-            crsObject['d' + lineNumber] = firstTravellerAllocationNumber === lastTravellerAllocationNumber
-                ? firstTravellerAllocationNumber
-                : firstTravellerAllocationNumber + '-' + lastTravellerAllocationNumber;
-        };
-
         let travellerAllocationNumber = void 0;
 
         service.children.forEach((child) => {
             let travellerIndex = this.getNextEmptyTravellerLineIndex(crsObject);
-            let travellerNumber = CONFIG.crs.lineNumberMap[travellerIndex];
 
             travellerAllocationNumber = travellerIndex + 1;
 
-            crsObject['ta' + travellerNumber] = CONFIG.crs.salutations.kid;
-            crsObject['tn' + travellerNumber] = child.name;
-            crsObject['te' + travellerNumber] = child.age;
+            crsObject['TbmXml.admin.travellers.traveller.' + travellerIndex + '.$.typ'] = CONFIG.crs.gender2SalutationMap.child;
+            crsObject['TbmXml.admin.travellers.traveller.' + travellerIndex + '.$.sur'] = child.name;
+            crsObject['TbmXml.admin.travellers.traveller.' + travellerIndex + '.$.age'] = child.age;
         });
 
-        addTravellerAllocation();
+        crsObject['TbmXml.admin.services.service.' + lineIndex + '.$.agn'] = this.helper.hotel.calculateTravellerAllocation(service, travellerAllocationNumber);
     }
 
     /**
@@ -362,12 +334,11 @@ class TrafficsTbmAdapter {
         let startDate = moment(service.startDate, this.options.useDateFormat);
         let endDate = moment(service.endDate, this.options.useDateFormat);
 
-        crsObject['n' + CONFIG.crs.lineNumberMap[lineIndex]] = CONFIG.crs.serviceTypes.roundTrip;
-        crsObject['l' + CONFIG.crs.lineNumberMap[lineIndex]] = service.bookingId;
-        crsObject['u' + CONFIG.crs.lineNumberMap[lineIndex]] = service.destination;
-        crsObject['z' + CONFIG.crs.lineNumberMap[lineIndex]] = service.numberOfPassengers;
-        crsObject['s' + CONFIG.crs.lineNumberMap[lineIndex]] = startDate.isValid() ? startDate.format(CONFIG.crs.dateFormat) : service.startDate;
-        crsObject['i' + CONFIG.crs.lineNumberMap[lineIndex]] = endDate.isValid() ? endDate.format(CONFIG.crs.dateFormat) : service.endDate;
+        crsObject['TbmXml.admin.services.service.' + lineIndex + '.$.typ'] = CONFIG.crs.serviceTypes.roundTrip;
+        crsObject['TbmXml.admin.services.service.' + lineIndex + '.$.cod'] = 'NEZ' + service.bookingId;
+        crsObject['TbmXml.admin.services.service.' + lineIndex + '.$.opt'] = service.destination;
+        crsObject['TbmXml.admin.services.service.' + lineIndex + '.$.vnd'] = startDate.isValid() ? startDate.format(CONFIG.crs.dateFormat) : service.startDate;
+        crsObject['TbmXml.admin.services.service.' + lineIndex + '.$.bsd'] = endDate.isValid() ? endDate.format(CONFIG.crs.dateFormat) : service.endDate;
     }
 
     /**
@@ -377,12 +348,14 @@ class TrafficsTbmAdapter {
      * @param lineIndex number
      */
     assignRoundTripTravellers(service, crsObject, lineIndex) {
+        const travellerData = this.helper.roundTrip.normalizeTraveller(service);
+
         let travellerLineIndex = this.getNextEmptyTravellerLineIndex(crsObject);
 
-        crsObject['d' + CONFIG.crs.lineNumberMap[lineIndex]] = travellerLineIndex + 1;
-        crsObject['ta' + CONFIG.crs.lineNumberMap[travellerLineIndex]] = service.salutation;
-        crsObject['tn' + CONFIG.crs.lineNumberMap[travellerLineIndex]] = service.name;
-        crsObject['te' + CONFIG.crs.lineNumberMap[travellerLineIndex]] = service.birthday || service.age;
+        crsObject['TbmXml.admin.services.service.' + lineIndex + '.$.agn'] = travellerLineIndex + 1;
+        crsObject['TbmXml.admin.travellers.traveller.' + lineIndex + '.$.typ'] = travellerData.salutation;
+        crsObject['TbmXml.admin.travellers.traveller.' + lineIndex + '.$.sur'] = travellerData.name;
+        crsObject['TbmXml.admin.travellers.traveller.' + lineIndex + '.$.age'] = travellerData.age;
     }
 
     /**
@@ -398,24 +371,14 @@ class TrafficsTbmAdapter {
             : moment(service.pickUpDate, this.options.useDateFormat).add(service.duration, 'days');
         let pickUpTime = moment(service.pickUpTime, this.options.useTimeFormat);
 
-        crsObject['n' + CONFIG.crs.lineNumberMap[lineIndex]] = CONFIG.crs.serviceTypes.camper;
-
-        // PRT02FS/LIS1-LIS2
-        crsObject['l' + CONFIG.crs.lineNumberMap[lineIndex]] = [
-            service.renterCode,
-            service.camperCode,
-            '/',
-            service.pickUpLocation,
-            '-',
-            service.dropOffLocation,
-        ].join('');
-
-        crsObject['s' + CONFIG.crs.lineNumberMap[lineIndex]] = pickUpDate.isValid() ? pickUpDate.format(CONFIG.crs.dateFormat) : service.pickUpDate;
-        crsObject['i' + CONFIG.crs.lineNumberMap[lineIndex]] = dropOffDate.isValid() ? dropOffDate.format(CONFIG.crs.dateFormat) : service.dropOffDate;
-        crsObject['u' + CONFIG.crs.lineNumberMap[lineIndex]] = pickUpTime.isValid() ? pickUpTime.format(CONFIG.crs.timeFormat) : service.pickUpTime;
-        crsObject['c' + CONFIG.crs.lineNumberMap[lineIndex]] = service.milesIncludedPerDay;
-        crsObject['e' + CONFIG.crs.lineNumberMap[lineIndex]] = service.milesPackagesIncluded;
-        crsObject['d' + CONFIG.crs.lineNumberMap[lineIndex]] = '1' + ((crsObject.NoOfPersons > 1) ? '-' + crsObject.NoOfPersons : '');
+        crsObject['TbmXml.admin.services.service.' + lineIndex + '.$.typ'] = CONFIG.crs.serviceTypes.camper;
+        crsObject['TbmXml.admin.services.service.' + lineIndex + '.$.cod'] = this.helper.camper.createServiceCode(service);
+        crsObject['TbmXml.admin.services.service.' + lineIndex + '.$.vnd'] = pickUpDate.isValid() ? pickUpDate.format(CONFIG.crs.dateFormat) : service.pickUpDate;
+        crsObject['TbmXml.admin.services.service.' + lineIndex + '.$.bsd'] = dropOffDate.isValid() ? dropOffDate.format(CONFIG.crs.dateFormat) : service.dropOffDate;
+        crsObject['TbmXml.admin.services.service.' + lineIndex + '.$.opt'] = pickUpTime.isValid() ? pickUpTime.format(CONFIG.crs.timeFormat) : service.pickUpTime;
+        crsObject['TbmXml.admin.services.service.' + lineIndex + '.$.op2'] = service.milesIncludedPerDay;
+        crsObject['TbmXml.admin.services.service.' + lineIndex + '.$.alc'] = service.milesPackagesIncluded;
+        crsObject['TbmXml.admin.services.service.' + lineIndex + '.$.agn'] = '1' + ((crsObject['TbmXml.admin.operator.$.psn'] > 1) ? '-' + crsObject['TbmXml.admin.operator.$.psn'] : '');
     }
 
     /**
@@ -433,11 +396,11 @@ class TrafficsTbmAdapter {
             let lineIndex = this.getNextEmptyServiceLineIndex(crsObject);
             let extraParts = extra.split('.');
 
-            crsObject['n' + CONFIG.crs.lineNumberMap[lineIndex]] = CONFIG.crs.serviceTypes.camperExtra;
-            crsObject['l' + CONFIG.crs.lineNumberMap[lineIndex]] = extraParts[0];
-            crsObject['s' + CONFIG.crs.lineNumberMap[lineIndex]] = pickUpDate.isValid() ? pickUpDate.format(CONFIG.crs.dateFormat) : service.pickUpDate;
-            crsObject['i' + CONFIG.crs.lineNumberMap[lineIndex]] = dropOffDate.isValid() ? dropOffDate.format(CONFIG.crs.dateFormat) : service.dropOffDate;
-            crsObject['d' + CONFIG.crs.lineNumberMap[lineIndex]] = '1' + ((extraParts[1] > 1) ? '-' + extraParts[1] : '');
+            crsObject['TbmXml.admin.services.service.' + lineIndex + '.$.typ'] = CONFIG.crs.serviceTypes.camperExtra;
+            crsObject['TbmXml.admin.services.service.' + lineIndex + '.$.cod'] = extraParts[0];
+            crsObject['TbmXml.admin.services.service.' + lineIndex + '.$.vnd'] = pickUpDate.isValid() ? pickUpDate.format(CONFIG.crs.dateFormat) : service.pickUpDate;
+            crsObject['TbmXml.admin.services.service.' + lineIndex + '.$.bsd'] = dropOffDate.isValid() ? dropOffDate.format(CONFIG.crs.dateFormat) : service.dropOffDate;
+            crsObject['TbmXml.admin.services.service.' + lineIndex + '.$.agn'] = '1' + ((extraParts[1] > 1) ? '-' + extraParts[1] : '');
         });
     }
 
@@ -452,8 +415,7 @@ class TrafficsTbmAdapter {
         let markedLineIndex = void 0;
 
         do {
-            let lineNumber = CONFIG.crs.lineNumberMap[lineIndex];
-            let kindOfService = crsObject['n' + lineNumber];
+            let kindOfService = crsObject['TbmXml.admin.services.service.' + lineIndex + '.$.typ'];
 
             if (!kindOfService) {
                 return markedLineIndex;
@@ -461,7 +423,7 @@ class TrafficsTbmAdapter {
 
             if (kindOfService !== CONFIG.crs.serviceTypes[service.type]) continue;
 
-            if (crsObject['m' + lineNumber]) {
+            if (crsObject['TbmXml.admin.services.service.' + lineIndex + '.$.mrk']) {
                 return lineIndex;
             }
         } while (++lineIndex);
@@ -476,9 +438,9 @@ class TrafficsTbmAdapter {
         let index = 0;
 
         do {
-            let markerField = crsObject['m' + CONFIG.crs.lineNumberMap[index]];
-            let serviceType = crsObject['n' + CONFIG.crs.lineNumberMap[index]];
-            let serviceCode = crsObject['l' + CONFIG.crs.lineNumberMap[index]];
+            let markerField = crsObject['TbmXml.admin.services.service.' + index + '.$.mrk'];
+            let serviceType = crsObject['TbmXml.admin.services.service.' + index + '.$.typ'];
+            let serviceCode = crsObject['TbmXml.admin.services.service.' + index + '.$.cod'];
 
             if (!markerField && !serviceType && !serviceCode) {
                 return index;
@@ -495,11 +457,9 @@ class TrafficsTbmAdapter {
         let index = 0;
 
         do {
-            let lineNumber = CONFIG.crs.lineNumberMap[index];
-
-            let title = crsObject['ta' + lineNumber];
-            let name = crsObject['tn' + lineNumber];
-            let reduction = crsObject['te' + lineNumber];
+            let title = crsObject['TbmXml.admin.travellers.traveller.' + index + '.$.typ'];
+            let name = crsObject['TbmXml.admin.travellers.traveller.' + index + '.$.sur'];
+            let reduction = crsObject['TbmXml.admin.travellers.traveller.' + index + '.$.age'];
 
             if (!title && !name && !reduction) {
                 return index;
