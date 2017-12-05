@@ -107,12 +107,6 @@ TOMA SPC (new) | 'toma2'        | externalCatalogVersion (*)       | '20.5'
 Merlin         | 'merlin'       |                                  | 
 MyJack         | 'myJack'       | token                            | '0123456789abcdef'
 Jack+          | 'jackPlus'     | token                            | '0123456789abcdef'
-Cosmo          | 'cosmo'        | dataSourceUrl                    | 'http://url.to/json?file'
-|              |                | environment                      | 'live' OR 'test'
-|              |                | exportId                         | '0123456789abcdef'
-CosmoNaut      | 'cosmoNaut'    | dataSourceUrl                    | 'http://url.to/json?file'
-|              |                | environment                      | 'live' OR 'test'
-|              |                | exportId                         | '0123456789abcdef'
 
 (*) optional
 
@@ -139,8 +133,6 @@ TOMA (new) | X     | X     | X         | X
 Merlin     | X     | X     | X         | X
 MyJack     | X     | X     | X         | X
 JackPlus   | X     | X     | X         | X
-cosmo      | X     | X     | X         | X
-cosmoNaut  | X     | X     | X         | X
 
 
 | type  | fields                   | example
