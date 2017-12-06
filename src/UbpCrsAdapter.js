@@ -5,6 +5,7 @@ import CetsAdapter from 'crsAdapter/CetsAdapter';
 import BmAdapter from 'crsAdapter/BmAdapter';
 import MerlinAdapter from 'crsAdapter/MerlinAdapter';
 import BewotecExpertAdapter from 'crsAdapter/BewotecExpertAdapter';
+import TrafficsTbmAdapter from 'crsAdapter/TrafficsTbmAdapter';
 import LogService from 'LogService';
 
 const SERVICE_TYPES = {
@@ -22,6 +23,8 @@ const CRS_TYPES = {
     merlin: 'merlin',
     myJack: 'myJack',
     jackPlus: 'jackPlus',
+    cosmo: 'cosmo',
+    cosmoNaut: 'cosmoNaut',
 };
 
 const CRS_TYPE_2_ADAPTER_MAP = {
@@ -33,6 +36,8 @@ const CRS_TYPE_2_ADAPTER_MAP = {
     merlin: MerlinAdapter,
     myjack: BewotecExpertAdapter,
     jackplus: BewotecExpertAdapter,
+    cosmo: TrafficsTbmAdapter,
+    cosmonaut: TrafficsTbmAdapter,
 };
 
 const DEFAULT_OPTIONS = {

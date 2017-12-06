@@ -63,6 +63,8 @@ describe('UbpCrsAdapter', () => {
             merlin: jasmine.anything(),
             myJack: jasmine.anything(),
             jackPlus: jasmine.anything(),
+            cosmo: jasmine.anything(),
+            cosmoNaut: jasmine.anything(),
         });
     });
 

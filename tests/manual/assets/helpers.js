@@ -48,7 +48,9 @@ var connectOptionsMap = {
     toma: window.document.getElementById('toma-connect-template'),
     toma2: window.document.getElementById('toma2-connect-template'),
     myjack: window.document.getElementById('jack-connect-template'),
-    jackplus: window.document.getElementById('jack-connect-template')
+    jackplus: window.document.getElementById('jack-connect-template'),
+    cosmo: window.document.getElementById('cosmo-connect-template'),
+    cosmonaut: window.document.getElementById('cosmo-connect-template')
 };
 var form = document.getElementById('data-form');
 var formConnectOptions = document.getElementById('connect-options');
@@ -75,7 +77,7 @@ document.getElementById('connect').addEventListener('click', function () {
     }
 
     try {
-        let config = {};
+        var config = {};
 
         Object.keys(formConnectOptions).forEach(function (key) {
             config[formConnectOptions[key].name] = formConnectOptions[key].value;

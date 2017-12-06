@@ -20,8 +20,12 @@
                 <option value="merlin">Merlin</option>
                 <option value="myjack">MyJack</option>
                 <option value="jackplus">Jack+</option>
+                <option value="cosmo">Cosmo</option>
+                <option value="cosmonaut">CosmoNaut</option>
             </select>
+
             <button id="connect">connect</button>
+
             <form id="connect-options"></form>
 
             <div id="actions">
@@ -41,11 +45,21 @@
                 </div>
 
                 <div id="toma2-connect-template" class="column connect-option">
-                    <label>connectionUrl: <input name="connectionUrl" value="https://acceptance.emea1.sellingplatformconnect.amadeus.com"/></label>
+                    <label>connectionUrl (leave blank for auto-detection): <input name="connectionUrl" value="https://acceptance.emea1.sellingplatformconnect.amadeus.com"/></label>
+                    <label>popupId (leave blank for auto-detection): <input name="popupId"/></label>
                 </div>
 
                 <div id="jack-connect-template" class="column connect-option">
                     <label>token: <input name="token"/></label>
+                </div>
+
+                <div id="cosmo-connect-template" class="column connect-option">
+                    <label>dataSourceUrl: <input name="dataSourceUrl" value="https://us-central1-fti360-bm-staging.cloudfunctions.net/query2Json"/></label>
+                    <label>environment: <select name="environment">
+                        <option value="test" selected>test</option>
+                        <option value="live">live</option>
+                    </select></label>
+                    <label>exportId: <input name="exportId" value="fake_id"/></label>
                 </div>
 
                 <div id="car-service-template" class="column service">

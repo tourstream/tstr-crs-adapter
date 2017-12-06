@@ -100,13 +100,15 @@ Currently this module supports the connection to following CRS masks:
 CRS            | connectionType | connectionOptions                | example
 :---           | :---           | :---                             | :---
 CETS           | 'cets'         |                                  | 
-TOMA (old)     | 'toma'         | .providerKey: string             | 'ABC'
-TOMA SPC (new) | 'toma2'        | .externalCatalogVersion?: string | '20.5'
-|              |                | .connectionUrl?: string          | 'https://acceptance.emea1.sellingplatformconnect.amadeus.com'
-|              |                | .popupId?: string                | 'popup_id0123456789abcdef'
+TOMA (old)     | 'toma'         | providerKey                      | 'ABC'
+TOMA SPC (new) | 'toma2'        | externalCatalogVersion (*)       | '20.5'
+|              |                | connectionUrl                    | 'https://url-to-amadeus-selling.plattform'
+|              |                | popupId                          | 'popup_id0123456789abcdef'
 Merlin         | 'merlin'       |                                  | 
-MyJack         | 'myJack'       | token: string                    | 'token0123456789abcdef'
-Jack+          | 'jackPlus'     | token: string                    | 'token0123456789abcdef'
+MyJack         | 'myJack'       | token                            | '0123456789abcdef'
+Jack+          | 'jackPlus'     | token                            | '0123456789abcdef'
+
+(*) optional
 
 For some connections you need credentials or other connection data,
 which you can set in the `connectionOptions`.
@@ -125,7 +127,7 @@ You can check the currently supported service types with `UbpCrsAdapter.SERVICE_
 
 |          | car   | hotel | roundtrip | camper 
 ---        | :---: | :---: | :---:     | :---:
-CETS       | X     |       |           | 
+CETS       | X     |       | X         | 
 TOMA (old) | X     | X     | X         | X 
 TOMA (new) | X     | X     | X         | X
 Merlin     | X     | X     | X         | X

@@ -19,7 +19,7 @@ body  {
     width: 100%;
 }
 
-input {
+input, select:not([id="crs-selector"]) {
     left: 200px;
     position: sticky;
     width: 50%;

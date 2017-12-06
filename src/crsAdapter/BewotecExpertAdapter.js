@@ -430,7 +430,7 @@ class BewotecExpertAdapter {
         crsObject['u' + lineNumber] = pickUpTime.isValid() ? pickUpTime.format(CONFIG.crs.timeFormat) : service.pickUpTime;
         crsObject['c' + lineNumber] = service.milesIncludedPerDay;
         crsObject['e' + lineNumber] = service.milesPackagesIncluded;
-        crsObject['d' + lineNumber] = '1' + ((crsObject.NoOfPersons > 1) ? '-' + crsObject.NoOfPersons : '');
+        crsObject['d' + lineNumber] = '1' + ((crsObject.p > 1) ? '-' + crsObject.p : '');
     }
 
     /**
