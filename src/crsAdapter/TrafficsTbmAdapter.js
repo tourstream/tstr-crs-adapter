@@ -20,7 +20,7 @@ const CONFIG = {
             camper: 'WM',
             camperExtra: 'TA',
         },
-        connectionUrl: 'cosmonaut://params/#tbm&file=',
+        connectionUrl: 'cosmonaut://params/',
         defaultValues: {
             action: 'BA',
             numberOfTravellers: 1,
@@ -129,15 +129,20 @@ class TrafficsTbmAdapter {
 
     /**
      * @private
-     *
      * @param options
-     * @returns {{send: (function(*=): AxiosPromise)}}
+     * @returns {{send: function(*=), get: function(): AxiosPromise}}
      */
     createConnection(options) {
         return {
-            send: (data = {}) => axios.get(
-                CONFIG.crs.connectionUrl + btoa(options.dataSourceUrl + '?' + querystring.stringify(data))
-            ),
+            send: (data = {}) => {
+                try {
+                    document.location = CONFIG.crs.connectionUrl + btoa('#tbm&file=' + options.dataSourceUrl + '?' + querystring.stringify(data));
+
+                    return Promise.resolve();
+                } catch (e) {
+                    return Promise.reject(e);
+                }
+            },
             get: () => axios.get(
                 CONFIG.crs.exportUrls[options.environment] + '/tbmExport?id=' + options.exportId
             ),
@@ -164,46 +169,51 @@ class TrafficsTbmAdapter {
         if (!crsObject) return;
 
         let dataObject = {
-            agencyNumber: crsObject['TbmXml.admin.operator.$.agt'],
-            operator: crsObject['TbmXml.admin.operator.$.toc'],
-            numberOfTravellers: crsObject['TbmXml.admin.operator.$.psn'],
-            travelType: crsObject['TbmXml.admin.operator.$.knd'],
-            remark: crsObject['TbmXml.admin.customer.$.rmk'],
+            agencyNumber: crsObject.operator['$'].agt,
+            operator: crsObject.operator['$'].toc,
+            numberOfTravellers: crsObject.operator['$'].psn,
+            travelType: crsObject.operator['$'].knd,
+            remark: crsObject.customer['$'].rmk,
             services: [],
         };
 
         let lineNumber = 0;
 
         do {
-            let serviceType = crsObject['TbmXml.admin.services.service.' + lineNumber + '.$.typ'];
+            try {
+                let crsService = crsObject.services.service[lineNumber]['$'];
+                let service;
 
-            if (!serviceType) break;
-
-            let service;
-
-            switch (serviceType) {
-                case CONFIG.crs.serviceTypes.car: {
-                    service = this.mapCarServiceFromCrsObjectToAdapterObject(crsObject, lineNumber);
-                    break;
+                switch (crsService.typ) {
+                    case CONFIG.crs.serviceTypes.car: {
+                        service = this.mapCarServiceFromCrsObjectToAdapterObject(crsService, crsObject);
+                        break;
+                    }
+                    case CONFIG.crs.serviceTypes.hotel: {
+                        service = this.mapHotelServiceFromCrsObjectToAdapterObject(crsService, crsObject);
+                        break;
+                    }
+                    case CONFIG.crs.serviceTypes.roundTrip: {
+                        service = this.mapRoundTripServiceFromXmlObjectToAdapterObject(crsService, crsObject);
+                        break;
+                    }
+                    case CONFIG.crs.serviceTypes.camper: {
+                        service = this.mapCamperServiceFromCrsObjectToAdapterObject(crsService, crsObject);
+                        break;
+                    }
+                    default: {
+                        this.logger.warn('type "' + crsService.typ + '" not supported');
+                        this.logger.warn(crsService);
+                    }
                 }
-                case CONFIG.crs.serviceTypes.hotel: {
-                    service = this.mapHotelServiceFromCrsObjectToAdapterObject(crsObject, lineNumber);
-                    break;
-                }
-                case CONFIG.crs.serviceTypes.roundTrip: {
-                    service = this.mapRoundTripServiceFromXmlObjectToAdapterObject(crsObject, lineNumber);
-                    break;
-                }
-                case CONFIG.crs.serviceTypes.camper: {
-                    service = this.mapCamperServiceFromCrsObjectToAdapterObject(crsObject, lineNumber);
-                    break;
-                }
-            }
 
-            if (service) {
-                service.marked = this.isMarked(crsObject, lineNumber, {type: service.type});
+                if (service) {
+                    service.marked = this.isMarked(crsObject, lineNumber, {type: service.type});
 
-                dataObject.services.push(service);
+                    dataObject.services.push(service);
+                }
+            } catch (ignore) {
+                break;
             }
         } while (++lineNumber);
 
@@ -212,11 +222,11 @@ class TrafficsTbmAdapter {
 
     /**
      * @private
+     * @param crsService object
      * @param crsObject object
-     * @param lineNumber int
      * @returns {{pickUpDate: string, dropOffDate: string, pickUpTime: string, duration: number, type: string}}
      */
-    mapCarServiceFromCrsObjectToAdapterObject(crsObject, lineNumber) {
+    mapCarServiceFromCrsObjectToAdapterObject(crsService, crsObject) {
         const mapServiceCodeToService = (code, service) => {
             if (!code) return;
 
@@ -244,34 +254,34 @@ class TrafficsTbmAdapter {
             service.dropOffLocation = codeParts[keyDropOffLoc];
         };
 
-        let pickUpDate = moment(crsObject['TbmXml.admin.services.service.' + lineNumber + '.$.vnd'], CONFIG.crs.dateFormat);
-        let dropOffDate = moment(crsObject['TbmXml.admin.services.service.' + lineNumber + '.$.bsd'], CONFIG.crs.dateFormat);
-        let pickUpTime = moment(crsObject['TbmXml.admin.services.service.' + lineNumber + '.$.opt'], CONFIG.crs.timeFormat);
+        let pickUpDate = moment(crsService.vnd, CONFIG.crs.dateFormat);
+        let dropOffDate = moment(crsService.bsd, CONFIG.crs.dateFormat);
+        let pickUpTime = moment(crsService.opt, CONFIG.crs.timeFormat);
         let service = {
-            pickUpDate: pickUpDate.isValid() ? pickUpDate.format(this.options.useDateFormat) : crsObject['TbmXml.admin.services.service.' + lineNumber + '.$.vnd'],
-            dropOffDate: dropOffDate.isValid() ? dropOffDate.format(this.options.useDateFormat) : crsObject['TbmXml.admin.services.service.' + lineNumber + '.$.bsd'],
-            pickUpTime: pickUpTime.isValid() ? pickUpTime.format(this.options.useTimeFormat) : crsObject['TbmXml.admin.services.service.' + lineNumber + '.$.opt'],
+            pickUpDate: pickUpDate.isValid() ? pickUpDate.format(this.options.useDateFormat) : crsService.vnd,
+            dropOffDate: dropOffDate.isValid() ? dropOffDate.format(this.options.useDateFormat) : crsService.bsd,
+            pickUpTime: pickUpTime.isValid() ? pickUpTime.format(this.options.useTimeFormat) : crsService.opt,
             duration: pickUpDate.isValid() && dropOffDate.isValid()
                 ? Math.ceil(dropOffDate.diff(pickUpDate, 'days', true))
                 : void 0,
             type: SERVICE_TYPES.car,
         };
 
-        mapServiceCodeToService(crsObject['TbmXml.admin.services.service.' + lineNumber + '.$.cod'], service);
+        mapServiceCodeToService(crsService.cod, service);
 
         return service;
     }
 
     /**
      * @private
+     * @param crsService object
      * @param crsObject object
-     * @param lineNumber int
      * @returns {{roomCode: *, mealCode: *, roomQuantity: (*|string), roomOccupancy: (*|string), children, destination: *, dateFrom: string, dateTo: string, type: string}}
      */
-    mapHotelServiceFromCrsObjectToAdapterObject(crsObject, lineNumber) {
-        const collectChildren = (crsObject, lineNumber) => {
+    mapHotelServiceFromCrsObjectToAdapterObject(crsService, crsObject) {
+        const collectChildren = (crsService, crsTravellers = []) => {
             let children = [];
-            let travellerAssociation = crsObject['TbmXml.admin.services.service.' + lineNumber + '.$.agn'] || '';
+            let travellerAssociation = crsService.agn || '';
 
             let startLineNumber = parseInt(travellerAssociation.substr(0, 1), 10);
             let endLineNumber = parseInt(travellerAssociation.substr(-1), 10);
@@ -281,65 +291,65 @@ class TrafficsTbmAdapter {
             do {
                 let travellerIndex = startLineNumber - 1;
 
-                if (crsObject['TbmXml.admin.travellers.traveller.' + travellerIndex + '.$.typ'] !== CONFIG.crs.gender2SalutationMap.child) continue;
+                if (crsTravellers[travellerIndex]['$'].typ !== CONFIG.crs.gender2SalutationMap.child) continue;
 
                 children.push({
-                    name: crsObject['TbmXml.admin.travellers.traveller.' + travellerIndex + '.$.sur'],
-                    age: crsObject['TbmXml.admin.travellers.traveller.' + travellerIndex + '.$.age'],
+                    name: crsTravellers[travellerIndex]['$'].sur,
+                    age: crsTravellers[travellerIndex]['$'].age,
                 });
             } while (++startLineNumber <= endLineNumber);
 
             return children;
         };
 
-        let serviceCodes = (crsObject['TbmXml.admin.services.service.' + lineNumber + '.$.opt'] || '').split(' ');
-        let dateFrom = moment(crsObject['TbmXml.admin.services.service.' + lineNumber + '.$.vnd'], CONFIG.crs.dateFormat);
-        let dateTo = moment(crsObject['TbmXml.admin.services.service.' + lineNumber + '.$.bsd'], CONFIG.crs.dateFormat);
+        let serviceCodes = (crsService.opt || '').split(' ');
+        let dateFrom = moment(crsService.vnd, CONFIG.crs.dateFormat);
+        let dateTo = moment(crsService.bsd, CONFIG.crs.dateFormat);
 
         return {
             roomCode: serviceCodes[0] || void 0,
             mealCode: serviceCodes[1] || void 0,
-            roomQuantity: crsObject['TbmXml.admin.services.service.' + lineNumber + '.$.cnt'],
-            roomOccupancy: crsObject['TbmXml.admin.services.service.' + lineNumber + '.$.alc'],
-            children: collectChildren(crsObject, lineNumber),
-            destination: crsObject['TbmXml.admin.services.service.' + lineNumber + '.$.cod'],
-            dateFrom: dateFrom.isValid() ? dateFrom.format(this.options.useDateFormat) : crsObject['TbmXml.admin.services.service.' + lineNumber + '.$.vnd'],
-            dateTo: dateTo.isValid() ? dateTo.format(this.options.useDateFormat) : crsObject['TbmXml.admin.services.service.' + lineNumber + '.$.bsd'],
+            roomQuantity: crsService.cnt,
+            roomOccupancy: crsService.alc,
+            children: collectChildren(crsService, crsObject.travellers.traveller),
+            destination: crsService.cod,
+            dateFrom: dateFrom.isValid() ? dateFrom.format(this.options.useDateFormat) : crsService.vnd,
+            dateTo: dateTo.isValid() ? dateTo.format(this.options.useDateFormat) : crsService.bsd,
             type: SERVICE_TYPES.hotel,
         };
     }
 
     /**
      * @private
+     * @param crsService object
      * @param crsObject object
-     * @param lineNumber int
      * @returns {object}
      */
-    mapRoundTripServiceFromXmlObjectToAdapterObject(crsObject, lineNumber) {
-        let startDate = moment(crsObject['TbmXml.admin.services.service.' + lineNumber + '.$.vnd'], CONFIG.crs.dateFormat);
-        let endDate = moment(crsObject['TbmXml.admin.services.service.' + lineNumber + '.$.bsd'], CONFIG.crs.dateFormat);
+    mapRoundTripServiceFromXmlObjectToAdapterObject(crsService, crsObject) {
+        let startDate = moment(crsService.vnd, CONFIG.crs.dateFormat);
+        let endDate = moment(crsService.bsd, CONFIG.crs.dateFormat);
 
-        const hasBookingId = crsObject['TbmXml.admin.services.service.' + lineNumber + '.$.cod'].indexOf('NEZ') === 0;
+        const hasBookingId = crsService.cod.indexOf('NEZ') === 0;
 
         let service = {
             type: SERVICE_TYPES.roundTrip,
-            bookingId: hasBookingId ? crsObject['TbmXml.admin.services.service.' + lineNumber + '.$.cod'].substring(3) : void 0,
-            destination: hasBookingId ? crsObject['TbmXml.admin.services.service.' + lineNumber + '.$.opt'] : crsObject['TbmXml.admin.services.service.' + lineNumber + '.$.cod'],
-            startDate: startDate.isValid() ? startDate.format(this.options.useDateFormat) : crsObject['TbmXml.admin.services.service.' + lineNumber + '.$.vnd'],
-            endDate: endDate.isValid() ? endDate.format(this.options.useDateFormat) : crsObject['TbmXml.admin.services.service.' + lineNumber + '.$.bsd'],
+            bookingId: hasBookingId ? crsService.cod.substring(3) : void 0,
+            destination: hasBookingId ? crsService.opt : crsService.cod,
+            startDate: startDate.isValid() ? startDate.format(this.options.useDateFormat) : crsService.vnd,
+            endDate: endDate.isValid() ? endDate.format(this.options.useDateFormat) : crsService.bsd,
         };
 
-        if (crsObject['TbmXml.admin.services.service.' + lineNumber + '.$.agn']) {
-            let travellerIndex = crsObject['TbmXml.admin.services.service.' + lineNumber + '.$.agn'] - 1;
+        if (crsService.agn) {
+            let traveller = crsObject.travellers.traveller[crsService.agn - 1]['$'];
 
-            service.gender = Object.entries(CONFIG.crs.gender2SalutationMap).reduce((reduced, current) => current[1] === crsObject['TbmXml.admin.travellers.traveller.' + travellerIndex + '.$.typ'] ? current[0] : reduced);
-            service.title = crsObject['TbmXml.admin.travellers.traveller.' + travellerIndex + '.$.typ'];
-            service.name = crsObject['TbmXml.admin.travellers.traveller.' + travellerIndex + '.$.sur'];
+            service.gender = Object.entries(CONFIG.crs.gender2SalutationMap).reduce((reduced, current) => current[1] === traveller.typ ? current[0] : reduced);
+            service.title = traveller.typ;
+            service.name = traveller.sur;
 
-            if (crsObject['TbmXml.admin.travellers.traveller.' + travellerIndex + '.$.age'].match(CONFIG.services.roundTrip.ageRegEx)){
-                service.age = crsObject['TbmXml.admin.travellers.traveller.' + travellerIndex + '.$.age']
+            if (traveller.age.match(CONFIG.services.roundTrip.ageRegEx)){
+                service.age = traveller.age
             } else {
-                service.birthday = crsObject['TbmXml.admin.travellers.traveller.' + travellerIndex + '.$.age'];
+                service.birthday = traveller.age;
             }
         }
 
@@ -348,11 +358,11 @@ class TrafficsTbmAdapter {
 
     /**
      * @private
+     * @param crsService object
      * @param crsObject object
-     * @param lineNumber int
      * @returns {object}
      */
-    mapCamperServiceFromCrsObjectToAdapterObject(crsObject, lineNumber) {
+    mapCamperServiceFromCrsObjectToAdapterObject(crsService, crsObject) {
         const mapServiceCodeToService = (code, service) => {
             if (!code) return;
 
@@ -380,59 +390,59 @@ class TrafficsTbmAdapter {
             service.dropOffLocation = codeParts[keyDropOffLoc];
         };
 
-        let pickUpDate = moment(crsObject['TbmXml.admin.services.service.' + lineNumber + '.$.vnd'], CONFIG.crs.dateFormat);
-        let dropOffDate = moment(crsObject['TbmXml.admin.services.service.' + lineNumber + '.$.bsd'], CONFIG.crs.dateFormat);
-        let pickUpTime = moment(crsObject['TbmXml.admin.services.service.' + lineNumber + '.$.opt'], CONFIG.crs.timeFormat);
+        let pickUpDate = moment(crsService.vnd, CONFIG.crs.dateFormat);
+        let dropOffDate = moment(crsService.bsd, CONFIG.crs.dateFormat);
+        let pickUpTime = moment(crsService.opt, CONFIG.crs.timeFormat);
         let service = {
-            pickUpDate: pickUpDate.isValid() ? pickUpDate.format(this.options.useDateFormat) : crsObject['TbmXml.admin.services.service.' + lineNumber + '.$.vnd'],
-            dropOffDate: dropOffDate.isValid() ? dropOffDate.format(this.options.useDateFormat) : crsObject['TbmXml.admin.services.service.' + lineNumber + '.$.bsd'],
-            pickUpTime: pickUpTime.isValid() ? pickUpTime.format(this.options.useTimeFormat) : crsObject['TbmXml.admin.services.service.' + lineNumber + '.$.opt'],
+            pickUpDate: pickUpDate.isValid() ? pickUpDate.format(this.options.useDateFormat) : crsService.vnd,
+            dropOffDate: dropOffDate.isValid() ? dropOffDate.format(this.options.useDateFormat) : crsService.bsd,
+            pickUpTime: pickUpTime.isValid() ? pickUpTime.format(this.options.useTimeFormat) : crsService.opt,
             duration: pickUpDate.isValid() && dropOffDate.isValid()
                 ? Math.ceil(dropOffDate.diff(pickUpDate, 'days', true))
                 : void 0,
-            milesIncludedPerDay: crsObject['TbmXml.admin.services.service.' + lineNumber + '.$.cnt'],
-            milesPackagesIncluded: crsObject['TbmXml.admin.services.service.' + lineNumber + '.$.alc'],
+            milesIncludedPerDay: crsService.cnt,
+            milesPackagesIncluded: crsService.alc,
             type: SERVICE_TYPES.camper,
         };
 
-        mapServiceCodeToService(crsObject['TbmXml.admin.services.service.' + lineNumber + '.$.cod'], service);
+        mapServiceCodeToService(crsService.cod, service);
 
         return service;
     }
 
     /**
      * @private
+     * @param crsService object
      * @param crsObject object
-     * @param lineNumber number
      * @param service object
      * @returns {boolean}
      */
-    isMarked(crsObject, lineNumber, service) {
-        if (crsObject['TbmXml.admin.services.service.' + lineNumber + '.$.mrk']) {
+    isMarked(crsService, crsObject, service) {
+        if (crsService.mrk) {
             return true;
         }
 
         switch (service.type) {
             case SERVICE_TYPES.car: {
-                let serviceCode = crsObject['TbmXml.admin.services.service.' + lineNumber + '.$.cod'];
+                let serviceCode = crsService.cod;
 
                 // gaps in the regEx result array will result in lined up "." after the join
                 return !serviceCode || serviceCode.match(CONFIG.services.car.serviceCodeRegEx).join('.').indexOf('..') !== -1;
             }
             case SERVICE_TYPES.hotel: {
-                let serviceCode = crsObject['TbmXml.admin.services.service.' + lineNumber + '.$.cod'];
-                let accommodation = crsObject['TbmXml.admin.services.service.' + lineNumber + '.$.opt'];
+                let serviceCode = crsService.cod;
+                let accommodation = crsService.opt;
 
                 return !serviceCode || !accommodation;
             }
             case SERVICE_TYPES.camper: {
-                let serviceCode = crsObject['TbmXml.admin.services.service.' + lineNumber + '.$.cod'];
+                let serviceCode = crsService.cod;
 
                 // gaps in the regEx result array will result in lined up "." after the join
                 return !serviceCode || serviceCode.match(CONFIG.services.car.serviceCodeRegEx).join('.').indexOf('..') !== -1;
             }
             case SERVICE_TYPES.roundTrip: {
-                let bookingId = crsObject['TbmXml.admin.services.service.' + lineNumber + '.$.cod'];
+                let bookingId = crsService.cod;
 
                 return !bookingId || bookingId.indexOf(service.bookingId) > -1;
             }

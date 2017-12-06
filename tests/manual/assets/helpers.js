@@ -77,7 +77,7 @@ document.getElementById('connect').addEventListener('click', function () {
     }
 
     try {
-        let config = {};
+        var config = {};
 
         Object.keys(formConnectOptions).forEach(function (key) {
             config[formConnectOptions[key].name] = formConnectOptions[key].value;
