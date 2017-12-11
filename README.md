@@ -22,7 +22,7 @@ let ubpCrsAdapter = new UbpCrsAdapter(adapterOptions);
 #### or link the source
 
 ```
-<script src="https://assets.gcloud.fti-group.com/tstr-crs-adapter/latest/ubpCrsAdapter.js"></script>
+<script src="https://assets.gcloud.fti-group.com/tstr-crs-adapter/latest/ubpCrsAdapter.min.js"></script>
 
 <script>
   var ubpCrsAdapter = new UbpCrsAdapter.default(adapterOptions);
