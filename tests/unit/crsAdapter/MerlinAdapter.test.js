@@ -514,7 +514,7 @@ describe('MerlinAdapter', () => {
                 '<KindOfService>TA</KindOfService>' +
                 '<Service>extra</Service>' +
                 '<FromDate>040518</FromDate>' +
-                '<EndDate>070518</EndDate>' +
+                '<EndDate>040518</EndDate>' +
                 '<TravellerAllocation>1-3</TravellerAllocation>' +
                 '</ServiceRow>' +
 
@@ -522,7 +522,7 @@ describe('MerlinAdapter', () => {
                 '<KindOfService>TA</KindOfService>' +
                 '<Service>special</Service>' +
                 '<FromDate>040518</FromDate>' +
-                '<EndDate>070518</EndDate>' +
+                '<EndDate>040518</EndDate>' +
                 '<TravellerAllocation>1</TravellerAllocation>' +
                 '</ServiceRow>' +
 

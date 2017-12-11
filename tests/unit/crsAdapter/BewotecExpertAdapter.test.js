@@ -471,20 +471,23 @@ describe('BewotecExpertAdapter', () => {
                 c0: 'miles.per.day',
                 e0: 'miles.packages',
                 d0: '1',
+
                 n1: 'TA',
                 l1: 'extra',
                 s1: '231218',
-                i1: '040119',
+                i1: '231218',
                 d1: '1-3',
+
                 n2: 'TA',
                 l2: 'special',
                 s2: '231218',
-                i2: '040119',
+                i2: '231218',
                 d2: '1',
+
                 n3: 'TA',
                 l3: 'extra',
                 s3: '231218',
-                i3: '040119',
+                i3: '231218',
                 d3: '1',
             });
 

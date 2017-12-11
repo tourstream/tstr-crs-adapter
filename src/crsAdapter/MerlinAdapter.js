@@ -519,9 +519,6 @@ class MerlinAdapter {
      */
     assignCamperExtras(service, xml) {
         let pickUpDate = moment(service.pickUpDate, this.options.useDateFormat);
-        let dropOffDate = (service.dropOffDate)
-            ? moment(service.dropOffDate, this.options.useDateFormat)
-            : moment(service.pickUpDate, this.options.useDateFormat).add(service.duration, 'days');
 
         (service.extras || []).forEach((extra) => {
             let service = this.createEmptyService(xml.ServiceBlock.ServiceRow);
@@ -530,7 +527,7 @@ class MerlinAdapter {
             service.KindOfService = CONFIG.crs.serviceTypes.camperExtra;
             service.Service = extraParts[0];
             service.FromDate = pickUpDate.isValid() ? pickUpDate.format(CONFIG.crs.dateFormat) : service.pickUpDate;
-            service.EndDate = dropOffDate.isValid() ? dropOffDate.format(CONFIG.crs.dateFormat) : service.dropOffDate;
+            service.EndDate = service.FromDate;
             service.TravellerAllocation = '1' + ((extraParts[1] > 1) ? '-' + extraParts[1] : '');
 
             xml.ServiceBlock.ServiceRow.push(service);

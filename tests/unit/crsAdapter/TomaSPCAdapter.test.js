@@ -1072,14 +1072,14 @@ describe('TomaSPCAdapter', () => {
                         serviceType: 'TA',
                         serviceCode: 'extra',
                         fromDate: '040518',
-                        toDate: '070518',
+                        toDate: '040518',
                         travellerAssociation: '1-3'
                     },
                     {
                         serviceType: 'TA',
                         serviceCode: 'special',
                         fromDate: '040518',
-                        toDate: '070518',
+                        toDate: '040518',
                         travellerAssociation: '1'
                     },
                 ],

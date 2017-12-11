@@ -875,9 +875,6 @@ class TomaSPCAdapter {
      */
     assignCamperExtras(adapterService, crsObject) {
         let pickUpDate = moment(adapterService.pickUpDate, this.options.useDateFormat);
-        let dropOffDate = (adapterService.dropOffDate)
-            ? moment(adapterService.dropOffDate, this.options.useDateFormat)
-            : moment(adapterService.pickUpDate, this.options.useDateFormat).add(adapterService.duration, 'days');
 
         (adapterService.extras || []).forEach((extra) => {
             let service = this.createAndAssignEmptyService(crsObject);
@@ -886,7 +883,7 @@ class TomaSPCAdapter {
             service.serviceType = CONFIG.crs.serviceTypes.camperExtra;
             service.serviceCode = extraParts[0];
             service.fromDate = pickUpDate.isValid() ? pickUpDate.format(CONFIG.crs.dateFormat) : adapterService.pickUpDate;
-            service.toDate = dropOffDate.isValid() ? dropOffDate.format(CONFIG.crs.dateFormat) : adapterService.dropOffDate;
+            service.toDate = service.fromDate;
             service.travellerAssociation = '1' + ((extraParts[1] > 1) ? '-' + extraParts[1] : '');
         });
     }
