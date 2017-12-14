@@ -17,14 +17,12 @@ const SERVICE_TYPES = {
 
 const CRS_TYPES = {
     toma: 'toma',
-    tomaSPC: 'toma2',
+    toma2: 'tomaspc',
     cets: 'cets',
     bookingManager: 'bm',
     merlin: 'merlin',
-    myJack: 'myJack',
-    jackPlus: 'jackPlus',
-    cosmo: 'cosmo',
-    cosmoNaut: 'cosmoNaut',
+    bewotec: 'bewotec',
+    traffics: 'traffics',
 };
 
 const CRS_TYPE_2_ADAPTER_MAP = {
@@ -36,8 +34,8 @@ const CRS_TYPE_2_ADAPTER_MAP = {
     merlin: MerlinAdapter,
     myjack: BewotecExpertAdapter,
     jackplus: BewotecExpertAdapter,
-    cosmo: TrafficsTbmAdapter,
-    cosmonaut: TrafficsTbmAdapter,
+    bewotec: BewotecExpertAdapter,
+    traffics: TrafficsTbmAdapter,
 };
 
 const DEFAULT_OPTIONS = {

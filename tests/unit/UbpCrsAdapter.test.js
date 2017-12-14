@@ -57,14 +57,12 @@ describe('UbpCrsAdapter', () => {
     it('should be initialized with supported CRS', () => {
         expect(UbpCrsAdapter.CRS_TYPES).toEqual({
             toma: jasmine.anything(),
-            tomaSPC: jasmine.anything(),
+            toma2: jasmine.anything(),
             cets: jasmine.anything(),
             bookingManager: jasmine.anything(),
             merlin: jasmine.anything(),
-            myJack: jasmine.anything(),
-            jackPlus: jasmine.anything(),
-            cosmo: jasmine.anything(),
-            cosmoNaut: jasmine.anything(),
+            bewotec: jasmine.anything(),
+            traffics: jasmine.anything(),
         });
     });
 
@@ -106,9 +104,11 @@ describe('UbpCrsAdapter', () => {
     });
 
     it('connect() should throw nothing', () => {
-        adapter.connect(UbpCrsAdapter.CRS_TYPES.cets, {option: 'value'});
+        Object.keys(UbpCrsAdapter.CRS_TYPES).forEach((key) => {
+            adapter.connect(UbpCrsAdapter.CRS_TYPES[key], {option: 'value'});
 
-        expect(AnyCrsAdapter.connect).toHaveBeenCalledWith({ option: 'value' });
+            expect(AnyCrsAdapter.connect).toHaveBeenCalledWith({ option: 'value' });
+        });
     });
 
     it('should throw exception if any method is used without crs-connection', (done) => {

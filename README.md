@@ -97,16 +97,15 @@ useTimeFormat | 'HHmm' (according to [momentjs date format](https://momentjs.com
 You can check the currently supported CRSs with `UbpCrsAdapter.CRS_TYPES`.
 Currently this module supports the connection to following CRS masks:
 
-CRS            | connectionType | connectionOptions                | example
-:---           | :---           | :---                             | :---
-CETS           | 'cets'         |                                  | 
-TOMA (old)     | 'toma'         | providerKey                      | 'ABC'
-TOMA SPC (new) | 'toma2'        | externalCatalogVersion (*)       | '20.5'
-|              |                | connectionUrl                    | 'https://url-to-amadeus-selling.plattform'
-|              |                | popupId                          | 'popup_id0123456789abcdef'
-Merlin         | 'merlin'       |                                  | 
-MyJack         | 'myJack'       | token                            | '0123456789abcdef'
-Jack+          | 'jackPlus'     | token                            | '0123456789abcdef'
+CRS            | connectionType                  | connectionOptions          | example
+:---           | :---                            | :---                       | :---
+CETS           | UbpCrsAdapter.CRS_TYPES.cets    |                            | 
+TOMA (old)     | UbpCrsAdapter.CRS_TYPES.toma    | providerKey                | 'ABC'
+TOMA (new)     | UbpCrsAdapter.CRS_TYPES.toma2   | externalCatalogVersion (*) | '20.5'
+|              |                                 | connectionUrl              | 'https://url-to-amadeus-selling.plattform'
+|              |                                 | popupId                    | 'popup_id0123456789abcdef'
+Merlin         | UbpCrsAdapter.CRS_TYPES.merlin  |                            | 
+MyJack / Jack+ | UbpCrsAdapter.CRS_TYPES.bewotec | token                      | '0123456789abcdef'
 
 (*) optional
 
