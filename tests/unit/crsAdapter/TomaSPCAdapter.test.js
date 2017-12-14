@@ -26,7 +26,7 @@ describe('TomaSPCAdapter', () => {
         adapter.connect().then(() => {
             done.fail('unexpected result');
         }, (error) => {
-            expect(error.toString()).toBe('Error: could not detect any Amadeus SeCo URL to connect to');
+            expect(error.toString()).toBe('Error: no connection URL found');
             done();
         });
     });

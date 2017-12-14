@@ -138,39 +138,31 @@ class TomaSPCAdapter {
             const cleanUrl = (url = '') => {
                 if (!url) return;
 
-                const extractConnectionUrl = (url) => {
-                    const domain = url.replace(/https?:\/\//, '').split('/')[0];
-
-                    return domain ? 'https://' + domain : void 0;
-                };
-
-                const link = document.createElement('a');
-
-                link.href = url;
-
-                if (link.protocol && link.hostname) {
-                    return link.protocol + '//' + link.hostname;
-                }
-
-                return extractConnectionUrl(url) || url;
+                return 'https://' + url.replace("https://", '').split('/')[0];
             };
 
             const getConnectionUrlFromReferrer = () => {
-                let url = cleanUrl(document.referrer);
+                let url = document.referrer || '';
 
-                return url.indexOf('.sellingplatformconnect.amadeus.com') > -1 ? 'https://' + url : void 0;
+                if (url.indexOf('.sellingplatformconnect.amadeus.com') > -1) {
+                    this.logger.info('detected Amadeus URL: ' + url);
+
+                    return url;
+                }
+
+                this.logger.info('could not detect any Amadeus URL');
             };
 
-            let connectionUrl = getConnectionUrlFromReferrer() || cleanUrl(options.connectionUrl);
+            let connectionUrl = cleanUrl(getConnectionUrlFromReferrer() || options.connectionUrl);
 
             if (!connectionUrl) {
-                const message = 'could not detect any Amadeus SeCo URL to connect to';
+                const message = 'no connection URL found';
 
                 this.logger.error(message);
                 throw new Error(message);
             }
 
-            this.logger.info('use ' + connectionUrl + ' as connection url');
+            this.logger.info('use ' + connectionUrl + ' for connection to Amadeus');
 
             let catalogVersion = this.getUrlParameter('EXTERNAL_CATALOG_VERSION') || options.externalCatalogVersion;
             let filePath = connectionUrl + '/' + CONFIG.crs.catalogFileName + (catalogVersion ? '?version=' + catalogVersion : '');
