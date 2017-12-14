@@ -779,9 +779,6 @@ class TomaAdapter {
      */
     assignCamperExtras(service, xml) {
         let pickUpDate = moment(service.pickUpDate, this.options.useDateFormat);
-        let dropOffDate = (service.dropOffDate)
-            ? moment(service.dropOffDate, this.options.useDateFormat)
-            : moment(service.pickUpDate, this.options.useDateFormat).add(service.duration, 'days');
 
         (service.extras || []).forEach((extra) => {
             let lineNumber = this.getNextEmptyServiceLineNumber(xml);
@@ -790,7 +787,7 @@ class TomaAdapter {
             xml['KindOfService.' + lineNumber] = CONFIG.crs.serviceTypes.camperExtra;
             xml['ServiceCode.' + lineNumber] = extraParts[0];
             xml['From.' + lineNumber] = pickUpDate.isValid() ? pickUpDate.format(CONFIG.crs.dateFormat) : service.pickUpDate;
-            xml['To.' + lineNumber] = dropOffDate.isValid() ? dropOffDate.format(CONFIG.crs.dateFormat) : service.dropOffDate;
+            xml['To.' + lineNumber] = xml['From.' + lineNumber];
             xml['TravAssociation.' + lineNumber] = '1' + ((extraParts[1] > 1) ? '-' + extraParts[1] : '');
         });
     }

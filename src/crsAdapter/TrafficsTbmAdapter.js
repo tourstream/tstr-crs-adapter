@@ -683,9 +683,6 @@ class TrafficsTbmAdapter {
      */
     assignCamperExtras(service, crsObject) {
         let pickUpDate = moment(service.pickUpDate, this.options.useDateFormat);
-        let dropOffDate = (service.dropOffDate)
-            ? moment(service.dropOffDate, this.options.useDateFormat)
-            : moment(service.pickUpDate, this.options.useDateFormat).add(service.duration, 'days');
 
         (service.extras || []).forEach((extra) => {
             let lineIndex = this.getNextEmptyServiceLineIndex(crsObject);
@@ -694,7 +691,7 @@ class TrafficsTbmAdapter {
             crsObject['TbmXml.admin.services.service.' + lineIndex + '.$.typ'] = CONFIG.crs.serviceTypes.camperExtra;
             crsObject['TbmXml.admin.services.service.' + lineIndex + '.$.cod'] = extraParts[0];
             crsObject['TbmXml.admin.services.service.' + lineIndex + '.$.vnd'] = pickUpDate.isValid() ? pickUpDate.format(CONFIG.crs.dateFormat) : service.pickUpDate;
-            crsObject['TbmXml.admin.services.service.' + lineIndex + '.$.bsd'] = dropOffDate.isValid() ? dropOffDate.format(CONFIG.crs.dateFormat) : service.dropOffDate;
+            crsObject['TbmXml.admin.services.service.' + lineIndex + '.$.bsd'] = crsObject['TbmXml.admin.services.service.' + lineIndex + '.$.vnd'];
             crsObject['TbmXml.admin.services.service.' + lineIndex + '.$.agn'] = '1' + ((extraParts[1] > 1) ? '-' + extraParts[1] : '');
         });
     }

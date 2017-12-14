@@ -8,7 +8,7 @@
   },
   "scripts": {
     "build": "npm run build:dev && webpack --config webpack.config.prod.js",
-    "build:dev": "rimraf dist && webpack --config webpack.config.dev.js && cp dist/** tests/manual/assets/ && cp dist/ubpCrsAdapter.js.map tests/manual/assets/ubpCrsAdapter.js.map",
+    "build:dev": "rimraf dist && webpack --config webpack.config.dev.js && cp dist/** tests/manual/assets/",
     "postbuild": "node prepare-gcs.js",
     "test": "karma start karma.config.js --single-run",
     "preversion": "npm test",

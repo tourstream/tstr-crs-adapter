@@ -700,20 +700,23 @@ describe('TomaAdapter', () => {
                     '<From.1>231218</From.1>' +
                     '<To.1>040119</To.1>' +
                     '<TravAssociation.1>1-2</TravAssociation.1>' +
+
                     '<KindOfService.2>TA</KindOfService.2>' +
                     '<ServiceCode.2>extra</ServiceCode.2>' +
                     '<From.2>231218</From.2>' +
-                    '<To.2>040119</To.2>' +
+                    '<To.2>231218</To.2>' +
                     '<TravAssociation.2>1-3</TravAssociation.2>' +
+
                     '<KindOfService.3>TA</KindOfService.3>' +
                     '<ServiceCode.3>special</ServiceCode.3>' +
                     '<From.3>231218</From.3>' +
-                    '<To.3>040119</To.3>' +
+                    '<To.3>231218</To.3>' +
                     '<TravAssociation.3>1</TravAssociation.3>' +
+
                     '<KindOfService.4>TA</KindOfService.4>' +
                     '<ServiceCode.4>extra</ServiceCode.4>' +
                     '<From.4>231218</From.4>' +
-                    '<To.4>040119</To.4>' +
+                    '<To.4>231218</To.4>' +
                     '<TravAssociation.4>1</TravAssociation.4>'
                 );
 

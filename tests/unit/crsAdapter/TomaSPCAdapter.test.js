@@ -26,7 +26,7 @@ describe('TomaSPCAdapter', () => {
         adapter.connect().then(() => {
             done.fail('unexpected result');
         }, (error) => {
-            expect(error.toString()).toBe('Error: could not detect any Amadeus SeCo URL to connect to');
+            expect(error.toString()).toBe('Error: no connection URL found');
             done();
         });
     });
@@ -1072,14 +1072,14 @@ describe('TomaSPCAdapter', () => {
                         serviceType: 'TA',
                         serviceCode: 'extra',
                         fromDate: '040518',
-                        toDate: '070518',
+                        toDate: '040518',
                         travellerAssociation: '1-3'
                     },
                     {
                         serviceType: 'TA',
                         serviceCode: 'special',
                         fromDate: '040518',
-                        toDate: '070518',
+                        toDate: '040518',
                         travellerAssociation: '1'
                     },
                 ],

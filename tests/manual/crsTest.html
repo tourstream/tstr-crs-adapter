@@ -14,14 +14,12 @@
             <select id="crs-selector">
                 <option>--- select a crs first ---</option>
                 <option value="toma">TOMA (old)</option>
-                <option value="toma2">TOMA SPC (new)</option>
+                <option value="toma2">TOMA (new)</option>
                 <option value="cets">CETS</option>
                 <option value="bm">Booking Manager</option>
                 <option value="merlin">Merlin</option>
-                <option value="myjack">MyJack</option>
-                <option value="jackplus">Jack+</option>
-                <option value="cosmo">Cosmo</option>
-                <option value="cosmonaut">CosmoNaut</option>
+                <option value="bewotec">MyJack / Jack+</option>
+                <option value="traffics">Cosmo / CosmoNaut</option>
             </select>
 
             <button id="connect">connect</button>
@@ -49,11 +47,11 @@
                     <label>popupId (leave blank for auto-detection): <input name="popupId"/></label>
                 </div>
 
-                <div id="jack-connect-template" class="column connect-option">
+                <div id="bewotec-connect-template" class="column connect-option">
                     <label>token: <input name="token"/></label>
                 </div>
 
-                <div id="cosmo-connect-template" class="column connect-option">
+                <div id="traffics-connect-template" class="column connect-option">
                     <label>dataSourceUrl: <input name="dataSourceUrl" value="https://us-central1-fti360-bm-staging.cloudfunctions.net/query2Json"/></label>
                     <label>environment: <select name="environment">
                         <option value="test" selected>test</option>

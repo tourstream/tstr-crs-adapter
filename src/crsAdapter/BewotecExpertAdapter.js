@@ -440,9 +440,6 @@ class BewotecExpertAdapter {
      */
     assignCamperExtras(service, crsObject) {
         let pickUpDate = moment(service.pickUpDate, this.options.useDateFormat);
-        let dropOffDate = (service.dropOffDate)
-            ? moment(service.dropOffDate, this.options.useDateFormat)
-            : moment(service.pickUpDate, this.options.useDateFormat).add(service.duration, 'days');
 
         (service.extras || []).forEach((extra) => {
             let lineIndex = this.getNextEmptyServiceLineIndex(crsObject);
@@ -453,7 +450,7 @@ class BewotecExpertAdapter {
             crsObject['n' + lineNumber] = CONFIG.crs.serviceTypes.camperExtra;
             crsObject['l' + lineNumber] = extraParts[0];
             crsObject['s' + lineNumber] = pickUpDate.isValid() ? pickUpDate.format(CONFIG.crs.dateFormat) : service.pickUpDate;
-            crsObject['i' + lineNumber] = dropOffDate.isValid() ? dropOffDate.format(CONFIG.crs.dateFormat) : service.dropOffDate;
+            crsObject['i' + lineNumber] = crsObject['s' + lineNumber];
             crsObject['d' + lineNumber] = '1' + ((extraParts[1] > 1) ? '-' + extraParts[1] : '');
         });
     }
