@@ -152,8 +152,7 @@ class BewotecExpertAdapter {
      * @param dataObject object
      */
     assignDataObjectToCrsObject(crsObject, dataObject = {}) {
-        crsObject.rem = dataObject.remark;
-        crsObject.p = dataObject.numberOfTravellers || CONFIG.crs.defaultValues.numberOfTravellers;
+        this.assignBasicData(crsObject, dataObject);
 
         (dataObject.services || []).forEach((service) => {
             let markedLineIndex= this.getMarkedLineIndexForService(crsObject, service);
@@ -192,6 +191,17 @@ class BewotecExpertAdapter {
 
         return JSON.parse(JSON.stringify(crsObject));
     };
+
+    /**
+     * @private
+     * @param crsObject object
+     * @param dataObject object
+     */
+    assignBasicData(crsObject, dataObject) {
+        crsObject.rem = dataObject.remark;
+        crsObject.r = dataObject.travelType;
+        crsObject.p = dataObject.numberOfTravellers || CONFIG.crs.defaultValues.numberOfTravellers;
+    }
 
     /**
      * @private

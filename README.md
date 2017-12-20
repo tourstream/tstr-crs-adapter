@@ -62,6 +62,7 @@ ubpCrsAdapter.setData(outputData);
 The `outputData` object has the following structure:
 ```
 {
+    travelType: string,
     numberOfTravellers: string,
     services: Array<ServiceObject>,
     remark: string,

@@ -112,11 +112,13 @@ describe('BewotecExpertAdapter', () => {
             let expectation = createParams({
                 p: 2,
                 rem: 'my.remark',
+                r: 'travel.type',
             });
 
             let data = {
                 numberOfTravellers: 2,
                 remark: 'my.remark',
+                travelType: 'travel.type',
                 services: [{ type: 'unknown' }],
             };
 

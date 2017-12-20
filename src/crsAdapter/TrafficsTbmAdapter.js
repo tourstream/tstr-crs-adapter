@@ -462,8 +462,7 @@ class TrafficsTbmAdapter {
      * @param dataObject object
      */
     assignDataObjectToCrsObject(crsObject, dataObject = {}) {
-        crsObject['TbmXml.admin.customer.$.rmk'] = dataObject.remark;
-        crsObject['TbmXml.admin.customer.$.psn'] = dataObject.numberOfTravellers || CONFIG.crs.defaultValues.numberOfTravellers;
+        this.assignBasicData(crsObject, dataObject);
 
         (dataObject.services || []).forEach((service) => {
             let markedLineIndex= this.getMarkedLineIndexForService(crsObject, service);
@@ -502,6 +501,17 @@ class TrafficsTbmAdapter {
 
         return JSON.parse(JSON.stringify(crsObject));
     };
+
+    /**
+     * @private
+     * @param crsObject object
+     * @param dataObject object
+     */
+    assignBasicData(crsObject, dataObject) {
+        crsObject['TbmXml.admin.customer.$.rmk'] = dataObject.remark;
+        crsObject['TbmXml.admin.customer.$.knd'] = dataObject.travelType;
+        crsObject['TbmXml.admin.customer.$.psn'] = dataObject.numberOfTravellers || CONFIG.crs.defaultValues.numberOfTravellers;
+    }
 
     /**
      * @private
