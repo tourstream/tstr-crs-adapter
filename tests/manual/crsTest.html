@@ -1,159 +1,275 @@
 <!DOCTYPE html>
 <html>
-    <head lang="en">
-        <meta http-equiv="X-UA-Compatible" content="IE=11">
-        <meta charset="UTF-8">
-        <link rel="stylesheet" type="text/css" href="assets/styles.css">
-    </head>
+<head lang="en">
+    <meta http-equiv="X-UA-Compatible" content="IE=11">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
-    <body>
-        <div id="header">
-            <h1>CRS tests</h1>
-            <h2>hit the buttons for executing tests</h2>
+    <title>CRS Adapter Test</title>
 
-            <select id="crs-selector">
-                <option>--- select a crs first ---</option>
-                <option value="toma">TOMA (old)</option>
-                <option value="toma2">TOMA (new)</option>
-                <option value="cets">CETS</option>
-                <option value="bm">Booking Manager</option>
-                <option value="merlin">Merlin</option>
-                <option value="bewotec">MyJack / Jack+</option>
-                <option value="traffics">Cosmo / CosmoNaut</option>
-            </select>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb" crossorigin="anonymous">
+    <link rel="stylesheet" type="text/css" href="assets/styles.css">
+</head>
 
-            <button id="connect">connect</button>
+<body>
+<div class="container-fluid">
+    <h1>CRS Adapter Test</h1>
 
-            <form id="connect-options"></form>
+    <div class="row">
+        <div class="col">
+            <h2>Select the CRS to which you want to transfer data:</h2>
 
-            <div id="actions">
-                <button id="get-data-btn">get data</button>
-                <button id="set-data-btn">send data</button>
-                <button id="exit-btn">trigger exit</button>
-                <br />
-                <button id="add-car-service-btn">toggle car service</button>
-                <button id="add-hotel-service-btn">toggle hotel service</button>
-                <button id="add-round-trip-service-btn">toggle round trip service</button>
-                <button id="add-camper-service-btn">toggle camper service</button>
+            <div id="crs-selection">
+                <button type="button" class="btn btn-outline-primary" value="toma">TOMA (old)</button>
+                <button type="button" class="btn btn-outline-primary" value="toma2">TOMA (new)</button>
+                <button type="button" class="btn btn-outline-primary" value="cets">CETS</button>
+                <button type="button" class="btn btn-outline-primary" value="merlin">Merlin</button>
+                <button type="button" class="btn btn-outline-primary" value="bewotec">MyJack / Jack+</button>
+                <button type="button" class="btn btn-outline-primary" value="traffics">Cosomo / CosmoNaut</button>
+
+                <span class="mx-4">
+                            <button name="connect" class="btn btn-outline-success">connect to CRS</button>
+                        </span>
             </div>
+        </div>
+    </div>
 
-            <div id="templates">
-                <div id="toma-connect-template" class="column connect-option">
-                    <label>providerKey: <input name="providerKey"/></label>
-                </div>
+    <form id="connect-options" class="form my-2">
+    </form>
 
-                <div id="toma2-connect-template" class="column connect-option">
-                    <label>connectionUrl (leave blank for auto-detection): <input name="connectionUrl" value="https://acceptance.emea1.sellingplatformconnect.amadeus.com"/></label>
-                    <label>popupId (leave blank for auto-detection): <input name="popupId"/></label>
-                </div>
+    <div class="row">
+        <div class="col">
+            <h2>Select the product type you want to transfer:</h2>
 
-                <div id="bewotec-connect-template" class="column connect-option">
-                    <label>token: <input name="token"/></label>
-                </div>
+            <div id="product-selection">
+                <button type="button" class="btn btn-outline-primary" value="car">car</button>
+                <button type="button" class="btn btn-outline-primary" value="hotel">hotel</button>
+                <button type="button" class="btn btn-outline-primary" value="roundTrip">round trip</button>
+                <button type="button" class="btn btn-outline-primary" value="camper">camper</button>
 
-                <div id="traffics-connect-template" class="column connect-option">
-                    <label>dataSourceUrl: <input name="dataSourceUrl" value="https://us-central1-fti360-bm-staging.cloudfunctions.net/query2Json"/></label>
-                    <label>environment: <select name="environment">
-                        <option value="test" selected>test</option>
-                        <option value="live">live</option>
-                    </select></label>
-                    <label>exportId: <input name="exportId" value="fake_id"/></label>
-                </div>
-
-                <div id="car-service-template" class="column service">
-                    <input type="hidden" name="services.0.type" value="car"/>
-                    <label>marked: <input name="services.0.marked"/></label>
-                    <label>vehicleTypeCode: <input name="services.0.vehicleTypeCode" value="B1"/></label>
-                    <label>rentalCode: <input name="services.0.rentalCode" value="ITL22"/></label>
-                    <label>pickUpLocation: <input name="services.0.pickUpLocation" value="ROMH"/></label>
-                    <label>dropOffLocation: <input name="services.0.dropOffLocation" value="ROMH"/></label>
-                    <label>pickUpTime: <input name="services.0.pickUpTime" value="0940"/></label>
-                    <label>pickUpDate: <input name="services.0.pickUpDate" value="08122017"/></label>
-                    <label>duration: <input name="services.0.duration" value="4"/></label>
-                    <label>durationInMinutes: <input name="services.0.durationInMinutes" value="5800"/></label>
-
-                    <label>pickUpHotelName: <input name="services.0.pickUpHotelName" value="pu name"/></label>
-                    <label>pickUpHotelAddress: <input name="services.0.pickUpHotelAddress" value="pu address"/></label>
-                    <label>pickUpHotelPhoneNumber: <input name="services.0.pickUpHotelPhoneNumber" value="pu number"/></label>
-
-                    <label>dropOffHotelName: <input name="services.0.dropOffHotelName" value="do name"/></label>
-                    <label>dropOffHotelAddress: <input name="services.0.dropOffHotelAddress" value="do address"/></label>
-                    <label>dropOffHotelPhoneNumber: <input name="services.0.dropOffHotelPhoneNumber" value="do number"/></label>
-
-                    <label>extras:
-                        <input name="services.0.extras.0" value="childCareSeat0"/>
-                        <input name="services.0.extras.1" value="childCareSeat3"/>
-                        <input name="services.0.extras.2" value="navigationSystem"/>
-                        <input name="services.0.extras.3" value="additionalDriver.2"/>
-                    </label>
-                </div>
-
-                <div id="hotel-service-template" class="column service">
-                    <input type="hidden" name="services.0.type" value="hotel"/>
-                    <label>marked: <input name="services.0.marked"/></label>
-                    <label>roomCode: <input name="services.0.roomCode" value="DZ"/></label>
-                    <label>mealCode: <input name="services.0.mealCode" value="U"/></label>
-                    <label>roomQuantity: <input name="services.0.roomQuantity" value="2"/></label>
-                    <label>roomOccupancy: <input name="services.0.roomOccupancy" value="4"/></label>
-                    <label>destination: <input name="services.0.destination" value="LAX20S"/></label>
-                    <label>dateFrom: <input name="services.0.dateFrom" value="20092017"/></label>
-                    <label>dateTo: <input name="services.0.dateTo" value="20092017"/></label>
-
-                    <label>child 1 name: <input name="services.0.children.0.name" value="john doe"/></label>
-                    <label>child 1 age: <input name="services.0.children.0.age" value="11"/></label>
-                    <label>child 2 name: <input name="services.0.children.1.name" value="jane doe"/></label>
-                    <label>child 2 age: <input name="services.0.children.1.age" value="7"/></label>
-                </div>
-
-                <div id="round-trip-service-template" class="column service">
-                    <input type="hidden" name="services.0.type" value="roundTrip"/>
-                    <label>marked: <input name="services.0.marked"/></label>
-                    <label>bookingId: <input name="services.0.bookingId" value="E2784NQXTHEN"/></label>
-                    <label>destination: <input name="services.0.destination" value="YYZ"/></label>
-                    <label>startDate: <input name="services.0.startDate" value="05122017"/></label>
-                    <label>endDate: <input name="services.0.endDate" value="16122017"/></label>
-
-                    <label>traveller 1 gender: <input name="services.0.travellers.0.gender" value="female"/></label>
-                    <label>traveller 1 name: <input name="services.0.travellers.0.name" value="Jane Doe"/></label>
-                    <label>traveller 1 age: <input name="services.0.travellers.0.age" value="32"/></label>
-
-                    <label>traveller 2 gender: <input name="services.0.travellers.1.gender" value="child"/></label>
-                    <label>traveller 2 name: <input name="services.0.travellers.1.name" value="Joe Doe"/></label>
-                    <label>traveller 2 age: <input name="services.0.travellers.1.age" value="3"/></label>
-                </div>
-
-                <div id="camper-service-template" class="column service">
-                    <input type="hidden" name="services.0.type" value="camper"/>
-                    <label>marked: <input name="services.0.marked"/></label>
-                    <label>camperCode: <input name="services.0.camperCode" value="FS"/></label>
-                    <label>renterCode: <input name="services.0.renterCode" value="PRT02"/></label>
-                    <label>pickUpLocation: <input name="services.0.pickUpLocation" value="LIS1"/></label>
-                    <label>dropOffLocation: <input name="services.0.dropOffLocation" value="LIS2"/></label>
-                    <label>pickUpDate: <input name="services.0.pickUpDate" value="08122017"/></label>
-                    <label>duration: <input name="services.0.duration" value="4"/></label>
-                    <label>milesIncludedPerDay: <input name="services.0.milesIncludedPerDay" value="200"/></label>
-                    <label>milesPackagesIncluded: <input name="services.0.milesPackagesIncluded" value="3"/></label>
-
-                    <label>extras:
-                        <input name="services.0.extras.0" value="extra.2"/><br />
-                        <input name="services.0.extras.1" value="special"/><br />
-                        <input name="services.0.extras.2" value="extra.4"/>
-                    </label>
-                </div>
+                <span class="mx-4">
+                            <button name="get" class="btn btn-outline-warning">get data from CRS</button>
+                            <button name="send" class="btn btn-outline-warning">send data to CRS</button>
+                            <button name="exit" class="btn btn-outline-warning">exit</button>
+                        </span>
             </div>
+        </div>
+    </div>
 
-            <form id="data-form">
-                <div class="column">
-                    <label>travelType: <input name="travelType" value="BAUS"/></label>
-                    <label>numberOfTravellers: <input name="numberOfTravellers" value="3"/></label>
-                    <label>remark: <input name="remark" value="that is what i remark"/></label>
-                </div>
-            </form>
+    <form id="product" class="form my-2">
+    </form>
+
+    <div id="templates" hidden>
+        <div id="form-field-template" class="input-group">
+            <div class="input-group-addon form-control-sm"></div>
+            <input type="text" class="form-control form-control-sm">
         </div>
 
-        <div id="report"></div>
+        <div id="toma-form-fields">
+            <input type="hidden" name="type" value="toma"/>
 
-		<script type="application/javascript" src="assets/ubpCrsAdapter.js"></script>
-		<script type="application/javascript" src="assets/helpers.js"></script>
-	</body>
+            <div class="form-row">
+                <div data-form-field data-label="providerKey" data-name="providerKey"></div>
+            </div>
+        </div>
+
+        <div id="toma2-form-fields">
+            <input type="hidden" name="type" value="toma2"/>
+
+            <div class="form-row">
+                <div data-form-field data-label="connectionUrl (leave blank for auto-detection)" data-name="connectionUrl" data-value="https://acceptance.emea1.sellingplatformconnect.amadeus.com"></div>
+                <div data-form-field data-label="popupId (leave blank for auto-detection)" data-name="popupId"></div>
+            </div>
+        </div>
+
+        <div id="cets-form-fields">
+            <input type="hidden" name="type" value="cets"/>
+        </div>
+
+        <div id="merlin-form-fields">
+            <input type="hidden" name="type" value="merlin"/>
+        </div>
+
+        <div id="bewotec-form-fields">
+            <input type="hidden" name="type" value="bewotec"/>
+
+            <div class="form-row">
+                <div data-form-field data-label="token" data-name="token"></div>
+            </div>
+        </div>
+
+        <div id="traffics-form-fields">
+            <input type="hidden" name="type" value="traffics"/>
+
+            <div class="form-row">
+                <div data-form-field data-label="environment" data-name="environment" data-value="test" data-title="'test' or 'live'"></div>
+                <div data-form-field data-label="dataSourceUrl" data-name="dataSourceUrl" data-value="https://us-central1-fti360-bm-staging.cloudfunctions.net/query2Json"></div>
+                <div data-form-field data-label="exportId" data-name="exportId" data-value="fake_id"></div>
+            </div>
+        </div>
+
+        <div id="base-product-form-fields">
+            <div class="form-row">
+                <fieldset class="col my-1">
+                    <div data-form-field data-label="travelType" data-name="travelType" data-value="BAUS"></div>
+                    <div data-form-field data-label="numberOfTravellers" data-name="numberOfTravellers" data-value="2"></div>
+                    <div data-form-field data-label="remark" data-name="remark" data-value="this is what i remark"></div>
+                </fieldset>
+            </div>
+        </div>
+
+        <div id="car-form-fields">
+            <input type="hidden" name="services.0.type" value="car"/>
+
+            <div class="form-row">
+                <fieldset class="col my-1">
+                    <div data-form-field data-label="vehicleTypeCode" data-name="services.0.vehicleTypeCode" data-value="B1"></div>
+                    <div data-form-field data-label="rentalCode" data-name="services.0.rentalCode" data-value="ITL22"></div>
+                </fieldset>
+
+                <fieldset class="col my-1">
+                    <div data-form-field data-label="pickUpLocation" data-name="services.0.pickUpLocation" data-value="ROMH"></div>
+                    <div data-form-field data-label="pickUpTime" data-name="services.0.pickUpTime" data-value="0940"></div>
+                    <div data-form-field data-label="pickUpDate" data-name="services.0.pickUpDate" data-value="08122017"></div>
+                </fieldset>
+
+                <fieldset class="col my-1">
+                    <div data-form-field data-label="dropOffLocation" data-name="services.0.dropOffLocation" data-value="ROMH"></div>
+                    <div data-form-field data-label="duration" data-name="services.0.duration" data-value="4"></div>
+                    <div data-form-field data-label="durationInMinutes" data-name="services.0.durationInMinutes" data-value="5800"></div>
+                </fieldset>
+            </div>
+
+            <div class="form-row">
+                <fieldset class="col my-1">
+                    <div data-form-field data-label="pickUpHotelName" data-name="services.0.pickUpHotelName" data-value="pu name"></div>
+                    <div data-form-field data-label="pickUpHotelAddress" data-name="services.0.pickUpHotelAddress" data-value="pu address"></div>
+                    <div data-form-field data-label="pickUpHotelPhoneNumber" data-name="services.0.pickUpHotelPhoneNumber" data-value="pu number"></div>
+                </fieldset>
+
+                <fieldset class="col my-1">
+                    <div data-form-field data-label="dropOffHotelName" data-name="services.0.dropOffHotelName" data-value="do name"></div>
+                    <div data-form-field data-label="dropOffHotelAddress" data-name="services.0.dropOffHotelAddress" data-value="do address"></div>
+                    <div data-form-field data-label="dropOffHotelPhoneNumber" data-name="services.0.dropOffHotelPhoneNumber" data-value="do number"></div>
+                </fieldset>
+            </div>
+
+            <div class="form-row">
+                <fieldset class="col my-1">
+                    <div data-form-field data-label="extra 1" data-name="services.0.extras.0" data-value="childCareSeat0"></div>
+                    <div data-form-field data-label="extra 2" data-name="services.0.extras.1" data-value="navigationSystem"></div>
+                    <div data-form-field data-label="extra 3" data-name="services.0.extras.2" data-value="additionalDriver.2"></div>
+                    <div data-form-field data-label="extra 4" data-name="services.0.extras.3" data-value="childCareSeat3"></div>
+                </fieldset>
+            </div>
+        </div>
+
+        <div id="hotel-form-fields">
+            <input type="hidden" name="services.0.type" value="hotel"/>
+
+            <div class="form-row">
+                <fieldset class="col my-1">
+                    <div data-form-field data-label="roomCode" data-name="services.0.roomCode" data-value="DZ"></div>
+                    <div data-form-field data-label="mealCode" data-name="services.0.mealCode" data-value="U"></div>
+                    <div data-form-field data-label="roomQuantity" data-name="services.0.roomQuantity" data-value="2"></div>
+                    <div data-form-field data-label="roomOccupancy" data-name="services.0.roomOccupancy" data-value="4"></div>
+                </fieldset>
+
+                <fieldset class="col my-1">
+                    <div data-form-field data-label="destination" data-name="services.0.destination" data-value="LAX20S"></div>
+                    <div data-form-field data-label="dateFrom" data-name="services.0.dateFrom" data-value="20092017"></div>
+                    <div data-form-field data-label="dateTo" data-name="services.0.dateTo" data-value="20092017"></div>
+                </fieldset>
+            </div>
+
+            <div class="form-row">
+                <fieldset class="col my-1">
+                    <div data-form-field data-label="child 1 name" data-name="services.0.children.0.name" data-value="john doe"></div>
+                    <div data-form-field data-label="child 1 age" data-name="services.0.children.0.age" data-value="11"></div>
+                </fieldset>
+
+                <fieldset class="col my-1">
+                    <div data-form-field data-label="child 2 name" data-name="services.0.children.1.name" data-value="jane doe"></div>
+                    <div data-form-field data-label="child 2 age" data-name="services.0.children.1.age" data-value="7"></div>
+                </fieldset>
+            </div>
+        </div>
+
+        <div id="roundTrip-form-fields">
+            <input type="hidden" name="services.0.type" value="roundTrip"/>
+
+            <div class="form-row">
+                <fieldset class="col my-1">
+                    <div data-form-field data-label="bookingId" data-name="services.0.bookingId" data-value="E2784NQXTHEN"></div>
+                    <div data-form-field data-label="destination" data-name="services.0.destination" data-value="YYZ"></div>
+                </fieldset>
+
+                <fieldset class="col my-1">
+                    <div data-form-field data-label="startDate" data-name="services.0.startDate" data-value="05122017"></div>
+                    <div data-form-field data-label="endDate" data-name="services.0.endDate" data-value="16122017"></div>
+                </fieldset>
+            </div>
+
+            <div class="form-row">
+                <fieldset class="col my-1">
+                    <div data-form-field data-label="traveller 1 gender" data-name="services.0.travellers.0.gender" data-value="female"></div>
+                    <div data-form-field data-label="traveller 1 name" data-name="services.0.travellers.0.name" data-value="jane doe"></div>
+                    <div data-form-field data-label="traveller 1 age" data-name="services.0.travellers.0.age" data-value="11"></div>
+                </fieldset>
+
+                <fieldset class="col my-1">
+                    <div data-form-field data-label="traveller 2 gender" data-name="services.0.travellers.1.gender" data-value="male"></div>
+                    <div data-form-field data-label="traveller 2 name" data-name="services.0.travellers.1.name" data-value="john doe"></div>
+                    <div data-form-field data-label="traveller 2 age" data-name="services.0.travellers.1.age" data-value="32"></div>
+                </fieldset>
+            </div>
+        </div>
+
+        <div id="camper-form-fields">
+            <input type="hidden" name="services.0.type" value="camper"/>
+
+            <div class="form-row">
+                <fieldset class="col my-1">
+                    <div data-form-field data-label="camperCode" data-name="services.0.camperCode" data-value="FS"></div>
+                    <div data-form-field data-label="renterCode" data-name="services.0.renterCode" data-value="PRT02"></div>
+                </fieldset>
+
+                <fieldset class="col my-1">
+                    <div data-form-field data-label="pickUpLocation" data-name="services.0.pickUpLocation" data-value="LIS1"></div>
+                    <div data-form-field data-label="dropOffLocation" data-name="services.0.dropOffLocation" data-value="LIS2"></div>
+                </fieldset>
+            </div>
+
+            <div class="form-row">
+                <fieldset class="col my-1">
+                    <div data-form-field data-label="pickUpDate" data-name="services.0.pickUpDate" data-value="08122017"></div>
+                    <div data-form-field data-label="duration" data-name="services.0.duration" data-value="4"></div>
+                </fieldset>
+
+                <fieldset class="col my-1">
+                    <div data-form-field data-label="milesIncludedPerDay" data-name="services.0.milesIncludedPerDay" data-value="200"></div>
+                    <div data-form-field data-label="milesPackagesIncluded" data-name="services.0.milesPackagesIncluded" data-value="3"></div>
+                </fieldset>
+            </div>
+
+            <div class="form-row">
+                <fieldset class="col my-1">
+                    <div data-form-field data-label="extra 1" data-name="services.0.extras.0" data-value="extra.2"></div>
+                    <div data-form-field data-label="extra 2" data-name="services.0.extras.1" data-value="special"></div>
+                    <div data-form-field data-label="extra 3" data-name="services.0.extras.2" data-value="extra.4"></div>
+                </fieldset>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="report"></div>
+
+<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js" integrity="sha384-vFJXuSJphROIrBnz7yo7oB41mKfc8JzQZiCq4NCceLEaO4IHwicKwpJf9c9IpFgh" crossorigin="anonymous"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js" integrity="sha384-alpBpkh1PFOepccYVYDB4do5UnbKysX5WZXm3XxPqe5iKTfUKjNkCk9SaVuEZflJ" crossorigin="anonymous"></script>
+
+<script type="application/javascript" src="assets/ubpCrsAdapter.js"></script>
+<script type="application/javascript" src="assets/helpers.js"></script>
+</body>
 </html>
