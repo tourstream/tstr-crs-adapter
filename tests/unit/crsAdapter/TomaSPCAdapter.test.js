@@ -999,10 +999,11 @@ describe('TomaSPCAdapter', () => {
                         destination: 'YYZ',
                         startDate: '05122017',
                         endDate: '16122017',
-                        title: 'H',
-                        name: 'DOE/JOHN',
-                        age: '32',
-                        birthday: '040485',
+                        travellers: [{
+                            gender: 'male',
+                            name: 'DOE/JOHN',
+                            age: '32',
+                        }],
                     },
                 ],
             };
@@ -1016,12 +1017,12 @@ describe('TomaSPCAdapter', () => {
                     accommodation: 'YYZ',
                     fromDate: '051217',
                     toDate: '161217',
-                    travellerAssociation: 1,
+                    travellerAssociation: '1',
                 }],
                 travellers: [{
                     title: 'H',
                     name: 'DOE/JOHN',
-                    discount: 32,
+                    discount: '32',
                 }],
             };
 

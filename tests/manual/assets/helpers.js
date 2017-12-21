@@ -96,38 +96,17 @@ document.getElementById('get-data-btn').addEventListener('click', function () {
 });
 
 document.getElementById('set-data-btn').addEventListener('click', function () {
-    var data = {};
-    var service = {};
-
     try {
-        Object.keys(form).forEach(function (key) {
-            if (form[key].name.indexOf('service.') === 0) {
-                service[form[key].name.split('.')[1]] = form[key].value;
-            } else if (form[key].name.indexOf('children.') === 0) {
-                service.children = service.children || [];
+        var data = {};
 
-                var value = form[key].value;
+        Object.keys(form).forEach((key) => {
+            if (!form[key].name || form[key].value === '') return;
 
-                if (!value) return;
-
-                var index = form[key].name.split('.')[1];
-                var child = service.children[index] || {};
-
-                child[form[key].name.split('.')[2]] = value;
-
-                service.children[index] = child;
-            } else if (form[key].name.indexOf('extra.') === 0) {
-                if (!service.extras) {
-                    service.extras = [];
-                }
-
-                service.extras.push(form[key].value);
-            } else {
-                data[form[key].name] = form[key].value;
-            }
+            setValueToPropertyPath(data, form[key].name, form[key].value);
         });
 
-        data.services = [service];
+        log('collected data');
+        log(data);
 
         if (selectedCrs === 'bm') {
             var decision = window.prompt('Send [1] for a direct checkout else it will be added to the basket');
@@ -172,3 +151,22 @@ document.getElementById('add-camper-service-btn').addEventListener('click', func
     removeChildrenFromElement('data-form', 'service');
     form.appendChild(camperServiceTemplate.cloneNode(true));
 });
+
+function setValueToPropertyPath(object, path, value) {
+    var parts = path.split('.');
+    var property = parts.shift();
+
+    if (path === property) {
+        object[property] = value === 'Infinity' ? Infinity : value;
+
+        return;
+    }
+
+    if (isFinite(parts[0])) {
+        object[property] = object[property] || [];
+    } else {
+        object[property] = object[property] || {};
+    }
+
+    setValueToPropertyPath(object[property], parts.join('.'), value);
+}

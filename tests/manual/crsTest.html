@@ -61,78 +61,83 @@
                 </div>
 
                 <div id="car-service-template" class="column service">
-                    <input type="hidden" name="service.type" value="car"/>
-                    <label>marked: <input name="service.marked"/></label>
-                    <label>vehicleTypeCode: <input name="service.vehicleTypeCode" value="B1"/></label>
-                    <label>rentalCode: <input name="service.rentalCode" value="ITL22"/></label>
-                    <label>pickUpLocation: <input name="service.pickUpLocation" value="ROMH"/></label>
-                    <label>dropOffLocation: <input name="service.dropOffLocation" value="ROMH"/></label>
-                    <label>pickUpTime: <input name="service.pickUpTime" value="0940"/></label>
-                    <label>pickUpDate: <input name="service.pickUpDate" value="08122017"/></label>
-                    <label>duration: <input name="service.duration" value="4"/></label>
-                    <label>durationInMinutes: <input name="service.durationInMinutes" value="5800"/></label>
+                    <input type="hidden" name="services.0.type" value="car"/>
+                    <label>marked: <input name="services.0.marked"/></label>
+                    <label>vehicleTypeCode: <input name="services.0.vehicleTypeCode" value="B1"/></label>
+                    <label>rentalCode: <input name="services.0.rentalCode" value="ITL22"/></label>
+                    <label>pickUpLocation: <input name="services.0.pickUpLocation" value="ROMH"/></label>
+                    <label>dropOffLocation: <input name="services.0.dropOffLocation" value="ROMH"/></label>
+                    <label>pickUpTime: <input name="services.0.pickUpTime" value="0940"/></label>
+                    <label>pickUpDate: <input name="services.0.pickUpDate" value="08122017"/></label>
+                    <label>duration: <input name="services.0.duration" value="4"/></label>
+                    <label>durationInMinutes: <input name="services.0.durationInMinutes" value="5800"/></label>
 
-                    <label>pickUpHotelName: <input name="service.pickUpHotelName" value="pu name"/></label>
-                    <label>pickUpHotelAddress: <input name="service.pickUpHotelAddress" value="pu address"/></label>
-                    <label>pickUpHotelPhoneNumber: <input name="service.pickUpHotelPhoneNumber" value="pu number"/></label>
+                    <label>pickUpHotelName: <input name="services.0.pickUpHotelName" value="pu name"/></label>
+                    <label>pickUpHotelAddress: <input name="services.0.pickUpHotelAddress" value="pu address"/></label>
+                    <label>pickUpHotelPhoneNumber: <input name="services.0.pickUpHotelPhoneNumber" value="pu number"/></label>
 
-                    <label>dropOffHotelName: <input name="service.dropOffHotelName" value="do name"/></label>
-                    <label>dropOffHotelAddress: <input name="service.dropOffHotelAddress" value="do address"/></label>
-                    <label>dropOffHotelPhoneNumber: <input name="service.dropOffHotelPhoneNumber" value="do number"/></label>
+                    <label>dropOffHotelName: <input name="services.0.dropOffHotelName" value="do name"/></label>
+                    <label>dropOffHotelAddress: <input name="services.0.dropOffHotelAddress" value="do address"/></label>
+                    <label>dropOffHotelPhoneNumber: <input name="services.0.dropOffHotelPhoneNumber" value="do number"/></label>
+
                     <label>extras:
-                        <input name="extra.0" value="childCareSeat0"/>
-                        <input name="extra.1" value="childCareSeat3"/>
-                        <input name="extra.2" value="navigationSystem"/>
-                        <input name="extra.3" value="additionalDriver.2"/>
+                        <input name="services.0.extras.0" value="childCareSeat0"/>
+                        <input name="services.0.extras.1" value="childCareSeat3"/>
+                        <input name="services.0.extras.2" value="navigationSystem"/>
+                        <input name="services.0.extras.3" value="additionalDriver.2"/>
                     </label>
                 </div>
 
                 <div id="hotel-service-template" class="column service">
-                    <input type="hidden" name="service.type" value="hotel"/>
-                    <label>marked: <input name="service.marked"/></label>
-                    <label>roomCode: <input name="service.roomCode" value="DZ"/></label>
-                    <label>mealCode: <input name="service.mealCode" value="U"/></label>
-                    <label>roomQuantity: <input name="service.roomQuantity" value="2"/></label>
-                    <label>roomOccupancy: <input name="service.roomOccupancy" value="4"/></label>
-                    <label>destination: <input name="service.destination" value="LAX20S"/></label>
-                    <label>dateFrom: <input name="service.dateFrom" value="20092017"/></label>
-                    <label>dateTo: <input name="service.dateTo" value="20092017"/></label>
-                    <label>child 1 name: <input name="children.0.name" value="john doe"/></label>
-                    <label>child 1 age: <input name="children.0.age" value="11"/></label>
-                    <label>child 2 name: <input name="children.1.name" value="jane doe"/></label>
-                    <label>child 2 age: <input name="children.1.age" value="7"/></label>
+                    <input type="hidden" name="services.0.type" value="hotel"/>
+                    <label>marked: <input name="services.0.marked"/></label>
+                    <label>roomCode: <input name="services.0.roomCode" value="DZ"/></label>
+                    <label>mealCode: <input name="services.0.mealCode" value="U"/></label>
+                    <label>roomQuantity: <input name="services.0.roomQuantity" value="2"/></label>
+                    <label>roomOccupancy: <input name="services.0.roomOccupancy" value="4"/></label>
+                    <label>destination: <input name="services.0.destination" value="LAX20S"/></label>
+                    <label>dateFrom: <input name="services.0.dateFrom" value="20092017"/></label>
+                    <label>dateTo: <input name="services.0.dateTo" value="20092017"/></label>
+
+                    <label>child 1 name: <input name="services.0.children.0.name" value="john doe"/></label>
+                    <label>child 1 age: <input name="services.0.children.0.age" value="11"/></label>
+                    <label>child 2 name: <input name="services.0.children.1.name" value="jane doe"/></label>
+                    <label>child 2 age: <input name="services.0.children.1.age" value="7"/></label>
                 </div>
 
                 <div id="round-trip-service-template" class="column service">
-                    <input type="hidden" name="service.type" value="roundTrip"/>
-                    <label>marked: <input name="service.marked"/></label>
-                    <label>bookingId: <input name="service.bookingId" value="E2784NQXTHEN"/></label>
-                    <label>destination: <input name="service.destination" value="YYZ"/></label>
-                    <label>startDate: <input name="service.startDate" value="05122017"/></label>
-                    <label>endDate: <input name="service.endDate" value="16122017"/></label>
-                    <label>title: <input name="service.title" value="H"/></label>
-                    <label>gender (male | female | child): <input name="service.gender" value="male"/></label>
-                    <label>name: <input name="service.name" value="DOE/JOHN"/></label>
-                    <label>age: <input name="service.age" value="32"/></label>
-                    <label>birthday: <input name="service.birthday" value="040485"/></label>
+                    <input type="hidden" name="services.0.type" value="roundTrip"/>
+                    <label>marked: <input name="services.0.marked"/></label>
+                    <label>bookingId: <input name="services.0.bookingId" value="E2784NQXTHEN"/></label>
+                    <label>destination: <input name="services.0.destination" value="YYZ"/></label>
+                    <label>startDate: <input name="services.0.startDate" value="05122017"/></label>
+                    <label>endDate: <input name="services.0.endDate" value="16122017"/></label>
+
+                    <label>traveller 1 gender: <input name="services.0.travellers.0.gender" value="female"/></label>
+                    <label>traveller 1 name: <input name="services.0.travellers.0.name" value="Jane Doe"/></label>
+                    <label>traveller 1 age: <input name="services.0.travellers.0.age" value="32"/></label>
+
+                    <label>traveller 2 gender: <input name="services.0.travellers.1.gender" value="child"/></label>
+                    <label>traveller 2 name: <input name="services.0.travellers.1.name" value="Joe Doe"/></label>
+                    <label>traveller 2 age: <input name="services.0.travellers.1.age" value="3"/></label>
                 </div>
 
                 <div id="camper-service-template" class="column service">
-                    <input type="hidden" name="service.type" value="camper"/>
-                    <label>marked: <input name="service.marked"/></label>
-                    <label>camperCode: <input name="service.camperCode" value="FS"/></label>
-                    <label>renterCode: <input name="service.renterCode" value="PRT02"/></label>
-                    <label>pickUpLocation: <input name="service.pickUpLocation" value="LIS1"/></label>
-                    <label>dropOffLocation: <input name="service.dropOffLocation" value="LIS2"/></label>
-                    <label>pickUpDate: <input name="service.pickUpDate" value="08122017"/></label>
-                    <label>duration: <input name="service.duration" value="4"/></label>
-                    <label>milesIncludedPerDay: <input name="service.milesIncludedPerDay" value="200"/></label>
-                    <label>milesPackagesIncluded: <input name="service.milesPackagesIncluded" value="3"/></label>
+                    <input type="hidden" name="services.0.type" value="camper"/>
+                    <label>marked: <input name="services.0.marked"/></label>
+                    <label>camperCode: <input name="services.0.camperCode" value="FS"/></label>
+                    <label>renterCode: <input name="services.0.renterCode" value="PRT02"/></label>
+                    <label>pickUpLocation: <input name="services.0.pickUpLocation" value="LIS1"/></label>
+                    <label>dropOffLocation: <input name="services.0.dropOffLocation" value="LIS2"/></label>
+                    <label>pickUpDate: <input name="services.0.pickUpDate" value="08122017"/></label>
+                    <label>duration: <input name="services.0.duration" value="4"/></label>
+                    <label>milesIncludedPerDay: <input name="services.0.milesIncludedPerDay" value="200"/></label>
+                    <label>milesPackagesIncluded: <input name="services.0.milesPackagesIncluded" value="3"/></label>
 
                     <label>extras:
-                        <input name="extra.0" value="extra.2"/><br />
-                        <input name="extra.1" value="special"/><br />
-                        <input name="extra.2" value="extra.4"/>
+                        <input name="services.0.extras.0" value="extra.2"/><br />
+                        <input name="services.0.extras.1" value="special"/><br />
+                        <input name="services.0.extras.2" value="extra.4"/>
                     </label>
                 </div>
             </div>

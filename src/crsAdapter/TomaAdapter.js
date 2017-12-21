@@ -31,6 +31,7 @@ const CONFIG = {
             male: 'H',
             female: 'F',
             child: 'K',
+            infant: 'K',
         },
     },
     services: {
@@ -77,7 +78,7 @@ class TomaAdapter {
         this.helper = {
             roundTrip: new RoundTripHelper(Object.assign({}, options, {
                 crsDateFormat: CONFIG.crs.dateFormat,
-                gender2SalutationMap: CONFIG.gender2SalutationMap,
+                gender2SalutationMap: CONFIG.crs.gender2SalutationMap,
             })),
         };
 
@@ -729,14 +730,25 @@ class TomaAdapter {
      * @param lineNumber number
      */
     assignRoundTripTravellers(service, xml, lineNumber) {
-        const traveller = this.helper.roundTrip.normalizeTraveller(service);
+        if (!service.travellers) return;
 
-        let travellerLineNumber = this.getNextEmptyTravellerLineNumber(xml);
+        let firstLineNumber = '';
+        let lastLineNumber = '';
 
-        xml['TravAssociation.' + lineNumber] = travellerLineNumber;
-        xml['Title.' + travellerLineNumber] = traveller.salutation;
-        xml['Name.' + travellerLineNumber] = traveller.name;
-        xml['Reduction.' + travellerLineNumber] = traveller.age;
+        service.travellers.forEach((serviceTraveller) => {
+            const travellerLineNumber = this.getNextEmptyTravellerLineNumber(xml);
+            const traveller = this.helper.roundTrip.normalizeTraveller(serviceTraveller);
+
+            firstLineNumber = firstLineNumber || travellerLineNumber;
+            lastLineNumber = travellerLineNumber;
+
+            xml['Title.' + travellerLineNumber] = traveller.salutation;
+            xml['Name.' + travellerLineNumber] = traveller.name;
+            xml['Reduction.' + travellerLineNumber] = traveller.age;
+        });
+
+        xml['TravAssociation.' + lineNumber] = firstLineNumber + (firstLineNumber !== lastLineNumber ? '-' + lastLineNumber : '');
+        xml.NoOfPersons = Math.max(xml.NoOfPersons, service.travellers.length);
     }
 
     /**

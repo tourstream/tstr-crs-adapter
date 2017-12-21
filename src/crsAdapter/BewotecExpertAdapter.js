@@ -25,6 +25,7 @@ const CONFIG = {
             male: 'H',
             female: 'F',
             child: 'K',
+            infant: 'K',
         },
         lineNumberMap: ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'],
     },
@@ -42,7 +43,7 @@ class BewotecExpertAdapter {
         this.helper = {
             roundTrip: new RoundTripHelper(Object.assign({}, options, {
                 crsDateFormat: CONFIG.crs.dateFormat,
-                gender2SalutationMap: CONFIG.gender2SalutationMap,
+                gender2SalutationMap: CONFIG.crs.gender2SalutationMap,
             })),
         };
     }
@@ -385,17 +386,30 @@ class BewotecExpertAdapter {
      * @param lineIndex number
      */
     assignRoundTripTravellers(service, crsObject, lineIndex) {
+        if (!service.travellers) return;
+
         const lineNumber = CONFIG.crs.lineNumberMap[lineIndex];
-        const traveller = this.helper.roundTrip.normalizeTraveller(service);
 
-        let travellerLineIndex = this.getNextEmptyTravellerLineIndex(crsObject);
+        let firstLineNumber = '';
+        let lastLineNumber = '';
 
-        const travellerLineNumber = CONFIG.crs.lineNumberMap[travellerLineIndex];
+        service.travellers.forEach((serviceTraveller) => {
+            const traveller = this.helper.roundTrip.normalizeTraveller(serviceTraveller);
 
-        crsObject['d' + lineNumber] = travellerLineIndex + 1;
-        crsObject['ta' + travellerLineNumber] = traveller.salutation;
-        crsObject['tn' + travellerLineNumber] = traveller.name;
-        crsObject['te' + travellerLineNumber] = traveller.age;
+            let travellerLineIndex = this.getNextEmptyTravellerLineIndex(crsObject);
+
+            const travellerLineNumber = CONFIG.crs.lineNumberMap[travellerLineIndex];
+
+            firstLineNumber = firstLineNumber || (travellerLineIndex + 1);
+            lastLineNumber = (travellerLineIndex + 1);
+
+            crsObject['ta' + travellerLineNumber] = traveller.salutation;
+            crsObject['tn' + travellerLineNumber] = traveller.name;
+            crsObject['te' + travellerLineNumber] = traveller.age;
+        });
+
+        crsObject['d' + lineNumber] = firstLineNumber + (firstLineNumber !== lastLineNumber ? '-' + lastLineNumber : '');
+        crsObject.p = Math.max(crsObject.p, service.travellers.length);
     }
 
     /**
