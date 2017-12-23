@@ -99,7 +99,7 @@ document.getElementById('set-data-btn').addEventListener('click', function () {
     try {
         var data = {};
 
-        Object.keys(form).forEach((key) => {
+        Object.keys(form).forEach(function(key) {
             if (!form[key].name || form[key].value === '') return;
 
             setValueToPropertyPath(data, form[key].name, form[key].value);
