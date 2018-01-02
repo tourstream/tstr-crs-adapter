@@ -47,9 +47,7 @@ const CONFIG = {
         male: 'M',
         female: 'F',
         child: 'C',
-    },
-    title2SalutationMap: {
-        H: 'M',
+        infant: 'I',
     },
     limitedCatalogs: ['DCH', 'CCH', 'DRI', 'DRIV', 'CARS'],
     parserOptions: {
@@ -89,7 +87,6 @@ class CetsAdapter {
             roundTrip: new RoundTripHelper(Object.assign({}, options, {
                 crsDateFormat: CONFIG.crs.dateFormat,
                 gender2SalutationMap: CONFIG.gender2SalutationMap,
-                title2SalutationMap: CONFIG.title2SalutationMap,
             })),
         };
 
@@ -551,18 +548,24 @@ class CetsAdapter {
     }
 
     assignRoundTripTravellers(service, xml) {
-        const traveller = this.helper.roundTrip.normalizeTraveller(service);
+        if (!service.travellers) return;
 
-        xml.Fap = [{
-            [CONFIG.builderOptions.attrkey]: {
-                ID: 1,
-            },
-            PersonType: traveller.salutation,
-            Name: traveller.name,
-            Birth: traveller.birthday,
-        }];
+        xml.Fap = [];
 
-        xml.Fah[xml.Fah.length - 1].Persons = 1;
+        service.travellers.forEach((serviceTraveller, index) => {
+            const traveller = this.helper.roundTrip.normalizeTraveller(serviceTraveller);
+
+            xml.Fap.push({
+                [CONFIG.builderOptions.attrkey]: {
+                    ID: index + 1,
+                },
+                PersonType: traveller.salutation,
+                Name: traveller.name,
+                Birth: traveller.age,
+            });
+
+            xml.Fah[xml.Fah.length - 1].Persons = (xml.Fah[xml.Fah.length - 1].Persons || '') + (index + 1);
+        });
     }
 
     cleanUpXmlObject(xmlObject) {

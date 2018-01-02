@@ -577,21 +577,38 @@ describe('CetsAdapter', () => {
                             destination: 'destination',
                             startDate: '12122017',
                             endDate: '19122017',
-                            title: 'T',
-                            name: 'John Doe',
-                            age: '32',
+                            travellers: [
+                                {
+                                    gender: 'female',
+                                    name: 'Jane Doe',
+                                    age: '32',
+                                },
+                                {
+                                    gender: 'child',
+                                    name: 'Joe Doe',
+                                    age: '3',
+                                }
+                            ],
                         },
                     ],
                 };
 
                 let service = '<Fap ID="1">' +
-                    '<PersonType>T</PersonType>' +
-                    '<Name>John Doe</Name>' +
-                    '<Birth/>' +
+                    '<PersonType>F</PersonType>' +
+                    '<Name>Jane Doe</Name>' +
+                    '<Birth>32</Birth>' +
                     '</Fap>' +
+
+                    '<Fap ID="2">' +
+                    '<PersonType>C</PersonType>' +
+                    '<Name>Joe Doe</Name>' +
+                    '<Birth>3</Birth>' +
+                    '</Fap>' +
+
                     '<Catalog>DCH</Catalog>' +
                     '<TOCode>FTI</TOCode>' +
                     '<Adults>1</Adults>' +
+
                     '<Fah ServiceType="R">' +
                     '<Product>bookingId</Product>' +
                     '<Program>BAUSTEIN</Program>' +
@@ -599,7 +616,7 @@ describe('CetsAdapter', () => {
                     '<Room>destination</Room>' +
                     '<StartDate>12122017</StartDate>' +
                     '<Duration>7</Duration>' +
-                    '<Persons>1</Persons>' +
+                    '<Persons>12</Persons>' +
                     '</Fah>';
 
                 let expectedXml = createCustomResponseXml(service);

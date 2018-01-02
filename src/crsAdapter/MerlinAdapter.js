@@ -26,6 +26,7 @@ const CONFIG = {
             male: 'H',
             female: 'F',
             child: 'K',
+            infant: 'K',
         },
     },
     services: {
@@ -60,7 +61,7 @@ class MerlinAdapter {
         this.helper = {
             roundTrip: new RoundTripHelper(Object.assign({}, options, {
                 crsDateFormat: CONFIG.crs.dateFormat,
-                gender2SalutationMap: CONFIG.gender2SalutationMap,
+                gender2SalutationMap: CONFIG.crs.gender2SalutationMap,
             })),
         };
 
@@ -467,16 +468,27 @@ class MerlinAdapter {
      * @param xml object
      */
     assignRoundTripTravellers(service, xmlService, xml) {
-        const travellerData = this.helper.roundTrip.normalizeTraveller(service);
+        if (!service.travellers) return;
 
-        let travellerIndex = this.getNextEmptyTravellerIndex(xml);
-        let traveller = xml.TravellerBlock.PersonBlock.PersonRow[travellerIndex];
+        let firstLineNumber = '';
+        let lastLineNumber = '';
 
-        xmlService.TravellerAllocation = travellerIndex + 1;
+        service.travellers.forEach((serviceTraveller) => {
+            const travellerData = this.helper.roundTrip.normalizeTraveller(serviceTraveller);
 
-        traveller.Salutation = travellerData.salutation;
-        traveller.Name = travellerData.name;
-        traveller.Age = travellerData.age;
+            let travellerIndex = this.getNextEmptyTravellerIndex(xml);
+            let traveller = xml.TravellerBlock.PersonBlock.PersonRow[travellerIndex];
+
+            firstLineNumber = firstLineNumber || (travellerIndex + 1);
+            lastLineNumber = (travellerIndex + 1);
+
+            traveller.Salutation = travellerData.salutation;
+            traveller.Name = travellerData.name;
+            traveller.Age = travellerData.age;
+        });
+
+        xmlService.TravellerAllocation = firstLineNumber + (firstLineNumber !== lastLineNumber ? '-' + lastLineNumber : '');
+        xml.NoOfPersons = Math.max(xml.NoOfPersons, service.travellers.length);
     }
 
     /**

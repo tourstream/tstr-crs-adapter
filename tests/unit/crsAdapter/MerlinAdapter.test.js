@@ -478,10 +478,11 @@ describe('MerlinAdapter', () => {
                         destination: 'YYZ',
                         startDate: '05122017',
                         endDate: '16122017',
-                        title: 'H',
-                        name: 'DOE/JOHN',
-                        age: '32',
-                        birthday: '040485',
+                        travellers: [{
+                            gender: 'male',
+                            name: 'DOE/JOHN',
+                            age: '32',
+                        }],
                     },
                 ],
             };

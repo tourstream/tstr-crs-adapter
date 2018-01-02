@@ -662,10 +662,10 @@ describe('TomaAdapter', () => {
                     '<Accommodation.1>YYZ</Accommodation.1>' +
                     '<From.1>051217</From.1>' +
                     '<To.1>161217</To.1>' +
-                    '<TravAssociation.1>1</TravAssociation.1>' +
                     '<Title.1>H</Title.1>' +
                     '<Name.1>DOE/JOHN</Name.1>' +
-                    '<Reduction.1>32</Reduction.1>'
+                    '<Reduction.1>32</Reduction.1>' +
+                    '<TravAssociation.1>1</TravAssociation.1>'
                 );
 
                 adapter.setData({
@@ -678,10 +678,11 @@ describe('TomaAdapter', () => {
                             destination: 'YYZ',
                             startDate: '05122017',
                             endDate: '16122017',
-                            title: 'H',
-                            name: 'DOE/JOHN',
-                            age: '32',
-                            birthday: '040485',
+                            travellers: [{
+                                gender: 'male',
+                                name: 'DOE/JOHN',
+                                age: '32',
+                            }],
                         },
                     ]
                 });

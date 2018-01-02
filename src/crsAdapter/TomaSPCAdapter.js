@@ -25,6 +25,7 @@ const CONFIG = {
             male: 'H',
             female: 'D',
             child: 'K',
+            infant: 'K',
         },
     },
     services: {
@@ -45,7 +46,7 @@ class TomaSPCAdapter {
         this.helper = {
             roundTrip: new RoundTripHelper(Object.assign({}, options, {
                 crsDateFormat: CONFIG.crs.dateFormat,
-                gender2SalutationMap: CONFIG.gender2SalutationMap,
+                gender2SalutationMap: CONFIG.crs.gender2SalutationMap,
             })),
         };
     }
@@ -815,16 +816,27 @@ class TomaSPCAdapter {
      * @param crsObject object
      */
     assignRoundTripTravellers(adapterService, crsService, crsObject) {
-        const travellerData = this.helper.roundTrip.normalizeTraveller(adapterService);
+        if (!adapterService.travellers) return;
 
-        let travellerIndex = this.getNextEmptyTravellerIndex(crsObject);
-        let traveller = crsObject.travellers[travellerIndex];
+        let firstLineNumber = '';
+        let lastLineNumber = '';
 
-        crsService.travellerAssociation = travellerIndex + 1;
+        adapterService.travellers.forEach((serviceTraveller) => {
+            const travellerData = this.helper.roundTrip.normalizeTraveller(serviceTraveller);
 
-        traveller.title = travellerData.salutation;
-        traveller.name = travellerData.name;
-        traveller.discount = travellerData.age;
+            let travellerIndex = this.getNextEmptyTravellerIndex(crsObject);
+            let traveller = crsObject.travellers[travellerIndex];
+
+            firstLineNumber = firstLineNumber || (travellerIndex + 1);
+            lastLineNumber = (travellerIndex + 1);
+
+            traveller.title = travellerData.salutation;
+            traveller.name = travellerData.name;
+            traveller.discount = travellerData.age;
+        });
+
+        crsService.travellerAssociation = firstLineNumber + (firstLineNumber !== lastLineNumber ? '-' + lastLineNumber : '');
+        crsObject.numTravellers = Math.max(crsObject.numTravellers, adapterService.travellers.length);
     }
 
     /**

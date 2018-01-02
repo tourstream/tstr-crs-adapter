@@ -54,7 +54,7 @@ class TrafficsTbmAdapter {
 
         const helperOptions = Object.assign({}, options, {
             crsDateFormat: CONFIG.crs.dateFormat,
-            gender2SalutationMap: CONFIG.gender2SalutationMap,
+            gender2SalutationMap: CONFIG.crs.gender2SalutationMap,
         });
 
         this.helper = {
@@ -643,14 +643,26 @@ class TrafficsTbmAdapter {
      * @param lineIndex number
      */
     assignRoundTripTravellers(service, crsObject, lineIndex) {
-        const travellerData = this.helper.roundTrip.normalizeTraveller(service);
+        if (!service.travellers) return;
 
-        let travellerLineIndex = this.getNextEmptyTravellerLineIndex(crsObject);
+        let firstLineNumber = '';
+        let lastLineNumber = '';
 
-        crsObject['TbmXml.admin.services.service.' + lineIndex + '.$.agn'] = travellerLineIndex + 1;
-        crsObject['TbmXml.admin.travellers.traveller.' + lineIndex + '.$.typ'] = travellerData.salutation;
-        crsObject['TbmXml.admin.travellers.traveller.' + lineIndex + '.$.sur'] = travellerData.name;
-        crsObject['TbmXml.admin.travellers.traveller.' + lineIndex + '.$.age'] = travellerData.age;
+        service.travellers.forEach((serviceTraveller) => {
+            const travellerData = this.helper.roundTrip.normalizeTraveller(serviceTraveller);
+
+            let travellerLineIndex = this.getNextEmptyTravellerLineIndex(crsObject);
+
+            firstLineNumber = firstLineNumber || (travellerLineIndex + 1);
+            lastLineNumber = (travellerLineIndex + 1);
+
+            crsObject['TbmXml.admin.travellers.traveller.' + lineIndex + '.$.typ'] = travellerData.salutation;
+            crsObject['TbmXml.admin.travellers.traveller.' + lineIndex + '.$.sur'] = travellerData.name;
+            crsObject['TbmXml.admin.travellers.traveller.' + lineIndex + '.$.age'] = travellerData.age;
+        });
+
+        crsObject['TbmXml.admin.services.service.' + lineIndex + '.$.agn'] = firstLineNumber + (firstLineNumber !== lastLineNumber ? '-' + lastLineNumber : '');
+        crsObject['TbmXml.admin.operator.$.psn'] = Math.max(crsObject['TbmXml.admin.operator.$.psn'], service.travellers.length);
     }
 
     /**
