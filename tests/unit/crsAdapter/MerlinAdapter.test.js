@@ -105,7 +105,7 @@ describe('MerlinAdapter', () => {
 
         it('setData() should send base data only', (done) => {
             let expectation = createXML(
-                '<Traveltype>travel.type</Traveltype>' +
+                '<TravelType>travel.type</TravelType>' +
                 '<Remarks>my.remark</Remarks>' +
                 '<NoOfPersons>2</NoOfPersons>'
             );
