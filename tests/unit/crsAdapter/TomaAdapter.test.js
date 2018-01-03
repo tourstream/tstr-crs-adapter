@@ -425,6 +425,18 @@ describe('TomaAdapter', () => {
                 expect(TomaConnection.FIFramePutData).toHaveBeenCalledWith(expectXml);
             });
 
+            it('setData() should set travelType', () => {
+                let expectXml = createTomaXml(
+                    '<Action>BA</Action>' +
+                    '<Traveltype>travel.type</Traveltype>' +
+                    '<NoOfPersons>1</NoOfPersons>'
+                );
+
+                adapter.setData({travelType: 'travel.type'});
+
+                expect(TomaConnection.FIFramePutData).toHaveBeenCalledWith(expectXml);
+            });
+
             it('setData() should set numTravellers', () => {
                 let expectXml = createTomaXml(
                     '<Action>BA</Action>' +

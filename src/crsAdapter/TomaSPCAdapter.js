@@ -561,9 +561,7 @@ class TomaSPCAdapter {
             crsObject = {};
         }
 
-        crsObject.action = CONFIG.crs.defaultValues.action;
-        crsObject.remark = [crsObject.remark, adapterObject.remark].filter(Boolean).join(',') || void 0;
-        crsObject.numTravellers = adapterObject.numberOfTravellers || crsObject.numTravellers || CONFIG.crs.defaultValues.numberOfTravellers;
+        this.assignBasicData(crsObject, adapterObject);
 
         (adapterObject.services || []).forEach((adapterService) => {
             let crsService = this.getMarkedServiceByServiceType(crsObject, adapterService.type) || this.createAndAssignEmptyService(crsObject);
@@ -605,6 +603,18 @@ class TomaSPCAdapter {
 
         return JSON.parse(JSON.stringify(crsObject));
     };
+
+    /**
+     * @private
+     * @param crsObject object
+     * @param adapterObject object
+     */
+    assignBasicData(crsObject, adapterObject) {
+        crsObject.action = CONFIG.crs.defaultValues.action;
+        crsObject.traveltype = adapterObject.travelType;
+        crsObject.remark = [crsObject.remark, adapterObject.remark].filter(Boolean).join(',') || void 0;
+        crsObject.numTravellers = adapterObject.numberOfTravellers || crsObject.numTravellers || CONFIG.crs.defaultValues.numberOfTravellers;
+    }
 
     /**
      * @private

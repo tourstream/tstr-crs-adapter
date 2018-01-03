@@ -719,6 +719,7 @@ describe('TomaSPCAdapter', () => {
         it('setData() should convert base data to crs object correct and trigger exit', (done) => {
             let adapterObject = {
                 numberOfTravellers: 2,
+                travelType: 'tt',
                 remark: 'rmrk',
                 services: [{ type: 'unknown' }],
             };
@@ -726,6 +727,7 @@ describe('TomaSPCAdapter', () => {
             let expected = {
                 action: 'BA',
                 numTravellers: 2,
+                traveltype: 'tt',
                 remark: 'rmrk',
             };
 

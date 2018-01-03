@@ -182,9 +182,7 @@ class MerlinAdapter {
 
         let xmlImport = xmlObject.GATE2MX.SendRequest.Import;
 
-        xmlImport.TransactionCode = CONFIG.crs.defaultValues.action;
-        xmlImport.Remarks = dataObject.remark;
-        xmlImport.NoOfPersons = dataObject.numberOfTravellers || CONFIG.crs.defaultValues.numberOfTravellers;
+        this.assignBasicData(xmlImport, dataObject);
 
         try {
             if (dataObject.services.length) {
@@ -233,6 +231,18 @@ class MerlinAdapter {
             }
         } catch (ignore) {}
     };
+
+    /**
+     * @private
+     * @param xmlImport object
+     * @param dataObject object
+     */
+    assignBasicData(xmlImport, dataObject) {
+        xmlImport.TransactionCode = CONFIG.crs.defaultValues.action;
+        xmlImport.TravelType = dataObject.travelType;
+        xmlImport.Remarks = dataObject.remark;
+        xmlImport.NoOfPersons = dataObject.numberOfTravellers || CONFIG.crs.defaultValues.numberOfTravellers;
+    }
 
     /**
      * @private

@@ -494,9 +494,7 @@ class TomaAdapter {
             xmlObject.Envelope.Body.TOM = xmlTom;
         }
 
-        xmlTom.Action = CONFIG.crs.defaultValues.action;
-        xmlTom.Remark = [xmlTom.Remark, dataObject.remark].filter(Boolean).join(',') || void 0;
-        xmlTom.NoOfPersons = dataObject.numberOfTravellers || (xmlTom.NoOfPersons && xmlTom.NoOfPersons[CONFIG.parserOptions.textNodeName]) || CONFIG.crs.defaultValues.numberOfTravellers;
+        this.assignBasicData(xmlTom, dataObject);
 
         (dataObject.services || []).forEach((service) => {
             let lineNumber = this.getMarkedLineNumberForService(xmlTom, service) || this.getNextEmptyServiceLineNumber(xmlTom);
@@ -528,6 +526,18 @@ class TomaAdapter {
             }
         });
     };
+
+    /**
+     * @private
+     * @param xmlTom object
+     * @param dataObject object
+     */
+    assignBasicData(xmlTom, dataObject) {
+        xmlTom.Action = CONFIG.crs.defaultValues.action;
+        xmlTom.Traveltype = dataObject.travelType;
+        xmlTom.Remark = [xmlTom.Remark, dataObject.remark].filter(Boolean).join(',') || void 0;
+        xmlTom.NoOfPersons = dataObject.numberOfTravellers || (xmlTom.NoOfPersons && xmlTom.NoOfPersons[CONFIG.parserOptions.textNodeName]) || CONFIG.crs.defaultValues.numberOfTravellers;
+    }
 
     /**
      * @private
