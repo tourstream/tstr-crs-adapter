@@ -239,7 +239,7 @@ class MerlinAdapter {
      */
     assignBasicData(xmlImport, dataObject) {
         xmlImport.TransactionCode = CONFIG.crs.defaultValues.action;
-        xmlImport.Traveltype = dataObject.travelType;
+        xmlImport.TravelType = dataObject.travelType;
         xmlImport.Remarks = dataObject.remark;
         xmlImport.NoOfPersons = dataObject.numberOfTravellers || CONFIG.crs.defaultValues.numberOfTravellers;
     }
