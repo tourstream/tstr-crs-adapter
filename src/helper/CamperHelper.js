@@ -12,7 +12,7 @@ class CamperHelper {
             service.pickUpLocation,
             '-',
             service.dropOffLocation,
-        ].join('');
+        ].join('').replace(/^\/-$/, '');
     }
 }
 

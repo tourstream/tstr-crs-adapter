@@ -6,11 +6,11 @@ class RoundTripHelper {
     normalizeTraveller(traveller = {}) {
         const gender = (traveller.gender || '').toLowerCase();
 
-        return {
-            salutation: (this.config.gender2SalutationMap || {})[gender] || '',
+        return JSON.parse(JSON.stringify({
+            salutation: (this.config.gender2SalutationMap || {})[gender] || void 0,
             name: traveller.name,
             age: traveller.age,
-        };
+        }));
     }
 }
 

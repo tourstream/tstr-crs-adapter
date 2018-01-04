@@ -12,17 +12,13 @@ class CarHelper {
     reduceHotelData(service = {}) {
         let hotelData = [];
 
+        hotelData.push([service.pickUpHotelAddress, service.pickUpHotelPhoneNumber].filter(Boolean).join(' '));
+
         if (service.pickUpHotelName) {
-            hotelData.push([service.pickUpHotelAddress, service.pickUpHotelPhoneNumber].filter(Boolean).join(' '));
+            hotelData.push(service.dropOffHotelName);
         }
 
-        if (service.dropOffHotelName) {
-            if (service.pickUpHotelName) {
-                hotelData.push(service.dropOffHotelName);
-            }
-
-            hotelData.push([service.dropOffHotelAddress, service.dropOffHotelPhoneNumber].filter(Boolean).join(' '));
-        }
+        hotelData.push([service.dropOffHotelAddress, service.dropOffHotelPhoneNumber].filter(Boolean).join(' '));
 
         return hotelData.filter(Boolean).join(',');
     };
@@ -36,7 +32,7 @@ class CarHelper {
             service.pickUpLocation,
             '-',
             service.dropOffLocation,
-        ].join('');
+        ].join('').replace(/^\/-$/, '');
     }
 }
 

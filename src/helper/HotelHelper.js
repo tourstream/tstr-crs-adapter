@@ -4,8 +4,9 @@ class HotelHelper {
     }
 
     calculateTravellerAllocation(service = {}, customTravellerAllocationNumber = 0) {
-        let lastTravellerAllocationNumber = Math.max(service.roomOccupancy, customTravellerAllocationNumber);
-        let firstTravellerAllocationNumber = 1 + lastTravellerAllocationNumber - service.roomOccupancy;
+        let roomOccupancy = service.roomOccupancy || 1;
+        let lastTravellerAllocationNumber = Math.max(roomOccupancy, customTravellerAllocationNumber);
+        let firstTravellerAllocationNumber = 1 + lastTravellerAllocationNumber - roomOccupancy;
 
         return firstTravellerAllocationNumber === lastTravellerAllocationNumber
             ? firstTravellerAllocationNumber
