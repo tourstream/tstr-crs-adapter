@@ -65,9 +65,9 @@ class TrafficsTbmAdapter {
         };
     }
 
-    connect(options) {
+    connect(options = {}) {
         Object.keys(CONFIG.supportedConnectionOptions).forEach((optionName) => {
-            if (!options || !options[optionName]) {
+            if (!options[optionName]) {
                 throw new Error('No ' + optionName + ' found in connectionOptions.');
             }
 
@@ -81,7 +81,7 @@ class TrafficsTbmAdapter {
         this.connection = this.createConnection(options);
 
         return this.connection.get().then(() => {
-            this.logger.log('TrafficsTBM (' + this.options.crsType + ') connection available');
+            this.logger.log('TrafficsTBM connection available');
         }, (error) => {
             this.logger.error(error.message);
             this.logger.info('response is: ' + error.response);
@@ -91,15 +91,20 @@ class TrafficsTbmAdapter {
     }
 
     getData() {
-        return this.getConnection().get().then((data) => {
-            this.logger.info('RAW OBJECT:');
-            this.logger.info(data);
+        try {
+            return this.getConnection().get().then((data) => {
+                this.logger.info('RAW OBJECT:');
+                this.logger.info(data);
 
-            return this.mapCrsObjectToAdapterObject(data);
-        }).then(null, (error) => {
-            this.logger.error(error);
-            throw new Error('[.getData] ' + error.message);
-        });
+                return this.mapCrsObjectToAdapterObject(data);
+            }).catch((error) => {
+                this.logger.info(error);
+                this.logger.error('error getting data');
+                throw error;
+            });
+        } catch (error) {
+            return Promise.reject(error);
+        }
     }
 
     setData(dataObject = {}) {

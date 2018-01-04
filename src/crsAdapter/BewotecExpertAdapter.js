@@ -56,7 +56,7 @@ class BewotecExpertAdapter {
         this.connection = this.createConnection(options);
 
         return this.connection.get().then(() => {
-            this.logger.log('BewotecExpert (' + this.options.crsType + ') connection available');
+            this.logger.log('BewotecExpert connection available');
         }, (error) => {
             this.logger.error(error.message);
             this.logger.info('response is: ' + error.response);
