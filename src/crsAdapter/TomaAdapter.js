@@ -314,27 +314,6 @@ class TomaAdapter {
      * @returns {object}
      */
     mapHotelServiceFromXmlObjectToAdapterObject(xml, lineNumber) {
-        const collectChildren = () => {
-            let children = [];
-            let travellerAssociation = xml['TravAssociation.' + lineNumber] || '';
-
-            let startLineNumber = parseInt(travellerAssociation.substr(0, 1), 10);
-            let endLineNumber = parseInt(travellerAssociation.substr(-1), 10);
-
-            if (!startLineNumber) return;
-
-            do {
-                if (xml['Title.' + startLineNumber] !== CONFIG.crs.gender2SalutationMap.child) continue;
-
-                children.push({
-                    name: xml['Name.' + startLineNumber],
-                    age: xml['Reduction.' + startLineNumber],
-                });
-            } while (++startLineNumber <= endLineNumber);
-
-            return children;
-        };
-
         let serviceCodes = (xml['Accommodation.' + lineNumber] || '').split(' ');
         let dateFrom = moment(xml['From.' + lineNumber], CONFIG.crs.dateFormat);
         let dateTo = moment(xml['To.' + lineNumber], CONFIG.crs.dateFormat);
@@ -344,7 +323,10 @@ class TomaAdapter {
             mealCode: serviceCodes[1] || void 0,
             roomQuantity: xml['Count.' + lineNumber],
             roomOccupancy: xml['Occupancy.' + lineNumber],
-            children: collectChildren(),
+            children: this.helper.roundTrip.collectTravellers(
+                xml['TravAssociation.' + lineNumber],
+                (travellerLineNumber) => this.getTravellerByLineNumber(xml, travellerLineNumber)
+            ).filter((traveller) => ['child', 'infant'].indexOf(traveller.gender) > -1),
             destination: xml['ServiceCode.' + lineNumber],
             dateFrom: dateFrom.isValid() ? dateFrom.format(this.options.useDateFormat) : xml['From.' + lineNumber],
             dateTo: dateTo.isValid() ? dateTo.format(this.options.useDateFormat) : xml['To.' + lineNumber],
@@ -364,28 +346,17 @@ class TomaAdapter {
 
         const hasBookingId = xml['ServiceCode.' + lineNumber].indexOf('NEZ') === 0;
 
-        let service = {
+        return {
             type: SERVICE_TYPES.roundTrip,
             bookingId: hasBookingId ? xml['ServiceCode.' + lineNumber].substring(3) : void 0,
             destination: hasBookingId ? xml['Accommodation.' + lineNumber] : xml['ServiceCode.' + lineNumber],
             startDate: startDate.isValid() ? startDate.format(this.options.useDateFormat) : xml['From.' + lineNumber],
             endDate: endDate.isValid() ? endDate.format(this.options.useDateFormat) : xml['To.' + lineNumber],
+            travellers: this.helper.roundTrip.collectTravellers(
+                xml['TravAssociation.' + lineNumber],
+                (travellerLineNumber) => this.getTravellerByLineNumber(xml, travellerLineNumber)
+            ),
         };
-
-        if (xml['TravAssociation.' + lineNumber]) {
-            let travellerLineNumber = xml['TravAssociation.' + lineNumber];
-
-            service.title = xml['Title.' + travellerLineNumber];
-            service.name = xml['Name.' + travellerLineNumber];
-
-            if (xml['Reduction.' + travellerLineNumber].match(CONFIG.services.roundTrip.ageRegEx)){
-                service.age = xml['Reduction.' + travellerLineNumber]
-            } else {
-                service.birthday = xml['Reduction.' + travellerLineNumber];
-            }
-        }
-
-        return service;
     }
 
     /**
@@ -440,6 +411,30 @@ class TomaAdapter {
         mapServiceCodeToService(xml['ServiceCode.' + lineNumber], service);
 
         return service;
+    }
+
+    /**
+     * @private
+     * @param xml
+     * @param lineNumber
+     * @returns {*}
+     */
+    getTravellerByLineNumber(xml = {}, lineNumber) {
+        if (!xml['Title.' + lineNumber]) {
+            return void 0;
+        }
+
+        return {
+            gender: Object.entries(CONFIG.crs.gender2SalutationMap).reduce(
+                (reduced, current) => {
+                    reduced[current[1]] = reduced[current[1]] || current[0];
+                    return reduced;
+                },
+                {}
+            )[xml['Title.' + lineNumber]],
+            name: xml['Name.' + lineNumber],
+            age: xml['Reduction.' + lineNumber],
+        };
     }
 
     /**

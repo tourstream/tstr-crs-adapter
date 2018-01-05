@@ -35,7 +35,7 @@ describe('TomaSPCAdapter', () => {
         let expectedSrc = 'https://conn-url.example/ExternalCatalog.js';
         let expectedDest = 'https://conn-url.example';
 
-        adapter.connect({ connectionUrl: 'https://conn-url.example' }).then(() => {
+        adapter.connect({connectionUrl: 'https://conn-url.example'}).then(() => {
             let scriptElement = documentHeadAppendChildSpy.calls.mostRecent().args[0];
 
             expect(scriptElement.src).toBe(expectedSrc);
@@ -54,7 +54,7 @@ describe('TomaSPCAdapter', () => {
 
         documentCreateElementSpy.and.returnValue({});
 
-        adapter.connect({ connectionUrl: 'https://conn-url.example' }).then(() => {
+        adapter.connect({connectionUrl: 'https://conn-url.example'}).then(() => {
             let scriptElement = documentHeadAppendChildSpy.calls.mostRecent().args[0];
 
             expect(scriptElement.src).toBe(expectedSrc);
@@ -69,7 +69,10 @@ describe('TomaSPCAdapter', () => {
         let expectedSrc = 'https://conn-url.example/ExternalCatalog.js?version=externalCatalogVersion';
         let expectedDest = 'https://conn-url.example';
 
-        adapter.connect({ connectionUrl: 'https://conn-url.example', externalCatalogVersion: 'externalCatalogVersion' }).then(() => {
+        adapter.connect({
+            connectionUrl: 'https://conn-url.example',
+            externalCatalogVersion: 'externalCatalogVersion'
+        }).then(() => {
             let scriptElement = documentHeadAppendChildSpy.calls.mostRecent().args[0];
 
             expect(scriptElement.src).toBe(expectedSrc);
@@ -86,7 +89,7 @@ describe('TomaSPCAdapter', () => {
 
         window.history.replaceState({}, '', '?EXTERNAL_CATALOG_VERSION=url.catalogVersion');
 
-        adapter.connect({ connectionUrl: 'https://conn-url.example' }).then(() => {
+        adapter.connect({connectionUrl: 'https://conn-url.example'}).then(() => {
             let scriptElement = documentHeadAppendChildSpy.calls.mostRecent().args[0];
 
             expect(scriptElement.src).toBe(expectedSrc);
@@ -118,7 +121,7 @@ describe('TomaSPCAdapter', () => {
 
             crsData = responseWarnings = responseError = requestData = void 0;
 
-            adapter.connect({ connectionUrl: 'connectionUrl' });
+            adapter.connect({connectionUrl: 'connectionUrl'});
         });
 
         it('getData() should parse base data', (done) => {
@@ -317,8 +320,8 @@ describe('TomaSPCAdapter', () => {
                         dateTo: '22122017',
                         marked: false,
                         children: [
-                            { name: 'john doe', age: '13' },
-                            { name: 'jane doe', age: '9' },
+                            {gender: 'child', name: 'john doe', age: '13'},
+                            {gender: 'child', name: 'jane doe', age: '9'},
                         ],
                         roomQuantity: 2,
                         roomOccupancy: 4,
@@ -342,9 +345,9 @@ describe('TomaSPCAdapter', () => {
                 ],
                 travellers: [
                     {},
-                    { title: 'K', name: 'john doe', discount: '13' },
-                    { title: 'K', name: 'jane doe', discount: '9' },
-                    { title: 'F', name: 'tinker bell', discount: '102' },
+                    {title: 'K', name: 'john doe', discount: '13'},
+                    {title: 'K', name: 'jane doe', discount: '9'},
+                    {title: 'F', name: 'tinker bell', discount: '102'},
                 ],
             };
 
@@ -367,6 +370,7 @@ describe('TomaSPCAdapter', () => {
                         dateFrom: '11122017',
                         dateTo: '22122017',
                         marked: false,
+                        children: [],
                     }
                 ],
             };
@@ -400,6 +404,7 @@ describe('TomaSPCAdapter', () => {
                         roomCode: 'rc',
                         mealCode: 'mc',
                         marked: true,
+                        children: [],
                     }
                 ],
             };
@@ -429,6 +434,7 @@ describe('TomaSPCAdapter', () => {
                         type: SERVICE_TYPES.hotel,
                         destination: 'destination',
                         marked: true,
+                        children: [],
                     }
                 ],
             };
@@ -454,9 +460,11 @@ describe('TomaSPCAdapter', () => {
         it('getData() should not parse unknown service', (done) => {
             let expected = {services: []};
 
-            crsData = {services: [{
-                serviceType: 'unknown',
-            }]};
+            crsData = {
+                services: [{
+                    serviceType: 'unknown',
+                }]
+            };
 
             adapter.getData().then((data) => {
                 expect(data).toEqual(expected);
@@ -467,20 +475,22 @@ describe('TomaSPCAdapter', () => {
         });
 
         it('getData() should parse complete camper service data', (done) => {
-            let expected = {services: [{
-                type: SERVICE_TYPES.camper,
-                pickUpDate: '09112017',
-                dropOffDate: '21112017',
-                pickUpTime: '0915',
-                duration: 12,
-                renterCode: 'USA96',
-                camperCode: 'A4',
-                pickUpLocation: 'MIA1',
-                dropOffLocation: 'TPA',
-                milesIncludedPerDay: '200',
-                milesPackagesIncluded: '3',
-                marked: false,
-            }]};
+            let expected = {
+                services: [{
+                    type: SERVICE_TYPES.camper,
+                    pickUpDate: '09112017',
+                    dropOffDate: '21112017',
+                    pickUpTime: '0915',
+                    duration: 12,
+                    renterCode: 'USA96',
+                    camperCode: 'A4',
+                    pickUpLocation: 'MIA1',
+                    dropOffLocation: 'TPA',
+                    milesIncludedPerDay: '200',
+                    milesPackagesIncluded: '3',
+                    marked: false,
+                }]
+            };
 
             crsData = {
                 services: [{
@@ -503,11 +513,13 @@ describe('TomaSPCAdapter', () => {
         });
 
         it('getData() should parse minimal camper service data', (done) => {
-            let expected = {services: [{
-                type: SERVICE_TYPES.camper,
-                pickUpLocation: 'MIA1',
-                marked: true,
-            }]};
+            let expected = {
+                services: [{
+                    type: SERVICE_TYPES.camper,
+                    pickUpLocation: 'MIA1',
+                    marked: true,
+                }]
+            };
 
             crsData = {
                 services: [{
@@ -554,9 +566,11 @@ describe('TomaSPCAdapter', () => {
                     destination: 'YYZ',
                     startDate: '05122017',
                     endDate: '16122017',
-                    title: 'H',
-                    name: 'DOE/JOHN',
-                    birthday: '040485',
+                    travellers: [{
+                        gender: 'male',
+                        name: 'DOE/JOHN',
+                        age: '040485',
+                    }],
                 }]
             };
 
@@ -567,7 +581,7 @@ describe('TomaSPCAdapter', () => {
                     accommodation: 'YYZ',
                     fromDate: '051217',
                     toDate: '161217',
-                    travellerAssociation: 2,
+                    travellerAssociation: '2',
                 }],
                 travellers: [
                     {},
@@ -595,9 +609,11 @@ describe('TomaSPCAdapter', () => {
                     destination: 'YYZ',
                     startDate: '05122017',
                     endDate: '16122017',
-                    title: 'H',
-                    name: 'DOE/JOHN',
-                    age: '32',
+                    travellers: [{
+                        gender: 'male',
+                        name: 'DOE/JOHN',
+                        age: '32',
+                    }],
                 }]
             };
 
@@ -608,7 +624,7 @@ describe('TomaSPCAdapter', () => {
                     accommodation: 'YYZ',
                     fromDate: '051217',
                     toDate: '161217',
-                    travellerAssociation: 1,
+                    travellerAssociation: '1',
                 }],
                 travellers: [
                     {
@@ -721,7 +737,7 @@ describe('TomaSPCAdapter', () => {
                 numberOfTravellers: 2,
                 travelType: 'tt',
                 remark: 'rmrk',
-                services: [{ type: 'unknown' }],
+                services: [{type: 'unknown'}],
             };
 
             let expected = {
@@ -891,8 +907,8 @@ describe('TomaSPCAdapter', () => {
                         dateFrom: '01012018',
                         dateTo: '08012018',
                         children: [
-                            { name: 'john doe', age: 8 },
-                            { name: 'jane doe', age: 14 },
+                            {name: 'john doe', age: 8},
+                            {name: 'jane doe', age: 14},
                         ],
                     },
                 ],
@@ -914,8 +930,8 @@ describe('TomaSPCAdapter', () => {
                     },
                 ],
                 travellers: [
-                    { title: 'K', name: 'john doe', discount: 8 },
-                    { title: 'K', name: 'jane doe', discount: 14 },
+                    {title: 'K', name: 'john doe', discount: 8},
+                    {title: 'K', name: 'jane doe', discount: 14},
                 ],
             };
 
@@ -978,7 +994,7 @@ describe('TomaSPCAdapter', () => {
                 ],
                 travellers: [
                     {},
-                    { title: 'K', name: 'jane doe', discount: '3' },
+                    {title: 'K', name: 'jane doe', discount: '3'},
                 ],
             };
 

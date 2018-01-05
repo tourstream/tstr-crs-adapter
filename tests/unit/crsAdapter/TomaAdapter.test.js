@@ -225,8 +225,9 @@ describe('TomaAdapter', () => {
                 roomQuantity: '2',
                 roomOccupancy: '4',
                 children: [{
+                    gender: 'child',
                     name: 'child 1',
-                    age: '13'
+                    age: '13',
                 }],
             };
 
@@ -258,11 +259,12 @@ describe('TomaAdapter', () => {
                 type: 'hotel',
                 roomQuantity: '2',
                 roomOccupancy: '4',
+                children: [],
             };
 
             TomaConnection.GetXmlData.and.returnValue(xml);
 
-            expect(adapter.getData()).toEqual({ services: [expectedService] });
+            expect(adapter.getData()).toEqual({services: [expectedService]});
         });
 
         it('getData() should parse full camper service', () => {
@@ -360,9 +362,11 @@ describe('TomaAdapter', () => {
                 destination: 'YYZ',
                 startDate: '05122017',
                 endDate: '16122017',
-                title: 'H',
-                name: 'DOE/JOHN',
-                birthday: '040485',
+                travellers: [{
+                    gender: 'male',
+                    name: 'DOE/JOHN',
+                    age: '040485'
+                }],
                 marked: false,
             };
 
@@ -392,9 +396,11 @@ describe('TomaAdapter', () => {
                 destination: 'YYZ',
                 startDate: '05122017',
                 endDate: '16122017',
-                title: 'H',
-                name: 'DOE/JOHN',
-                age: '32',
+                travellers: [{
+                    gender: 'male',
+                    name: 'DOE/JOHN',
+                    age: '32'
+                }],
                 marked: false,
             };
 

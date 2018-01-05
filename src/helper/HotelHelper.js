@@ -9,7 +9,7 @@ class HotelHelper {
         let firstTravellerAllocationNumber = 1 + lastTravellerAllocationNumber - roomOccupancy;
 
         return firstTravellerAllocationNumber === lastTravellerAllocationNumber
-            ? firstTravellerAllocationNumber
+            ? firstTravellerAllocationNumber.toString()
             : firstTravellerAllocationNumber + '-' + lastTravellerAllocationNumber;
     }
 }

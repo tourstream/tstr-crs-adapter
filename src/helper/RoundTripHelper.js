@@ -12,6 +12,21 @@ class RoundTripHelper {
             age: traveller.age,
         }));
     }
+
+    collectTravellers(travellerAssociation = '', getTravellerByLineNumber) {
+        let travellers = [];
+
+        let startLineNumber = parseInt(travellerAssociation.substr(0, 1), 10);
+        let endLineNumber = parseInt(travellerAssociation.substr(-1), 10);
+
+        if (startLineNumber) {
+            do {
+                travellers.push(getTravellerByLineNumber(startLineNumber));
+            } while (++startLineNumber <= endLineNumber);
+        }
+
+        return travellers.filter(Boolean);
+    }
 }
 
 export {
