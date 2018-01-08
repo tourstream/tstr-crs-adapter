@@ -148,7 +148,7 @@ class TrafficsTbmAdapter {
         return {
             send: (data = {}) => {
                 try {
-                    document.location = CONFIG.crs.connectionUrl + btoa('#tbm&file=' + options.dataSourceUrl + '?' + querystring.stringify(data));
+                    this.setLocation(CONFIG.crs.connectionUrl + btoa('#tbm&file=' + options.dataSourceUrl + '?' + querystring.stringify(data)));
 
                     return Promise.resolve();
                 } catch (e) {
@@ -159,6 +159,16 @@ class TrafficsTbmAdapter {
                 CONFIG.crs.exportUrls[options.environment] + '/tbmExport?id=' + options.exportId
             ),
         };
+    }
+
+    /**
+     * wrapper for testing purposes
+     *
+     * @private
+     * @param data
+     */
+    setLocation(data) {
+        document.location = data;
     }
 
     /**
@@ -737,13 +747,12 @@ class TrafficsTbmAdapter {
      */
     getMarkedLineIndexForService(crsObject, service) {
         let lineIndex = 0;
-        let markedLineIndex = void 0;
 
         do {
             let kindOfService = crsObject['TbmXml.admin.services.service.' + lineIndex + '.$.typ'];
 
             if (!kindOfService) {
-                return markedLineIndex;
+                return lineIndex;
             }
 
             if (kindOfService !== CONFIG.crs.serviceTypes[service.type]) continue;

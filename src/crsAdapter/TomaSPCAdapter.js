@@ -140,7 +140,7 @@ class TomaSPCAdapter {
             };
 
             const getConnectionUrlFromReferrer = () => {
-                let url = document.referrer || '';
+                let url = this.getReferrer() || '';
 
                 if (url.indexOf('.sellingplatformconnect.amadeus.com') > -1) {
                     this.logger.info('detected Amadeus URL: ' + url);
@@ -171,6 +171,16 @@ class TomaSPCAdapter {
 
             document.head.appendChild(script);
         });
+    }
+
+    /**
+     * for testing purposes
+     *
+     * @private
+     * @returns {string}
+     */
+    getReferrer() {
+        return document.referrer;
     }
 
     /**

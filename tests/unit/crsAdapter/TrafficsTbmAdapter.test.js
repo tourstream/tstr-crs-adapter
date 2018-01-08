@@ -1,7 +1,7 @@
 import injector from 'inject!../../../src/crsAdapter/TrafficsTbmAdapter';
 import {DEFAULT_OPTIONS, SERVICE_TYPES} from '../../../src/UbpCrsAdapter';
 
-fdescribe('TrafficsTbmAdapter', () => {
+describe('TrafficsTbmAdapter', () => {
     let adapter, TrafficsTbmAdapter, axios, requestUrl, requestParameter, logService;
 
     beforeEach(() => {
@@ -606,9 +606,66 @@ fdescribe('TrafficsTbmAdapter', () => {
             });
         });
 
-        // it('getTravellerByLineNumber() should return nothing if there is no traveller in the line', () => {
-        //     expect(adapter.getTravellerByLineNumber(void 0, 1)).toBeUndefined();
-        // });
+        it('getData() should return nothing for unknown service', (done) => {
+            setExportServices([
+                {
+                    '$': {
+                        typ: 'unknownType',
+                    }
+                },
+            ]);
+
+            adapter.getData().then((data) => {
+                expect(data.services).toEqual([]);
+
+                done();
+            }, (error) => {
+                console.log(error.message);
+                done.fail('unexpected result');
+            });
+        });
+
+        it('getTravellerByLineNumber() should return nothing if there is no traveller in the line', () => {
+            expect(adapter.getTravellerByLineNumber(void 0, 1)).toBeUndefined();
+        });
+
+        it('setData() result in error if connection rejects', (done) => {
+            sendSpy.and.returnValue(Promise.reject(new Error('something is broken')));
+
+            adapter.setData({}).then(() => {
+                done.fail('unexpected result');
+            }, (error) => {
+                expect(error.message).toBe('something is broken');
+                done();
+            });
+        });
+
+        it('setData() should encrypt data correct', (done) => {
+            sendSpy.and.callThrough();
+
+            let setLocationSpy = spyOn(adapter, 'setLocation');
+
+            adapter.setData({}).then(() => {
+                expect(setLocationSpy).toHaveBeenCalledWith('cosmonaut://params/I3RibSZmaWxlPWRhdGFTb3VyY2VVcmw/VGJtWG1sLmFkbWluLm9wZXJhdG9yLiUyNC5hY3Q9QkEmVGJtWG1sLmFkbWluLm9wZXJhdG9yLiUyNC50b2M9RlRJJlRibVhtbC5hZG1pbi5vcGVyYXRvci4lMjQucHNuPTE=');
+                done();
+            }, (error) => {
+                console.log(error);
+                done.fail('unexpected result');
+            });
+        });
+
+        it('setData() should reject if setLocation fails', (done) => {
+            sendSpy.and.callThrough();
+
+            spyOn(adapter, 'setLocation').and.throwError('location broken');
+
+            adapter.setData({}).then(() => {
+                done.fail('unexpected result');
+            }, (error) => {
+                expect(error.message).toBe('location broken');
+                done();
+            });
+        });
 
         it('setData() should send base data if nothing is defined', () => {
             let expected = {
@@ -849,7 +906,7 @@ fdescribe('TrafficsTbmAdapter', () => {
             adapter.setData({
                 services: [
                     {
-                        type: 'roundTrip',
+                        type: SERVICE_TYPES.roundTrip,
                         bookingId: 'E2784NQXTHEN',
                         destination: 'YYZ',
                         startDate: '05122017',
@@ -888,7 +945,7 @@ fdescribe('TrafficsTbmAdapter', () => {
             adapter.setData({
                 services: [
                     {
-                        type: 'roundTrip',
+                        type: SERVICE_TYPES.roundTrip,
                         bookingId: 'E2784NQXTHEN',
                         startDate: 'from date',
                         endDate: 'to date',
@@ -897,6 +954,191 @@ fdescribe('TrafficsTbmAdapter', () => {
             });
 
             expect(sendSpy).toHaveBeenCalledWith(expected);
+        });
+
+        it('setData() should send complete camper data', () => {
+            let expected = {
+                'TbmXml.admin.operator.$.act': 'BA',
+                'TbmXml.admin.operator.$.toc': 'FTI',
+                'TbmXml.admin.operator.$.psn': 2,
+
+                'TbmXml.admin.services.service.0.$.typ': 'WM',
+                'TbmXml.admin.services.service.0.$.cod': 'USA89A4/MIA1-TPA',
+                'TbmXml.admin.services.service.0.$.vnd': '040518',
+                'TbmXml.admin.services.service.0.$.bsd': '180518',
+                'TbmXml.admin.services.service.0.$.opt': '1730',
+                'TbmXml.admin.services.service.0.$.op2': '200',
+                'TbmXml.admin.services.service.0.$.alc': '4',
+                'TbmXml.admin.services.service.0.$.agn': '1-2',
+
+                'TbmXml.admin.services.service.1.$.typ': 'TA',
+                'TbmXml.admin.services.service.1.$.cod': 'extra',
+                'TbmXml.admin.services.service.1.$.vnd': '040518',
+                'TbmXml.admin.services.service.1.$.bsd': '040518',
+                'TbmXml.admin.services.service.1.$.agn': '1-3',
+
+                'TbmXml.admin.services.service.2.$.typ': 'TA',
+                'TbmXml.admin.services.service.2.$.cod': 'special',
+                'TbmXml.admin.services.service.2.$.vnd': '040518',
+                'TbmXml.admin.services.service.2.$.bsd': '040518',
+                'TbmXml.admin.services.service.2.$.agn': '1',
+            };
+
+            adapter.setData({
+                numberOfTravellers: 2,
+                services: [
+                    {
+                        type: SERVICE_TYPES.camper,
+                        renterCode: 'USA89',
+                        camperCode: 'A4',
+                        pickUpLocation: 'MIA1',
+                        dropOffLocation: 'TPA',
+                        pickUpDate: '04052018',
+                        duration: 14,
+                        pickUpTime: '1730',
+                        milesIncludedPerDay: '200',
+                        milesPackagesIncluded: '4',
+                        extras: ['extra.3', 'special'],
+                    },
+                ],
+            });
+
+            expect(sendSpy).toHaveBeenCalledWith(expected);
+        });
+
+        it('setData() should send minimal camper data', () => {
+            let expected = {
+                'TbmXml.admin.operator.$.act': 'BA',
+                'TbmXml.admin.operator.$.toc': 'FTI',
+                'TbmXml.admin.operator.$.psn': 1,
+
+                'TbmXml.admin.services.service.0.$.typ': 'WM',
+                'TbmXml.admin.services.service.0.$.cod': 'USA89A4/MIA1-TPA',
+                'TbmXml.admin.services.service.0.$.vnd': 'from date',
+                'TbmXml.admin.services.service.0.$.bsd': 'to date',
+                'TbmXml.admin.services.service.0.$.opt': 'to time',
+                'TbmXml.admin.services.service.0.$.agn': '1',
+            };
+
+            adapter.setData({
+                services: [
+                    {
+                        type: SERVICE_TYPES.camper,
+                        renterCode: 'USA89',
+                        camperCode: 'A4',
+                        pickUpLocation: 'MIA1',
+                        dropOffLocation: 'TPA',
+                        pickUpDate: 'from date',
+                        dropOffDate: 'to date',
+                        duration: 14,
+                        pickUpTime: 'to time',
+                    },
+                ],
+            });
+
+            expect(sendSpy).toHaveBeenCalledWith(expected);
+        });
+
+        it('setData() should send base data for unknown type', () => {
+            let expected = {
+                'TbmXml.admin.operator.$.act': 'BA',
+                'TbmXml.admin.operator.$.toc': 'FTI',
+                'TbmXml.admin.operator.$.psn': 1,
+            };
+
+            adapter.setData({
+                services: [
+                    {
+                        type: 'unknownType',
+                    },
+                ],
+            });
+
+            expect(sendSpy).toHaveBeenCalledWith(expected);
+        });
+
+        it('isMarked() should return true if crsService is marked', () => {
+            let crsService = {
+                mrk: true,
+            };
+
+            expect(adapter.isMarked(crsService)).toBeTruthy();
+        });
+
+        it('isMarked() should return true for car type', () => {
+            let crsService = {
+                cod: 'LAX',
+            };
+
+            let service = {
+                type: SERVICE_TYPES.car,
+            };
+
+            expect(adapter.isMarked(crsService, null, service)).toBeTruthy();
+        });
+
+        it('isMarked() should return true for hotel type', () => {
+            let crsService = {
+                cod: 'service code',
+            };
+
+            let service = {
+                type: SERVICE_TYPES.hotel,
+            };
+
+            expect(adapter.isMarked(crsService, null, service)).toBeTruthy();
+        });
+
+        it('isMarked() should return true for round trip type', () => {
+            let crsService = {
+                cod: 'NEZbookingId',
+            };
+
+            let service = {
+                type: SERVICE_TYPES.roundTrip,
+                bookingId: 'bookingId',
+            };
+
+            expect(adapter.isMarked(crsService, null, service)).toBeTruthy();
+        });
+
+        it('isMarked() should return true for camper type', () => {
+            let crsService = {
+                cod: 'TPA',
+            };
+
+            let service = {
+                type: SERVICE_TYPES.camper,
+            };
+
+            expect(adapter.isMarked(crsService, null, service)).toBeTruthy();
+        });
+
+        it('getMarkedLineIndexForService() should return last empty line index', () => {
+            let crsObject = {
+                'TbmXml.admin.services.service.0.$.typ': 'service type',
+            };
+
+            let service = {
+                type: 'unknown',
+            };
+
+            expect(adapter.getMarkedLineIndexForService(crsObject, service)).toBe(1);
+        });
+
+        it('getMarkedLineIndexForService() should return index of marked line', () => {
+            let crsObject = {
+                'TbmXml.admin.services.service.0.$.typ': 'service type',
+                'TbmXml.admin.services.service.1.$.typ': 'MW',
+                'TbmXml.admin.services.service.2.$.typ': 'MW',
+                'TbmXml.admin.services.service.2.$.mrk': 'X',
+            };
+
+            let service = {
+                type: 'car',
+            };
+
+            expect(adapter.getMarkedLineIndexForService(crsObject, service)).toBe(2);
         });
     });
 });

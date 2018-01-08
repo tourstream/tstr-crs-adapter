@@ -100,6 +100,23 @@ describe('TomaSPCAdapter', () => {
         });
     });
 
+    it('connect() with auto detected URL', (done) => {
+        let expectedSrc = 'https://www.sellingplatformconnect.amadeus.com/ExternalCatalog.js';
+        let expectedDest = 'https://www.sellingplatformconnect.amadeus.com';
+
+        spyOn(adapter, 'getReferrer').and.returnValue('www.sellingplatformconnect.amadeus.com');
+
+        adapter.connect({connectionUrl: 'https://conn-url.example'}).then(() => {
+            let scriptElement = documentHeadAppendChildSpy.calls.mostRecent().args[0];
+
+            expect(scriptElement.src).toBe(expectedSrc);
+            expect(TomaSPCConnection.dest).toBe(expectedDest);
+            done();
+        }, (error) => {
+            done.fail(error);
+        });
+    });
+
     describe('is connected with TOMA SPC -', () => {
         let crsData, responseError, responseWarnings, requestData, requestMethod;
 
@@ -1011,7 +1028,7 @@ describe('TomaSPCAdapter', () => {
                 numberOfTravellers: 1,
                 services: [
                     {
-                        type: 'roundTrip',
+                        type: SERVICE_TYPES.roundTrip,
                         marked: '',
                         bookingId: 'E2784NQXTHEN',
                         destination: 'YYZ',
