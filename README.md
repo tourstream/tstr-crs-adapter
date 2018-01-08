@@ -98,22 +98,27 @@ useTimeFormat | 'HHmm' (according to [momentjs date format](https://momentjs.com
 You can check the currently supported CRSs with `UbpCrsAdapter.CRS_TYPES`.
 Currently this module supports the connection to following CRS masks:
 
-CRS            | connectionType                  | connectionOptions          | example
-:---           | :---                            | :---                       | :---
-CETS           | UbpCrsAdapter.CRS_TYPES.cets    |                            | 
-TOMA (old)     | UbpCrsAdapter.CRS_TYPES.toma    | providerKey                | 'ABC'
-TOMA (new)     | UbpCrsAdapter.CRS_TYPES.toma2   | externalCatalogVersion (*) | '20.5'
-|              |                                 | connectionUrl              | 'https://url-to-amadeus-selling.plattform'
-|              |                                 | popupId                    | 'popup_id0123456789abcdef'
-Merlin         | UbpCrsAdapter.CRS_TYPES.merlin  |                            | 
-MyJack / Jack+ | UbpCrsAdapter.CRS_TYPES.bewotec | token                      | '0123456789abcdef'
+CRS               | connectionType                   | connectionOptions          | example
+:---              | :---                             | :---                       | :---
+CETS              | UbpCrsAdapter.CRS_TYPES.cets     |                            | 
+TOMA (old)        | UbpCrsAdapter.CRS_TYPES.toma     | providerKey                | 'ABC'
+TOMA (new)        | UbpCrsAdapter.CRS_TYPES.toma2    | externalCatalogVersion (*) | '20.5'
+|                 |                                  | connectionUrl              | 'https://url-to-amadeus-selling.plattform'
+|                 |                                  | popupId                    | 'popup_id0123456789abcdef'
+Merlin            | UbpCrsAdapter.CRS_TYPES.merlin   |                            | 
+MyJack / Jack+    | UbpCrsAdapter.CRS_TYPES.bewotec  | token                      | '0123456789abcdef'
+Cosmo / CosmoNaut | UbpCrsAdapter.CRS_TYPES.traffics | dataSourceUrl              | 'example://url.where-the-crs-get-the/adapter-data-from'
+|                 |                                  | environment                | \<environment\>
+|                 |                                  | exportId                   | '0123-456789-abcdef'
 
 (*) optional
 
 For some connections you need credentials or other connection data,
 which you can set in the `connectionOptions`.
 
-*hint: TOMA SPC needs additional connectionOptions if the website which uses the adapter is not directly the site which is requested by the TOMA application*
+[MyJack / Jack+] _\<environment\>_ is one of **'test', 'live'**
+
+_hint: TOMA SPC needs the **connectionUrl** if the website which uses the adapter is not directly the site which is requested by the TOMA application_
 
 
 ### `.services` object structure
@@ -133,6 +138,8 @@ TOMA (new) | X     | X     | X         | X
 Merlin     | X     | X     | X         | X
 MyJack     | X     | X     | X         | X
 JackPlus   | X     | X     | X         | X
+Cosmo      | X     | X     | X         | X
+CosmoNaut  | X     | X     | X         | X
 
 
 | type  | fields                   | example

@@ -66,7 +66,7 @@ class BewotecExpertAdapter {
     }
 
     getData() {
-        this.logger.warn('BewotecExpert (' + this.options.crsType + ') has no mechanism for getting the data');
+        this.logger.warn('BewotecExpert has no mechanism for getting the data');
 
         return this.getConnection().get().then((data) => {
             return Promise.resolve(data);
