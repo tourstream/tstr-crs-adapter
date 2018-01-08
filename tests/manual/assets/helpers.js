@@ -210,10 +210,26 @@
 
             label.innerHTML = placeholderField.dataset.label;
             input.name = placeholderField.dataset.name;
-            input.value = placeholderField.dataset.value || '';
+            input.value = placeholderField.dataset.value
+                || createDate(placeholderField.dataset.dynamicDate)
+                || '';
             input.title = placeholderField.dataset.title || '';
 
             placeholderField.parentNode.replaceChild(formGroup, placeholderField);
         });
+    }
+
+    function createDate(daysInFuture) {
+        if (!daysInFuture) {
+            return;
+        }
+
+        const date = new Date(+new Date + 1000 * 60 * 60 * 24 * daysInFuture);
+
+        return [
+            ('0' + date.getDate()).substr(-2),
+            ('0' + (date.getMonth() + 1)).substr(-2),
+            date.getFullYear(),
+        ].join('');
     }
 })();
