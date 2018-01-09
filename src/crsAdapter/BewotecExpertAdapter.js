@@ -95,7 +95,7 @@ class BewotecExpertAdapter {
     }
 
     exit() {
-        this.logger.warn('BewotecExpert (' + this.options.crsType + ') has no exit mechanism');
+        this.logger.warn('Bewotec Expert has no exit mechanism');
 
         return Promise.resolve();
     }
@@ -181,7 +181,7 @@ class BewotecExpertAdapter {
                     break;
                 }
                 default: {
-                    this.logger.warn('type ' + service.type + ' is not supported by the BewotecExpert (' + this.options.crsType + ') adapter');
+                    this.logger.warn('type ' + service.type + ' is not supported by the Bewotec Expert adapter');
                     return;
                 }
             }

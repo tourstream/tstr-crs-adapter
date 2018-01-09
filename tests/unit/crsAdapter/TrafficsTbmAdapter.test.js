@@ -108,19 +108,19 @@ describe('TrafficsTbmAdapter', () => {
         let exportData, sendSpy;
 
         function setExportServices(services = []) {
-            exportData.admin.services = {
+            exportData.data.admin.services = {
                 service: services,
             };
         }
 
         function setExportTravellers(travellers = []) {
-            exportData.admin.travellers = {
+            exportData.data.admin.travellers = {
                 traveller: travellers,
             };
         }
 
         beforeEach(() => {
-            exportData = {
+            exportData = { data: {
                 admin: {
                     operator: {
                         '$': {
@@ -136,7 +136,7 @@ describe('TrafficsTbmAdapter', () => {
                         }
                     },
                 }
-            };
+            }};
 
             axios.get.and.returnValue(Promise.resolve(exportData));
 
@@ -172,7 +172,7 @@ describe('TrafficsTbmAdapter', () => {
         });
 
         it('getData() should return nothing when no admin field is in export available', (done) => {
-            axios.get.and.returnValue(Promise.resolve({}));
+            axios.get.and.returnValue(Promise.resolve({ data: {} }));
 
             adapter.getData().then((data) => {
                 expect(data).toBeUndefined();
@@ -183,7 +183,7 @@ describe('TrafficsTbmAdapter', () => {
         });
 
         it('getData() should return base data', (done) => {
-            axios.get.and.returnValue(Promise.resolve({
+            axios.get.and.returnValue(Promise.resolve({ data: {
                 admin: {
                     operator: {
                         '$': {
@@ -199,7 +199,7 @@ describe('TrafficsTbmAdapter', () => {
                         }
                     },
                 }
-            }));
+            }}));
 
             adapter.getData().then((data) => {
                 expect(data).toEqual({

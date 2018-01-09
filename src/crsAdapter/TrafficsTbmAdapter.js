@@ -97,7 +97,9 @@ class TrafficsTbmAdapter {
 
     getData() {
         try {
-            return this.getConnection().get().then((data) => {
+            return this.getConnection().get().then((response) => {
+                let data = (response || {}).data;
+
                 this.logger.info('RAW OBJECT:');
                 this.logger.info(data);
 
@@ -134,7 +136,7 @@ class TrafficsTbmAdapter {
     }
 
     exit() {
-        this.logger.warn('TrafficsTBM (' + this.options.crsType + ') has no exit mechanism');
+        this.logger.warn('Traffics TBM has no exit mechanism');
 
         return Promise.resolve();
     }
@@ -226,7 +228,7 @@ class TrafficsTbmAdapter {
                         break;
                     }
                     default: {
-                        this.logger.warn('type "' + crsService.type + '" not supported');
+                        this.logger.warn('type ' + crsService.typ + ' not supported');
                         this.logger.warn(crsService);
                     }
                 }
@@ -512,7 +514,7 @@ class TrafficsTbmAdapter {
                     break;
                 }
                 default: {
-                    this.logger.warn('type ' + service.type + ' is not supported by the TrafficsTBM (' + this.options.crsType + ') adapter');
+                    this.logger.warn('type ' + service.type + ' is not supported by the Traffics TBM adapter');
                     return;
                 }
             }
