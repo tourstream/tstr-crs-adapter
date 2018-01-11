@@ -56,7 +56,7 @@ class BewotecExpertAdapter {
         this.connection = this.createConnection(options);
 
         return this.connection.get().then(() => {
-            this.logger.log('BewotecExpert (' + this.options.crsType + ') connection available');
+            this.logger.log('BewotecExpert connection available');
         }, (error) => {
             this.logger.error(error.message);
             this.logger.info('response is: ' + error.response);
@@ -66,7 +66,7 @@ class BewotecExpertAdapter {
     }
 
     getData() {
-        this.logger.warn('BewotecExpert (' + this.options.crsType + ') has no mechanism for getting the data');
+        this.logger.warn('BewotecExpert has no mechanism for getting the data');
 
         return this.getConnection().get().then((data) => {
             return Promise.resolve(data);
@@ -95,7 +95,7 @@ class BewotecExpertAdapter {
     }
 
     exit() {
-        this.logger.warn('BewotecExpert (' + this.options.crsType + ') has no exit mechanism');
+        this.logger.warn('Bewotec Expert has no exit mechanism');
 
         return Promise.resolve();
     }
@@ -181,7 +181,7 @@ class BewotecExpertAdapter {
                     break;
                 }
                 default: {
-                    this.logger.warn('type ' + service.type + ' is not supported by the BewotecExpert (' + this.options.crsType + ') adapter');
+                    this.logger.warn('type ' + service.type + ' is not supported by the Bewotec Expert adapter');
                     return;
                 }
             }

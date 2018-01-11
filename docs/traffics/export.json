@@ -1,0 +1,363 @@
+{
+  "$": {
+    "ver": "1.0",
+    "usr": "traffics.b2b",
+    "typ": "admin",
+    "enc": "text",
+    "len": "3020",
+    "rip": "",
+    "sid": " 28.08.2017 12:47:21 PM(188/2/54611)",
+    "svr": "tbm14",
+    "lng": "de"
+  },
+  "admin": {
+    "$": {
+      "typ": "through",
+      "sub": "",
+      "opt": "sync,evaluation,top,nocache,offerfilltbm,alternative,legs",
+      "bkc": "",
+      "bmc": "",
+      "sts": "",
+      "ind": "",
+      "rem": "CTFX",
+      "rtc": "11",
+      "bsc": "NK",
+      "mkc": ""
+    },
+    "login": {
+      "$": {
+        "usr": "Salim Sahi",
+        "agn": "Traffics Softwaresysteme für den Tourismus GmbH",
+        "ptr": "",
+        "prd": "yes"
+      }
+    },
+    "result": {
+      "$": {
+        "cur": "EUR",
+        "ttp": "792.00",
+        "ppm": "",
+        "mid": "998",
+        "txt": "A0022003 Erfassen Sie die Straße des Kunden",
+        "ctp": "",
+        "use": "0"
+      }
+    },
+    "operator": {
+      "$": {
+        "act": "BA",
+        "knd": "NAH",
+        "toc": "AIR",
+        "psn": "2",
+        "pgc": "0",
+        "mfz": "",
+        "agt": "052099",
+        "prc": "",
+        "pr2": "",
+        "clt": "",
+        "exp": "",
+        "mst": "ec=1;mc=1;kx=;",
+        "bst": "000001001545",
+        "opd": ""
+      }
+    },
+    "services": {
+      "$": {
+        "itc": "6"
+      },
+      "service": [
+        {
+          "$": {
+            "id": "1",
+            "mrk": "",
+            "typ": "F",
+            "cod": "PAD PMI",
+            "opt": "01",
+            "op2": "",
+            "alc": "",
+            "cnt": "2",
+            "vnd": "310817",
+            "bsd": "4",
+            "agn": "1-2",
+            "sst": "OK",
+            "spc": "",
+            "afk": ""
+          }
+        },
+        {
+          "$": {
+            "id": "2",
+            "mrk": "",
+            "typ": "F",
+            "cod": "PMI PAD",
+            "opt": "01",
+            "op2": "",
+            "alc": "",
+            "cnt": "2",
+            "vnd": "040917",
+            "bsd": "",
+            "agn": "1-2",
+            "sst": "OK",
+            "spc": "",
+            "afk": ""
+          }
+        },
+        {
+          "$": {
+            "id": "3",
+            "mrk": "",
+            "typ": "H",
+            "cod": "PMI 11839 B",
+            "opt": "2BOV",
+            "op2": "",
+            "alc": "",
+            "cnt": "1",
+            "vnd": "310817",
+            "bsd": "4",
+            "agn": "1-2/Hotel Whala",
+            "sst": "OK",
+            "spc": "",
+            "afk": ""
+          }
+        },
+        {
+          "$": {
+            "id": "4",
+            "mrk": "",
+            "typ": "ZAW",
+            "cod": "LV LASTSCHRIFT",
+            "opt": "",
+            "op2": "",
+            "alc": "",
+            "cnt": "",
+            "vnd": "",
+            "bsd": "",
+            "agn": "",
+            "sst": "",
+            "spc": "",
+            "afk": ""
+          }
+        },
+        {
+          "$": {
+            "id": "5",
+            "mrk": "",
+            "typ": "DOK",
+            "cod": "POST",
+            "opt": "",
+            "op2": "",
+            "alc": "",
+            "cnt": "",
+            "vnd": "",
+            "bsd": "",
+            "agn": "",
+            "sst": "",
+            "spc": "",
+            "afk": ""
+          }
+        },
+        {
+          "$": {
+            "id": "6",
+            "mrk": "",
+            "typ": "KV",
+            "cod": "",
+            "opt": "",
+            "op2": "",
+            "alc": "",
+            "cnt": "",
+            "vnd": "",
+            "bsd": "",
+            "agn": "",
+            "sst": "",
+            "spc": "",
+            "afk": ""
+          }
+        }
+      ]
+    },
+    "customer": {
+      "$": {
+        "anr": "",
+        "sur": "TFX",
+        "pre": "AAA",
+        "str": "",
+        "zip": "",
+        "cty": "",
+        "add": "",
+        "tel": "",
+        "tlf": "P",
+        "csn": "",
+        "rmk": "                                                     SPR:D"
+      }
+    },
+    "travellers": {
+      "$": {
+        "itc": "2"
+      },
+      "traveller": [
+        {
+          "$": {
+            "id": "1",
+            "typ": "H",
+            "sur": "TFX",
+            "pre": "AAA",
+            "age": "",
+            "bth": "",
+            "tvp": "396.00"
+          }
+        },
+        {
+          "$": {
+            "id": "2",
+            "typ": "D",
+            "sur": "TFX",
+            "pre": "BBB",
+            "age": "",
+            "bth": "",
+            "tvp": "396.00"
+          }
+        }
+      ]
+    },
+    "info": {
+      "$": {
+        "itc": "6"
+      },
+      "line": [
+        {
+          "_": "01 PAD PMI LLX 5941  0400-0635 UNVERB. 02 PMI PAD LLX 5912  0725-1000 /040917",
+          "$": {
+            "id": "1"
+          }
+        },
+        {
+          "_": "OPTION BIS NO     GEB.-AKT          REISEPR.  792,00",
+          "$": {
+            "id": "2"
+          }
+        },
+        {
+          "_": "L3/Wichtige Information: Gruppenbuchungen sind nur mit Anfrage, ohne Option un",
+          "$": {
+            "id": "3"
+          }
+        },
+        {
+          "_": "d nur über die Gruppenabteilung möglich. (01.06.2017)",
+          "$": {
+            "id": "4"
+          }
+        },
+        {
+          "_": "Die angezeigten Flugzeiten sind vorläufig.",
+          "$": {
+            "id": "5"
+          }
+        },
+        {
+          "_": "CRS made with love by traffics",
+          "$": {
+            "id": "6"
+          }
+        }
+      ]
+    },
+    "attachment": {
+      "$": {
+        "cny": "",
+        "eml": "",
+        "fax": "",
+        "mob": "",
+        "csn": "",
+        "ast": "",
+        "arm": "",
+        "anm": "",
+        "ink": "0",
+        "ema": "0",
+        "faa": "0",
+        "moa": "0"
+      }
+    },
+    "trip": {
+      "$": {
+        "itc": "2",
+        "id": "1",
+        "ahc": "PAD",
+        "ahn": "Paderborn (DE)",
+        "vnd": "31.08.2017",
+        "bsd": "04.09.2017",
+        "tdc": "4",
+        "ccd": "LLX5941",
+        "ccr": "LLX5912"
+      },
+      "outbound": {
+        "$": {
+          "id": "1",
+          "ahc": "PAD",
+          "via": "",
+          "zhc": "PMI",
+          "vnd": "31.08.2017",
+          "flc": "LLX",
+          "fln": "5941",
+          "fcl": "",
+          "ftr": "",
+          "fsq": "",
+          "fso": "0",
+          "dur": "02:35",
+          "trt": "02:35",
+          "itc": "1",
+          "fkg": ""
+        },
+        "leg": {
+          "$": {
+            "id": "1",
+            "ahc": "PAD",
+            "zhc": "PMI",
+            "flc": "LLX",
+            "fln": "5941",
+            "dpd": "31.08.2017",
+            "dpt": "0400",
+            "ard": "31.08.2017",
+            "art": "0635",
+            "sec": ""
+          }
+        }
+      },
+      "inbound": {
+        "$": {
+          "id": "2",
+          "ahc": "PMI",
+          "via": "",
+          "zhc": "PAD",
+          "vnd": "04.09.2017",
+          "flc": "LLX",
+          "fln": "5912",
+          "fcl": "",
+          "ftr": "",
+          "fsq": "",
+          "fso": "0",
+          "dur": "02:35",
+          "trt": "02:35",
+          "itc": "1",
+          "fkg": ""
+        },
+        "leg": {
+          "$": {
+            "id": "1",
+            "ahc": "PMI",
+            "zhc": "PAD",
+            "flc": "LLX",
+            "fln": "5912",
+            "dpd": "04.09.2017",
+            "dpt": "0725",
+            "ard": "04.09.2017",
+            "art": "1000",
+            "sec": ""
+          }
+        }
+      }
+    }
+  },
+  "dataRequestDate": "2018-01-04T12:34:14.331Z"
+}

@@ -6,13 +6,13 @@ class CamperHelper {
     // PRT02FS/LIS1-LIS2
     createServiceCode(service = {}) {
         return [
-            service.rentalCode,
-            service.vehicleTypeCode,
+            service.renterCode,
+            service.camperCode,
             '/',
             service.pickUpLocation,
             '-',
             service.dropOffLocation,
-        ].join('');
+        ].join('').replace(/^\/-$/, '');
     }
 }
 

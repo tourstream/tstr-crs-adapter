@@ -21,7 +21,7 @@ describe('BewotecExpertAdapter', () => {
             'axios': axios,
         });
 
-        DEFAULT_OPTIONS.crsType= 'jack';
+        DEFAULT_OPTIONS.crsType= 'bewotec';
 
         adapter = new BewotecExpertAdapter(logService, DEFAULT_OPTIONS);
     });
@@ -126,7 +126,7 @@ describe('BewotecExpertAdapter', () => {
                 done.fail('unexpected result');
             }, () => {
                 expect(requestParameter).toEqual(expectation);
-                expect(logService.warn).toHaveBeenCalledWith('type unknown is not supported by the BewotecExpert (jack) adapter');
+                expect(logService.warn).toHaveBeenCalledWith('type unknown is not supported by the Bewotec Expert adapter');
                 done();
             });
         });

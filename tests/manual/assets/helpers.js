@@ -8,7 +8,6 @@
     const productSelectionButtons = document.getElementById('product-selection').getElementsByTagName('button');
     const formFieldTemplate = document.getElementById('form-field-template');
     const reportBlock = window.document.getElementById('report');
-    const baseProductFields = window.document.getElementById('base-product-form-fields');
 
     init();
 
@@ -43,6 +42,8 @@
     }
 
     function connectToCrs() {
+        resetReport();
+
         try {
             if (!connectionOptionsForm.type) {
                 throw new Error('no CRS selected');
@@ -99,6 +100,10 @@
         form.innerHTML = '';
     }
 
+    function resetReport() {
+        reportBlock.innerHTML = '';
+    }
+
     function selectTemplate(form, type) {
         let template = document.getElementById(type + '-form-fields');
 
@@ -108,6 +113,8 @@
     }
 
     function getData() {
+        resetReport();
+
         try {
             crsAdapter.getData().then(log).catch(log);
         } catch (e) {
@@ -116,6 +123,8 @@
     }
 
     function sendData() {
+        resetReport();
+
         let data = {};
 
         Object.keys(productForm).forEach(function(key) {
@@ -180,6 +189,8 @@
     }
 
     function doExit() {
+        resetReport();
+
         try {
             crsAdapter.exit().catch(log);
         } catch (e) {
@@ -199,10 +210,26 @@
 
             label.innerHTML = placeholderField.dataset.label;
             input.name = placeholderField.dataset.name;
-            input.value = placeholderField.dataset.value || '';
+            input.value = placeholderField.dataset.value
+                || createDate(placeholderField.dataset.dynamicDate)
+                || '';
             input.title = placeholderField.dataset.title || '';
 
             placeholderField.parentNode.replaceChild(formGroup, placeholderField);
         });
+    }
+
+    function createDate(daysInFuture) {
+        if (!daysInFuture) {
+            return;
+        }
+
+        const date = new Date(+new Date + 1000 * 60 * 60 * 24 * daysInFuture);
+
+        return [
+            ('0' + date.getDate()).substr(-2),
+            ('0' + (date.getMonth() + 1)).substr(-2),
+            date.getFullYear(),
+        ].join('');
     }
 })();

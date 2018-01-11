@@ -32,9 +32,6 @@ const CONFIG = {
         car: {
             serviceCodeRegEx: /([A-Z]*[0-9]*)?([A-Z]*[0-9]*)?(\/)?([A-Z]*[0-9]*)?(-)?([A-Z]*[0-9]*)?/,
         },
-        roundTrip: {
-            ageRegEx: /^\d{2,3}$/g
-        },
     },
 };
 
@@ -143,7 +140,7 @@ class TomaSPCAdapter {
             };
 
             const getConnectionUrlFromReferrer = () => {
-                let url = document.referrer || '';
+                let url = this.getReferrer() || '';
 
                 if (url.indexOf('.sellingplatformconnect.amadeus.com') > -1) {
                     this.logger.info('detected Amadeus URL: ' + url);
@@ -174,6 +171,16 @@ class TomaSPCAdapter {
 
             document.head.appendChild(script);
         });
+    }
+
+    /**
+     * for testing purposes
+     *
+     * @private
+     * @returns {string}
+     */
+    getReferrer() {
+        return document.referrer;
     }
 
     /**
@@ -388,29 +395,6 @@ class TomaSPCAdapter {
      * @returns {{roomCode: *, mealCode: *, roomQuantity: (*|string|string), roomOccupancy: (*|string|string|string), children, destination: *, dateFrom: string, dateTo: string, type: string}}
      */
     mapHotelServiceFromCrsObjectToAdapterObject(crsService, crsObject) {
-        const collectChildren = () => {
-            let children = [];
-            let travellerAssociation = crsService.travellerAssociation || '';
-
-            let startLineNumber = parseInt(travellerAssociation.substr(0, 1), 10);
-            let endLineNumber = parseInt(travellerAssociation.substr(-1), 10);
-
-            if (!startLineNumber) return;
-
-            do {
-                let traveller = crsObject.travellers[startLineNumber - 1];
-
-                if (traveller.title !== CONFIG.crs.gender2SalutationMap.child) continue;
-
-                children.push({
-                    name: traveller.name,
-                    age: traveller.discount,
-                });
-            } while (++startLineNumber <= endLineNumber);
-
-            return children;
-        };
-
         let serviceCodes = (crsService.accommodation || '').split(' ');
         let dateFrom = moment(crsService.fromDate, CONFIG.crs.dateFormat);
         let dateTo = moment(crsService.toDate, CONFIG.crs.dateFormat);
@@ -420,7 +404,10 @@ class TomaSPCAdapter {
             mealCode: serviceCodes[1] || void 0,
             roomQuantity: crsService.quantity,
             roomOccupancy: crsService.occupancy,
-            children: collectChildren(),
+            children: this.helper.roundTrip.collectTravellers(
+                crsService.travellerAssociation,
+                (lineNumber) => this.getTravellerByLineNumber(crsObject.travellers, lineNumber)
+            ).filter((traveller) => ['child', 'infant'].indexOf(traveller.gender) > -1),
             destination: crsService.serviceCode,
             dateFrom: dateFrom.isValid() ? dateFrom.format(this.options.useDateFormat) : crsService.fromDate,
             dateTo: dateTo.isValid() ? dateTo.format(this.options.useDateFormat) : crsService.toDate,
@@ -435,33 +422,22 @@ class TomaSPCAdapter {
      * @returns {object}
      */
     mapRoundTripServiceFromXmlObjectToAdapterObject(crsService, crsObject) {
+        const hasBookingId = (crsService.serviceCode || '').indexOf('NEZ') === 0;
+
         let startDate = moment(crsService.fromDate, CONFIG.crs.dateFormat);
         let endDate = moment(crsService.toDate, CONFIG.crs.dateFormat);
 
-        const hasBookingId = crsService.serviceCode.indexOf('NEZ') === 0;
-
-        let service = {
+        return {
             type: SERVICE_TYPES.roundTrip,
             bookingId: hasBookingId ? crsService.serviceCode : void 0,
             destination: hasBookingId ? crsService.accommodation : crsService.serviceCode,
             startDate: startDate.isValid() ? startDate.format(this.options.useDateFormat) : crsService.fromDate,
             endDate: endDate.isValid() ? endDate.format(this.options.useDateFormat) : crsService.toDate,
+            travellers: this.helper.roundTrip.collectTravellers(
+                crsService.travellerAssociation,
+                (lineNumber) => this.getTravellerByLineNumber(crsObject.travellers, lineNumber)
+            )
         };
-
-        if (crsService.travellerAssociation) {
-            let traveller = crsObject.travellers[crsService.travellerAssociation - 1];
-
-            service.title = traveller.title;
-            service.name = traveller.name;
-
-            if (traveller.discount.match(CONFIG.services.roundTrip.ageRegEx)){
-                service.age = traveller.discount
-            } else {
-                service.birthday = traveller.discount;
-            }
-        }
-
-        return service;
     }
 
     /**
@@ -515,6 +491,32 @@ class TomaSPCAdapter {
         mapServiceCodeToService(crsService.serviceCode, service);
 
         return service;
+    }
+
+    /**
+     * @private
+     * @param travellers
+     * @param lineNumber
+     * @returns {*}
+     */
+    getTravellerByLineNumber(travellers = [], lineNumber) {
+        let traveller = travellers[lineNumber - 1];
+
+        if (!traveller) {
+            return void 0;
+        }
+
+        return {
+            gender: Object.entries(CONFIG.crs.gender2SalutationMap).reduce(
+                (reduced, current) => {
+                    reduced[current[1]] = reduced[current[1]] || current[0];
+                    return reduced;
+                },
+                {}
+            )[traveller.title],
+            name: traveller.name,
+            age: traveller.discount,
+        };
     }
 
     /**

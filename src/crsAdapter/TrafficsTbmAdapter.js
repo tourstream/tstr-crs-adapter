@@ -29,6 +29,7 @@ const CONFIG = {
             male: 'H',
             female: 'F',
             child: 'K',
+            infant: 'K',
         },
         exportUrls: {
             live: 'https://tbm.traffics.de',
@@ -65,54 +66,67 @@ class TrafficsTbmAdapter {
         };
     }
 
-    connect(options) {
-        Object.keys(CONFIG.supportedConnectionOptions).forEach((optionName) => {
-            if (!options || !options[optionName]) {
-                throw new Error('No ' + optionName + ' found in connectionOptions.');
-            }
+    connect(options = {}) {
+        try {
+            Object.keys(CONFIG.supportedConnectionOptions).forEach((optionName) => {
+                if (!options[optionName]) {
+                    throw new Error('No ' + optionName + ' found in connectionOptions.');
+                }
 
-            if (!CONFIG.supportedConnectionOptions[optionName]) return;
+                if (!CONFIG.supportedConnectionOptions[optionName]) return;
 
-            if (!CONFIG.supportedConnectionOptions[optionName].includes(options[optionName])) {
-                throw new Error('Value ' + options[optionName] + ' is not allowed for ' + optionName + '.');
-            }
-        });
+                if (!CONFIG.supportedConnectionOptions[optionName].includes(options[optionName])) {
+                    throw new Error('Value ' + options[optionName] + ' is not allowed for ' + optionName + '.');
+                }
+            });
 
-        this.connection = this.createConnection(options);
+            this.connection = this.createConnection(options);
 
-        return this.connection.get().then(() => {
-            this.logger.log('TrafficsTBM (' + this.options.crsType + ') connection available');
-        }, (error) => {
-            this.logger.error(error.message);
-            this.logger.info('response is: ' + error.response);
-            this.logger.error('Instantiate connection error - but nevertheless transfer could work');
-            throw error;
-        });
+            return this.connection.get().then(() => {
+                this.logger.log('TrafficsTBM connection available');
+            }, (error) => {
+                this.logger.error(error.message);
+                this.logger.info('response was: ' + error.response);
+                this.logger.error('Instantiate connection error - but nevertheless transfer could work');
+                throw error;
+            });
+        } catch (error) {
+            return Promise.reject(error);
+        }
     }
 
     getData() {
-        return this.getConnection().get().then((data) => {
-            this.logger.info('RAW OBJECT:');
-            this.logger.info(data);
+        try {
+            return this.getConnection().get().then((response) => {
+                let data = (response || {}).data;
 
-            return this.mapCrsObjectToAdapterObject(data);
-        }).then(null, (error) => {
-            this.logger.error(error);
-            throw new Error('[.getData] ' + error.message);
-        });
+                this.logger.info('RAW OBJECT:');
+                this.logger.info(data);
+
+                return this.mapCrsObjectToAdapterObject(data);
+            }).catch((error) => {
+                this.logger.error(error.message);
+                this.logger.info('response was: ' + error.response);
+                this.logger.error('error getting data');
+                throw error;
+            });
+        } catch (error) {
+            return Promise.reject(error);
+        }
     }
 
     setData(dataObject = {}) {
-        let crsObject = this.createBaseCrsObject();
-
-        crsObject = this.assignDataObjectToCrsObject(crsObject, dataObject);
-
-        this.logger.info('BASE OBJECT:');
-        this.logger.info(crsObject);
-
         try {
+            let crsObject = this.createBaseCrsObject();
+
+            crsObject = this.assignDataObjectToCrsObject(crsObject, dataObject);
+
+            this.logger.info('BASE OBJECT:');
+            this.logger.info(crsObject);
+
             return this.getConnection().send(crsObject).catch((error) => {
-                this.logger.info(error);
+                this.logger.error(error.message);
+                this.logger.info('response was: ' + error.response);
                 this.logger.error('error during transfer - please check the result');
                 throw error;
             });
@@ -122,7 +136,7 @@ class TrafficsTbmAdapter {
     }
 
     exit() {
-        this.logger.warn('TrafficsTBM (' + this.options.crsType + ') has no exit mechanism');
+        this.logger.warn('Traffics TBM has no exit mechanism');
 
         return Promise.resolve();
     }
@@ -136,7 +150,7 @@ class TrafficsTbmAdapter {
         return {
             send: (data = {}) => {
                 try {
-                    document.location = CONFIG.crs.connectionUrl + btoa('#tbm&file=' + options.dataSourceUrl + '?' + querystring.stringify(data));
+                    this.setLocation(CONFIG.crs.connectionUrl + btoa('#tbm&file=' + options.dataSourceUrl + '?' + querystring.stringify(data)));
 
                     return Promise.resolve();
                 } catch (e) {
@@ -147,6 +161,16 @@ class TrafficsTbmAdapter {
                 CONFIG.crs.exportUrls[options.environment] + '/tbmExport?id=' + options.exportId
             ),
         };
+    }
+
+    /**
+     * wrapper for testing purposes
+     *
+     * @private
+     * @param data
+     */
+    setLocation(data) {
+        document.location = data;
     }
 
     /**
@@ -166,14 +190,16 @@ class TrafficsTbmAdapter {
      * @param crsObject object
      */
     mapCrsObjectToAdapterObject(crsObject) {
-        if (!crsObject) return;
+        if (!crsObject || !crsObject.admin) return;
+
+        const crsObjectAdmin = crsObject.admin;
 
         let dataObject = {
-            agencyNumber: crsObject.operator['$'].agt,
-            operator: crsObject.operator['$'].toc,
-            numberOfTravellers: crsObject.operator['$'].psn,
-            travelType: crsObject.operator['$'].knd,
-            remark: crsObject.customer['$'].rmk,
+            agencyNumber: crsObjectAdmin.operator['$'].agt,
+            operator: crsObjectAdmin.operator['$'].toc,
+            numberOfTravellers: crsObjectAdmin.operator['$'].psn,
+            travelType: crsObjectAdmin.operator['$'].knd,
+            remark: crsObjectAdmin.customer['$'].rmk,
             services: [],
         };
 
@@ -181,34 +207,34 @@ class TrafficsTbmAdapter {
 
         do {
             try {
-                let crsService = crsObject.services.service[lineNumber]['$'];
+                let crsService = crsObjectAdmin.services.service[lineNumber]['$'];
                 let service;
 
                 switch (crsService.typ) {
                     case CONFIG.crs.serviceTypes.car: {
-                        service = this.mapCarServiceFromCrsObjectToAdapterObject(crsService, crsObject);
+                        service = this.mapCarServiceFromCrsObjectToAdapterObject(crsService, crsObjectAdmin);
                         break;
                     }
                     case CONFIG.crs.serviceTypes.hotel: {
-                        service = this.mapHotelServiceFromCrsObjectToAdapterObject(crsService, crsObject);
+                        service = this.mapHotelServiceFromCrsObjectToAdapterObject(crsService, crsObjectAdmin);
                         break;
                     }
                     case CONFIG.crs.serviceTypes.roundTrip: {
-                        service = this.mapRoundTripServiceFromXmlObjectToAdapterObject(crsService, crsObject);
+                        service = this.mapRoundTripServiceFromXmlObjectToAdapterObject(crsService, crsObjectAdmin);
                         break;
                     }
                     case CONFIG.crs.serviceTypes.camper: {
-                        service = this.mapCamperServiceFromCrsObjectToAdapterObject(crsService, crsObject);
+                        service = this.mapCamperServiceFromCrsObjectToAdapterObject(crsService, crsObjectAdmin);
                         break;
                     }
                     default: {
-                        this.logger.warn('type "' + crsService.typ + '" not supported');
+                        this.logger.warn('type ' + crsService.typ + ' not supported');
                         this.logger.warn(crsService);
                     }
                 }
 
                 if (service) {
-                    service.marked = this.isMarked(crsObject, lineNumber, {type: service.type});
+                    service.marked = this.isMarked(crsObjectAdmin, lineNumber, {type: service.type});
 
                     dataObject.services.push(service);
                 }
@@ -279,28 +305,7 @@ class TrafficsTbmAdapter {
      * @returns {{roomCode: *, mealCode: *, roomQuantity: (*|string), roomOccupancy: (*|string), children, destination: *, dateFrom: string, dateTo: string, type: string}}
      */
     mapHotelServiceFromCrsObjectToAdapterObject(crsService, crsObject) {
-        const collectChildren = (crsService, crsTravellers = []) => {
-            let children = [];
-            let travellerAssociation = crsService.agn || '';
-
-            let startLineNumber = parseInt(travellerAssociation.substr(0, 1), 10);
-            let endLineNumber = parseInt(travellerAssociation.substr(-1), 10);
-
-            if (!startLineNumber) return;
-
-            do {
-                let travellerIndex = startLineNumber - 1;
-
-                if (crsTravellers[travellerIndex]['$'].typ !== CONFIG.crs.gender2SalutationMap.child) continue;
-
-                children.push({
-                    name: crsTravellers[travellerIndex]['$'].sur,
-                    age: crsTravellers[travellerIndex]['$'].age,
-                });
-            } while (++startLineNumber <= endLineNumber);
-
-            return children;
-        };
+        const travellers = (crsObject.travellers || {}).traveller;
 
         let serviceCodes = (crsService.opt || '').split(' ');
         let dateFrom = moment(crsService.vnd, CONFIG.crs.dateFormat);
@@ -311,7 +316,10 @@ class TrafficsTbmAdapter {
             mealCode: serviceCodes[1] || void 0,
             roomQuantity: crsService.cnt,
             roomOccupancy: crsService.alc,
-            children: collectChildren(crsService, crsObject.travellers.traveller),
+            children: this.helper.roundTrip.collectTravellers(
+                crsService.agn,
+                (lineNumber) => this.getTravellerByLineNumber(travellers, lineNumber)
+            ).filter((traveller) => ['child', 'infant'].indexOf(traveller.gender) > -1),
             destination: crsService.cod,
             dateFrom: dateFrom.isValid() ? dateFrom.format(this.options.useDateFormat) : crsService.vnd,
             dateTo: dateTo.isValid() ? dateTo.format(this.options.useDateFormat) : crsService.bsd,
@@ -326,34 +334,23 @@ class TrafficsTbmAdapter {
      * @returns {object}
      */
     mapRoundTripServiceFromXmlObjectToAdapterObject(crsService, crsObject) {
+        const travellers = (crsObject.travellers || {}).traveller;
+        const hasBookingId = (crsService.cod || '').indexOf('NEZ') === 0;
+
         let startDate = moment(crsService.vnd, CONFIG.crs.dateFormat);
         let endDate = moment(crsService.bsd, CONFIG.crs.dateFormat);
 
-        const hasBookingId = crsService.cod.indexOf('NEZ') === 0;
-
-        let service = {
+        return {
             type: SERVICE_TYPES.roundTrip,
             bookingId: hasBookingId ? crsService.cod.substring(3) : void 0,
             destination: hasBookingId ? crsService.opt : crsService.cod,
             startDate: startDate.isValid() ? startDate.format(this.options.useDateFormat) : crsService.vnd,
             endDate: endDate.isValid() ? endDate.format(this.options.useDateFormat) : crsService.bsd,
+            travellers: this.helper.roundTrip.collectTravellers(
+                crsService.agn,
+                (lineNumber) => this.getTravellerByLineNumber(travellers, lineNumber)
+            ),
         };
-
-        if (crsService.agn) {
-            let traveller = crsObject.travellers.traveller[crsService.agn - 1]['$'];
-
-            service.gender = Object.entries(CONFIG.crs.gender2SalutationMap).reduce((reduced, current) => current[1] === traveller.typ ? current[0] : reduced);
-            service.title = traveller.typ;
-            service.name = traveller.sur;
-
-            if (traveller.age.match(CONFIG.services.roundTrip.ageRegEx)){
-                service.age = traveller.age
-            } else {
-                service.birthday = traveller.age;
-            }
-        }
-
-        return service;
     }
 
     /**
@@ -408,6 +405,32 @@ class TrafficsTbmAdapter {
         mapServiceCodeToService(crsService.cod, service);
 
         return service;
+    }
+
+    /**
+     * @private
+     * @param travellers
+     * @param lineNumber
+     * @returns {*}
+     */
+    getTravellerByLineNumber(travellers = [], lineNumber) {
+        let traveller = travellers[lineNumber - 1];
+
+        if (!traveller) {
+            return void 0;
+        }
+
+        return {
+            gender: Object.entries(CONFIG.crs.gender2SalutationMap).reduce(
+                (reduced, current) => {
+                    reduced[current[1]] = reduced[current[1]] || current[0];
+                    return reduced;
+                },
+                {}
+            )[traveller['$'].typ],
+            name: traveller['$'].sur,
+            age: traveller['$'].age,
+        };
     }
 
     /**
@@ -491,7 +514,7 @@ class TrafficsTbmAdapter {
                     break;
                 }
                 default: {
-                    this.logger.warn('type ' + service.type + ' is not supported by the TrafficsTBM (' + this.options.crsType + ') adapter');
+                    this.logger.warn('type ' + service.type + ' is not supported by the Traffics TBM adapter');
                     return;
                 }
             }
@@ -509,8 +532,8 @@ class TrafficsTbmAdapter {
      */
     assignBasicData(crsObject, dataObject) {
         crsObject['TbmXml.admin.customer.$.rmk'] = dataObject.remark;
-        crsObject['TbmXml.admin.customer.$.knd'] = dataObject.travelType;
-        crsObject['TbmXml.admin.customer.$.psn'] = dataObject.numberOfTravellers || CONFIG.crs.defaultValues.numberOfTravellers;
+        crsObject['TbmXml.admin.operator.$.knd'] = dataObject.travelType;
+        crsObject['TbmXml.admin.operator.$.psn'] = dataObject.numberOfTravellers || CONFIG.crs.defaultValues.numberOfTravellers;
     }
 
     /**
@@ -556,7 +579,7 @@ class TrafficsTbmAdapter {
             crsObject['TbmXml.admin.services.service.' + lineIndex + '.$.vnd'] = pickUpDate.isValid() ? pickUpDate.format(CONFIG.crs.dateFormat) : service.pickUpDate;
             crsObject['TbmXml.admin.services.service.' + lineIndex + '.$.bsd'] = dropOffDate.isValid() ? dropOffDate.format(CONFIG.crs.dateFormat) : service.dropOffDate;
 
-            crsObject['TbmXml.admin.customer.$.rmk'] = [crsObject['TbmXml.admin.customer.$.rmk'], hotelDataString].filter(Boolean).join(';') || void 0;
+            crsObject['TbmXml.admin.customer.$.rmk'] = [crsObject['TbmXml.admin.customer.$.rmk'], hotelDataString].filter(Boolean).join(';');
         }
     }
 
@@ -575,7 +598,7 @@ class TrafficsTbmAdapter {
             if (!startLineNumber) return;
 
             do {
-                let startLineIndex = CONFIG.crs.lineNumberMap[startLineNumber - 1];
+                let startLineIndex = startLineNumber - 1;
 
                 crsObject['TbmXml.admin.travellers.traveller.' + startLineIndex + '.$.typ'] = void 0;
                 crsObject['TbmXml.admin.travellers.traveller.' + startLineIndex + '.$.sur'] = void 0;
@@ -726,13 +749,12 @@ class TrafficsTbmAdapter {
      */
     getMarkedLineIndexForService(crsObject, service) {
         let lineIndex = 0;
-        let markedLineIndex = void 0;
 
         do {
             let kindOfService = crsObject['TbmXml.admin.services.service.' + lineIndex + '.$.typ'];
 
             if (!kindOfService) {
-                return markedLineIndex;
+                return lineIndex;
             }
 
             if (kindOfService !== CONFIG.crs.serviceTypes[service.type]) continue;
