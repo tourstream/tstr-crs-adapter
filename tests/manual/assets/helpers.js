@@ -26,15 +26,14 @@
     function initCrsSelection() {
         Array.from(crsSelectionButtons).forEach(function(button) {
             button.onclick = function(event) {
-                if (button.type === 'submit') {
-                    if (button.name === 'connect') {
-                        connectToCrs();
-                    }
+                if (button.name === 'connect') {
+                    connectToCrs();
 
                     return;
                 }
 
                 resetForm(connectionOptionsForm);
+                resetForm(productForm);
                 selectTemplate(connectionOptionsForm, event.target.value);
                 selectTemplate(productForm, 'base-product');
             };

@@ -2,6 +2,7 @@ import es6shim from 'es6-shim';
 import moment from 'moment';
 import axios from 'axios';
 import { SERVICE_TYPES } from '../UbpCrsAdapter';
+import querystring from 'querystring';
 import TravellerHelper from '../helper/TravellerHelper';
 
 const CONFIG = {
@@ -109,22 +110,53 @@ class BewotecExpertAdapter {
     createConnection(options) {
         const extendSendData = (data = {}) => {
             data.token = options.token;
-            data.merge = true;
+            data.merge = false;
 
             return data;
         };
 
         return {
-            // does not work well - we get a "Network error" as long as we have the CORS issue
-            get: () => axios.get(CONFIG.crs.connectionUrl + '/expert', {
-                params: {
-                    token: options.token,
-                },
-            }),
-            send: (data = {}) => axios.get(CONFIG.crs.connectionUrl + '/fill', {
-                params: extendSendData(data),
-            }),
+            // does not work well - when the Expert mask is "empty" we get a 404 back
+            get: () => {
+                const baseUrl = CONFIG.crs.connectionUrl + '/expert';
+                const params = { token: options.token };
+
+                if (!this.isProtocolSameAs('http')) {
+                    this.logger.warn('will try to get data from a different protocol than HTTP');
+                }
+
+                return axios.get(baseUrl, { params: params });
+            },
+            send: (data = {}) => {
+                const baseUrl = CONFIG.crs.connectionUrl + '/fill';
+                const params = extendSendData(data);
+                const url = baseUrl + '?' + querystring.stringify(params);
+
+                if (this.isProtocolSameAs('http')) {
+                    return axios.get(baseUrl, { params: params });
+                }
+
+                const fillWindow = window.open(url, '_blank', 'height=200,width=200');
+
+                if (fillWindow) {
+                    while (!fillWindow.document) {}
+
+                    fillWindow.close();
+
+                    return Promise.resolve();
+                }
+
+                // fallback if window open does not work
+                // but this could create a mixed content warning
+                (new Image()).src = url;
+
+                return Promise.resolve();
+            },
         };
+    }
+
+    isProtocolSameAs(type = '') {
+        return location.href.indexOf(type.toLowerCase() + '://') > -1;
     }
 
     /**

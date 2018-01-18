@@ -150,7 +150,10 @@ class TrafficsTbmAdapter {
         return {
             send: (data = {}) => {
                 try {
-                    this.setLocation(CONFIG.crs.connectionUrl + btoa('#tbm&file=' + options.dataSourceUrl + '?' + querystring.stringify(data)));
+                    this.setLocation(
+                        CONFIG.crs.connectionUrl
+                        + btoa('#tbm&file=' + options.dataSourceUrl + '?' + querystring.stringify(data))
+                    );
 
                     return Promise.resolve();
                 } catch (e) {
