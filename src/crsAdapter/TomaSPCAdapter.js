@@ -2,7 +2,7 @@ import es6shim from 'es6-shim';
 import es7shim from 'es7-shim';
 import moment from 'moment';
 import { SERVICE_TYPES } from '../UbpCrsAdapter';
-import RoundTripHelper from '../helper/RoundTripHelper';
+import TravellerHelper from '../helper/TravellerHelper';
 
 const CONFIG = {
     crs: {
@@ -41,7 +41,7 @@ class TomaSPCAdapter {
         this.logger = logger;
         this.connectionOptions = {};
         this.helper = {
-            roundTrip: new RoundTripHelper(Object.assign({}, options, {
+            traveller: new TravellerHelper(Object.assign({}, options, {
                 crsDateFormat: CONFIG.crs.dateFormat,
                 gender2SalutationMap: CONFIG.crs.gender2SalutationMap,
             })),
@@ -318,7 +318,7 @@ class TomaSPCAdapter {
                     break;
                 }
                 case CONFIG.crs.serviceTypes.roundTrip: {
-                    service = this.mapRoundTripServiceFromXmlObjectToAdapterObject(crsService, crsObject);
+                    service = this.mapRoundTripServiceFromCrsObjectToAdapterObject(crsService, crsObject);
                     break;
                 }
                 case CONFIG.crs.serviceTypes.camper: {
@@ -404,7 +404,7 @@ class TomaSPCAdapter {
             mealCode: serviceCodes[1] || void 0,
             roomQuantity: crsService.quantity,
             roomOccupancy: crsService.occupancy,
-            children: this.helper.roundTrip.collectTravellers(
+            children: this.helper.traveller.collectTravellers(
                 crsService.travellerAssociation,
                 (lineNumber) => this.getTravellerByLineNumber(crsObject.travellers, lineNumber)
             ).filter((traveller) => ['child', 'infant'].indexOf(traveller.gender) > -1),
@@ -421,7 +421,7 @@ class TomaSPCAdapter {
      * @param crsObject object
      * @returns {object}
      */
-    mapRoundTripServiceFromXmlObjectToAdapterObject(crsService, crsObject) {
+    mapRoundTripServiceFromCrsObjectToAdapterObject(crsService, crsObject) {
         const hasBookingId = (crsService.serviceCode || '').indexOf('NEZ') === 0;
 
         let startDate = moment(crsService.fromDate, CONFIG.crs.dateFormat);
@@ -433,7 +433,7 @@ class TomaSPCAdapter {
             destination: hasBookingId ? crsService.accommodation : crsService.serviceCode,
             startDate: startDate.isValid() ? startDate.format(this.options.useDateFormat) : crsService.fromDate,
             endDate: endDate.isValid() ? endDate.format(this.options.useDateFormat) : crsService.toDate,
-            travellers: this.helper.roundTrip.collectTravellers(
+            travellers: this.helper.traveller.collectTravellers(
                 crsService.travellerAssociation,
                 (lineNumber) => this.getTravellerByLineNumber(crsObject.travellers, lineNumber)
             )
@@ -507,13 +507,9 @@ class TomaSPCAdapter {
         }
 
         return {
-            gender: Object.entries(CONFIG.crs.gender2SalutationMap).reduce(
-                (reduced, current) => {
-                    reduced[current[1]] = reduced[current[1]] || current[0];
-                    return reduced;
-                },
-                {}
-            )[traveller.title],
+            gender: (Object.entries(CONFIG.crs.gender2SalutationMap).find(
+                (row) => row[1] === traveller.title
+            ) || [])[0],
             name: traveller.name,
             age: traveller.discount,
         };
@@ -587,7 +583,7 @@ class TomaSPCAdapter {
                     break;
                 }
                 case SERVICE_TYPES.roundTrip: {
-                    this.assignRoundTripServiceFromAdapterObjectToXmlObject(adapterService, crsService);
+                    this.assignRoundTripServiceFromAdapterObjectToCrsObject(adapterService, crsService);
                     this.assignRoundTripTravellers(adapterService, crsService, crsObject);
                     break;
                 }
@@ -810,7 +806,7 @@ class TomaSPCAdapter {
      * @param adapterService object
      * @param crsService object
      */
-    assignRoundTripServiceFromAdapterObjectToXmlObject(adapterService, crsService) {
+    assignRoundTripServiceFromAdapterObjectToCrsObject(adapterService, crsService) {
         let startDate = moment(adapterService.startDate, this.options.useDateFormat);
         let endDate = moment(adapterService.endDate, this.options.useDateFormat);
 
@@ -834,7 +830,7 @@ class TomaSPCAdapter {
         let lastLineNumber = '';
 
         adapterService.travellers.forEach((serviceTraveller) => {
-            const travellerData = this.helper.roundTrip.normalizeTraveller(serviceTraveller);
+            const travellerData = this.helper.traveller.normalizeTraveller(serviceTraveller);
 
             let travellerIndex = this.getNextEmptyTravellerIndex(crsObject);
             let traveller = crsObject.travellers[travellerIndex];

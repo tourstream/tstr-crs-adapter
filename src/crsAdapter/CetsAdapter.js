@@ -3,7 +3,8 @@ import xml2js from 'xml2js';
 import fastXmlParser from 'fast-xml-parser';
 import moment from 'moment';
 import {SERVICE_TYPES} from '../UbpCrsAdapter';
-import RoundTripHelper from '../helper/RoundTripHelper';
+import TravellerHelper from '../helper/TravellerHelper';
+import XmlHelper from '../helper/XmlHelper';
 
 const CONFIG = {
     crs: {
@@ -84,36 +85,18 @@ class CetsAdapter {
         this.options = options;
         this.logger = logger;
         this.helper = {
-            roundTrip: new RoundTripHelper(Object.assign({}, options, {
+            traveller: new TravellerHelper(Object.assign({}, options, {
                 crsDateFormat: CONFIG.crs.dateFormat,
                 gender2SalutationMap: CONFIG.gender2SalutationMap,
             })),
+            xml: new XmlHelper({ attrPrefix: CONFIG.parserOptions.attrPrefix }),
         };
 
         this.xmlParser = {
             parse: (xmlString) => {
                 const xmlObject = fastXmlParser.parse(xmlString, CONFIG.parserOptions);
 
-                const groupXmlAttributes = (object) => {
-                    if (typeof object !== 'object') {
-                        return;
-                    }
-
-                    let propertyNames = Object.getOwnPropertyNames(object);
-
-                    propertyNames.forEach((name) => {
-                        if (name.startsWith(CONFIG.parserOptions.attrPrefix)) {
-                            object[CONFIG.parserOptions.attrPrefix] = object[CONFIG.parserOptions.attrPrefix] || {};
-                            object[CONFIG.parserOptions.attrPrefix][name.substring(CONFIG.parserOptions.attrPrefix.length)] = object[name];
-
-                            delete object[name];
-                        } else {
-                            groupXmlAttributes(object[name]);
-                        }
-                    });
-                };
-
-                groupXmlAttributes(xmlObject);
+                this.helper.xml.groupXmlAttributes(xmlObject);
 
                 return xmlObject;
             }
@@ -553,7 +536,7 @@ class CetsAdapter {
         xml.Fap = [];
 
         service.travellers.forEach((serviceTraveller, index) => {
-            const traveller = this.helper.roundTrip.normalizeTraveller(serviceTraveller);
+            const traveller = this.helper.traveller.normalizeTraveller(serviceTraveller);
 
             xml.Fap.push({
                 [CONFIG.builderOptions.attrkey]: {

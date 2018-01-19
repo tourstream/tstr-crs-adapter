@@ -3,7 +3,7 @@ import moment from 'moment';
 import axios from 'axios';
 import querystring from 'querystring';
 import { SERVICE_TYPES } from '../UbpCrsAdapter';
-import RoundTripHelper from '../helper/RoundTripHelper';
+import TravellerHelper from '../helper/TravellerHelper';
 import CarHelper from '../helper/CarHelper';
 import CamperHelper from '../helper/CamperHelper';
 import HotelHelper from '../helper/HotelHelper';
@@ -59,7 +59,7 @@ class TrafficsTbmAdapter {
         });
 
         this.helper = {
-            roundTrip: new RoundTripHelper(helperOptions),
+            traveller: new TravellerHelper(helperOptions),
             car: new CarHelper(helperOptions),
             camper: new CamperHelper(helperOptions),
             hotel: new HotelHelper(helperOptions),
@@ -316,7 +316,7 @@ class TrafficsTbmAdapter {
             mealCode: serviceCodes[1] || void 0,
             roomQuantity: crsService.cnt,
             roomOccupancy: crsService.alc,
-            children: this.helper.roundTrip.collectTravellers(
+            children: this.helper.traveller.collectTravellers(
                 crsService.agn,
                 (lineNumber) => this.getTravellerByLineNumber(travellers, lineNumber)
             ).filter((traveller) => ['child', 'infant'].indexOf(traveller.gender) > -1),
@@ -346,7 +346,7 @@ class TrafficsTbmAdapter {
             destination: hasBookingId ? crsService.opt : crsService.cod,
             startDate: startDate.isValid() ? startDate.format(this.options.useDateFormat) : crsService.vnd,
             endDate: endDate.isValid() ? endDate.format(this.options.useDateFormat) : crsService.bsd,
-            travellers: this.helper.roundTrip.collectTravellers(
+            travellers: this.helper.traveller.collectTravellers(
                 crsService.agn,
                 (lineNumber) => this.getTravellerByLineNumber(travellers, lineNumber)
             ),
@@ -682,7 +682,7 @@ class TrafficsTbmAdapter {
         let lastLineNumber = '';
 
         service.travellers.forEach((serviceTraveller) => {
-            const travellerData = this.helper.roundTrip.normalizeTraveller(serviceTraveller);
+            const travellerData = this.helper.traveller.normalizeTraveller(serviceTraveller);
 
             let travellerLineIndex = this.getNextEmptyTravellerLineIndex(crsObject);
 

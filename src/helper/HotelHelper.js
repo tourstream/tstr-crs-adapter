@@ -12,6 +12,10 @@ class HotelHelper {
             ? firstTravellerAllocationNumber.toString()
             : firstTravellerAllocationNumber + '-' + lastTravellerAllocationNumber;
     }
+
+    isServiceMarked(service) {
+        return !service.code || !service.accommodation;
+    }
 }
 
 export {

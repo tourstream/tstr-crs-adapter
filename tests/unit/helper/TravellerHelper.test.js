@@ -1,10 +1,10 @@
-import RoundTripHelper from '../../../src/helper/RoundTripHelper';
+import TravellerHelper from '../../../src/helper/TravellerHelper';
 
-describe('RoundTripHelper', () => {
+describe('TravellerHelper', () => {
     let helper;
 
     beforeEach(() => {
-        helper = new RoundTripHelper({gender2SalutationMap: {
+        helper = new TravellerHelper({gender2SalutationMap: {
             female: 'miss',
             infant: 'baby',
         }});

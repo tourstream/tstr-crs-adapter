@@ -2,7 +2,13 @@ import es6shim from 'es6-shim';
 import xml2js from 'xml2js';
 import moment from 'moment';
 import axios from 'axios';
-import { SERVICE_TYPES } from '../UbpCrsAdapter';
+import { SERVICE_TYPES, GENDER_TYPES } from '../UbpCrsAdapter';
+import TravellerHelper from '../helper/TravellerHelper';
+import XmlHelper from '../helper/XmlHelper';
+import fastXmlParser from 'fast-xml-parser';
+import CarHelper from '../helper/CarHelper';
+import HotelHelper from '../helper/HotelHelper';
+import CamperHelper from '../helper/CamperHelper';
 import RoundTripHelper from '../helper/RoundTripHelper';
 
 const CONFIG = {
@@ -17,22 +23,31 @@ const CONFIG = {
             camper: 'WM',
             camperExtra: 'TA',
         },
-        connectionUrl: 'https://localhost:12771/httpImport',
+        connectionUrl: 'https://localhost:12771/',
         defaultValues: {
             action: 'BA',
             numberOfTravellers: '1',
         },
         gender2SalutationMap: {
-            male: 'H',
-            female: 'F',
-            child: 'K',
-            infant: 'K',
+            [GENDER_TYPES.male]: 'H',
+            [GENDER_TYPES.female]: 'F',
+            [GENDER_TYPES.child]: 'K',
+            [GENDER_TYPES.infant]: 'K',
         },
     },
     services: {
         car: {
             serviceCodeRegEx: /([A-Z]*[0-9]*)?([A-Z]*[0-9]*)?(\/)?([A-Z]*[0-9]*)?(-)?([A-Z]*[0-9]*)?/,
         },
+    },
+    parserOptions: {
+        attrPrefix: '__attributes',
+        textNodeName: '__textNode',
+        ignoreNonTextNodeAttr: false,
+        ignoreTextNodeAttr: false,
+        ignoreNameSpace: false,
+        ignoreRootElement: false,
+        textNodeConversion: false,
     },
     builderOptions: {
         attrkey: '__attributes',
@@ -58,11 +73,29 @@ class MerlinAdapter {
     constructor(logger, options = {}) {
         this.options = options;
         this.logger = logger;
+
+        const helperOptions = Object.assign({}, options, {
+            crsDateFormat: CONFIG.crs.dateFormat,
+            gender2SalutationMap: CONFIG.crs.gender2SalutationMap,
+        });
+
         this.helper = {
-            roundTrip: new RoundTripHelper(Object.assign({}, options, {
-                crsDateFormat: CONFIG.crs.dateFormat,
-                gender2SalutationMap: CONFIG.crs.gender2SalutationMap,
-            })),
+            traveller: new TravellerHelper(helperOptions),
+            car: new CarHelper(helperOptions),
+            camper: new CamperHelper(helperOptions),
+            hotel: new HotelHelper(helperOptions),
+            roundTrip: new RoundTripHelper(helperOptions),
+            xml: new XmlHelper({ attrPrefix: CONFIG.parserOptions.attrPrefix }),
+        };
+
+        this.xmlParser = {
+            parse: (xmlString) => {
+                const xmlObject = fastXmlParser.parse(xmlString, CONFIG.parserOptions);
+
+                this.helper.xml.groupXmlAttributes(xmlObject);
+
+                return xmlObject;
+            }
         };
 
         this.xmlBuilder = {
@@ -73,20 +106,33 @@ class MerlinAdapter {
     connect() {
         this.connection = this.createConnection();
 
-        return this.connection.post().then(() => {
+        return this.getCrsXml().then(() => {
             this.logger.log('Merlin connection available');
         }, (error) => {
+            this.logger.error('Instantiate connection error');
             this.logger.error(error.message);
             this.logger.info('response is: ' + error.response);
-            this.logger.error('Instantiate connection error - but nevertheless transfer could work');
             throw error;
         });
     }
 
     getData() {
-        this.logger.warn('Merlin has no mechanism for getting the data');
+        return this.getCrsXml().then((response) => {
+            this.logger.info('RAW XML:');
+            this.logger.info(response.data);
 
-        return Promise.resolve();
+            let xmlObject = this.xmlParser.parse(response.data);
+
+            this.logger.info('PARSED XML:');
+            this.logger.info(xmlObject);
+
+            console.log(xmlObject);
+
+            return this.mapCrsObjectToAdapterObject(xmlObject);
+        }).then(null, (error) => {
+            this.logger.error(error);
+            throw new Error('[.getData] ' + error.message);
+        });
     }
 
     setData(dataObject = {}) {
@@ -127,7 +173,8 @@ class MerlinAdapter {
         axios.defaults.headers.post['Content-Type'] = 'application/xml';
 
         return {
-            post: (data = '') => axios.post(CONFIG.crs.connectionUrl, data),
+            get: () => axios.get(CONFIG.crs.connectionUrl + 'gate2mx'),
+            post: (data = '') => axios.post(CONFIG.crs.connectionUrl + 'httpImport', data),
         };
     }
 
@@ -142,6 +189,240 @@ class MerlinAdapter {
 
         throw new Error('No connection available - please connect to Merlin first.');
     }
+
+    /**
+     * @private
+     * @returns {string}
+     */
+    getCrsXml() {
+        try {
+            return this.getConnection().get();
+        } catch (error) {
+            this.logger.error(error);
+            throw new Error('connection::get: ' + error.message);
+        }
+    }
+
+    /**
+     * @private
+     * @param crsObject object
+     */
+    mapCrsObjectToAdapterObject(crsObject) {
+        if (!crsObject || !crsObject.GATE2MX || !crsObject.GATE2MX.SendRequest || !crsObject.GATE2MX.SendRequest.Import) return;
+
+        this.normalizeCrsObject(crsObject);
+
+        let importData = crsObject.GATE2MX.SendRequest.Import;
+        let adapterObject = {
+            agencyNumber: importData.AgencyNoTouroperator,
+            operator: importData.TourOperator,
+            numberOfTravellers: importData.NoOfPersons || void 0,
+            travelType: importData.TravelType,
+            remark: importData.Remarks,
+            services: [],
+        };
+
+        (importData.ServiceBlock.ServiceRow).forEach((crsService) => {
+            if (!crsService.serviceType) return;
+
+            let adapterService;
+
+            switch(crsService.serviceType) {
+                case CONFIG.crs.serviceTypes.car: {
+                    adapterService = this.mapCarServiceFromCrsObjectToAdapterObject(crsService);
+                    break;
+                }
+                case CONFIG.crs.serviceTypes.hotel: {
+                    adapterService = this.mapHotelServiceFromCrsObjectToAdapterObject(crsService, importData);
+                    break;
+                }
+                case CONFIG.crs.serviceTypes.roundTrip: {
+                    adapterService = this.mapRoundTripServiceFromCrsObjectToAdapterObject(crsService, importData);
+                    break;
+                }
+                case CONFIG.crs.serviceTypes.camper: {
+                    adapterService = this.mapCamperServiceFromCrsObjectToAdapterObject(crsService);
+                    break;
+                }
+            }
+
+            if (adapterService) {
+                adapterService.marked = this.isMarked(crsService, adapterService);
+
+                adapterObject.services.push(adapterService);
+            }
+        });
+
+        return JSON.parse(JSON.stringify(adapterObject));
+    }
+
+    normalizeCrsObject(crsObject) {
+        let importData = crsObject.GATE2MX.SendRequest.Import;
+
+        importData.ServiceBlock = importData.ServiceBlock || {};
+
+        if (!Array.isArray(importData.ServiceBlock.ServiceRow)) {
+            importData.ServiceBlock.ServiceRow = [importData.ServiceBlock.ServiceRow].filter(Boolean);
+        }
+
+        importData.TravellerBlock = importData.TravellerBlock || {};
+        importData.TravellerBlock.PersonBlock = importData.TravellerBlock.PersonBlock || {};
+
+        if (!Array.isArray(importData.TravellerBlock.PersonBlock.PersonRow)) {
+            importData.TravellerBlock.PersonBlock.PersonRow = [importData.TravellerBlock.PersonBlock.PersonRow].filter(Boolean);
+        }
+    }
+
+    /**
+     * @private
+     * @param crsService object
+     * @returns {object}
+     */
+    mapCarServiceFromCrsObjectToAdapterObject(crsService) {
+        let pickUpDate = moment(crsService.FromDate, CONFIG.crs.dateFormat);
+        let dropOffDate = moment(crsService.EndDate, CONFIG.crs.dateFormat);
+        let pickUpTime = moment(crsService.Accommodation, CONFIG.crs.timeFormat);
+        let service = {
+            pickUpDate: pickUpDate.isValid() ? pickUpDate.format(this.options.useDateFormat) : crsService.FromDate,
+            dropOffDate: dropOffDate.isValid() ? dropOffDate.format(this.options.useDateFormat) : crsService.EndDate,
+            pickUpTime: pickUpTime.isValid() ? pickUpTime.format(this.options.useTimeFormat) : crsService.Accommodation,
+            duration: pickUpDate.isValid() && dropOffDate.isValid()
+                ? Math.ceil(dropOffDate.diff(pickUpDate, 'days', true))
+                : void 0,
+            type: SERVICE_TYPES.car,
+        };
+
+        this.helper.car.assignServiceCodeToAdapterService(crsService.Service, service);
+
+        return service;
+    }
+
+    /**
+     * @private
+     * @param crsService object
+     * @param crsObject object
+     * @returns {{roomCode: *, mealCode: *, roomQuantity: (*|string|string), roomOccupancy: (*|string|string|string), children, destination: *, dateFrom: string, dateTo: string, type: string}}
+     */
+    mapHotelServiceFromCrsObjectToAdapterObject(crsService, crsObject) {
+        let serviceCodes = (crsService.Accommodation || '').split(' ');
+        let dateFrom = moment(crsService.FromDate, CONFIG.crs.dateFormat);
+        let dateTo = moment(crsService.EndDate, CONFIG.crs.dateFormat);
+
+        return {
+            roomCode: serviceCodes[0] || void 0,
+            mealCode: serviceCodes[1] || void 0,
+            roomQuantity: crsService.NoOfServices,
+            roomOccupancy: crsService.Occupancy,
+            children: this.helper.traveller.collectTravellers(
+                crsService.TravellerAllocation,
+                (lineNumber) => this.getTravellerByLineNumber(crsObject.TravellerBlock.PersonBlock.PersonRow, lineNumber)
+            ).filter((traveller) => [GENDER_TYPES.child, GENDER_TYPES.infant].indexOf(traveller.gender) > -1),
+            destination: crsService.Service,
+            dateFrom: dateFrom.isValid() ? dateFrom.format(this.options.useDateFormat) : crsService.FromDate,
+            dateTo: dateTo.isValid() ? dateTo.format(this.options.useDateFormat) : crsService.EndDate,
+            type: SERVICE_TYPES.hotel,
+        };
+    }
+
+    /**
+     * @private
+     * @param crsService object
+     * @param crsObject object
+     * @returns {object}
+     */
+    mapRoundTripServiceFromCrsObjectToAdapterObject(crsService, crsObject) {
+        const hasBookingId = (crsService.Service || '').indexOf('NEZ') === 0;
+
+        let startDate = moment(crsService.FromDate, CONFIG.crs.dateFormat);
+        let endDate = moment(crsService.EndDate, CONFIG.crs.dateFormat);
+
+        return {
+            type: SERVICE_TYPES.roundTrip,
+            bookingId: hasBookingId ? crsService.Service : void 0,
+            destination: hasBookingId ? crsService.Accommodation : crsService.Service,
+            startDate: startDate.isValid() ? startDate.format(this.options.useDateFormat) : crsService.FromDate,
+            endDate: endDate.isValid() ? endDate.format(this.options.useDateFormat) : crsService.EndDate,
+            travellers: this.helper.traveller.collectTravellers(
+                crsService.travellerAssociation,
+                (lineNumber) => this.getTravellerByLineNumber(crsObject.TravellerBlock.PersonBlock.PersonRow, lineNumber)
+            )
+        };
+    }
+
+    /**
+     * @private
+     * @param crsService object
+     * @returns {object}
+     */
+    mapCamperServiceFromCrsObjectToAdapterObject(crsService) {
+        let pickUpDate = moment(crsService.FromDate, CONFIG.crs.dateFormat);
+        let dropOffDate = moment(crsService.EndDate, CONFIG.crs.dateFormat);
+        let pickUpTime = moment(crsService.Accommodation, CONFIG.crs.timeFormat);
+        let service = {
+            pickUpDate: pickUpDate.isValid() ? pickUpDate.format(this.options.useDateFormat) : crsService.FromDate,
+            dropOffDate: dropOffDate.isValid() ? dropOffDate.format(this.options.useDateFormat) : crsService.EndDate,
+            pickUpTime: pickUpTime.isValid() ? pickUpTime.format(this.options.useTimeFormat) : crsService.Accommodation,
+            duration: pickUpDate.isValid() && dropOffDate.isValid()
+                ? Math.ceil(dropOffDate.diff(pickUpDate, 'days', true))
+                : void 0,
+            milesIncludedPerDay: crsService.NoOfServices,
+            milesPackagesIncluded: crsService.Occupancy,
+            type: SERVICE_TYPES.camper,
+        };
+
+        this.helper.car.assignServiceCodeToAdapterService(crsService.serviceCode, service);
+
+        return service;
+    }
+
+    /**
+     * @private
+     * @param travellers
+     * @param lineNumber
+     * @returns {*}
+     */
+    getTravellerByLineNumber(travellers = [], lineNumber) {
+        let traveller = travellers.find(
+            (traveller) => traveller[CONFIG.parserOptions.attrPrefix].positionNo === lineNumber
+        );
+
+        if (!traveller) {
+            return void 0;
+        }
+
+        return {
+            gender: (Object.entries(CONFIG.crs.gender2SalutationMap).find(
+                (row) => row[1] === traveller.Salutation
+            ) || [])[0],
+            name: traveller.Name,
+            age: traveller.Age,
+        };
+    }
+
+    /**
+     * @private
+     * @param crsService object
+     * @param adapterService object
+     * @returns {boolean}
+     */
+    isMarked(crsService, adapterService) {
+        if (crsService.MarkField) {
+            return true;
+        }
+
+        let requirements = {
+            code: crsService.Service,
+            accommodation: crsService.Accommodation,
+            bookingId: adapterService.bookingId,
+        };
+
+        switch(adapterService.type) {
+            case SERVICE_TYPES.car:
+            case SERVICE_TYPES.camper: return this.helper.car.isServiceMarked(requirements);
+            case SERVICE_TYPES.hotel: return this.helper.hotel.isServiceMarked(requirements);
+            case SERVICE_TYPES.roundTrip: return this.helper.roundTrip.isServiceMarked(requirements);
+        }
+    };
 
     createBaseXmlObject() {
         return {
@@ -484,7 +765,7 @@ class MerlinAdapter {
         let lastLineNumber = '';
 
         service.travellers.forEach((serviceTraveller) => {
-            const travellerData = this.helper.roundTrip.normalizeTraveller(serviceTraveller);
+            const travellerData = this.helper.traveller.normalizeTraveller(serviceTraveller);
 
             let travellerIndex = this.getNextEmptyTravellerIndex(xml);
             let traveller = xml.TravellerBlock.PersonBlock.PersonRow[travellerIndex];
