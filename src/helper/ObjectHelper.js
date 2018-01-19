@@ -1,9 +1,9 @@
-class XmlHelper {
+class ObjectHelper {
     constructor(config) {
         this.config = config;
     }
 
-    groupXmlAttributes (object) {
+    groupAttributes (object) {
         if (typeof object !== 'object') {
             return;
         }
@@ -17,12 +17,12 @@ class XmlHelper {
 
                 delete object[name];
             } else {
-                this.groupXmlAttributes(object[name]);
+                this.groupAttributes(object[name]);
             }
         });
     };
 }
 
 export {
-    XmlHelper as default,
+    ObjectHelper as default,
 }

@@ -4,73 +4,75 @@ import moment from 'moment';
 import axios from 'axios';
 import { SERVICE_TYPES, GENDER_TYPES } from '../UbpCrsAdapter';
 import TravellerHelper from '../helper/TravellerHelper';
-import XmlHelper from '../helper/XmlHelper';
+import ObjectHelper from '../helper/ObjectHelper';
 import fastXmlParser from 'fast-xml-parser';
 import CarHelper from '../helper/CarHelper';
 import HotelHelper from '../helper/HotelHelper';
 import CamperHelper from '../helper/CamperHelper';
 import RoundTripHelper from '../helper/RoundTripHelper';
 
-const CONFIG = {
-    crs: {
-        dateFormat: 'DDMMYY',
-        timeFormat: 'HHmm',
-        serviceTypes: {
-            car: 'MW',
-            carExtras: 'E',
-            hotel: 'H',
-            roundTrip: 'R',
-            camper: 'WM',
-            camperExtra: 'TA',
-        },
-        connectionUrl: 'https://localhost:12771/',
-        defaultValues: {
-            action: 'BA',
-            numberOfTravellers: '1',
-        },
-        gender2SalutationMap: {
-            [GENDER_TYPES.male]: 'H',
-            [GENDER_TYPES.female]: 'F',
-            [GENDER_TYPES.child]: 'K',
-            [GENDER_TYPES.infant]: 'K',
-        },
-    },
-    services: {
-        car: {
-            serviceCodeRegEx: /([A-Z]*[0-9]*)?([A-Z]*[0-9]*)?(\/)?([A-Z]*[0-9]*)?(-)?([A-Z]*[0-9]*)?/,
-        },
-    },
-    parserOptions: {
-        attrPrefix: '__attributes',
-        textNodeName: '__textNode',
-        ignoreNonTextNodeAttr: false,
-        ignoreTextNodeAttr: false,
-        ignoreNameSpace: false,
-        ignoreRootElement: false,
-        textNodeConversion: false,
-    },
-    builderOptions: {
-        attrkey: '__attributes',
-        charkey: '__textNode',
-        renderOpts: {
-            pretty: false,
-            indent: false,
-            newline: false,
-        },
-        xmldec: {
-            version: '1.0',
-            encoding: 'UTF-8',
-            standalone: void 0,
-        },
-        doctype: null,
-        headless: false,
-        allowSurrogateChars: false,
-        cdata: false,
-    },
-};
+let CONFIG;
 
 class MerlinAdapter {
     constructor(logger, options = {}) {
+        CONFIG = CONFIG = {
+            crs: {
+                dateFormat: 'DDMMYY',
+                timeFormat: 'HHmm',
+                serviceTypes: {
+                    car: 'MW',
+                    carExtras: 'E',
+                    hotel: 'H',
+                    roundTrip: 'R',
+                    camper: 'WM',
+                    camperExtra: 'TA',
+                },
+                connectionUrl: 'https://localhost:12771/',
+                defaultValues: {
+                    action: 'BA',
+                    numberOfTravellers: '1',
+                },
+                gender2SalutationMap: {
+                    [GENDER_TYPES.male]: 'H',
+                    [GENDER_TYPES.female]: 'F',
+                    [GENDER_TYPES.child]: 'K',
+                    [GENDER_TYPES.infant]: 'K',
+                },
+            },
+            services: {
+                car: {
+                    serviceCodeRegEx: /([A-Z]*[0-9]*)?([A-Z]*[0-9]*)?(\/)?([A-Z]*[0-9]*)?(-)?([A-Z]*[0-9]*)?/,
+                },
+            },
+            parserOptions: {
+                attrPrefix: '__attributes',
+                textNodeName: '__textNode',
+                ignoreNonTextNodeAttr: false,
+                ignoreTextNodeAttr: false,
+                ignoreNameSpace: false,
+                ignoreRootElement: false,
+                textNodeConversion: false,
+            },
+            builderOptions: {
+                attrkey: '__attributes',
+                charkey: '__textNode',
+                renderOpts: {
+                    pretty: false,
+                    indent: false,
+                    newline: false,
+                },
+                xmldec: {
+                    version: '1.0',
+                    encoding: 'UTF-8',
+                    standalone: void 0,
+                },
+                doctype: null,
+                headless: false,
+                allowSurrogateChars: false,
+                cdata: false,
+            },
+        };
+
         this.options = options;
         this.logger = logger;
 
@@ -85,16 +87,17 @@ class MerlinAdapter {
             camper: new CamperHelper(helperOptions),
             hotel: new HotelHelper(helperOptions),
             roundTrip: new RoundTripHelper(helperOptions),
-            xml: new XmlHelper({ attrPrefix: CONFIG.parserOptions.attrPrefix }),
+            object: new ObjectHelper({ attrPrefix: CONFIG.parserOptions.attrPrefix }),
         };
 
         this.xmlParser = {
             parse: (xmlString) => {
-                const xmlObject = fastXmlParser.parse(xmlString, CONFIG.parserOptions);
+                const crsObject = fastXmlParser.parse(xmlString, CONFIG.parserOptions);
 
-                this.helper.xml.groupXmlAttributes(xmlObject);
+                this.helper.object.groupAttributes(crsObject);
+                this.normalizeCrsObject(crsObject);
 
-                return xmlObject;
+                return crsObject;
             }
         };
 
@@ -111,7 +114,8 @@ class MerlinAdapter {
         }, (error) => {
             this.logger.error('Instantiate connection error');
             this.logger.error(error.message);
-            this.logger.info('response is: ' + error.response);
+            this.logger.info('response is');
+            this.logger.info(error.response);
             throw error;
         });
     }
@@ -121,42 +125,45 @@ class MerlinAdapter {
             this.logger.info('RAW XML:');
             this.logger.info(response.data);
 
-            let xmlObject = this.xmlParser.parse(response.data);
+            let crsObject = this.xmlParser.parse(response.data);
 
             this.logger.info('PARSED XML:');
-            this.logger.info(xmlObject);
+            this.logger.info(crsObject);
 
-            console.log(xmlObject);
-
-            return this.mapCrsObjectToAdapterObject(xmlObject);
+            return this.mapCrsObjectToAdapterObject(crsObject);
         }).then(null, (error) => {
             this.logger.error(error);
             throw new Error('[.getData] ' + error.message);
         });
     }
 
-    setData(dataObject = {}) {
-        let xmlObject = this.createBaseXmlObject();
+    setData(adapterObject = {}) {
+        return this.getCrsXml().then((response) => {
+            let crsObject = this.xmlParser.parse(response.data);
 
-        this.assignAdapterObjectToXmlObject(xmlObject, dataObject);
+            this.assignAdapterObjectToCrsObject(crsObject, adapterObject);
 
-        this.logger.info('XML OBJECT:');
-        this.logger.info(xmlObject);
+            this.logger.info('XML OBJECT:');
+            this.logger.info(crsObject);
 
-        let xml = this.xmlBuilder.build(xmlObject);
+            let xml = this.xmlBuilder.build(crsObject);
 
-        this.logger.info('XML:');
-        this.logger.info(xml);
+            this.logger.info('XML:');
+            this.logger.info(xml);
 
-        try {
-            return this.getConnection().post(xml).catch((error) => {
-                this.logger.info(error);
-                this.logger.error('error during transfer - please check the result');
-                throw error;
-            });
-        } catch (error) {
-            return Promise.reject(error);
-        }
+            try {
+                return this.getConnection().post(xml).catch((error) => {
+                    this.logger.info(error);
+                    this.logger.error('error during transfer - please check the result');
+                    throw error;
+                });
+            } catch (error) {
+                return Promise.reject(error);
+            }
+        }).then(null, (error) => {
+            this.logger.error(error);
+            throw new Error('[.setData] ' + error.message);
+        });
     }
 
     exit() {
@@ -203,41 +210,56 @@ class MerlinAdapter {
         }
     }
 
+    normalizeCrsObject(crsObject) {
+        let crsData = crsObject.GATE2MX.SendRequest.Import;
+
+        crsData.ServiceBlock = crsData.ServiceBlock || {};
+
+        if (!Array.isArray(crsData.ServiceBlock.ServiceRow)) {
+            crsData.ServiceBlock.ServiceRow = [crsData.ServiceBlock.ServiceRow].filter(Boolean);
+        }
+
+        crsData.TravellerBlock = crsData.TravellerBlock || {};
+        crsData.TravellerBlock.PersonBlock = crsData.TravellerBlock.PersonBlock || {};
+
+        if (!Array.isArray(crsData.TravellerBlock.PersonBlock.PersonRow)) {
+            crsData.TravellerBlock.PersonBlock.PersonRow = [crsData.TravellerBlock.PersonBlock.PersonRow].filter(Boolean);
+        }
+    }
+
     /**
      * @private
      * @param crsObject object
      */
     mapCrsObjectToAdapterObject(crsObject) {
-        if (!crsObject || !crsObject.GATE2MX || !crsObject.GATE2MX.SendRequest || !crsObject.GATE2MX.SendRequest.Import) return;
+        if (!crsObject) return;
 
-        this.normalizeCrsObject(crsObject);
-
-        let importData = crsObject.GATE2MX.SendRequest.Import;
+        let crsData = crsObject.GATE2MX.SendRequest.Import;
         let adapterObject = {
-            agencyNumber: importData.AgencyNoTouroperator,
-            operator: importData.TourOperator,
-            numberOfTravellers: importData.NoOfPersons || void 0,
-            travelType: importData.TravelType,
-            remark: importData.Remarks,
+            agencyNumber: crsData.AgencyNoTouroperator,
+            operator: crsData.TourOperator,
+            numberOfTravellers: crsData.NoOfPersons || void 0,
+            travelType: crsData.TravelType,
+            remark: crsData.Remarks,
             services: [],
         };
 
-        (importData.ServiceBlock.ServiceRow).forEach((crsService) => {
-            if (!crsService.serviceType) return;
+        (crsData.ServiceBlock.ServiceRow).forEach((crsService) => {
+            if (!crsService.KindOfService) return;
 
             let adapterService;
 
-            switch(crsService.serviceType) {
+            switch(crsService.KindOfService) {
                 case CONFIG.crs.serviceTypes.car: {
                     adapterService = this.mapCarServiceFromCrsObjectToAdapterObject(crsService);
                     break;
                 }
                 case CONFIG.crs.serviceTypes.hotel: {
-                    adapterService = this.mapHotelServiceFromCrsObjectToAdapterObject(crsService, importData);
+                    adapterService = this.mapHotelServiceFromCrsObjectToAdapterObject(crsService, crsData);
                     break;
                 }
                 case CONFIG.crs.serviceTypes.roundTrip: {
-                    adapterService = this.mapRoundTripServiceFromCrsObjectToAdapterObject(crsService, importData);
+                    adapterService = this.mapRoundTripServiceFromCrsObjectToAdapterObject(crsService, crsData);
                     break;
                 }
                 case CONFIG.crs.serviceTypes.camper: {
@@ -254,23 +276,6 @@ class MerlinAdapter {
         });
 
         return JSON.parse(JSON.stringify(adapterObject));
-    }
-
-    normalizeCrsObject(crsObject) {
-        let importData = crsObject.GATE2MX.SendRequest.Import;
-
-        importData.ServiceBlock = importData.ServiceBlock || {};
-
-        if (!Array.isArray(importData.ServiceBlock.ServiceRow)) {
-            importData.ServiceBlock.ServiceRow = [importData.ServiceBlock.ServiceRow].filter(Boolean);
-        }
-
-        importData.TravellerBlock = importData.TravellerBlock || {};
-        importData.TravellerBlock.PersonBlock = importData.TravellerBlock.PersonBlock || {};
-
-        if (!Array.isArray(importData.TravellerBlock.PersonBlock.PersonRow)) {
-            importData.TravellerBlock.PersonBlock.PersonRow = [importData.TravellerBlock.PersonBlock.PersonRow].filter(Boolean);
-        }
     }
 
     /**
@@ -300,10 +305,10 @@ class MerlinAdapter {
     /**
      * @private
      * @param crsService object
-     * @param crsObject object
+     * @param crsData object
      * @returns {{roomCode: *, mealCode: *, roomQuantity: (*|string|string), roomOccupancy: (*|string|string|string), children, destination: *, dateFrom: string, dateTo: string, type: string}}
      */
-    mapHotelServiceFromCrsObjectToAdapterObject(crsService, crsObject) {
+    mapHotelServiceFromCrsObjectToAdapterObject(crsService, crsData) {
         let serviceCodes = (crsService.Accommodation || '').split(' ');
         let dateFrom = moment(crsService.FromDate, CONFIG.crs.dateFormat);
         let dateTo = moment(crsService.EndDate, CONFIG.crs.dateFormat);
@@ -315,7 +320,7 @@ class MerlinAdapter {
             roomOccupancy: crsService.Occupancy,
             children: this.helper.traveller.collectTravellers(
                 crsService.TravellerAllocation,
-                (lineNumber) => this.getTravellerByLineNumber(crsObject.TravellerBlock.PersonBlock.PersonRow, lineNumber)
+                (lineNumber) => this.getTravellerByLineNumber(crsData.TravellerBlock.PersonBlock.PersonRow, lineNumber)
             ).filter((traveller) => [GENDER_TYPES.child, GENDER_TYPES.infant].indexOf(traveller.gender) > -1),
             destination: crsService.Service,
             dateFrom: dateFrom.isValid() ? dateFrom.format(this.options.useDateFormat) : crsService.FromDate,
@@ -327,10 +332,10 @@ class MerlinAdapter {
     /**
      * @private
      * @param crsService object
-     * @param crsObject object
+     * @param crsData object
      * @returns {object}
      */
-    mapRoundTripServiceFromCrsObjectToAdapterObject(crsService, crsObject) {
+    mapRoundTripServiceFromCrsObjectToAdapterObject(crsService, crsData) {
         const hasBookingId = (crsService.Service || '').indexOf('NEZ') === 0;
 
         let startDate = moment(crsService.FromDate, CONFIG.crs.dateFormat);
@@ -344,7 +349,7 @@ class MerlinAdapter {
             endDate: endDate.isValid() ? endDate.format(this.options.useDateFormat) : crsService.EndDate,
             travellers: this.helper.traveller.collectTravellers(
                 crsService.travellerAssociation,
-                (lineNumber) => this.getTravellerByLineNumber(crsObject.TravellerBlock.PersonBlock.PersonRow, lineNumber)
+                (lineNumber) => this.getTravellerByLineNumber(crsData.TravellerBlock.PersonBlock.PersonRow, lineNumber)
             )
         };
     }
@@ -424,7 +429,7 @@ class MerlinAdapter {
         }
     };
 
-    createBaseXmlObject() {
+    createBaseCrsObject() {
         return {
             GATE2MX: {
                 SendRequest: {
@@ -445,106 +450,100 @@ class MerlinAdapter {
 
     /**
      * @private
-     * @param xmlObject object
-     * @param dataObject object
+     * @param crsObject object
+     * @param adapterObject object
      */
-    assignAdapterObjectToXmlObject(xmlObject, dataObject = {}) {
-        const createServiceIfNotExists = (service) => {
-            let xmlService = this.getMarkedServiceForServiceType(xmlImport.ServiceBlock.ServiceRow, service.type);
+    assignAdapterObjectToCrsObject(crsObject, adapterObject = {}) {
+        const createServiceIfNotExists = (adapterService) => {
+            let crsService = this.getMarkedServiceFromServices(crsData.ServiceBlock.ServiceRow, adapterService);
 
-            if (!xmlService) {
-                xmlService = this.createEmptyService(xmlImport.ServiceBlock.ServiceRow);
+            if (!crsService) {
+                crsService = this.createEmptyService(crsData.ServiceBlock.ServiceRow);
 
-                xmlImport.ServiceBlock.ServiceRow.push(xmlService);
+                crsData.ServiceBlock.ServiceRow.push(crsService);
             }
 
-            return xmlService;
+            return crsService;
         };
 
-        let xmlImport = xmlObject.GATE2MX.SendRequest.Import;
+        let crsData = crsObject.GATE2MX.SendRequest.Import;
 
-        this.assignBasicData(xmlImport, dataObject);
+        this.assignBasicData(crsData, adapterObject);
 
-        try {
-            if (dataObject.services.length) {
-                xmlImport.ServiceBlock = { ServiceRow: [] };
-            }
-        } catch (ignore) {}
+        (adapterObject.services || []).forEach((adapterService) => {
+            let crsService = createServiceIfNotExists(adapterService);
 
-        (dataObject.services || []).forEach((service) => {
-            let xmlService = createServiceIfNotExists(service);
-
-            switch (service.type) {
+            switch (adapterService.type) {
                 case SERVICE_TYPES.car: {
-                    this.assignCarServiceFromAdapterObjectToXmlObject(service, xmlService, xmlImport);
-                    this.assignHotelData(service, xmlImport);
+                    this.assignCarServiceFromAdapterObjectToCrsObject(adapterService, crsService, crsData);
+                    this.assignHotelData(adapterService, crsData);
                     break;
                 }
                 case SERVICE_TYPES.hotel: {
-                    this.assignHotelServiceFromAdapterObjectToXmlObject(service, xmlService, xmlImport);
-                    this.assignChildrenData(service, xmlService, xmlImport);
+                    this.assignHotelServiceFromAdapterObjectToCrsObject(adapterService, crsService, crsData);
+                    this.assignChildrenData(adapterService, crsService, crsData);
                     break;
                 }
                 case SERVICE_TYPES.camper: {
-                    this.assignCamperServiceFromAdapterObjectToCrsObject(service, xmlService, xmlImport);
-                    this.assignCamperExtras(service, xmlImport);
+                    this.assignCamperServiceFromAdapterObjectToCrsObject(adapterService, crsService, crsData);
+                    this.assignCamperExtras(adapterService, crsData);
 
                     break;
                 }
                 case SERVICE_TYPES.roundTrip: {
-                    this.assignRoundTripServiceFromAdapterObjectToXmlObject(service, xmlService, xmlImport);
-                    this.assignRoundTripTravellers(service, xmlService, xmlImport);
+                    this.assignRoundTripServiceFromAdapterObjectToCrsObject(adapterService, crsService, crsData);
+                    this.assignRoundTripTravellers(adapterService, crsService, crsData);
                     break;
                 }
                 default: {
-                    xmlImport.ServiceBlock.ServiceRow.splice(xmlImport.ServiceBlock.ServiceRow.indexOf(xmlService), 1);
+                    crsData.ServiceBlock.ServiceRow.splice(crsData.ServiceBlock.ServiceRow.indexOf(crsService), 1);
 
-                    this.logger.warn('type ' + service.type + ' is not supported by the Merlin adapter');
+                    this.logger.warn('type ' + adapterService.type + ' is not supported by the Merlin adapter');
                 }
             }
 
-            xmlService.MarkField = service.marked ? 'X' : void 0;
+            crsService.MarkField = adapterService.marked ? 'X' : void 0;
         });
 
         try {
-            if (xmlImport.ServiceBlock.ServiceRow.length === 0) {
-                delete xmlImport.ServiceBlock;
+            if (crsData.ServiceBlock.ServiceRow.length === 0) {
+                delete crsData.ServiceBlock;
             }
         } catch (ignore) {}
     };
 
     /**
      * @private
-     * @param xmlImport object
-     * @param dataObject object
+     * @param crsData object
+     * @param adapterObject object
      */
-    assignBasicData(xmlImport, dataObject) {
-        xmlImport.TransactionCode = CONFIG.crs.defaultValues.action;
-        xmlImport.TravelType = dataObject.travelType;
-        xmlImport.Remarks = dataObject.remark;
-        xmlImport.NoOfPersons = dataObject.numberOfTravellers || CONFIG.crs.defaultValues.numberOfTravellers;
+    assignBasicData(crsData, adapterObject) {
+        crsData.TransactionCode = CONFIG.crs.defaultValues.action;
+        crsData.TravelType = adapterObject.travelType;
+        crsData.Remarks = adapterObject.remark;
+        crsData.NoOfPersons = adapterObject.numberOfTravellers || CONFIG.crs.defaultValues.numberOfTravellers;
     }
 
     /**
      * @private
-     * @param xmlServices [object]
-     * @param serviceType string
+     * @param crsServices [object]
+     * @param adapterService object
      * @returns {object}
      */
-    getMarkedServiceForServiceType(xmlServices, serviceType) {
+    getMarkedServiceFromServices(crsServices, adapterService) {
         let markedService = void 0;
 
-        xmlServices.some((xmlService) => {
-            if (xmlService.KindOfService !== CONFIG.crs.serviceTypes[serviceType]) return;
+        crsServices.some((crsService) => {
+            if (crsService.KindOfService !== CONFIG.crs.serviceTypes[adapterService.type]) return;
 
-            if (xmlService.MarkField) {
-                markedService = xmlService;
+            if (crsService.MarkField) {
+                markedService = crsService;
 
                 return true;
             }
 
-            if (this.isServiceMarked(xmlService, serviceType)) {
-                markedService = markedService || xmlService;
+            if (this.isMarked(crsService, adapterService)) {
+                markedService = markedService || crsService;
             }
         });
 
@@ -553,116 +552,93 @@ class MerlinAdapter {
 
     /**
      * @private
-     * @param xmlService object
-     * @param serviceType string
-     * @returns {boolean}
+     * @param adapterService object
+     * @param crsService object
+     * @param crsData object
      */
-    isServiceMarked(xmlService, serviceType) {
-        switch(serviceType) {
-            case SERVICE_TYPES.car: {
-                let serviceCode = xmlService.Service;
-
-                // gaps in the regEx result array will result in lined up "." after the join
-                return !serviceCode || serviceCode.match(CONFIG.services.car.serviceCodeRegEx).join('.').indexOf('..') !== -1;
-            }
-            case SERVICE_TYPES.hotel: {
-                let serviceCode = xmlService.Service;
-                let accommodation = xmlService.Accommodation;
-
-                return !serviceCode || !accommodation;
-            }
-        }
-    };
-
-    /**
-     * @private
-     * @param service object
-     * @param xmlService object
-     * @param xml object
-     */
-    assignCarServiceFromAdapterObjectToXmlObject(service, xmlService, xml) {
+    assignCarServiceFromAdapterObjectToCrsObject(adapterService, crsService, crsData) {
         const reduceExtrasList = (extras) => {
             return (extras || []).join(';')
                 .replace(/childCareSeat0/g, 'BS')
                 .replace(/childCareSeat((\d){1,2})/g, 'CS$1YRS');
         };
 
-        let pickUpDate = moment(service.pickUpDate, this.options.useDateFormat);
-        let dropOffDate = (service.dropOffDate)
-            ? moment(service.dropOffDate, this.options.useDateFormat)
-            : moment(service.pickUpDate, this.options.useDateFormat).add(service.duration, 'days');
-        let pickUpTime = moment(service.pickUpTime, this.options.useTimeFormat);
+        let pickUpDate = moment(adapterService.pickUpDate, this.options.useDateFormat);
+        let dropOffDate = (adapterService.dropOffDate)
+            ? moment(adapterService.dropOffDate, this.options.useDateFormat)
+            : moment(adapterService.pickUpDate, this.options.useDateFormat).add(adapterService.duration, 'days');
+        let pickUpTime = moment(adapterService.pickUpTime, this.options.useTimeFormat);
 
-        xmlService.KindOfService = CONFIG.crs.serviceTypes.car;
+        crsService.KindOfService = CONFIG.crs.serviceTypes.car;
 
         // USA96A4/MIA1-TPA
-        xmlService.Service = [
-            service.rentalCode,
-            service.vehicleTypeCode,
+        crsService.Service = [
+            adapterService.rentalCode,
+            adapterService.vehicleTypeCode,
             '/',
-            service.pickUpLocation,
+            adapterService.pickUpLocation,
             '-',
-            service.dropOffLocation,
+            adapterService.dropOffLocation,
         ].join('');
 
-        xmlService.FromDate = pickUpDate.isValid() ? pickUpDate.format(CONFIG.crs.dateFormat) : service.pickUpDate;
-        xmlService.EndDate = dropOffDate.isValid() ? dropOffDate.format(CONFIG.crs.dateFormat) : service.dropOffDate;
-        xmlService.Accommodation = pickUpTime.isValid() ? pickUpTime.format(CONFIG.crs.timeFormat) : service.pickUpTime;
+        crsService.FromDate = pickUpDate.isValid() ? pickUpDate.format(CONFIG.crs.dateFormat) : adapterService.pickUpDate;
+        crsService.EndDate = dropOffDate.isValid() ? dropOffDate.format(CONFIG.crs.dateFormat) : adapterService.dropOffDate;
+        crsService.Accommodation = pickUpTime.isValid() ? pickUpTime.format(CONFIG.crs.timeFormat) : adapterService.pickUpTime;
 
-        xml.Remarks = [xml.Remarks, reduceExtrasList(service.extras)].filter(Boolean).join(',') || void 0;
+        crsData.Remarks = [crsData.Remarks, reduceExtrasList(adapterService.extras)].filter(Boolean).join(',') || void 0;
     };
 
     /**
      * @private
-     * @param service object
-     * @param xml object
+     * @param adapterService object
+     * @param crsData object
      */
-    assignHotelData(service, xml) {
-        const reduceHotelDataToRemarkString = (service) => {
+    assignHotelData(adapterService, crsData) {
+        const reduceHotelDataToRemarkString = (adapterService) => {
             let hotelData = [];
 
-            if (service.pickUpHotelName) {
-                hotelData.push([service.pickUpHotelAddress, service.pickUpHotelPhoneNumber].filter(Boolean).join(' '));
+            if (adapterService.pickUpHotelName) {
+                hotelData.push([adapterService.pickUpHotelAddress, adapterService.pickUpHotelPhoneNumber].filter(Boolean).join(' '));
             }
 
-            if (service.dropOffHotelName) {
-                if (service.pickUpHotelName) {
-                    hotelData.push(service.dropOffHotelName);
+            if (adapterService.dropOffHotelName) {
+                if (adapterService.pickUpHotelName) {
+                    hotelData.push(adapterService.dropOffHotelName);
                 }
 
-                hotelData.push([service.dropOffHotelAddress, service.dropOffHotelPhoneNumber].filter(Boolean).join(' '));
+                hotelData.push([adapterService.dropOffHotelAddress, adapterService.dropOffHotelPhoneNumber].filter(Boolean).join(' '));
             }
 
             return hotelData.filter(Boolean).join(';');
         };
 
-        let hotelName = service.pickUpHotelName || service.dropOffHotelName;
+        let hotelName = adapterService.pickUpHotelName || adapterService.dropOffHotelName;
 
         if (hotelName) {
-            let pickUpDate = moment(service.pickUpDate, this.options.useDateFormat);
-            let dropOffDate = (service.dropOffDate)
-                ? moment(service.dropOffDate, this.options.useDateFormat)
-                : moment(service.pickUpDate, this.options.useDateFormat).add(service.duration, 'days');
-            let emptyService = this.createEmptyService(xml.ServiceBlock.ServiceRow);
+            let pickUpDate = moment(adapterService.pickUpDate, this.options.useDateFormat);
+            let dropOffDate = (adapterService.dropOffDate)
+                ? moment(adapterService.dropOffDate, this.options.useDateFormat)
+                : moment(adapterService.pickUpDate, this.options.useDateFormat).add(adapterService.duration, 'days');
+            let emptyService = this.createEmptyService(crsData.ServiceBlock.ServiceRow);
 
-            xml.ServiceBlock.ServiceRow.push(emptyService);
+            crsData.ServiceBlock.ServiceRow.push(emptyService);
 
             emptyService.KindOfService = CONFIG.crs.serviceTypes.carExtras;
             emptyService.Service = hotelName;
-            emptyService.FromDate = pickUpDate.isValid() ? pickUpDate.format(CONFIG.crs.dateFormat) : service.pickUpDate;
-            emptyService.EndDate = dropOffDate.isValid() ? dropOffDate.format(CONFIG.crs.dateFormat) : service.dropOffDate;
+            emptyService.FromDate = pickUpDate.isValid() ? pickUpDate.format(CONFIG.crs.dateFormat) : adapterService.pickUpDate;
+            emptyService.EndDate = dropOffDate.isValid() ? dropOffDate.format(CONFIG.crs.dateFormat) : adapterService.dropOffDate;
         }
 
-        xml.Remarks = [xml.Remarks, reduceHotelDataToRemarkString(service)].filter(Boolean).join(',') || void 0;
+        crsData.Remarks = [crsData.Remarks, reduceHotelDataToRemarkString(adapterService)].filter(Boolean).join(',') || void 0;
     }
 
     /**
      * @private
-     * @param service object
-     * @param xmlService object
-     * @param xml object
+     * @param adapterService object
+     * @param crsService object
+     * @param crsData object
      */
-    assignHotelServiceFromAdapterObjectToXmlObject(service, xmlService, xml) {
+    assignHotelServiceFromAdapterObjectToCrsObject(adapterService, crsService, crsData) {
         const emptyRelatedTravellers = () => {
             let startLineNumber = parseInt(travellerAssociation.substr(0, 1) || 0, 10);
             let endLineNumber = parseInt(travellerAssociation.substr(-1) || 0, 10);
@@ -671,7 +647,7 @@ class MerlinAdapter {
 
             do {
                 try {
-                    let traveller = xml.TravellerBlock.PersonBlock.PersonRow[startLineNumber - 1];
+                    let traveller = crsData.TravellerBlock.PersonBlock.PersonRow[startLineNumber - 1];
 
                     traveller.Salutation = void 0;
                     traveller.Name = void 0;
@@ -680,51 +656,51 @@ class MerlinAdapter {
             } while (++startLineNumber <= endLineNumber);
         };
 
-        let dateFrom = moment(service.dateFrom, this.options.useDateFormat);
-        let dateTo = moment(service.dateTo, this.options.useDateFormat);
-        let travellerAssociation = xmlService.TravellerAllocation || '';
+        let dateFrom = moment(adapterService.dateFrom, this.options.useDateFormat);
+        let dateTo = moment(adapterService.dateTo, this.options.useDateFormat);
+        let travellerAssociation = crsService.TravellerAllocation || '';
 
-        service.roomOccupancy = Math.max(service.roomOccupancy || 1, (service.children || []).length);
+        adapterService.roomOccupancy = Math.max(adapterService.roomOccupancy || 1, (adapterService.children || []).length);
 
-        xmlService.KindOfService = CONFIG.crs.serviceTypes.hotel;
-        xmlService.Service = service.destination;
-        xmlService.Accommodation = [service.roomCode, service.mealCode].filter(Boolean).join(' ');
-        xmlService.Occupancy = service.roomOccupancy;
-        xmlService.NoOfServices = service.roomQuantity;
-        xmlService.FromDate = dateFrom.isValid() ? dateFrom.format(CONFIG.crs.dateFormat) : service.dateFrom;
-        xmlService.EndDate = dateTo.isValid() ? dateTo.format(CONFIG.crs.dateFormat) : service.dateTo;
-        xmlService.TravellerAllocation = '1' + ((service.roomOccupancy > 1) ? '-' + service.roomOccupancy : '');
+        crsService.KindOfService = CONFIG.crs.serviceTypes.hotel;
+        crsService.Service = adapterService.destination;
+        crsService.Accommodation = [adapterService.roomCode, adapterService.mealCode].filter(Boolean).join(' ');
+        crsService.Occupancy = adapterService.roomOccupancy;
+        crsService.NoOfServices = adapterService.roomQuantity;
+        crsService.FromDate = dateFrom.isValid() ? dateFrom.format(CONFIG.crs.dateFormat) : adapterService.dateFrom;
+        crsService.EndDate = dateTo.isValid() ? dateTo.format(CONFIG.crs.dateFormat) : adapterService.dateTo;
+        crsService.TravellerAllocation = '1' + ((adapterService.roomOccupancy > 1) ? '-' + adapterService.roomOccupancy : '');
 
         emptyRelatedTravellers();
 
-        xml.NoOfPersons = Math.max(xml.NoOfPersons, service.roomOccupancy);
+        crsData.NoOfPersons = Math.max(crsData.NoOfPersons, adapterService.roomOccupancy);
     }
 
     /**
      * @private
-     * @param service object
-     * @param xmlService object
-     * @param xml object
+     * @param adapterService object
+     * @param crsService object
+     * @param crsData object
      */
-    assignChildrenData(service, xmlService, xml) {
-        if (!service.children || !service.children.length) {
+    assignChildrenData(adapterService, crsService, crsData) {
+        if (!adapterService.children || !adapterService.children.length) {
             return;
         }
 
         const addTravellerAllocation = () => {
-            let lastTravellerLineNumber = Math.max(service.roomOccupancy, travellerLineNumber);
-            let firstTravellerLineNumber = 1 + lastTravellerLineNumber - service.roomOccupancy;
+            let lastTravellerLineNumber = Math.max(adapterService.roomOccupancy, travellerLineNumber);
+            let firstTravellerLineNumber = 1 + lastTravellerLineNumber - adapterService.roomOccupancy;
 
-            xmlService.TravellerAllocation = firstTravellerLineNumber === lastTravellerLineNumber
+            crsService.TravellerAllocation = firstTravellerLineNumber === lastTravellerLineNumber
                 ? firstTravellerLineNumber
                 : firstTravellerLineNumber + '-' + lastTravellerLineNumber;
         };
 
         let travellerLineNumber = void 0;
 
-        service.children.forEach((child) => {
-            let travellerIndex = this.getNextEmptyTravellerIndex(xml);
-            let traveller = xml.TravellerBlock.PersonBlock.PersonRow[travellerIndex];
+        adapterService.children.forEach((child) => {
+            let travellerIndex = this.getNextEmptyTravellerIndex(crsData);
+            let traveller = crsData.TravellerBlock.PersonBlock.PersonRow[travellerIndex];
 
             travellerLineNumber = travellerIndex + 1;
 
@@ -738,37 +714,37 @@ class MerlinAdapter {
 
     /**
      * @private
-     * @param service object
-     * @param xmlService object
+     * @param adapterService object
+     * @param crsService object
      */
-    assignRoundTripServiceFromAdapterObjectToXmlObject(service, xmlService) {
-        let startDate = moment(service.startDate, this.options.useDateFormat);
-        let endDate = moment(service.endDate, this.options.useDateFormat);
+    assignRoundTripServiceFromAdapterObjectToCrsObject(adapterService, crsService) {
+        let startDate = moment(adapterService.startDate, this.options.useDateFormat);
+        let endDate = moment(adapterService.endDate, this.options.useDateFormat);
 
-        xmlService.KindOfService = CONFIG.crs.serviceTypes.roundTrip;
-        xmlService.Service = 'NEZ' + service.bookingId;
-        xmlService.Accommodation = service.destination;
-        xmlService.FromDate = startDate.isValid() ? startDate.format(CONFIG.crs.dateFormat) : service.startDate;
-        xmlService.EndDate = endDate.isValid() ? endDate.format(CONFIG.crs.dateFormat) : service.endDate;
+        crsService.KindOfService = CONFIG.crs.serviceTypes.roundTrip;
+        crsService.Service = 'NEZ' + adapterService.bookingId;
+        crsService.Accommodation = adapterService.destination;
+        crsService.FromDate = startDate.isValid() ? startDate.format(CONFIG.crs.dateFormat) : adapterService.startDate;
+        crsService.EndDate = endDate.isValid() ? endDate.format(CONFIG.crs.dateFormat) : adapterService.endDate;
     }
 
     /**
      * @private
-     * @param service object
-     * @param xmlService object
-     * @param xml object
+     * @param adapterService object
+     * @param crsService object
+     * @param crsData object
      */
-    assignRoundTripTravellers(service, xmlService, xml) {
-        if (!service.travellers) return;
+    assignRoundTripTravellers(adapterService, crsService, crsData) {
+        if (!adapterService.travellers) return;
 
         let firstLineNumber = '';
         let lastLineNumber = '';
 
-        service.travellers.forEach((serviceTraveller) => {
+        adapterService.travellers.forEach((serviceTraveller) => {
             const travellerData = this.helper.traveller.normalizeTraveller(serviceTraveller);
 
-            let travellerIndex = this.getNextEmptyTravellerIndex(xml);
-            let traveller = xml.TravellerBlock.PersonBlock.PersonRow[travellerIndex];
+            let travellerIndex = this.getNextEmptyTravellerIndex(crsData);
+            let traveller = crsData.TravellerBlock.PersonBlock.PersonRow[travellerIndex];
 
             firstLineNumber = firstLineNumber || (travellerIndex + 1);
             lastLineNumber = (travellerIndex + 1);
@@ -778,53 +754,53 @@ class MerlinAdapter {
             traveller.Age = travellerData.age;
         });
 
-        xmlService.TravellerAllocation = firstLineNumber + (firstLineNumber !== lastLineNumber ? '-' + lastLineNumber : '');
-        xml.NoOfPersons = Math.max(xml.NoOfPersons, service.travellers.length);
+        crsService.TravellerAllocation = firstLineNumber + (firstLineNumber !== lastLineNumber ? '-' + lastLineNumber : '');
+        crsData.NoOfPersons = Math.max(crsData.NoOfPersons, adapterService.travellers.length);
     }
 
     /**
      * @private
-     * @param service object
-     * @param xmlService object
-     * @param xml object
+     * @param adapterService object
+     * @param crsService object
+     * @param crsData object
      */
-    assignCamperServiceFromAdapterObjectToCrsObject(service, xmlService, xml) {
-        let pickUpDate = moment(service.pickUpDate, this.options.useDateFormat);
-        let dropOffDate = (service.dropOffDate)
-            ? moment(service.dropOffDate, this.options.useDateFormat)
-            : moment(service.pickUpDate, this.options.useDateFormat).add(service.duration, 'days');
-        let pickUpTime = moment(service.pickUpTime, this.options.useTimeFormat);
+    assignCamperServiceFromAdapterObjectToCrsObject(adapterService, crsService, crsData) {
+        let pickUpDate = moment(adapterService.pickUpDate, this.options.useDateFormat);
+        let dropOffDate = (adapterService.dropOffDate)
+            ? moment(adapterService.dropOffDate, this.options.useDateFormat)
+            : moment(adapterService.pickUpDate, this.options.useDateFormat).add(adapterService.duration, 'days');
+        let pickUpTime = moment(adapterService.pickUpTime, this.options.useTimeFormat);
 
-        xmlService.KindOfService = CONFIG.crs.serviceTypes.camper;
+        crsService.KindOfService = CONFIG.crs.serviceTypes.camper;
 
         // PRT02FS/LIS1-LIS2
-        xmlService.Service = [
-            service.renterCode,
-            service.camperCode,
+        crsService.Service = [
+            adapterService.renterCode,
+            adapterService.camperCode,
             '/',
-            service.pickUpLocation,
+            adapterService.pickUpLocation,
             '-',
-            service.dropOffLocation,
+            adapterService.dropOffLocation,
         ].join('');
 
-        xmlService.Accommodation = pickUpTime.isValid() ? pickUpTime.format(CONFIG.crs.timeFormat) : service.pickUpTime;
-        xmlService.NoOfServices = service.milesIncludedPerDay;
-        xmlService.Occupancy = service.milesPackagesIncluded;
-        xmlService.FromDate = pickUpDate.isValid() ? pickUpDate.format(CONFIG.crs.dateFormat) : service.pickUpDate;
-        xmlService.EndDate = dropOffDate.isValid() ? dropOffDate.format(CONFIG.crs.dateFormat) : service.dropOffDate;
-        xmlService.TravellerAllocation = '1' + ((xml.NoOfPersons > 1) ? '-' + xml.NoOfPersons : '');
+        crsService.Accommodation = pickUpTime.isValid() ? pickUpTime.format(CONFIG.crs.timeFormat) : adapterService.pickUpTime;
+        crsService.NoOfServices = adapterService.milesIncludedPerDay;
+        crsService.Occupancy = adapterService.milesPackagesIncluded;
+        crsService.FromDate = pickUpDate.isValid() ? pickUpDate.format(CONFIG.crs.dateFormat) : adapterService.pickUpDate;
+        crsService.EndDate = dropOffDate.isValid() ? dropOffDate.format(CONFIG.crs.dateFormat) : adapterService.dropOffDate;
+        crsService.TravellerAllocation = '1' + ((crsData.NoOfPersons > 1) ? '-' + crsData.NoOfPersons : '');
     };
 
     /**
      * @private
-     * @param service object
-     * @param xml object
+     * @param adapterService object
+     * @param crsData object
      */
-    assignCamperExtras(service, xml) {
-        let pickUpDate = moment(service.pickUpDate, this.options.useDateFormat);
+    assignCamperExtras(adapterService, crsData) {
+        let pickUpDate = moment(adapterService.pickUpDate, this.options.useDateFormat);
 
-        (service.extras || []).forEach((extra) => {
-            let service = this.createEmptyService(xml.ServiceBlock.ServiceRow);
+        (adapterService.extras || []).forEach((extra) => {
+            let service = this.createEmptyService(crsData.ServiceBlock.ServiceRow);
             let extraParts = extra.split('.');
 
             service.KindOfService = CONFIG.crs.serviceTypes.camperExtra;
@@ -833,29 +809,29 @@ class MerlinAdapter {
             service.EndDate = service.FromDate;
             service.TravellerAllocation = '1' + ((extraParts[1] > 1) ? '-' + extraParts[1] : '');
 
-            xml.ServiceBlock.ServiceRow.push(service);
+            crsData.ServiceBlock.ServiceRow.push(service);
         });
     }
 
     /**
      * @private
-     * @param xmlServices [object]
+     * @param crsServices [object]
      * @returns {object}
      */
-    createEmptyService(xmlServices) {
+    createEmptyService(crsServices) {
         return {
             [CONFIG.builderOptions.attrkey]: {
-                positionNo: xmlServices.length + 1,
+                positionNo: crsServices.length + 1,
             },
         };
     }
 
-    getNextEmptyTravellerIndex(xml) {
-        xml.TravellerBlock = xml.TravellerBlock || { PersonBlock: void 0 };
-        xml.TravellerBlock.PersonBlock = xml.TravellerBlock.PersonBlock || { PersonRow: void 0 };
-        xml.TravellerBlock.PersonBlock.PersonRow = xml.TravellerBlock.PersonBlock.PersonRow || [];
+    getNextEmptyTravellerIndex(crsData) {
+        crsData.TravellerBlock = crsData.TravellerBlock || { PersonBlock: void 0 };
+        crsData.TravellerBlock.PersonBlock = crsData.TravellerBlock.PersonBlock || { PersonRow: void 0 };
+        crsData.TravellerBlock.PersonBlock.PersonRow = crsData.TravellerBlock.PersonBlock.PersonRow || [];
 
-        let personRows = xml.TravellerBlock.PersonBlock.PersonRow;
+        let personRows = crsData.TravellerBlock.PersonBlock.PersonRow;
         let travellerIndex = void 0;
 
         personRows.some((traveller, index) =>{

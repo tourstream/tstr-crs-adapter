@@ -4,7 +4,7 @@ import fastXmlParser from 'fast-xml-parser';
 import moment from 'moment';
 import {SERVICE_TYPES} from '../UbpCrsAdapter';
 import TravellerHelper from '../helper/TravellerHelper';
-import XmlHelper from '../helper/XmlHelper';
+import ObjectHelper from '../helper/ObjectHelper';
 
 const CONFIG = {
     crs: {
@@ -89,14 +89,14 @@ class CetsAdapter {
                 crsDateFormat: CONFIG.crs.dateFormat,
                 gender2SalutationMap: CONFIG.gender2SalutationMap,
             })),
-            xml: new XmlHelper({ attrPrefix: CONFIG.parserOptions.attrPrefix }),
+            object: new ObjectHelper({ attrPrefix: CONFIG.parserOptions.attrPrefix }),
         };
 
         this.xmlParser = {
             parse: (xmlString) => {
                 const xmlObject = fastXmlParser.parse(xmlString, CONFIG.parserOptions);
 
-                this.helper.xml.groupXmlAttributes(xmlObject);
+                this.helper.object.groupAttributes(xmlObject);
 
                 return xmlObject;
             }
