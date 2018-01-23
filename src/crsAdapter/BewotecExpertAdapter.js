@@ -18,6 +18,7 @@ const CONFIG = {
             camperExtra: 'TA',
         },
         connectionUrl: 'http://localhost:7354/airob',
+        bewotecBridgeUrl: 'http://localhost:5000/bewotec-bridge',
         defaultValues: {
             action: 'BA',
             numberOfTravellers: 1,
@@ -61,18 +62,26 @@ class BewotecExpertAdapter {
         }, (error) => {
             this.logger.error(error.message);
             this.logger.info('response is: ' + error.response);
+            // in case of "empty expert model" the connection will still work
             this.logger.error('Instantiate connection error - but nevertheless transfer could work');
             throw error;
         });
     }
 
     getData() {
-        this.logger.warn('BewotecExpert has no mechanism for getting the data');
+        return this.getConnection().get().then((response) => {
+            let data = (response || {}).data;
 
-        return this.getConnection().get().then((data) => {
-            return Promise.resolve(data);
-        }, () => {
-            return Promise.resolve();
+            this.logger.info('RAW OBJECT:');
+            this.logger.info(data);
+
+            return data;
+            // return this.mapCrsObjectToAdapterObject(data);
+        }, (error) => {
+            this.logger.error(error.message);
+            this.logger.info('response is: ' + error.response);
+            this.logger.error('error getting data');
+            throw error;
         });
     }
 
@@ -116,32 +125,57 @@ class BewotecExpertAdapter {
         };
 
         return {
-            // does not work well - when the Expert mask is "empty" we get a 404 back
             get: () => {
                 const baseUrl = CONFIG.crs.connectionUrl + '/expert';
                 const params = { token: options.token };
 
-                if (!this.isProtocolSameAs('http')) {
-                    this.logger.warn('will try to get data from a different protocol than HTTP');
+                if (this.isProtocolSameAs('http')) {
+                    // does not work well - when the Expert mask is "empty" we get a 404 back
+                    return axios.get(baseUrl, { params: params }).then(null, () => {
+                        return Promise.resolve();
+                    });
                 }
 
-                return axios.get(baseUrl, { params: params });
+                this.logger.warn('will try to get data with a different protocol than HTTP');
+
+                return new Promise((resolve, reject) => {
+                    window.addEventListener('message', (message) => {
+                        if (message.data.name !== 'bewotecTransfer') {
+                            return;
+                        }
+
+                        if (message.data.error) {
+                            reject(new Error(message.data.error));
+                        }
+
+                        resolve(message.data);
+                    }, false);
+
+                    const url = CONFIG.crs.bewotecBridgeUrl + '?token=' + options.token;
+                    const getWindow = window.open(url, '_blank', 'height=200,width=200');
+
+                    if (!getWindow) {
+                        reject(new Error('can not establish connection to data bridge'));
+                    }
+                });
             },
             send: (data = {}) => {
                 const baseUrl = CONFIG.crs.connectionUrl + '/fill';
                 const params = extendSendData(data);
-                const url = baseUrl + '?' + querystring.stringify(params);
 
                 if (this.isProtocolSameAs('http')) {
                     return axios.get(baseUrl, { params: params });
                 }
 
-                const fillWindow = window.open(url, '_blank', 'height=200,width=200');
+                this.logger.warn('will try to send data with a different protocol than HTTP');
 
-                if (fillWindow) {
-                    while (!fillWindow.document) {}
+                const url = baseUrl + '?' + querystring.stringify(params);
+                const sendWindow = window.open(url, '_blank', 'height=200,width=200');
 
-                    fillWindow.close();
+                if (sendWindow) {
+                    while (!sendWindow.document) {}
+
+                    sendWindow.close();
 
                     return Promise.resolve();
                 }
