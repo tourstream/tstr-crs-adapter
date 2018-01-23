@@ -811,7 +811,7 @@ class TomaSPCAdapter {
         let endDate = moment(adapterService.endDate, this.options.useDateFormat);
 
         crsService.serviceType = CONFIG.crs.serviceTypes.roundTrip;
-        crsService.serviceCode = 'NEZ' + adapterService.bookingId;
+        crsService.serviceCode = adapterService.bookingId ? 'NEZ' + adapterService.bookingId : void 0;
         crsService.accommodation = adapterService.destination;
         crsService.fromDate = startDate.isValid() ? startDate.format(CONFIG.crs.dateFormat) : adapterService.startDate;
         crsService.toDate = endDate.isValid() ? endDate.format(CONFIG.crs.dateFormat) : adapterService.endDate;

@@ -722,7 +722,7 @@ class TomaAdapter {
         let endDate = moment(service.endDate, this.options.useDateFormat);
 
         xml['KindOfService.' + lineNumber] = CONFIG.crs.serviceTypes.roundTrip;
-        xml['ServiceCode.' + lineNumber] = 'NEZ' + service.bookingId;
+        xml['ServiceCode.' + lineNumber] = service.bookingId ? 'NEZ' + service.bookingId : void 0;
         xml['Accommodation.' + lineNumber] = service.destination;
         xml['From.' + lineNumber] = startDate.isValid() ? startDate.format(CONFIG.crs.dateFormat) : service.startDate;
         xml['To.' + lineNumber] = endDate.isValid() ? endDate.format(CONFIG.crs.dateFormat) : service.endDate;

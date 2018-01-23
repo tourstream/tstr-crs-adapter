@@ -91,7 +91,7 @@ class MerlinAdapter {
         };
 
         this.xmlParser = {
-            parse: (xmlString) => {
+            parse: (xmlString = '') => {
                 const crsObject = fastXmlParser.parse(xmlString, CONFIG.parserOptions);
 
                 this.helper.object.groupAttributes(crsObject);
@@ -109,7 +109,7 @@ class MerlinAdapter {
     connect() {
         this.connection = this.createConnection();
 
-        return this.getCrsXml().then(() => {
+        return this.getCrsData().then(() => {
             this.logger.log('Merlin connection available');
         }, (error) => {
             this.logger.error('Instantiate connection error');
@@ -121,11 +121,13 @@ class MerlinAdapter {
     }
 
     getData() {
-        return this.getCrsXml().then((response) => {
-            this.logger.info('RAW XML:');
-            this.logger.info(response.data);
+        return this.getCrsData().then((response) => {
+            let data = (response || {}).data;
 
-            let crsObject = this.xmlParser.parse(response.data);
+            this.logger.info('RAW XML:');
+            this.logger.info(data);
+
+            let crsObject = this.xmlParser.parse(data);
 
             this.logger.info('PARSED XML:');
             this.logger.info(crsObject);
@@ -138,8 +140,8 @@ class MerlinAdapter {
     }
 
     setData(adapterObject = {}) {
-        return this.getCrsXml().then((response) => {
-            let crsObject = this.xmlParser.parse(response.data);
+        return this.getCrsData().then((response) => {
+            let crsObject = this.xmlParser.parse((response || {}).data);
 
             this.assignAdapterObjectToCrsObject(crsObject, adapterObject);
 
@@ -151,15 +153,11 @@ class MerlinAdapter {
             this.logger.info('XML:');
             this.logger.info(xml);
 
-            try {
-                return this.getConnection().post(xml).catch((error) => {
-                    this.logger.info(error);
-                    this.logger.error('error during transfer - please check the result');
-                    throw error;
-                });
-            } catch (error) {
-                return Promise.reject(error);
-            }
+            return this.getConnection().post(xml).catch((error) => {
+                this.logger.info(error);
+                this.logger.error('error during transfer - please check the result');
+                throw error;
+            });
         }).then(null, (error) => {
             this.logger.error(error);
             throw new Error('[.setData] ' + error.message);
@@ -174,7 +172,7 @@ class MerlinAdapter {
 
     /**
      * @private
-     * @returns {{post: (function(*=): AxiosPromise)}}
+     * @returns {{get: function(): AxiosPromise, post: function(*=): AxiosPromise}}
      */
     createConnection() {
         axios.defaults.headers.post['Content-Type'] = 'application/xml';
@@ -199,18 +197,22 @@ class MerlinAdapter {
 
     /**
      * @private
-     * @returns {string}
+     * @returns {Promise}
      */
-    getCrsXml() {
+    getCrsData() {
         try {
             return this.getConnection().get();
         } catch (error) {
             this.logger.error(error);
-            throw new Error('connection::get: ' + error.message);
+            return Promise.reject(new Error('connection::get: ' + error.message));
         }
     }
 
-    normalizeCrsObject(crsObject) {
+    normalizeCrsObject(crsObject = {}) {
+        crsObject.GATE2MX = crsObject.GATE2MX || {};
+        crsObject.GATE2MX.SendRequest = crsObject.GATE2MX.SendRequest || {};
+        crsObject.GATE2MX.SendRequest.Import = crsObject.GATE2MX.SendRequest.Import || {};
+
         let crsData = crsObject.GATE2MX.SendRequest.Import;
 
         crsData.ServiceBlock = crsData.ServiceBlock || {};
@@ -232,8 +234,6 @@ class MerlinAdapter {
      * @param crsObject object
      */
     mapCrsObjectToAdapterObject(crsObject) {
-        if (!crsObject) return;
-
         let crsData = crsObject.GATE2MX.SendRequest.Import;
         let adapterObject = {
             agencyNumber: crsData.AgencyNoTouroperator,
@@ -348,7 +348,7 @@ class MerlinAdapter {
             startDate: startDate.isValid() ? startDate.format(this.options.useDateFormat) : crsService.FromDate,
             endDate: endDate.isValid() ? endDate.format(this.options.useDateFormat) : crsService.EndDate,
             travellers: this.helper.traveller.collectTravellers(
-                crsService.travellerAssociation,
+                crsService.TravellerAllocation,
                 (lineNumber) => this.getTravellerByLineNumber(crsData.TravellerBlock.PersonBlock.PersonRow, lineNumber)
             )
         };
@@ -388,7 +388,7 @@ class MerlinAdapter {
      */
     getTravellerByLineNumber(travellers = [], lineNumber) {
         let traveller = travellers.find(
-            (traveller) => traveller[CONFIG.parserOptions.attrPrefix].positionNo === lineNumber
+            (traveller) => traveller[CONFIG.parserOptions.attrPrefix].travellerNo == lineNumber
         );
 
         if (!traveller) {
@@ -428,25 +428,6 @@ class MerlinAdapter {
             case SERVICE_TYPES.roundTrip: return this.helper.roundTrip.isServiceMarked(requirements);
         }
     };
-
-    createBaseCrsObject() {
-        return {
-            GATE2MX: {
-                SendRequest: {
-                    [CONFIG.builderOptions.attrkey]: {
-                        application: 'Merlin',
-                        source: 'FTI',
-                    },
-                    Import: {
-                        [CONFIG.builderOptions.attrkey]: {
-                            autoSend: false,
-                            clearScreen: false,
-                        },
-                    },
-                },
-            },
-        };
-    }
 
     /**
      * @private
@@ -491,7 +472,7 @@ class MerlinAdapter {
                     break;
                 }
                 case SERVICE_TYPES.roundTrip: {
-                    this.assignRoundTripServiceFromAdapterObjectToCrsObject(adapterService, crsService, crsData);
+                    this.assignRoundTripServiceFromAdapterObjectToCrsObject(adapterService, crsService);
                     this.assignRoundTripTravellers(adapterService, crsService, crsData);
                     break;
                 }
@@ -722,7 +703,7 @@ class MerlinAdapter {
         let endDate = moment(adapterService.endDate, this.options.useDateFormat);
 
         crsService.KindOfService = CONFIG.crs.serviceTypes.roundTrip;
-        crsService.Service = 'NEZ' + adapterService.bookingId;
+        crsService.Service = adapterService.bookingId ? 'NEZ' + adapterService.bookingId : '';
         crsService.Accommodation = adapterService.destination;
         crsService.FromDate = startDate.isValid() ? startDate.format(CONFIG.crs.dateFormat) : adapterService.startDate;
         crsService.EndDate = endDate.isValid() ? endDate.format(CONFIG.crs.dateFormat) : adapterService.endDate;

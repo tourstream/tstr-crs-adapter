@@ -11,7 +11,7 @@ describe('TravellerHelper', () => {
     });
 
     it('normalizeTraveller should return empty object if no information is given', () => {
-        expect(helper.normalizeTraveller({})).toEqual({});
+        expect(helper.normalizeTraveller()).toEqual({});
     });
 
     it('normalizeTraveller should return traveller object', () => {
@@ -32,6 +32,33 @@ describe('TravellerHelper', () => {
         )).toEqual(
             {name: 'jane', age: 25}
         );
+    });
+
+    it('collectTravellers should return no travellers for empty association', () => {
+        expect(helper.collectTravellers()).toEqual([]);
+    });
+
+    it('collectTravellers should return traveller for one association', () => {
+        const traveller = {};
+        const getTravellerCallback = () => traveller;
+        const actual = helper.collectTravellers('1', getTravellerCallback);
+
+        expect(actual.length).toBe(1);
+        expect(actual[0]).toBe(traveller);
+    });
+
+    it('collectTravellers should return travellers for all associations', () => {
+        const traveller1 = {};
+        const traveller2 = {};
+        const getTravellerCallbackSpy = jasmine.createSpy('getTravellerCallback');
+
+        getTravellerCallbackSpy.and.returnValues(traveller1, traveller2);
+
+        const actual = helper.collectTravellers('1-2', getTravellerCallbackSpy);
+
+        expect(actual.length).toBe(2);
+        expect(actual[0]).toBe(traveller1);
+        expect(actual[1]).toBe(traveller2);
     });
 });
 

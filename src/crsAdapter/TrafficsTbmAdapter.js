@@ -169,6 +169,7 @@ class TrafficsTbmAdapter {
      * @private
      * @param data
      */
+    /* istanbul ignore next */
     setLocation(data) {
         document.location = data;
     }

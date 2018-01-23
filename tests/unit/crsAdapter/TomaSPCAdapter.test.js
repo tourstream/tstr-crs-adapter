@@ -357,7 +357,7 @@ describe('TomaSPCAdapter', () => {
                         accommodation: 'rc mc',
                         fromDate: '111217',
                         toDate: '221217',
-                        travellerAssociation: '1-4'
+                        travellerAssociation: '1-5'
                     }
                 ],
                 travellers: [
@@ -1058,6 +1058,36 @@ describe('TomaSPCAdapter', () => {
                     title: 'H',
                     name: 'DOE/JOHN',
                     discount: '32',
+                }],
+            };
+
+            adapter.setData(adapterObject).then(() => {
+                expect(requestData).toEqual([expected]);
+                done();
+            }, (error) => {
+                done.fail(error);
+            });
+        });
+
+        it('setData() should convert minimal round-trip data to crs object correct', (done) => {
+            let adapterObject = {
+                numberOfTravellers: 1,
+                services: [
+                    {
+                        type: SERVICE_TYPES.roundTrip,
+                        startDate: 'start',
+                        endDate: 'end',
+                    },
+                ],
+            };
+
+            let expected = {
+                action: 'BA',
+                numTravellers: 1,
+                services: [{
+                    serviceType: 'R',
+                    fromDate: 'start',
+                    toDate: 'end',
                 }],
             };
 

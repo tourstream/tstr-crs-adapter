@@ -72,5 +72,70 @@ describe('CarHelper', () => {
 
         expect(helper.reduceHotelData({pickUpHotelName: 'puhn', dropOffHotelName: 'dohn'})).toBe('dohn');
     });
+
+    it('assignServiceCodeToAdapterService should assign nothing if no code is given', () => {
+        const service = {};
+
+        helper.assignServiceCodeToAdapterService('', service);
+
+        expect(service).toEqual({});
+    });
+
+    it('assignServiceCodeToAdapterService should assign nothing if code is not correct', () => {
+        const service = {};
+
+        helper.assignServiceCodeToAdapterService('code', service);
+
+        expect(service).toEqual({});
+    });
+
+    it('assignServiceCodeToAdapterService should assign locations', () => {
+        const service = {};
+
+        helper.assignServiceCodeToAdapterService('MIA1-TPA', service);
+
+        expect(service).toEqual({
+            pickUpLocation: 'MIA1',
+            dropOffLocation: 'TPA'
+        });
+    });
+
+    it('assignServiceCodeToAdapterService should assign locations and rental code', () => {
+        const service = {};
+
+        helper.assignServiceCodeToAdapterService('USA91/MIA1-TPA', service);
+
+        expect(service).toEqual({
+            pickUpLocation: 'MIA1',
+            dropOffLocation: 'TPA',
+            rentalCode: 'USA91',
+            vehicleTypeCode: void 0
+        });
+    });
+
+    it('assignServiceCodeToAdapterService should assign everything', () => {
+        const service = {};
+
+        helper.assignServiceCodeToAdapterService('USA91A4/MIA1-TPA', service);
+
+        expect(service).toEqual({
+            pickUpLocation: 'MIA1',
+            dropOffLocation: 'TPA',
+            rentalCode: 'USA91',
+            vehicleTypeCode: 'A4'
+        });
+    });
+
+    it('isServiceMarked should return true for empty code', () => {
+        expect(helper.isServiceMarked({})).toBeTruthy();
+    });
+
+    it('isServiceMarked should return true for incomplete code', () => {
+        expect(helper.isServiceMarked({code: 'LAX'})).toBeTruthy();
+    });
+
+    it('isServiceMarked should return false for already complete code', () => {
+        expect(helper.isServiceMarked({code: 'USA91A4/LAX-SFO'})).toBeFalsy();
+    });
 });
 

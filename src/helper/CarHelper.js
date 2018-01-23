@@ -51,6 +51,10 @@ class CarHelper {
 
         let codeParts = code.match(CONFIG.serviceCodeRegEx);
 
+        if (!codeParts[0]) {
+            return;
+        }
+
         // i.e. MIA or MIA1 or MIA1-TPA
         if (!codeParts[keySeparator]) {
             adapterService.pickUpLocation = codeParts[keyRentalCode];
