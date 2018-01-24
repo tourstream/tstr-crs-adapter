@@ -4,6 +4,7 @@ import axios from 'axios';
 import { SERVICE_TYPES } from '../UbpCrsAdapter';
 import querystring from 'querystring';
 import TravellerHelper from '../helper/TravellerHelper';
+import fastXmlParser from 'fast-xml-parser';
 
 const CONFIG = {
     crs: {
@@ -36,6 +37,15 @@ const CONFIG = {
             serviceCodeRegEx: /([A-Z]*[0-9]*)?([A-Z]*[0-9]*)?(\/)?([A-Z]*[0-9]*)?(-)?([A-Z]*[0-9]*)?/,
         },
     },
+    parserOptions: {
+        attrPrefix: '__attributes',
+        textNodeName: '__textNode',
+        ignoreNonTextNodeAttr: false,
+        ignoreTextNodeAttr: false,
+        ignoreNameSpace: true,
+        ignoreRootElement: false,
+        textNodeConversion: false,
+    },
 };
 
 class BewotecExpertAdapter {
@@ -47,6 +57,35 @@ class BewotecExpertAdapter {
                 crsDateFormat: CONFIG.crs.dateFormat,
                 gender2SalutationMap: CONFIG.crs.gender2SalutationMap,
             })),
+        };
+
+        this.xmlParser = {
+            parse: (xmlString) => {
+                let crsObject = fastXmlParser.parse(xmlString, CONFIG.parserOptions);
+
+                const groupXmlAttributes = (object) => {
+                    if (typeof object !== 'object') {
+                        return;
+                    }
+
+                    let propertyNames = Object.getOwnPropertyNames(object);
+
+                    propertyNames.forEach((name) => {
+                        if (name.startsWith(CONFIG.parserOptions.attrPrefix)) {
+                            object[CONFIG.parserOptions.attrPrefix] = object[CONFIG.parserOptions.attrPrefix] || {};
+                            object[CONFIG.parserOptions.attrPrefix][name.substring(CONFIG.parserOptions.attrPrefix.length)] = object[name];
+
+                            delete object[name];
+                        } else {
+                            groupXmlAttributes(object[name]);
+                        }
+                    });
+                };
+
+                groupXmlAttributes(crsObject);
+
+                return crsObject;
+            }
         };
     }
 
@@ -70,13 +109,17 @@ class BewotecExpertAdapter {
 
     getData() {
         return this.getConnection().get().then((response) => {
-            let data = (response || {}).data;
+            let xml = (response || {}).data;
 
-            this.logger.info('RAW OBJECT:');
-            this.logger.info(data);
+            this.logger.info('RAW XML:');
+            this.logger.info(xml);
 
-            return data;
-            // return this.mapCrsObjectToAdapterObject(data);
+            let crsObject = this.xmlParser.parse(xml);
+
+            this.logger.info('PARSED XML:');
+            this.logger.info(crsObject);
+
+            return this.mapCrsObjectToAdapterObject(crsObject);
         }, (error) => {
             this.logger.error(error.message);
             this.logger.info('response is: ' + error.response);
@@ -203,6 +246,62 @@ class BewotecExpertAdapter {
         }
 
         throw new Error('No connection available - please connect to Bewotec application first.');
+    }
+
+    /**
+     * @private
+     * @param crsObject object
+     */
+    mapCrsObjectToAdapterObject(crsObject) {
+        if (!crsObject || !crsObject.ExpertModel) return;
+
+        let crsData = crsObject.ExpertModel;
+        let dataObject = {
+            agencyNumber: crsData.Agency,
+            operator: crsData[CONFIG.parserOptions.attrPrefix].operator,
+            numberOfTravellers: crsData.PersonCount,
+            travelType: crsData[CONFIG.parserOptions.attrPrefix].traveltype,
+            remark: crsData.Remarks,
+            services: [],
+        };
+
+        // todo: finish it
+        // let lineNumber = 1;
+        //
+        // do {
+        //     let serviceType = crsData['KindOfService.' + lineNumber];
+        //
+        //     if (!serviceType) break;
+        //
+        //     let service;
+        //
+        //     switch (serviceType) {
+        //         case CONFIG.crs.serviceTypes.car: {
+        //             service = this.mapCarServiceFromXmlObjectToAdapterObject(crsData, lineNumber);
+        //             break;
+        //         }
+        //         case CONFIG.crs.serviceTypes.hotel: {
+        //             service = this.mapHotelServiceFromXmlObjectToAdapterObject(crsData, lineNumber);
+        //             break;
+        //         }
+        //         case CONFIG.crs.serviceTypes.roundTrip: {
+        //             service = this.mapRoundTripServiceFromXmlObjectToAdapterObject(crsData, lineNumber);
+        //             break;
+        //         }
+        //         case CONFIG.crs.serviceTypes.camper: {
+        //             service = this.mapCamperServiceFromXmlObjectToAdapterObject(crsData, lineNumber);
+        //             break;
+        //         }
+        //     }
+        //
+        //     if (service) {
+        //         service.marked = this.isMarked(crsData, lineNumber, {type: service.type});
+        //
+        //         dataObject.services.push(service);
+        //     }
+        // } while (lineNumber++);
+
+        return JSON.parse(JSON.stringify(dataObject));
     }
 
     createBaseCrsObject() {
