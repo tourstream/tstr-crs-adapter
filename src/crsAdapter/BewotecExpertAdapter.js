@@ -26,9 +26,9 @@ const CONFIG = {
         },
         gender2SalutationMap: {
             male: 'H',
-            female: 'F',
+            female: 'D',
             child: 'K',
-            infant: 'K',
+            infant: 'B',
         },
         lineNumberMap: ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'],
     },
@@ -131,22 +131,28 @@ class BewotecExpertAdapter {
     }
 
     setData(dataObject = {}) {
-        let crsObject = this.createBaseCrsObject();
+        return this.getData().then((adapterObject) => {
+            let crsObject = this.createBaseCrsObject();
 
-        crsObject = this.assignDataObjectToCrsObject(crsObject, dataObject);
+            crsObject = this.assignDataObjectToCrsObject(crsObject, adapterObject);
+            crsObject = this.assignDataObjectToCrsObject(crsObject, dataObject);
 
-        this.logger.info('BASE OBJECT:');
-        this.logger.info(crsObject);
+            this.logger.info('CRS OBJECT:');
+            this.logger.info(crsObject);
 
-        try {
-            return this.getConnection().send(crsObject).catch((error) => {
-                this.logger.info(error);
-                this.logger.error('error during transfer - please check the result');
-                throw error;
-            });
-        } catch (error) {
-            return Promise.reject(error);
-        }
+            try {
+                return this.getConnection().send(crsObject).catch((error) => {
+                    this.logger.info(error);
+                    this.logger.error('error during transfer - please check the result');
+                    throw error;
+                });
+            } catch (error) {
+                return Promise.reject(error);
+            }
+        }).then(null, (error) => {
+            this.logger.error(error);
+            throw new Error('[.setData] ' + error.message);
+        });
     }
 
     exit() {
@@ -164,7 +170,7 @@ class BewotecExpertAdapter {
     createConnection(options) {
         const extendSendData = (data = {}) => {
             data.token = options.token;
-            data.merge = false;
+            data.merge = true;
 
             return data;
         };
@@ -189,9 +195,15 @@ class BewotecExpertAdapter {
                             return;
                         }
 
+                        this.logger.info(message.data);
+
                         if (message.data.error) {
+                            this.logger.error('received error from bewotec bridge');
+
                             reject(new Error(message.data.error));
                         }
+
+                        this.logger.info('received data from bewotec bridge: ');
 
                         resolve(message.data);
                     }, false);
@@ -282,7 +294,7 @@ class BewotecExpertAdapter {
             services: [],
         };
 
-        crsObject.Services.Service.forEach((crsService) => {
+        crsData.Services.Service.forEach((crsService) => {
             if (crsService === '') return;
 
             let serviceData = crsService[CONFIG.parserOptions.attrPrefix];
@@ -291,17 +303,17 @@ class BewotecExpertAdapter {
 
             let service;
 
-            switch(crsService.requesttype) {
+            switch(serviceData.requesttype) {
                 case CONFIG.crs.serviceTypes.car: {
                     service = this.mapCarServiceFromCrsObjectToAdapterObject(serviceData);
                     break;
                 }
                 case CONFIG.crs.serviceTypes.hotel: {
-                    service = this.mapHotelServiceFromCrsObjectToAdapterObject(serviceData, crsObject);
+                    service = this.mapHotelServiceFromCrsObjectToAdapterObject(serviceData, crsData);
                     break;
                 }
                 case CONFIG.crs.serviceTypes.roundTrip: {
-                    service = this.mapRoundTripServiceFromXmlObjectToAdapterObject(serviceData, crsObject);
+                    service = this.mapRoundTripServiceFromXmlObjectToAdapterObject(serviceData, crsData);
                     break;
                 }
                 case CONFIG.crs.serviceTypes.camper: {
@@ -311,7 +323,7 @@ class BewotecExpertAdapter {
             }
 
             if (service) {
-                service.marked = this.isMarked(crsService, service.type);
+                service.marked = this.isMarked(serviceData, service.type);
 
                 dataObject.services.push(service);
             }
@@ -412,7 +424,7 @@ class BewotecExpertAdapter {
 
         return {
             type: SERVICE_TYPES.roundTrip,
-            bookingId: hasBookingId ? crsService.servicecode : void 0,
+            bookingId: hasBookingId ? crsService.servicecode.substring(3) : void 0,
             destination: hasBookingId ? crsService.accomodation : crsService.servicecode,
             startDate: startDate.isValid() ? startDate.format(this.options.useDateFormat) : crsService.start,
             endDate: endDate.isValid() ? endDate.format(this.options.useDateFormat) : crsService.end,
@@ -502,6 +514,36 @@ class BewotecExpertAdapter {
         };
     }
 
+    /**
+     * @private
+     * @param crsService object
+     * @param serviceType string
+     * @returns {boolean}
+     */
+    isMarked(crsService, serviceType) {
+        if (crsService.marker) {
+            return true;
+        }
+
+        switch(serviceType) {
+            case SERVICE_TYPES.car: {
+                let serviceCode = crsService.servicecode;
+
+                // gaps in the regEx result array will result in lined up "." after the join
+                return !serviceCode || serviceCode.match(CONFIG.services.car.serviceCodeRegEx).join('.').indexOf('..') !== -1;
+            }
+            case SERVICE_TYPES.hotel: {
+                return !crsService.servicecode || !crsService.accomodation;
+            }
+            case SERVICE_TYPES.camper: {
+                let serviceCode = crsService.servicecode;
+
+                // gaps in the regEx result array will result in lined up "." after the join
+                return !serviceCode || serviceCode.match(CONFIG.services.car.serviceCodeRegEx).join('.').indexOf('..') !== -1;
+            }
+        }
+    };
+
     createBaseCrsObject() {
         return {
             a: CONFIG.crs.defaultValues.action,
@@ -561,9 +603,9 @@ class BewotecExpertAdapter {
      * @param dataObject object
      */
     assignBasicData(crsObject, dataObject) {
-        crsObject.rem = dataObject.remark;
-        crsObject.r = dataObject.travelType;
-        crsObject.p = dataObject.numberOfTravellers || CONFIG.crs.defaultValues.numberOfTravellers;
+        crsObject.rem = [dataObject.remark, crsObject.rem].filter(Boolean).join(',');
+        crsObject.r = dataObject.travelType || crsObject.r;
+        crsObject.p = dataObject.numberOfTravellers || crsObject.p || CONFIG.crs.defaultValues.numberOfTravellers;
     }
 
     /**

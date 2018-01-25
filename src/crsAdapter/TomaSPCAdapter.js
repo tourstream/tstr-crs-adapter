@@ -429,7 +429,7 @@ class TomaSPCAdapter {
 
         return {
             type: SERVICE_TYPES.roundTrip,
-            bookingId: hasBookingId ? crsService.serviceCode : void 0,
+            bookingId: hasBookingId ? crsService.serviceCode.substring(3) : void 0,
             destination: hasBookingId ? crsService.accommodation : crsService.serviceCode,
             startDate: startDate.isValid() ? startDate.format(this.options.useDateFormat) : crsService.fromDate,
             endDate: endDate.isValid() ? endDate.format(this.options.useDateFormat) : crsService.toDate,
