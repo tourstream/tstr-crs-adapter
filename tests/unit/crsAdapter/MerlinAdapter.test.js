@@ -422,6 +422,10 @@ describe('MerlinAdapter', () => {
                     services: [
                         {
                             type: SERVICE_TYPES.camper,
+                            rentalCode: 'USA96',
+                            vehicleTypeCode: 'E',
+                            pickUpLocation: 'SFO2',
+                            dropOffLocation: 'LAX',
                             pickUpDate: '02022018',
                             dropOffDate: '06022018',
                             pickUpTime: '0920',
@@ -457,6 +461,7 @@ describe('MerlinAdapter', () => {
                     services: [
                         {
                             type: SERVICE_TYPES.camper,
+                            pickUpLocation: 'BGY',
                             pickUpDate: 'from',
                             dropOffDate: 'to',
                             pickUpTime: 'time',

@@ -375,7 +375,7 @@ class MerlinAdapter {
             type: SERVICE_TYPES.camper,
         };
 
-        this.helper.car.assignServiceCodeToAdapterService(crsService.serviceCode, service);
+        this.helper.car.assignServiceCodeToAdapterService(crsService.Service, service);
 
         return service;
     }
