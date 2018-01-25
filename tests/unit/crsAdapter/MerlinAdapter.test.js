@@ -355,7 +355,7 @@ describe('MerlinAdapter', () => {
                         {
                             type: SERVICE_TYPES.roundTrip,
                             destination: 'YYZ',
-                            bookingId: 'NEZE2784NQXTHEN',
+                            bookingId: 'E2784NQXTHEN',
                             startDate: '02022018',
                             endDate: '06022018',
                             travellers: [

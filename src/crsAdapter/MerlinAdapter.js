@@ -343,7 +343,7 @@ class MerlinAdapter {
 
         return {
             type: SERVICE_TYPES.roundTrip,
-            bookingId: hasBookingId ? crsService.Service : void 0,
+            bookingId: hasBookingId ? crsService.Service.substring(3) : void 0,
             destination: hasBookingId ? crsService.Accommodation : crsService.Service,
             startDate: startDate.isValid() ? startDate.format(this.options.useDateFormat) : crsService.FromDate,
             endDate: endDate.isValid() ? endDate.format(this.options.useDateFormat) : crsService.EndDate,
