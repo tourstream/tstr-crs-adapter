@@ -63,7 +63,7 @@ class BewotecExpertAdapter {
             parse: (xmlString) => {
                 let crsObject = fastXmlParser.parse(xmlString, CONFIG.parserOptions);
 
-                const groupXmlAttributes = (object) => {
+                const groupObjectAttributes = (object) => {
                     if (typeof object !== 'object') {
                         return;
                     }
@@ -77,12 +77,14 @@ class BewotecExpertAdapter {
 
                             delete object[name];
                         } else {
-                            groupXmlAttributes(object[name]);
+                            groupObjectAttributes(object[name]);
                         }
                     });
                 };
 
-                groupXmlAttributes(crsObject);
+                groupObjectAttributes(crsObject);
+
+                this.normalizeCrsObject(crsObject);
 
                 return crsObject;
             }
@@ -248,6 +250,21 @@ class BewotecExpertAdapter {
         throw new Error('No connection available - please connect to Bewotec application first.');
     }
 
+    normalizeCrsObject(crsObject = {}) {
+        crsObject.ExpertModel = crsObject.ExpertModel || {};
+        crsObject.ExpertModel.Services = crsObject.ExpertModel.Services || {};
+
+        if (!Array.isArray(crsObject.ExpertModel.Services.Service)) {
+            crsObject.ExpertModel.Services.Service = [crsObject.ExpertModel.Services.Service].filter(Boolean);
+        }
+
+        crsObject.ExpertModel.Travellers = crsObject.ExpertModel.Travellers || {};
+
+        if (!Array.isArray(crsObject.ExpertModel.Travellers.Traveller)) {
+            crsObject.ExpertModel.Travellers.Traveller = [crsObject.ExpertModel.Travellers.Traveller].filter(Boolean);
+        }
+    }
+
     /**
      * @private
      * @param crsObject object
@@ -265,43 +282,224 @@ class BewotecExpertAdapter {
             services: [],
         };
 
-        // todo: finish it
-        // let lineNumber = 1;
-        //
-        // do {
-        //     let serviceType = crsData['KindOfService.' + lineNumber];
-        //
-        //     if (!serviceType) break;
-        //
-        //     let service;
-        //
-        //     switch (serviceType) {
-        //         case CONFIG.crs.serviceTypes.car: {
-        //             service = this.mapCarServiceFromXmlObjectToAdapterObject(crsData, lineNumber);
-        //             break;
-        //         }
-        //         case CONFIG.crs.serviceTypes.hotel: {
-        //             service = this.mapHotelServiceFromXmlObjectToAdapterObject(crsData, lineNumber);
-        //             break;
-        //         }
-        //         case CONFIG.crs.serviceTypes.roundTrip: {
-        //             service = this.mapRoundTripServiceFromXmlObjectToAdapterObject(crsData, lineNumber);
-        //             break;
-        //         }
-        //         case CONFIG.crs.serviceTypes.camper: {
-        //             service = this.mapCamperServiceFromXmlObjectToAdapterObject(crsData, lineNumber);
-        //             break;
-        //         }
-        //     }
-        //
-        //     if (service) {
-        //         service.marked = this.isMarked(crsData, lineNumber, {type: service.type});
-        //
-        //         dataObject.services.push(service);
-        //     }
-        // } while (lineNumber++);
+        crsObject.Services.Service.forEach((crsService) => {
+            if (crsService === '') return;
+
+            let serviceData = crsService[CONFIG.parserOptions.attrPrefix];
+
+            if (!serviceData.requesttype) return;
+
+            let service;
+
+            switch(crsService.requesttype) {
+                case CONFIG.crs.serviceTypes.car: {
+                    service = this.mapCarServiceFromCrsObjectToAdapterObject(serviceData);
+                    break;
+                }
+                case CONFIG.crs.serviceTypes.hotel: {
+                    service = this.mapHotelServiceFromCrsObjectToAdapterObject(serviceData, crsObject);
+                    break;
+                }
+                case CONFIG.crs.serviceTypes.roundTrip: {
+                    service = this.mapRoundTripServiceFromXmlObjectToAdapterObject(serviceData, crsObject);
+                    break;
+                }
+                case CONFIG.crs.serviceTypes.camper: {
+                    service = this.mapCamperServiceFromCrsObjectToAdapterObject(serviceData);
+                    break;
+                }
+            }
+
+            if (service) {
+                service.marked = this.isMarked(crsService, service.type);
+
+                dataObject.services.push(service);
+            }
+        });
 
         return JSON.parse(JSON.stringify(dataObject));
+    }
+
+    /**
+     * @private
+     * @param crsService object
+     * @returns {object}
+     */
+    mapCarServiceFromCrsObjectToAdapterObject(crsService) {
+        const mapServiceCodeToService = (code, service) => {
+            if (!code) return;
+
+            const keyRentalCode = 1;
+            const keyVehicleTypeCode = 2;
+            const keySeparator = 3;
+            const keyPickUpLoc = 4;
+            const keyLocDash = 5;
+            const keyDropOffLoc = 6;
+
+            let codeParts = code.match(CONFIG.services.car.serviceCodeRegEx);
+
+            // i.e. MIA or MIA1 or MIA1-TPA
+            if (!codeParts[keySeparator]) {
+                service.pickUpLocation = codeParts[keyRentalCode];
+                service.dropOffLocation = codeParts[keyDropOffLoc];
+
+                return;
+            }
+
+            // i.e USA96/MIA1 or USA96A4/MIA1-TPA"
+            service.rentalCode = codeParts[keyRentalCode];
+            service.vehicleTypeCode = codeParts[keyVehicleTypeCode];
+            service.pickUpLocation = codeParts[keyPickUpLoc];
+            service.dropOffLocation = codeParts[keyDropOffLoc];
+        };
+
+        let pickUpDate = moment(crsService.start, CONFIG.crs.dateFormat);
+        let dropOffDate = moment(crsService.end, CONFIG.crs.dateFormat);
+        let pickUpTime = moment(crsService.accomodation, CONFIG.crs.timeFormat);
+        let service = {
+            pickUpDate: pickUpDate.isValid() ? pickUpDate.format(this.options.useDateFormat) : crsService.start,
+            dropOffDate: dropOffDate.isValid() ? dropOffDate.format(this.options.useDateFormat) : crsService.end,
+            pickUpTime: pickUpTime.isValid() ? pickUpTime.format(this.options.useTimeFormat) : crsService.accomodation,
+            duration: pickUpDate.isValid() && dropOffDate.isValid()
+                ? Math.ceil(dropOffDate.diff(pickUpDate, 'days', true))
+                : void 0,
+            type: SERVICE_TYPES.car,
+        };
+
+        mapServiceCodeToService(crsService.servicecode, service);
+
+        return service;
+    }
+
+    /**
+     * @private
+     * @param crsService object
+     * @param crsObject object
+     * @returns {object}
+     */
+    mapHotelServiceFromCrsObjectToAdapterObject(crsService, crsObject) {
+        let serviceCodes = (crsService.accomodation || '').split(' ');
+        let dateFrom = moment(crsService.start, CONFIG.crs.dateFormat);
+        let dateTo = moment(crsService.end, CONFIG.crs.dateFormat);
+
+        return {
+            roomCode: serviceCodes[0] || void 0,
+            mealCode: serviceCodes[1] || void 0,
+            roomQuantity: crsService.count,
+            roomOccupancy: crsService.occupancy,
+            children: this.helper.roundTrip.collectTravellers(
+                crsService.allocation,
+                (lineNumber) => this.getTravellerByLineNumber(crsObject.Travellers.Traveller, lineNumber)
+            ).filter((traveller) => ['child', 'infant'].indexOf(traveller.gender) > -1),
+            destination: crsService.servicecode,
+            dateFrom: dateFrom.isValid() ? dateFrom.format(this.options.useDateFormat) : crsService.start,
+            dateTo: dateTo.isValid() ? dateTo.format(this.options.useDateFormat) : crsService.end,
+            type: SERVICE_TYPES.hotel,
+        };
+    }
+
+    /**
+     * @private
+     * @param crsService object
+     * @param crsObject object
+     * @returns {object}
+     */
+    mapRoundTripServiceFromXmlObjectToAdapterObject(crsService, crsObject) {
+        const hasBookingId = (crsService.servicecode || '').indexOf('NEZ') === 0;
+
+        let startDate = moment(crsService.start, CONFIG.crs.dateFormat);
+        let endDate = moment(crsService.end, CONFIG.crs.dateFormat);
+
+        return {
+            type: SERVICE_TYPES.roundTrip,
+            bookingId: hasBookingId ? crsService.servicecode : void 0,
+            destination: hasBookingId ? crsService.accomodation : crsService.servicecode,
+            startDate: startDate.isValid() ? startDate.format(this.options.useDateFormat) : crsService.start,
+            endDate: endDate.isValid() ? endDate.format(this.options.useDateFormat) : crsService.end,
+            travellers: this.helper.roundTrip.collectTravellers(
+                crsService.allocation,
+                (lineNumber) => this.getTravellerByLineNumber(crsObject.Travellers.Traveller, lineNumber)
+            )
+        };
+    }
+
+    /**
+     * @private
+     * @param crsService object
+     * @returns {object}
+     */
+    mapCamperServiceFromCrsObjectToAdapterObject(crsService) {
+        const mapServiceCodeToService = (code, service) => {
+            if (!code) return;
+
+            const keyRentalCode = 1;
+            const keyVehicleTypeCode = 2;
+            const keySeparator = 3;
+            const keyPickUpLoc = 4;
+            const keyLocDash = 5;
+            const keyDropOffLoc = 6;
+
+            let codeParts = code.match(CONFIG.services.car.serviceCodeRegEx);
+
+            // i.e. MIA or MIA1 or MIA1-TPA
+            if (!codeParts[keySeparator]) {
+                service.pickUpLocation = codeParts[keyRentalCode];
+                service.dropOffLocation = codeParts[keyDropOffLoc];
+
+                return;
+            }
+
+            // i.e USA96/MIA1 or USA96A4/MIA1-TPA
+            service.renterCode = codeParts[keyRentalCode];
+            service.camperCode = codeParts[keyVehicleTypeCode];
+            service.pickUpLocation = codeParts[keyPickUpLoc];
+            service.dropOffLocation = codeParts[keyDropOffLoc];
+        };
+
+        let pickUpDate = moment(crsService.start, CONFIG.crs.dateFormat);
+        let dropOffDate = moment(crsService.end, CONFIG.crs.dateFormat);
+        let pickUpTime = moment(crsService.accomodation, CONFIG.crs.timeFormat);
+        let service = {
+            pickUpDate: pickUpDate.isValid() ? pickUpDate.format(this.options.useDateFormat) : crsService.start,
+            dropOffDate: dropOffDate.isValid() ? dropOffDate.format(this.options.useDateFormat) : crsService.end,
+            pickUpTime: pickUpTime.isValid() ? pickUpTime.format(this.options.useTimeFormat) : crsService.accomodation,
+            duration: pickUpDate.isValid() && dropOffDate.isValid()
+                ? Math.ceil(dropOffDate.diff(pickUpDate, 'days', true))
+                : void 0,
+            milesIncludedPerDay: crsService.count,
+            milesPackagesIncluded: crsService.occupancy,
+            type: SERVICE_TYPES.camper,
+        };
+
+        mapServiceCodeToService(crsService.servicecode, service);
+
+        return service;
+    }
+
+    /**
+     * @private
+     * @param travellers
+     * @param lineNumber
+     * @returns {*}
+     */
+    getTravellerByLineNumber(travellers = [], lineNumber) {
+        let traveller = (travellers[lineNumber - 1] || {})[CONFIG.parserOptions.attrPrefix];
+
+        if (!traveller || !traveller.name) {
+            return void 0;
+        }
+
+        return {
+            gender: Object.entries(CONFIG.crs.gender2SalutationMap).reduce(
+                (reduced, current) => {
+                    reduced[current[1]] = reduced[current[1]] || current[0];
+                    return reduced;
+                },
+                {}
+            )[traveller.salutation],
+            name: traveller.name,
+            age: traveller.age,
+        };
     }
 
     createBaseCrsObject() {
