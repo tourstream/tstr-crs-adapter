@@ -7,14 +7,12 @@ describe('BewotecExpertAdapter', () => {
     beforeEach(() => {
         logService = require('tests/unit/_mocks/LogService')();
 
-        // as the connection to the Expert mask is not properly implemented by Bewotec we have to assume
-        // that every connection/transfer request results in an error but the logic works nevertheless
         axios = require('tests/unit/_mocks/Axios')();
         axios.get.and.callFake((url, parameter) => {
             requestUrl = url;
             requestParameter = parameter;
 
-            return Promise.reject(new Error('network.error'));
+            return Promise.resolve();
         });
 
         BewotecExpertAdapter = injector({
@@ -27,25 +25,32 @@ describe('BewotecExpertAdapter', () => {
     });
 
     it('connect() should throw error when no token is given', () => {
-        expect(adapter.connect).toThrowError('No token found in connectionOptions.');
-    });
-
-    it('connect() should create connection on error', (done) => {
-        adapter.connect({ token: 'token' }).then(() => {
+        adapter.connect().then(() => {
             done.fail('unexpected result');
-        }, () => {
-            expect(adapter.connection).toBeTruthy();
+        }, (error) => {
+            expect(error.message).toBe('No token found in connectionOptions.');
             done();
         });
     });
 
-    it('connect() should create connection on success', (done) => {
-        axios.get.and.returnValue(Promise.resolve());
+    it('connect() should create connection on error because the expert mask returns a 404 in case of an empty mask', (done) => {
+        axios.get.and.returnValue(Promise.reject('empty expert mask'));
 
         adapter.connect({ token: 'token' }).then(() => {
             expect(adapter.connection).toBeTruthy();
             done();
-        }, () => {
+        }, (error) => {
+            console.log(error.message);
+            done.fail('unexpected result');
+        });
+    });
+
+    it('connect() should create connection on success', (done) => {
+        adapter.connect({ token: 'token' }).then(() => {
+            expect(adapter.connection).toBeTruthy();
+            done();
+        }, (error) => {
+            console.log(error.message);
             done.fail('unexpected result');
         });
     });
@@ -54,7 +59,9 @@ describe('BewotecExpertAdapter', () => {
         adapter.setData().then(() => {
             done.fail('unexpected result');
         }, (error) => {
-            expect(error.toString()).toEqual('Error: No connection available - please connect to Bewotec application first.');
+            expect(error.toString()).toEqual(
+                'Error: [.setData] No connection available - please connect to Bewotec application first.'
+            );
             done();
         });
     });
@@ -74,24 +81,16 @@ describe('BewotecExpertAdapter', () => {
             adapter.connect({ token: 'token' });
         });
 
-        it('getData() should return nothing as it is not possible to get any data from the expert mask', (done) => {
+        it('getData() should return "empty" object when it is not possible to get data from the expert mask', (done) => {
             adapter.getData().then((result) => {
-                expect(result).toBeUndefined();
+                expect(result).toEqual({
+                    services: []
+                });
                 expect(requestUrl).toEqual('http://localhost:7354/airob/expert');
                 expect(requestParameter).toEqual({ params: {token: 'token'} });
                 done();
-            }, () => {
-                done.fail('unexpected result');
-            });
-        });
-
-        it('getData() should return data of expert mask', (done) => {
-            axios.get.and.returnValue(Promise.resolve('expert mask data'));
-
-            adapter.getData().then((result) => {
-                expect(result).toBe('expert mask data');
-                done();
-            }, () => {
+            }, (error) => {
+                console.log(error.message);
                 done.fail('unexpected result');
             });
         });
@@ -100,11 +99,12 @@ describe('BewotecExpertAdapter', () => {
             let expectation = createParams();
 
             adapter.setData().then(() => {
-                done.fail('unexpected result');
-            }, () => {
                 expect(requestUrl).toEqual('http://localhost:7354/airob/fill');
                 expect(requestParameter).toEqual(expectation);
                 done();
+            }, (error) => {
+                console.log(error.message);
+                done.fail('unexpected result');
             });
         });
 
@@ -123,11 +123,12 @@ describe('BewotecExpertAdapter', () => {
             };
 
             adapter.setData(data).then(() => {
-                done.fail('unexpected result');
-            }, () => {
                 expect(requestParameter).toEqual(expectation);
                 expect(logService.warn).toHaveBeenCalledWith('type unknown is not supported by the Bewotec Expert adapter');
                 done();
+            }, (error) => {
+                console.log(error.message);
+                done.fail('unexpected result');
             });
         });
 
@@ -171,10 +172,11 @@ describe('BewotecExpertAdapter', () => {
             };
 
             adapter.setData(data).then(() => {
-                done.fail('unexpected result');
-            }, () => {
                 expect(requestParameter).toEqual(expectation);
                 done();
+            }, (error) => {
+                console.log(error.message);
+                done.fail('unexpected result');
             });
         });
 
@@ -206,10 +208,11 @@ describe('BewotecExpertAdapter', () => {
             };
 
             adapter.setData(data).then(() => {
-                done.fail('unexpected result');
-            }, () => {
                 expect(requestParameter).toEqual(expectation);
                 done();
+            }, (error) => {
+                console.log(error.message);
+                done.fail('unexpected result');
             });
         });
 
@@ -247,10 +250,11 @@ describe('BewotecExpertAdapter', () => {
             };
 
             adapter.setData(data).then(() => {
-                done.fail('unexpected result');
-            }, () => {
                 expect(requestParameter).toEqual(expectation);
                 done();
+            }, (error) => {
+                console.log(error.message);
+                done.fail('unexpected result');
             });
         });
 
@@ -288,10 +292,11 @@ describe('BewotecExpertAdapter', () => {
             };
 
             adapter.setData(data).then(() => {
-                done.fail('unexpected result');
-            }, () => {
                 expect(requestParameter).toEqual(expectation);
                 done();
+            }, (error) => {
+                console.log(error.message);
+                done.fail('unexpected result');
             });
         });
 
@@ -334,10 +339,11 @@ describe('BewotecExpertAdapter', () => {
             };
 
             adapter.setData(data).then(() => {
-                done.fail('unexpected result');
-            }, () => {
                 expect(requestParameter).toEqual(expectation);
                 done();
+            }, (error) => {
+                console.log(error.message);
+                done.fail('unexpected result');
             });
         });
 
@@ -367,10 +373,11 @@ describe('BewotecExpertAdapter', () => {
             };
 
             adapter.setData(data).then(() => {
-                done.fail('unexpected result');
-            }, () => {
                 expect(requestParameter).toEqual(expectation);
                 done();
+            }, (error) => {
+                console.log(error.message);
+                done.fail('unexpected result');
             });
         });
 
@@ -420,10 +427,11 @@ describe('BewotecExpertAdapter', () => {
             };
 
             adapter.setData(data).then(() => {
-                done.fail('unexpected result');
-            }, () => {
                 expect(requestParameter).toEqual(expectation);
                 done();
+            }, (error) => {
+                console.log(error.message);
+                done.fail('unexpected result');
             });
         });
 
@@ -458,10 +466,11 @@ describe('BewotecExpertAdapter', () => {
             };
 
             adapter.setData(data).then(() => {
-                done.fail('unexpected result');
-            }, () => {
                 expect(requestParameter).toEqual(expectation);
                 done();
+            }, (error) => {
+                console.log(error.message);
+                done.fail('unexpected result');
             });
         });
 
@@ -539,10 +548,11 @@ describe('BewotecExpertAdapter', () => {
             };
 
             adapter.setData(data).then(() => {
-                done.fail('unexpected result');
-            }, () => {
                 expect(requestParameter).toEqual(expectation);
                 done();
+            }, (error) => {
+                console.log(error.message);
+                done.fail('unexpected result');
             });
         });
 

@@ -92,67 +92,77 @@ class BewotecExpertAdapter {
     }
 
     connect(options) {
-        if (!options || !options.token) {
-            throw new Error('No token found in connectionOptions.');
+        try {
+            if (!options || !options.token) {
+                throw new Error('No token found in connectionOptions.');
+            }
+
+            this.connection = this.createConnection(options);
+
+            return this.connection.get().then(() => {
+                this.logger.log('BewotecExpert connection available');
+            }, (error) => {
+                this.logger.error(error.message);
+                this.logger.info('response is: ' + error.response);
+                // in case of "empty expert model" the connection will still work
+                this.logger.error('Instantiate connection error - but nevertheless transfer could work');
+                throw error;
+            });
+        } catch (error) {
+            return Promise.reject(error);
         }
-
-        this.connection = this.createConnection(options);
-
-        return this.connection.get().then(() => {
-            this.logger.log('BewotecExpert connection available');
-        }, (error) => {
-            this.logger.error(error.message);
-            this.logger.info('response is: ' + error.response);
-            // in case of "empty expert model" the connection will still work
-            this.logger.error('Instantiate connection error - but nevertheless transfer could work');
-            throw error;
-        });
     }
 
     getData() {
-        return this.getConnection().get().then((response) => {
-            let xml = (response || {}).data;
+        try {
+            return this.getConnection().get().then((response) => {
+                let xml = (response || {}).data;
 
-            this.logger.info('RAW XML:');
-            this.logger.info(xml);
+                this.logger.info('RAW XML:');
+                this.logger.info(xml);
 
-            let crsObject = this.xmlParser.parse(xml);
+                let crsObject = this.xmlParser.parse(xml);
 
-            this.logger.info('PARSED XML:');
-            this.logger.info(crsObject);
+                this.logger.info('PARSED XML:');
+                this.logger.info(crsObject);
 
-            return this.mapCrsObjectToAdapterObject(crsObject);
-        }, (error) => {
-            this.logger.error(error.message);
-            this.logger.info('response is: ' + error.response);
-            this.logger.error('error getting data');
-            throw error;
-        });
+                return this.mapCrsObjectToAdapterObject(crsObject);
+            }, (error) => {
+                this.logger.error(error.message);
+                this.logger.info('response is: ' + error.response);
+                this.logger.error('error getting data');
+
+                return Promise.reject(error);
+            });
+        } catch (error) {
+            return Promise.reject(error);
+        }
     }
 
     setData(dataObject = {}) {
-        return this.getData().then((adapterObject) => {
-            let crsObject = this.createBaseCrsObject();
+        try {
+            return this.getData().then((adapterObject) => {
+                let crsObject = this.createBaseCrsObject();
 
-            crsObject = this.assignDataObjectToCrsObject(crsObject, adapterObject);
-            crsObject = this.assignDataObjectToCrsObject(crsObject, dataObject);
+                crsObject = this.assignDataObjectToCrsObject(crsObject, adapterObject);
+                crsObject = this.assignDataObjectToCrsObject(crsObject, dataObject);
 
-            this.logger.info('CRS OBJECT:');
-            this.logger.info(crsObject);
+                this.logger.info('CRS OBJECT:');
+                this.logger.info(crsObject);
 
-            try {
                 return this.getConnection().send(crsObject).catch((error) => {
                     this.logger.info(error);
                     this.logger.error('error during transfer - please check the result');
                     throw error;
                 });
-            } catch (error) {
-                return Promise.reject(error);
-            }
-        }).then(null, (error) => {
-            this.logger.error(error);
-            throw new Error('[.setData] ' + error.message);
-        });
+            }).then(null, (error) => {
+                this.logger.error(error);
+
+                return Promise.reject(new Error('[.setData] ' + error.message));
+            });
+        } catch (error) {
+            return Promise.reject(error);
+        }
     }
 
     exit() {
@@ -287,9 +297,9 @@ class BewotecExpertAdapter {
         let crsData = crsObject.ExpertModel;
         let dataObject = {
             agencyNumber: crsData.Agency,
-            operator: crsData[CONFIG.parserOptions.attrPrefix].operator,
+            operator: (crsData[CONFIG.parserOptions.attrPrefix] || {}).operator,
             numberOfTravellers: crsData.PersonCount,
-            travelType: crsData[CONFIG.parserOptions.attrPrefix].traveltype,
+            travelType: (crsData[CONFIG.parserOptions.attrPrefix] || {}).traveltype,
             remark: crsData.Remarks,
             services: [],
         };
@@ -603,9 +613,9 @@ class BewotecExpertAdapter {
      * @param dataObject object
      */
     assignBasicData(crsObject, dataObject) {
-        crsObject.rem = [dataObject.remark, crsObject.rem].filter(Boolean).join(',');
-        crsObject.r = dataObject.travelType || crsObject.r;
-        crsObject.p = dataObject.numberOfTravellers || crsObject.p || CONFIG.crs.defaultValues.numberOfTravellers;
+        crsObject.rem = [dataObject.remark, crsObject.rem].filter(Boolean).join(',') || void 0;
+        crsObject.r = dataObject.travelType || crsObject.r || void 0;
+        crsObject.p = dataObject.numberOfTravellers || crsObject.p || CONFIG.crs.defaultValues.numberOfTravellers || void 0;
     }
 
     /**
