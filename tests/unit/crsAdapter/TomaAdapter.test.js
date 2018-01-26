@@ -1,5 +1,5 @@
 import TomaAdapter from '../../../src/crsAdapter/TomaAdapter';
-import {DEFAULT_OPTIONS} from '../../../src/UbpCrsAdapter';
+import {DEFAULT_OPTIONS, SERVICE_TYPES} from '../../../src/UbpCrsAdapter';
 
 describe('TomaAdapter', () => {
     let adapter;
@@ -367,7 +367,7 @@ describe('TomaAdapter', () => {
                     name: 'DOE/JOHN',
                     age: '040485'
                 }],
-                marked: false,
+                marked: true,
             };
 
             TomaConnection.GetXmlData.and.returnValue(xml);
@@ -690,7 +690,7 @@ describe('TomaAdapter', () => {
                     numberOfTravellers: 1,
                     services: [
                         {
-                            type: 'roundTrip',
+                            type: SERVICE_TYPES.roundTrip,
                             marked: '',
                             bookingId: 'E2784NQXTHEN',
                             destination: 'YYZ',
@@ -701,6 +701,29 @@ describe('TomaAdapter', () => {
                                 name: 'DOE/JOHN',
                                 age: '32',
                             }],
+                        },
+                    ]
+                });
+
+                expect(TomaConnection.FIFramePutData).toHaveBeenCalledWith(expectXml);
+            });
+
+            it('setData() should set minimal round-trip service', () => {
+                let expectXml = createTomaXml(
+                    '<Action>BA</Action>' +
+                    '<NoOfPersons>1</NoOfPersons>' +
+                    '<KindOfService.1>R</KindOfService.1>' +
+                    '<From.1>start</From.1>' +
+                    '<To.1>end</To.1>'
+                );
+
+                adapter.setData({
+                    numberOfTravellers: 1,
+                    services: [
+                        {
+                            type: SERVICE_TYPES.roundTrip,
+                            startDate: 'start',
+                            endDate: 'end',
                         },
                     ]
                 });

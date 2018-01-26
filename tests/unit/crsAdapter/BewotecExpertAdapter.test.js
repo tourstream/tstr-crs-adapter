@@ -465,6 +465,32 @@ describe('BewotecExpertAdapter', () => {
             });
         });
 
+        it('setData() should send minimal round trip data', (done) => {
+            let expectation = createParams({
+                n0: 'R',
+                l0: '',
+                s0: 'start',
+                i0: 'end',
+            });
+
+            let data = {
+                services: [
+                    {
+                        type: 'roundTrip',
+                        startDate: 'start',
+                        endDate: 'end',
+                    },
+                ],
+            };
+
+            adapter.setData(data).then(() => {
+                done.fail('unexpected result');
+            }, () => {
+                expect(requestParameter).toEqual(expectation);
+                done();
+            });
+        });
+
         it('setData() should send complete camper data', (done) => {
             let expectation = createParams({
                 n0: 'WM',

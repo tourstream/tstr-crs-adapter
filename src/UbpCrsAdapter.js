@@ -25,6 +25,13 @@ const CRS_TYPES = {
     traffics: 'traffics',
 };
 
+const GENDER_TYPES = {
+    female: 'female',
+    male: 'male',
+    child: 'child',
+    infant: 'infant',
+};
+
 const CRS_TYPE_2_ADAPTER_MAP = {
     toma: TomaAdapter,
     tomaspc: TomaSPCAdapter,
@@ -237,6 +244,7 @@ class UbpCrsAdapter {
 export {
     SERVICE_TYPES,
     CRS_TYPES,
+    GENDER_TYPES,
     DEFAULT_OPTIONS,
     UbpCrsAdapter as default,
 };

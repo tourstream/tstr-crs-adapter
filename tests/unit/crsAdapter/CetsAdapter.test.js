@@ -1,5 +1,5 @@
 import CetsAdapter from '../../../src/crsAdapter/CetsAdapter';
-import {DEFAULT_OPTIONS} from '../../../src/UbpCrsAdapter';
+import {DEFAULT_OPTIONS, SERVICE_TYPES} from '../../../src/UbpCrsAdapter';
 
 describe('CetsAdapter', () => {
     let adapter;
@@ -620,6 +620,34 @@ describe('CetsAdapter', () => {
                     '</Fah>';
 
                 let expectedXml = createCustomResponseXml(service);
+
+                adapter.setData(data);
+
+                expect(CetsConnection.returnBooking).toHaveBeenCalledWith(expectedXml);
+            });
+
+            it('setData() should send minimal round trip service correct', () => {
+                let data = {
+                    services: [
+                        {
+                            type: SERVICE_TYPES.roundTrip,
+                            startDate: 'start',
+                            endDate: 'end',
+                        },
+                    ],
+                };
+
+                let service =
+                    '<Fah ServiceType="R">' +
+                    '<Product/>' +
+                    '<Program>BAUSTEIN</Program>' +
+                    '<Destination>NEZ</Destination>' +
+                    '<Room/>' +
+                    '<StartDate>start</StartDate>' +
+                    '<Duration/>' +
+                    '</Fah>';
+
+                let expectedXml = createResponseXml(service);
 
                 adapter.setData(data);
 

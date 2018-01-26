@@ -3,7 +3,7 @@ import xml2js from 'xml2js';
 import fastXmlParser from 'fast-xml-parser';
 import moment from 'moment';
 import {SERVICE_TYPES} from '../UbpCrsAdapter';
-import RoundTripHelper from '../helper/RoundTripHelper';
+import TravellerHelper from '../helper/TravellerHelper';
 
 /**
  * need to be true:
@@ -76,7 +76,7 @@ class TomaAdapter {
         this.options = options;
         this.logger = logger;
         this.helper = {
-            roundTrip: new RoundTripHelper(Object.assign({}, options, {
+            traveller: new TravellerHelper(Object.assign({}, options, {
                 crsDateFormat: CONFIG.crs.dateFormat,
                 gender2SalutationMap: CONFIG.crs.gender2SalutationMap,
             })),
@@ -177,6 +177,18 @@ class TomaAdapter {
 
     /**
      * @private
+     * @returns {ActiveXObject}
+     */
+    getConnection() {
+        if (this.connection) {
+            return this.connection;
+        }
+
+        throw new Error('No connection available - please connect to TOMA first.');
+    }
+
+    /**
+     * @private
      * @returns {string}
      */
     getCrsXml() {
@@ -186,18 +198,6 @@ class TomaAdapter {
             this.logger.error(error);
             throw new Error('connection::GetXmlData: ' + error.message);
         }
-    }
-
-    /**
-     * @private
-     * @returns {ActiveXObject}
-     */
-    getConnection() {
-        if (this.connection) {
-            return this.connection;
-        }
-
-        throw new Error('No connection available - please connect to TOMA first.');
     }
 
     /**
@@ -246,7 +246,7 @@ class TomaAdapter {
             }
 
             if (service) {
-                service.marked = this.isMarked(xmlTom, lineNumber, {type: service.type});
+                service.marked = this.isMarked(xmlTom, lineNumber, service);
 
                 dataObject.services.push(service);
             }
@@ -323,7 +323,7 @@ class TomaAdapter {
             mealCode: serviceCodes[1] || void 0,
             roomQuantity: xml['Count.' + lineNumber],
             roomOccupancy: xml['Occupancy.' + lineNumber],
-            children: this.helper.roundTrip.collectTravellers(
+            children: this.helper.traveller.collectTravellers(
                 xml['TravAssociation.' + lineNumber],
                 (travellerLineNumber) => this.getTravellerByLineNumber(xml, travellerLineNumber)
             ).filter((traveller) => ['child', 'infant'].indexOf(traveller.gender) > -1),
@@ -352,7 +352,7 @@ class TomaAdapter {
             destination: hasBookingId ? xml['Accommodation.' + lineNumber] : xml['ServiceCode.' + lineNumber],
             startDate: startDate.isValid() ? startDate.format(this.options.useDateFormat) : xml['From.' + lineNumber],
             endDate: endDate.isValid() ? endDate.format(this.options.useDateFormat) : xml['To.' + lineNumber],
-            travellers: this.helper.roundTrip.collectTravellers(
+            travellers: this.helper.traveller.collectTravellers(
                 xml['TravAssociation.' + lineNumber],
                 (travellerLineNumber) => this.getTravellerByLineNumber(xml, travellerLineNumber)
             ),
@@ -722,7 +722,7 @@ class TomaAdapter {
         let endDate = moment(service.endDate, this.options.useDateFormat);
 
         xml['KindOfService.' + lineNumber] = CONFIG.crs.serviceTypes.roundTrip;
-        xml['ServiceCode.' + lineNumber] = 'NEZ' + service.bookingId;
+        xml['ServiceCode.' + lineNumber] = service.bookingId ? 'NEZ' + service.bookingId : void 0;
         xml['Accommodation.' + lineNumber] = service.destination;
         xml['From.' + lineNumber] = startDate.isValid() ? startDate.format(CONFIG.crs.dateFormat) : service.startDate;
         xml['To.' + lineNumber] = endDate.isValid() ? endDate.format(CONFIG.crs.dateFormat) : service.endDate;
@@ -742,7 +742,7 @@ class TomaAdapter {
 
         service.travellers.forEach((serviceTraveller) => {
             const travellerLineNumber = this.getNextEmptyTravellerLineNumber(xml);
-            const traveller = this.helper.roundTrip.normalizeTraveller(serviceTraveller);
+            const traveller = this.helper.traveller.normalizeTraveller(serviceTraveller);
 
             firstLineNumber = firstLineNumber || travellerLineNumber;
             lastLineNumber = travellerLineNumber;

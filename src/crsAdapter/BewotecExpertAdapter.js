@@ -2,7 +2,7 @@ import es6shim from 'es6-shim';
 import moment from 'moment';
 import axios from 'axios';
 import { SERVICE_TYPES } from '../UbpCrsAdapter';
-import RoundTripHelper from '../helper/RoundTripHelper';
+import TravellerHelper from '../helper/TravellerHelper';
 
 const CONFIG = {
     crs: {
@@ -41,7 +41,7 @@ class BewotecExpertAdapter {
         this.options = options;
         this.logger = logger;
         this.helper = {
-            roundTrip: new RoundTripHelper(Object.assign({}, options, {
+            traveller: new TravellerHelper(Object.assign({}, options, {
                 crsDateFormat: CONFIG.crs.dateFormat,
                 gender2SalutationMap: CONFIG.crs.gender2SalutationMap,
             })),
@@ -383,7 +383,7 @@ class BewotecExpertAdapter {
         let endDate = moment(service.endDate, this.options.useDateFormat);
 
         crsObject['n' + lineNumber] = CONFIG.crs.serviceTypes.roundTrip;
-        crsObject['l' + lineNumber] = 'NEZ' + service.bookingId;
+        crsObject['l' + lineNumber] = service.bookingId ? 'NEZ' + service.bookingId : '';
         crsObject['u' + lineNumber] = service.destination;
         crsObject['s' + lineNumber] = startDate.isValid() ? startDate.format(CONFIG.crs.dateFormat) : service.startDate;
         crsObject['i' + lineNumber] = endDate.isValid() ? endDate.format(CONFIG.crs.dateFormat) : service.endDate;
@@ -404,7 +404,7 @@ class BewotecExpertAdapter {
         let lastLineNumber = '';
 
         service.travellers.forEach((serviceTraveller) => {
-            const traveller = this.helper.roundTrip.normalizeTraveller(serviceTraveller);
+            const traveller = this.helper.traveller.normalizeTraveller(serviceTraveller);
 
             let travellerLineIndex = this.getNextEmptyTravellerLineIndex(crsObject);
 

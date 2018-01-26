@@ -4,34 +4,23 @@ describe('RoundTripHelper', () => {
     let helper;
 
     beforeEach(() => {
-        helper = new RoundTripHelper({gender2SalutationMap: {
-            female: 'miss',
-            infant: 'baby',
-        }});
+        helper = new RoundTripHelper({});
     });
 
-    it('normalizeTraveller should return empty object if no information is given', () => {
-        expect(helper.normalizeTraveller({})).toEqual({});
+    it('isServiceMarked should return true for empty code', () => {
+        expect(helper.isServiceMarked({})).toBeTruthy();
     });
 
-    it('normalizeTraveller should return traveller object', () => {
-        expect(helper.normalizeTraveller(
-            {gender: 'Female', name: 'jane', age: 25}
-        )).toEqual(
-            {salutation: 'miss', name: 'jane', age: 25}
-        );
+    it('isServiceMarked should return false if no bookingId is given', () => {
+        expect(helper.isServiceMarked({code: 'NEZcode'})).toBeFalsy();
+    });
 
-        expect(helper.normalizeTraveller(
-            {gender: 'inFant', name: 'jake'}
-        )).toEqual(
-            {salutation: 'baby', name: 'jake'}
-        );
+    it('isServiceMarked should return true for matching bookingId', () => {
+        expect(helper.isServiceMarked({code: 'NEZcode', bookingId: 'code'})).toBeTruthy();
+    });
 
-        expect(helper.normalizeTraveller(
-            {gender: 'unknown', name: 'jane', age: 25}
-        )).toEqual(
-            {name: 'jane', age: 25}
-        );
+    it('isServiceMarked should return false for not matching bookingId', () => {
+        expect(helper.isServiceMarked({code: 'NEZcode', bookingId: 'mycode'})).toBeFalsy();
     });
 });
 
