@@ -4,6 +4,8 @@ import axios from 'axios';
 import { SERVICE_TYPES } from '../UbpCrsAdapter';
 import querystring from 'querystring';
 import TravellerHelper from '../helper/TravellerHelper';
+import RoundTripHelper from '../helper/RoundTripHelper';
+import WindowHelper from '../helper/WindowHelper';
 import fastXmlParser from 'fast-xml-parser';
 
 const CONFIG = {
@@ -19,7 +21,6 @@ const CONFIG = {
             camperExtra: 'TA',
         },
         connectionUrl: 'http://localhost:7354/airob',
-        bewotecBridgeUrl: 'http://localhost:5000/bewotec-bridge',
         defaultValues: {
             action: 'BA',
             numberOfTravellers: 1,
@@ -52,11 +53,16 @@ class BewotecExpertAdapter {
     constructor(logger, options = {}) {
         this.options = options;
         this.logger = logger;
+
+        const helperOptions = Object.assign({}, options, {
+            crsDateFormat: CONFIG.crs.dateFormat,
+            gender2SalutationMap: CONFIG.crs.gender2SalutationMap,
+        });
+
         this.helper = {
-            traveller: new TravellerHelper(Object.assign({}, options, {
-                crsDateFormat: CONFIG.crs.dateFormat,
-                gender2SalutationMap: CONFIG.crs.gender2SalutationMap,
-            })),
+            traveller: new TravellerHelper(helperOptions),
+            roundTrip: new RoundTripHelper(helperOptions),
+            window: new WindowHelper(),
         };
 
         this.xmlParser = {
@@ -91,10 +97,14 @@ class BewotecExpertAdapter {
         };
     }
 
-    connect(options) {
+    connect(options = {}) {
         try {
-            if (!options || !options.token) {
+            if (!options.token) {
                 throw new Error('No token found in connectionOptions.');
+            }
+
+            if (!this.isProtocolSameAs('http') && !options.dataBridgeUrl) {
+                throw new Error('Connection options "dataBridgeUrl" needed when adapter is used in non HTTP context.');
             }
 
             this.connection = this.createConnection(options);
@@ -104,7 +114,6 @@ class BewotecExpertAdapter {
             }, (error) => {
                 this.logger.error(error.message);
                 this.logger.info('response is: ' + error.response);
-                // in case of "empty expert model" the connection will still work
                 this.logger.error('Instantiate connection error - but nevertheless transfer could work');
                 throw error;
             });
@@ -185,6 +194,8 @@ class BewotecExpertAdapter {
             return data;
         };
 
+        axios.defaults.headers.get['Cache-Control'] = 'no-cache,no-store,must-revalidate,max-age=-1,private';
+
         return {
             get: () => {
                 const baseUrl = CONFIG.crs.connectionUrl + '/expert';
@@ -200,7 +211,7 @@ class BewotecExpertAdapter {
                 this.logger.warn('will try to get data with a different protocol than HTTP');
 
                 return new Promise((resolve, reject) => {
-                    window.addEventListener('message', (message) => {
+                    this.helper.window.addEventListener('message', (message) => {
                         if (message.data.name !== 'bewotecTransfer') {
                             return;
                         }
@@ -210,19 +221,19 @@ class BewotecExpertAdapter {
                         if (message.data.error) {
                             this.logger.error('received error from bewotec bridge');
 
-                            reject(new Error(message.data.error));
+                            return reject(new Error(message.data.error));
                         }
 
                         this.logger.info('received data from bewotec bridge: ');
 
-                        resolve(message.data);
+                        return resolve(message.data);
                     }, false);
 
-                    const url = CONFIG.crs.bewotecBridgeUrl + '?token=' + options.token;
-                    const getWindow = window.open(url, '_blank', 'height=200,width=200');
+                    const url = options.dataBridgeUrl + '?token=' + options.token;
+                    const getWindow = this.helper.window.open(url, '_blank', 'height=200,width=200');
 
                     if (!getWindow) {
-                        reject(new Error('can not establish connection to data bridge'));
+                        return reject(new Error('can not establish connection to data bridge'));
                     }
                 });
             },
@@ -237,7 +248,7 @@ class BewotecExpertAdapter {
                 this.logger.warn('will try to send data with a different protocol than HTTP');
 
                 const url = baseUrl + '?' + querystring.stringify(params);
-                const sendWindow = window.open(url, '_blank', 'height=200,width=200');
+                const sendWindow = this.helper.window.open(url, '_blank', 'height=200,width=200');
 
                 if (sendWindow) {
                     while (!sendWindow.document) {}
@@ -257,7 +268,7 @@ class BewotecExpertAdapter {
     }
 
     isProtocolSameAs(type = '') {
-        return location.href.indexOf(type.toLowerCase() + '://') > -1;
+        return this.helper.window.location.href.indexOf(type.toLowerCase() + '://') > -1;
     }
 
     /**
@@ -292,8 +303,6 @@ class BewotecExpertAdapter {
      * @param crsObject object
      */
     mapCrsObjectToAdapterObject(crsObject) {
-        if (!crsObject || !crsObject.ExpertModel) return;
-
         let crsData = crsObject.ExpertModel;
         let dataObject = {
             agencyNumber: crsData.Agency,

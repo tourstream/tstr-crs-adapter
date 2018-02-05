@@ -1,13 +1,23 @@
 import injector from 'inject!../../../src/crsAdapter/BewotecExpertAdapter';
-import {DEFAULT_OPTIONS} from '../../../src/UbpCrsAdapter';
+import {DEFAULT_OPTIONS, SERVICE_TYPES} from '../../../src/UbpCrsAdapter';
 
-describe('BewotecExpertAdapter', () => {
-    let adapter, BewotecExpertAdapter, axios, requestUrl, requestParameter, logService;
+fdescribe('BewotecExpertAdapter', () => {
+    let adapter, BewotecExpertAdapter, axios, requestUrl, requestParameter, logService, windowSpy, locationHrefSpy;
 
     beforeEach(() => {
         logService = require('tests/unit/_mocks/LogService')();
 
+        locationHrefSpy = jasmine.createSpyObj('locationHref', ['indexOf']);
+        locationHrefSpy.indexOf.and.returnValue(1);
+
+        windowSpy = jasmine.createSpyObj('Window', ['addEventListener', 'open']);
+        windowSpy.location = {
+            href: locationHrefSpy,
+        };
+
         axios = require('tests/unit/_mocks/Axios')();
+
+        axios.defaults = {headers: {get: {}}};
         axios.get.and.callFake((url, parameter) => {
             requestUrl = url;
             requestParameter = parameter;
@@ -17,18 +27,28 @@ describe('BewotecExpertAdapter', () => {
 
         BewotecExpertAdapter = injector({
             'axios': axios,
+            '../helper/WindowHelper': jasmine.createSpy().and.returnValue(windowSpy),
         });
-
-        DEFAULT_OPTIONS.crsType= 'bewotec';
 
         adapter = new BewotecExpertAdapter(logService, DEFAULT_OPTIONS);
     });
 
-    it('connect() should throw error when no token is given', () => {
+    it('connect() should reject when no token is given', () => {
         adapter.connect().then(() => {
             done.fail('unexpected result');
         }, (error) => {
             expect(error.message).toBe('No token found in connectionOptions.');
+            done();
+        });
+    });
+
+    it('connect() should reject when the connection to expert mask is not possible', (done) => {
+        axios.get.and.throwError('expert mask not available');
+
+        adapter.connect({ token: 'token' }).then(() => {
+            done.fail('unexpected result');
+        }, (error) => {
+            expect(error.message).toBe('expert mask not available');
             done();
         });
     });
@@ -55,6 +75,68 @@ describe('BewotecExpertAdapter', () => {
         });
     });
 
+    describe('is not in HTTP context', () => {
+        beforeEach(() => {
+            locationHrefSpy.indexOf.and.returnValue(-1);
+        });
+
+        it('connect() should reject if no dataBridgeUrl is given when not in http context', (done) => {
+            adapter.connect({ token: 'token' }).then(() => {
+                done.fail('unexpected result');
+            }, (error) => {
+                expect(error.message).toBe(
+                    'Connection options "dataBridgeUrl" needed when adapter is used in non HTTP context.'
+                );
+                done();
+            });
+        });
+
+        it('connect() should reject if no connection to data bridge is possible', (done) => {
+            adapter.connect({ token: 'token', dataBridgeUrl: 'dataBridgeUrl' }).then(() => {
+                done.fail('unexpected result');
+            }, (error) => {
+                expect(error.message).toBe('can not establish connection to data bridge');
+                done();
+            });
+        });
+
+        it('connect() should reject if data bridge returns error', (done) => {
+            windowSpy.open.and.returnValue('newWindowRef');
+            windowSpy.addEventListener.and.callFake((eventName, callback) => {
+                callback({ data: { name: 'unknown' } });
+                callback({ data: {
+                    name: 'bewotecTransfer',
+                    error: 'transfer error',
+                } });
+            });
+
+            adapter.connect({ token: 'token', dataBridgeUrl: 'dataBridgeUrl' }).then(() => {
+                done.fail('unexpected result');
+            }, (error) => {
+                expect(windowSpy.open.calls.mostRecent().args[0]).toBe('dataBridgeUrl?token=token');
+                expect(error.message).toBe('transfer error');
+                done();
+            });
+        });
+
+        it('connect() should create connection on success in non http context', (done) => {
+            windowSpy.open.and.returnValue('newWindowRef');
+            windowSpy.addEventListener.and.callFake((eventName, callback) => {
+                callback({ data: {
+                    name: 'bewotecTransfer',
+                    some: 'data',
+                } });
+            });
+
+            adapter.connect({ token: 'token', dataBridgeUrl: 'dataBridgeUrl' }).then(() => {
+                done();
+            }, (error) => {
+                console.log(error.message);
+                done.fail('unexpected result');
+            });
+        });
+    });
+
     it('setData() should throw error if no connection is available', (done) => {
         adapter.setData().then(() => {
             done.fail('unexpected result');
@@ -66,7 +148,7 @@ describe('BewotecExpertAdapter', () => {
         });
     });
 
-    describe('adapter is connected', () => {
+    fdescribe('adapter is connected', () => {
         function createParams(data = {}) {
             data.a = 'BA';
             data.v = 'FTI';
@@ -78,7 +160,18 @@ describe('BewotecExpertAdapter', () => {
         }
 
         beforeEach(() => {
-            adapter.connect({ token: 'token' });
+            adapter.connect({ token: 'token', dataBridgeUrl: 'dataUrl' });
+        });
+
+        it('getData() should reject when connection to expert mask is not possible', (done) => {
+            locationHrefSpy.indexOf.and.returnValue(-1);
+
+            adapter.getData().then(() => {
+                done.fail('unexpected result');
+            }, (error) => {
+                expect(error.message).toBe('can not establish connection to data bridge');
+                done();
+            });
         });
 
         it('getData() should return "empty" object when it is not possible to get data from the expert mask', (done) => {
@@ -88,6 +181,156 @@ describe('BewotecExpertAdapter', () => {
                 });
                 expect(requestUrl).toEqual('http://localhost:7354/airob/expert');
                 expect(requestParameter).toEqual({ params: {token: 'token'} });
+                done();
+            }, (error) => {
+                console.log(error.message);
+                done.fail('unexpected result');
+            });
+        });
+
+        it('getData() should parse base data', (done) => {
+            let xml = '<?xml version="1.0" encoding="UTF-8"?>';
+
+            axios.get.and.returnValue(Promise.resolve({ data:
+                xml +
+                '<ExpertModel operator="operator" traveltype="travel type">' +
+                '<Agency>agency</Agency>' +
+                '<PersonCount>person count</PersonCount>' +
+                '<Remarks>remarks</Remarks>' +
+                '<Services>' +
+                '<Service />' +
+                '</Services>' +
+                '</ExpertModel>',
+            }));
+
+            adapter.getData().then((result) => {
+                expect(result).toEqual({
+                    agencyNumber: 'agency',
+                    numberOfTravellers: 'person count',
+                    remark: 'remarks',
+                    operator: 'operator',
+                    travelType: 'travel type',
+                    services: [],
+                });
+                done();
+            }, (error) => {
+                console.log(error.message);
+                done.fail('unexpected result');
+            });
+        });
+
+        it('getData() should parse nothing if no "requesttype" is given', (done) => {
+            let xml = '<?xml version="1.0" encoding="UTF-8"?>';
+
+            axios.get.and.returnValue(Promise.resolve({ data:
+                xml +
+                '<ExpertModel>' +
+                '<Services>' +
+                '<Service _="" />' +
+                '</Services>' +
+                '</ExpertModel>',
+            }));
+
+            adapter.getData().then((result) => {
+                expect(result).toEqual({
+                    services: [],
+                });
+                done();
+            }, (error) => {
+                console.log(error.message);
+                done.fail('unexpected result');
+            });
+        });
+
+        it('getData() should parse nothing if unknown "requesttype" is given', (done) => {
+            let xml = '<?xml version="1.0" encoding="UTF-8"?>';
+
+            axios.get.and.returnValue(Promise.resolve({ data:
+                xml +
+                '<ExpertModel>' +
+                '<Services>' +
+                '<Service requesttype="unknown" />' +
+                '</Services>' +
+                '</ExpertModel>',
+            }));
+
+            adapter.getData().then((result) => {
+                expect(result).toEqual({
+                    services: [],
+                });
+                done();
+            }, (error) => {
+                console.log(error.message);
+                done.fail('unexpected result');
+            });
+        });
+
+        it('getData() should parse strange car data correct', (done) => {
+            let xml = '<?xml version="1.0" encoding="UTF-8"?>';
+
+            axios.get.and.returnValue(Promise.resolve({ data:
+                xml +
+                '<ExpertModel>' +
+                '<Services>' +
+                '<Service ' +
+                    'requesttype="MW" ' +
+                    'start="start" ' +
+                    'end="end" ' +
+                    'accomodation="accomodation" ' +
+                    'servicecode="service code" />' +
+                '</Services>' +
+                '</ExpertModel>',
+            }));
+
+            adapter.getData().then((result) => {
+                expect(result).toEqual({
+                    services: [{
+                        pickUpDate: 'start',
+                        dropOffDate: 'end',
+                        pickUpTime: 'accomodation',
+                        type: SERVICE_TYPES.car,
+                        marked: true,
+                    }],
+                });
+                done();
+            }, (error) => {
+                console.log(error.message);
+                done.fail('unexpected result');
+            });
+        });
+
+        it('getData() should parse car data correct', (done) => {
+            let xml = '<?xml version="1.0" encoding="UTF-8"?>';
+
+            axios.get.and.returnValue(Promise.resolve({ data:
+                xml +
+                '<ExpertModel>' +
+                '<Services>' +
+                '<Service ' +
+                    'requesttype="MW" ' +
+                    'start="140718" ' +
+                    'end="210718" ' +
+                    'accomodation="0915" ' +
+                    'servicecode="USA89E1/LAX-SFO1" />' +
+                '</Services>' +
+                '</ExpertModel>',
+            }));
+
+            adapter.getData().then((result) => {
+                expect(result).toEqual({
+                    services: [{
+                        pickUpDate: '14072018',
+                        dropOffDate: '21072018',
+                        pickUpTime: '0915',
+                        type: SERVICE_TYPES.car,
+                        duration: 7,
+                        rentalCode: 'USA89',
+                        vehicleTypeCode: 'E1',
+                        pickUpLocation: 'LAX',
+                        dropOffLocation: 'SFO1',
+                        marked: false,
+                    }],
+                });
                 done();
             }, (error) => {
                 console.log(error.message);
@@ -493,10 +736,11 @@ describe('BewotecExpertAdapter', () => {
             };
 
             adapter.setData(data).then(() => {
-                done.fail('unexpected result');
-            }, () => {
                 expect(requestParameter).toEqual(expectation);
                 done();
+            }, (error) => {
+                console.log(error.message);
+                done.fail('unexpected result');
             });
         });
 

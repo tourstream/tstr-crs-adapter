@@ -147,6 +147,8 @@ class TrafficsTbmAdapter {
      * @returns {{send: function(*=), get: function(): AxiosPromise}}
      */
     createConnection(options) {
+        axios.defaults.headers.get['Cache-Control'] = 'no-cache,no-store,must-revalidate,max-age=-1,private';
+
         return {
             send: (data = {}) => {
                 try {

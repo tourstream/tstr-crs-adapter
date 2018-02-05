@@ -107,7 +107,8 @@ TOMA (new)        | UbpCrsAdapter.CRS_TYPES.toma2    | externalCatalogVersion (*
 |                 |                                  | popupId                    | 'popup_id0123456789abcdef'
 Merlin            | UbpCrsAdapter.CRS_TYPES.merlin   |                            | 
 MyJack / Jack+    | UbpCrsAdapter.CRS_TYPES.bewotec  | token                      | '0123456789abcdef'
-Cosmo / CosmoNaut | UbpCrsAdapter.CRS_TYPES.traffics | dataSourceUrl              | 'example://url.where-the-crs-get-the/adapter-data-from'
+|                 |                                  | dataBridgeUrl              | 'example://url.where-the-adapter/can-get-the-crs-data/when-not-in-http-context'
+Cosmo / CosmoNaut | UbpCrsAdapter.CRS_TYPES.traffics | dataSourceUrl              | 'example://url.where-the-crs/can-get-the-adapter-data'
 |                 |                                  | environment                | \<environment\>
 |                 |                                  | exportId                   | '0123-456789-abcdef'
 
@@ -116,9 +117,13 @@ Cosmo / CosmoNaut | UbpCrsAdapter.CRS_TYPES.traffics | dataSourceUrl            
 For some connections you need credentials or other connection data,
 which you can set in the `connectionOptions`.
 
-[MyJack / Jack+] _\<environment\>_ is one of **'test', 'live'**
+**[TOMA 2]** _**connectionUrl** is needed, when the adapter is not directly used in the first child window of the TOMA application_
 
-_hint: TOMA SPC needs the **connectionUrl** if the website which uses the adapter is not directly the site which is requested by the TOMA application_
+**[MyJack / Jack+]** _**dataBridgeUrl** is needed, if the adapter is used in a non HTTP context. 
+This has to be a site which serves the CRS data per postMessage with the payload 
+`{ name: 'bewotecTransfer', error: 'in case of error ...', data: 'CRS XML data string' }`_
+
+**[Cosmo / CosmoNaut]** _\<environment\>_ is one of **'test', 'live'**
 
 
 ### `.services` object structure
