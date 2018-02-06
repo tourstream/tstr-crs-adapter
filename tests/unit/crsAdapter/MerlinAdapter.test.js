@@ -21,7 +21,10 @@ describe('MerlinAdapter', () => {
 
         axios = require('tests/unit/_mocks/Axios')();
 
-        axios.defaults = {headers: {post: {}}};
+        axios.defaults = {headers: {
+            post: {},
+            get: {},
+        }};
         axios.post.and.callFake((url, parameter) => {
             requestParameter = parameter;
 
@@ -80,7 +83,7 @@ describe('MerlinAdapter', () => {
         });
     });
 
-    describe('adapter is connected', () => {
+    describe('is connected', () => {
         beforeEach(() => {
             axios.get.and.returnValue(Promise.resolve());
 

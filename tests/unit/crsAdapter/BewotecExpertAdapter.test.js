@@ -1,7 +1,7 @@
 import injector from 'inject!../../../src/crsAdapter/BewotecExpertAdapter';
 import {DEFAULT_OPTIONS, SERVICE_TYPES} from '../../../src/UbpCrsAdapter';
 
-fdescribe('BewotecExpertAdapter', () => {
+describe('BewotecExpertAdapter', () => {
     let adapter, BewotecExpertAdapter, axios, requestUrl, requestParameter, logService, windowSpy, locationHrefSpy;
 
     beforeEach(() => {
@@ -148,7 +148,7 @@ fdescribe('BewotecExpertAdapter', () => {
         });
     });
 
-    fdescribe('adapter is connected', () => {
+    describe('adapter is connected', () => {
         function createParams(data = {}) {
             data.a = 'BA';
             data.v = 'FTI';
@@ -219,29 +219,6 @@ fdescribe('BewotecExpertAdapter', () => {
             });
         });
 
-        it('getData() should parse nothing if no "requesttype" is given', (done) => {
-            let xml = '<?xml version="1.0" encoding="UTF-8"?>';
-
-            axios.get.and.returnValue(Promise.resolve({ data:
-                xml +
-                '<ExpertModel>' +
-                '<Services>' +
-                '<Service _="" />' +
-                '</Services>' +
-                '</ExpertModel>',
-            }));
-
-            adapter.getData().then((result) => {
-                expect(result).toEqual({
-                    services: [],
-                });
-                done();
-            }, (error) => {
-                console.log(error.message);
-                done.fail('unexpected result');
-            });
-        });
-
         it('getData() should parse nothing if unknown "requesttype" is given', (done) => {
             let xml = '<?xml version="1.0" encoding="UTF-8"?>';
 
@@ -249,6 +226,7 @@ fdescribe('BewotecExpertAdapter', () => {
                 xml +
                 '<ExpertModel>' +
                 '<Services>' +
+                '<Service _="" />' +
                 '<Service requesttype="unknown" />' +
                 '</Services>' +
                 '</ExpertModel>',
@@ -277,7 +255,8 @@ fdescribe('BewotecExpertAdapter', () => {
                     'start="start" ' +
                     'end="end" ' +
                     'accomodation="accomodation" ' +
-                    'servicecode="service code" />' +
+                    'servicecode="service code" ' +
+                    'marker="X" />' +
                 '</Services>' +
                 '</ExpertModel>',
             }));
@@ -288,6 +267,33 @@ fdescribe('BewotecExpertAdapter', () => {
                         pickUpDate: 'start',
                         dropOffDate: 'end',
                         pickUpTime: 'accomodation',
+                        type: SERVICE_TYPES.car,
+                        marked: true,
+                    }],
+                });
+                done();
+            }, (error) => {
+                console.log(error.message);
+                done.fail('unexpected result');
+            });
+        });
+
+        it('getData() should parse minimal car data correct', (done) => {
+            let xml = '<?xml version="1.0" encoding="UTF-8"?>';
+
+            axios.get.and.returnValue(Promise.resolve({ data:
+                xml +
+                '<ExpertModel>' +
+                '<Services>' +
+                '<Service ' +
+                'requesttype="MW" />' +
+                '</Services>' +
+                '</ExpertModel>',
+            }));
+
+            adapter.getData().then((result) => {
+                expect(result).toEqual({
+                    services: [{
                         type: SERVICE_TYPES.car,
                         marked: true,
                     }],
@@ -335,6 +341,355 @@ fdescribe('BewotecExpertAdapter', () => {
             }, (error) => {
                 console.log(error.message);
                 done.fail('unexpected result');
+            });
+        });
+
+        it('getData() should parse strange hotel data correct', (done) => {
+            let xml = '<?xml version="1.0" encoding="UTF-8"?>';
+
+            axios.get.and.returnValue(Promise.resolve({ data:
+                xml +
+                '<ExpertModel>' +
+                '<Services>' +
+                '<Service ' +
+                'requesttype="H" ' +
+                'start="start" ' +
+                'end="end" ' +
+                'accomodation="accomodation" ' +
+                'count="count" ' +
+                'occupancy="occupancy" ' +
+                'allocation="allocation" ' +
+                'servicecode="service code" />' +
+                '</Services>' +
+                '</ExpertModel>',
+            }));
+
+            adapter.getData().then((result) => {
+                expect(result).toEqual({
+                    services: [{
+                        roomCode: 'accomodation',
+                        roomQuantity: 'count',
+                        roomOccupancy: 'occupancy',
+                        children: [],
+                        destination: 'service code',
+                        dateFrom: 'start',
+                        dateTo: 'end',
+                        type: SERVICE_TYPES.hotel,
+                        marked: false,
+                    }],
+                });
+                done();
+            }, (error) => {
+                console.log(error.message);
+                done.fail('unexpected result');
+            });
+        });
+
+        it('getData() should parse minimal hotel data correct', (done) => {
+            let xml = '<?xml version="1.0" encoding="UTF-8"?>';
+
+            axios.get.and.returnValue(Promise.resolve({ data:
+                xml +
+                '<ExpertModel>' +
+                '<Services>' +
+                '<Service ' +
+                'requesttype="H" />' +
+                '</Services>' +
+                '<Travellers>' +
+                '</Travellers>' +
+                '</ExpertModel>',
+            }));
+
+            adapter.getData().then((result) => {
+                expect(result).toEqual({
+                    services: [{
+                        children: [],
+                        type: SERVICE_TYPES.hotel,
+                        marked: true,
+                    }],
+                });
+                done();
+            }, (error) => {
+                console.log(error.message);
+                done.fail('unexpected result');
+            });
+        });
+
+        it('getData() should parse hotel data correct', (done) => {
+            let xml = '<?xml version="1.0" encoding="UTF-8"?>';
+
+            axios.get.and.returnValue(Promise.resolve({ data:
+                xml +
+                '<ExpertModel>' +
+                '<Services>' +
+                '<Service ' +
+                'requesttype="H" ' +
+                'start="140718" ' +
+                'end="210718" ' +
+                'accomodation="DZ U" ' +
+                'count="1" ' +
+                'occupancy="2" ' +
+                'allocation="1-4" ' +
+                'servicecode="LAX20S" />' +
+                '</Services>' +
+                '<Travellers>' +
+                '<Traveller name="k name" salutation="K" age="k age" />' +
+                '<Traveller name="h name" salutation="H" age="h age" />' +
+                '<Traveller name="b name" salutation="B" age="b age" />' +
+                '</Travellers>' +
+                '</ExpertModel>',
+            }));
+
+            adapter.getData().then((result) => {
+                expect(result).toEqual({
+                    services: [{
+                        roomCode: 'DZ',
+                        mealCode: 'U',
+                        roomQuantity: '1',
+                        roomOccupancy: '2',
+                        children: [
+                            { gender: 'child', name: 'k name', age: 'k age' },
+                            { gender: 'infant', name: 'b name', age: 'b age' },
+                        ],
+                        destination: 'LAX20S',
+                        dateFrom: '14072018',
+                        dateTo: '21072018',
+                        type: SERVICE_TYPES.hotel,
+                        marked: false,
+                    }],
+                });
+                done();
+            }, (error) => {
+                console.log(error.message);
+                done.fail('unexpected result');
+            });
+        });
+
+        it('getData() should parse strange round trip data correct', (done) => {
+            let xml = '<?xml version="1.0" encoding="UTF-8"?>';
+
+            axios.get.and.returnValue(Promise.resolve({ data:
+                xml +
+                '<ExpertModel>' +
+                '<Services>' +
+                '<Service ' +
+                'requesttype="R" ' +
+                'start="start" ' +
+                'end="end" ' +
+                'accomodation="accomodation" ' +
+                'allocation="allocation" ' +
+                'servicecode="service code" />' +
+                '</Services>' +
+                '</ExpertModel>',
+            }));
+
+            adapter.getData().then((result) => {
+                expect(result).toEqual({
+                    services: [{
+                        type: SERVICE_TYPES.roundTrip,
+                        destination: 'service code',
+                        startDate: 'start',
+                        endDate: 'end',
+                        travellers: []
+                    }],
+                });
+                done();
+            }, (error) => {
+                console.log(error.message);
+                done.fail('unexpected result');
+            });
+        });
+
+        it('getData() should parse minimal round trip data correct', (done) => {
+            let xml = '<?xml version="1.0" encoding="UTF-8"?>';
+
+            axios.get.and.returnValue(Promise.resolve({ data:
+                xml +
+                '<ExpertModel>' +
+                '<Services>' +
+                '<Service ' +
+                'requesttype="R" />' +
+                '</Services>' +
+                '</ExpertModel>',
+            }));
+
+            adapter.getData().then((result) => {
+                expect(result).toEqual({
+                    services: [{
+                        type: SERVICE_TYPES.roundTrip,
+                        travellers: []
+                    }],
+                });
+                done();
+            }, (error) => {
+                console.log(error.message);
+                done.fail('unexpected result');
+            });
+        });
+
+        it('getData() should parse round trip data correct', (done) => {
+            let xml = '<?xml version="1.0" encoding="UTF-8"?>';
+
+            axios.get.and.returnValue(Promise.resolve({ data:
+                xml +
+                '<ExpertModel>' +
+                '<Services>' +
+                '<Service ' +
+                'requesttype="R" ' +
+                'start="140718" ' +
+                'end="210718" ' +
+                'accomodation="LAX" ' +
+                'allocation="1-3" ' +
+                'servicecode="NEZCODE" />' +
+                '</Services>' +
+                '<Travellers>' +
+                '<Traveller name="k name" salutation="K" age="k age" />' +
+                '<Traveller name="h name" salutation="H" age="h age" />' +
+                '<Traveller name="b name" salutation="B" age="b age" />' +
+                '</Travellers>' +
+                '</ExpertModel>',
+            }));
+
+            adapter.getData().then((result) => {
+                expect(result).toEqual({
+                    services: [{
+                        type: SERVICE_TYPES.roundTrip,
+                        bookingId: 'CODE',
+                        destination: 'LAX',
+                        startDate: '14072018',
+                        endDate: '21072018',
+                        travellers: [
+                            { gender: 'child', name: 'k name', age: 'k age' },
+                            { gender: 'male', name: 'h name', age: 'h age' },
+                            { gender: 'infant', name: 'b name', age: 'b age' },
+                        ]
+                    }],
+                });
+                done();
+            }, (error) => {
+                console.log(error.message);
+                done.fail('unexpected result');
+            });
+        });
+
+        it('getData() should parse strange camper data correct', (done) => {
+            let xml = '<?xml version="1.0" encoding="UTF-8"?>';
+
+            axios.get.and.returnValue(Promise.resolve({ data:
+                xml +
+                '<ExpertModel>' +
+                '<Services>' +
+                '<Service ' +
+                'requesttype="WM" ' +
+                'start="start" ' +
+                'end="end" ' +
+                'count="count" ' +
+                'occupancy="occupancy" ' +
+                'accomodation="accomodation" ' +
+                'servicecode="service code" />' +
+                '</Services>' +
+                '</ExpertModel>',
+            }));
+
+            adapter.getData().then((result) => {
+                expect(result).toEqual({
+                    services: [{
+                        pickUpDate: 'start',
+                        dropOffDate: 'end',
+                        pickUpTime: 'accomodation',
+                        milesIncludedPerDay: 'count',
+                        milesPackagesIncluded: 'occupancy',
+                        type: SERVICE_TYPES.camper,
+                        marked: true,
+                    }],
+                });
+                done();
+            }, (error) => {
+                console.log(error.message);
+                done.fail('unexpected result');
+            });
+        });
+
+        it('getData() should parse minimal camper data correct', (done) => {
+            let xml = '<?xml version="1.0" encoding="UTF-8"?>';
+
+            axios.get.and.returnValue(Promise.resolve({ data:
+                xml +
+                '<ExpertModel>' +
+                '<Services>' +
+                '<Service ' +
+                'requesttype="WM" />' +
+                '</Services>' +
+                '</ExpertModel>',
+            }));
+
+            adapter.getData().then((result) => {
+                expect(result).toEqual({
+                    services: [{
+                        type: SERVICE_TYPES.camper,
+                        marked: true,
+                    }],
+                });
+                done();
+            }, (error) => {
+                console.log(error.message);
+                done.fail('unexpected result');
+            });
+        });
+
+        it('getData() should parse camper data correct', (done) => {
+            let xml = '<?xml version="1.0" encoding="UTF-8"?>';
+
+            axios.get.and.returnValue(Promise.resolve({ data:
+                xml +
+                '<ExpertModel>' +
+                '<Services>' +
+                '<Service ' +
+                'requesttype="WM" ' +
+                'start="140718" ' +
+                'end="210718" ' +
+                'count="20" ' +
+                'occupancy="55" ' +
+                'accomodation="0915" ' +
+                'servicecode="USA89E1/LAX-SFO1" />' +
+                '</Services>' +
+                '</ExpertModel>',
+            }));
+
+            adapter.getData().then((result) => {
+                expect(result).toEqual({
+                    services: [{
+                        type: SERVICE_TYPES.camper,
+                        pickUpDate: '14072018',
+                        dropOffDate: '21072018',
+                        pickUpTime: '0915',
+                        duration: 7,
+                        milesIncludedPerDay: '20',
+                        milesPackagesIncluded: '55',
+                        renterCode: 'USA89',
+                        camperCode: 'E1',
+                        pickUpLocation: 'LAX',
+                        dropOffLocation: 'SFO1',
+                        marked: false,
+                    }],
+                });
+                done();
+            }, (error) => {
+                console.log(error.message);
+                done.fail('unexpected result');
+            });
+        });
+
+        it('setData() should reject if sending data fails', (done) => {
+            axios.get.and.callFake((url) => {
+                return url.indexOf('/fill') > -1 ? Promise.reject(new Error('fill error')) : Promise.resolve();
+            });
+
+            adapter.setData().then(() => {
+                done.fail('unexpected result');
+            }, (error) => {
+                expect(error.message).toBe('[.setData] fill error');
+                done();
             });
         });
 
@@ -797,6 +1152,54 @@ fdescribe('BewotecExpertAdapter', () => {
             }, (error) => {
                 console.log(error.message);
                 done.fail('unexpected result');
+            });
+        });
+
+        describe('is not in HTTP context', () => {
+            beforeEach(() => {
+                axios.get.and.callFake(() => {
+                    locationHrefSpy.indexOf.and.returnValue(-1);
+
+                    return Promise.resolve();
+                });
+            });
+
+            it('setData() should send data via Image tag', (done) => {
+                let ImageSpy = jasmine.createSpy('Image');
+
+                window.Image = ImageSpy;
+
+                let data = { services: [] };
+
+                adapter.setData(data).then(() => {
+                    expect(ImageSpy.calls.mostRecent().object.src).toBe(
+                        'http://localhost:7354/airob/fill?a=BA&v=FTI&p=1&token=token&merge=true'
+                    );
+                    done();
+                }, (error) => {
+                    console.log(error.message);
+                    done.fail('unexpected result');
+                });
+            });
+
+            it('setData() should send data via window.open', (done) => {
+                const sendWindowSpy = jasmine.createSpyObj('sendWindow', ['close']);
+
+                sendWindowSpy.document = true;
+                windowSpy.open.and.returnValue(sendWindowSpy);
+
+                let data = { services: [] };
+
+                adapter.setData(data).then(() => {
+                    expect(windowSpy.open.calls.mostRecent().args[0]).toBe(
+                        'http://localhost:7354/airob/fill?a=BA&v=FTI&p=1&token=token&merge=true'
+                    );
+                    expect(sendWindowSpy.close).toHaveBeenCalled();
+                    done();
+                }, (error) => {
+                    console.log(error.message);
+                    done.fail('unexpected result');
+                });
             });
         });
 

@@ -2,12 +2,16 @@ import injector from 'inject!../../../src/crsAdapter/TrafficsTbmAdapter';
 import {DEFAULT_OPTIONS, SERVICE_TYPES} from '../../../src/UbpCrsAdapter';
 
 describe('TrafficsTbmAdapter', () => {
-    let adapter, TrafficsTbmAdapter, axios, requestUrl, requestParameter, logService;
+    let adapter, TrafficsTbmAdapter, axios, requestUrl, requestParameter, logService, windowSpy;
 
     beforeEach(() => {
         logService = require('tests/unit/_mocks/LogService')();
 
+        windowSpy = jasmine.createSpy('Window');
+
         axios = require('tests/unit/_mocks/Axios')();
+
+        axios.defaults = {headers: {get: {}}};
         axios.get.and.callFake((url, parameter) => {
             requestUrl = url;
             requestParameter = parameter;
@@ -17,6 +21,7 @@ describe('TrafficsTbmAdapter', () => {
 
         TrafficsTbmAdapter = injector({
             'axios': axios,
+            '../helper/WindowHelper': jasmine.createSpy().and.returnValue(windowSpy),
         });
 
         adapter = new TrafficsTbmAdapter(logService, DEFAULT_OPTIONS);
@@ -643,10 +648,13 @@ describe('TrafficsTbmAdapter', () => {
         it('setData() should encrypt data correct', (done) => {
             sendSpy.and.callThrough();
 
-            let setLocationSpy = spyOn(adapter, 'setLocation');
-
             adapter.setData({}).then(() => {
-                expect(setLocationSpy).toHaveBeenCalledWith('cosmonaut://params/I3RibSZmaWxlPWRhdGFTb3VyY2VVcmw/VGJtWG1sLmFkbWluLm9wZXJhdG9yLiUyNC5hY3Q9QkEmVGJtWG1sLmFkbWluLm9wZXJhdG9yLiUyNC50b2M9RlRJJlRibVhtbC5hZG1pbi5vcGVyYXRvci4lMjQucHNuPTE=');
+                expect(windowSpy.location).toBe(
+                    'cosmonaut://params/I3RibSZmaWxlPWRhdGFTb3VyY2VVcmw/' +
+                    'VGJtWG1sLmFkbWluLm9wZXJhdG9yLiUyNC5hY3Q9QkEmVGJtWG1' +
+                    'sLmFkbWluLm9wZXJhdG9yLiUyNC50b2M9RlRJJlRibVhtbC5hZG' +
+                    '1pbi5vcGVyYXRvci4lMjQucHNuPTE='
+                );
                 done();
             }, (error) => {
                 console.log(error);
@@ -654,15 +662,15 @@ describe('TrafficsTbmAdapter', () => {
             });
         });
 
-        it('setData() should reject if setLocation fails', (done) => {
+        it('setData() should reject if btoa conversion fails', (done) => {
             sendSpy.and.callThrough();
 
-            spyOn(adapter, 'setLocation').and.throwError('location broken');
+            spyOn(window, 'btoa').and.throwError('btoa broken');
 
             adapter.setData({}).then(() => {
                 done.fail('unexpected result');
             }, (error) => {
-                expect(error.message).toBe('location broken');
+                expect(error.message).toBe('btoa broken');
                 done();
             });
         });

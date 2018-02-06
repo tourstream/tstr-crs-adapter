@@ -149,29 +149,25 @@ class BewotecExpertAdapter {
     }
 
     setData(dataObject = {}) {
-        try {
-            return this.getData().then((adapterObject) => {
-                let crsObject = this.createBaseCrsObject();
+        return this.getData().then((adapterObject) => {
+            let crsObject = this.createBaseCrsObject();
 
-                crsObject = this.assignDataObjectToCrsObject(crsObject, adapterObject);
-                crsObject = this.assignDataObjectToCrsObject(crsObject, dataObject);
+            crsObject = this.assignDataObjectToCrsObject(crsObject, adapterObject);
+            crsObject = this.assignDataObjectToCrsObject(crsObject, dataObject);
 
-                this.logger.info('CRS OBJECT:');
-                this.logger.info(crsObject);
+            this.logger.info('CRS OBJECT:');
+            this.logger.info(crsObject);
 
-                return this.getConnection().send(crsObject).catch((error) => {
-                    this.logger.info(error);
-                    this.logger.error('error during transfer - please check the result');
-                    throw error;
-                });
-            }).then(null, (error) => {
-                this.logger.error(error);
-
-                return Promise.reject(new Error('[.setData] ' + error.message));
+            return this.getConnection().send(crsObject).catch((error) => {
+                this.logger.info(error);
+                this.logger.error('error during transfer - please check the result');
+                throw error;
             });
-        } catch (error) {
-            return Promise.reject(error);
-        }
+        }).then(null, (error) => {
+            this.logger.error(error);
+
+            return Promise.reject(new Error('[.setData] ' + error.message));
+        });
     }
 
     exit() {
@@ -314,8 +310,6 @@ class BewotecExpertAdapter {
         };
 
         crsData.Services.Service.forEach((crsService) => {
-            if (crsService === '') return;
-
             let serviceData = crsService[CONFIG.parserOptions.attrPrefix];
 
             if (!serviceData.requesttype) return;
@@ -418,7 +412,7 @@ class BewotecExpertAdapter {
             mealCode: serviceCodes[1] || void 0,
             roomQuantity: crsService.count,
             roomOccupancy: crsService.occupancy,
-            children: this.helper.roundTrip.collectTravellers(
+            children: this.helper.traveller.collectTravellers(
                 crsService.allocation,
                 (lineNumber) => this.getTravellerByLineNumber(crsObject.Travellers.Traveller, lineNumber)
             ).filter((traveller) => ['child', 'infant'].indexOf(traveller.gender) > -1),
@@ -447,7 +441,7 @@ class BewotecExpertAdapter {
             destination: hasBookingId ? crsService.accomodation : crsService.servicecode,
             startDate: startDate.isValid() ? startDate.format(this.options.useDateFormat) : crsService.start,
             endDate: endDate.isValid() ? endDate.format(this.options.useDateFormat) : crsService.end,
-            travellers: this.helper.roundTrip.collectTravellers(
+            travellers: this.helper.traveller.collectTravellers(
                 crsService.allocation,
                 (lineNumber) => this.getTravellerByLineNumber(crsObject.Travellers.Traveller, lineNumber)
             )

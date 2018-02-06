@@ -7,6 +7,7 @@ import TravellerHelper from '../helper/TravellerHelper';
 import CarHelper from '../helper/CarHelper';
 import CamperHelper from '../helper/CamperHelper';
 import HotelHelper from '../helper/HotelHelper';
+import WindowHelper from '../helper/WindowHelper';
 
 const CONFIG = {
     crs: {
@@ -63,6 +64,7 @@ class TrafficsTbmAdapter {
             car: new CarHelper(helperOptions),
             camper: new CamperHelper(helperOptions),
             hotel: new HotelHelper(helperOptions),
+            window: new WindowHelper(),
         };
     }
 
@@ -152,10 +154,9 @@ class TrafficsTbmAdapter {
         return {
             send: (data = {}) => {
                 try {
-                    this.setLocation(
+                    this.helper.window.location =
                         CONFIG.crs.connectionUrl
-                        + btoa('#tbm&file=' + options.dataSourceUrl + '?' + querystring.stringify(data))
-                    );
+                        + btoa('#tbm&file=' + options.dataSourceUrl + '?' + querystring.stringify(data));
 
                     return Promise.resolve();
                 } catch (e) {
@@ -166,17 +167,6 @@ class TrafficsTbmAdapter {
                 CONFIG.crs.exportUrls[options.environment] + '/tbmExport?id=' + options.exportId
             ),
         };
-    }
-
-    /**
-     * wrapper for testing purposes
-     *
-     * @private
-     * @param data
-     */
-    /* istanbul ignore next */
-    setLocation(data) {
-        document.location = data;
     }
 
     /**
