@@ -148,7 +148,7 @@ describe('BewotecExpertAdapter', () => {
         });
     });
 
-    describe('adapter is connected', () => {
+    describe('is connected', () => {
         function createParams(data = {}) {
             data.a = 'BA';
             data.v = 'FTI';
@@ -1160,7 +1160,7 @@ describe('BewotecExpertAdapter', () => {
                 axios.get.and.callFake(() => {
                     locationHrefSpy.indexOf.and.returnValue(-1);
 
-                    return Promise.resolve();
+                    return Promise.resolve('');
                 });
             });
 

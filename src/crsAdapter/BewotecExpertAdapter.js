@@ -67,7 +67,11 @@ class BewotecExpertAdapter {
 
         this.xmlParser = {
             parse: (xmlString) => {
-                let crsObject = fastXmlParser.parse(xmlString, CONFIG.parserOptions);
+                let crsObject = {};
+
+                if (xmlString && fastXmlParser.validate(xmlString) === true) {
+                    crsObject = fastXmlParser.parse(xmlString, CONFIG.parserOptions);
+                }
 
                 const groupObjectAttributes = (object) => {
                     if (typeof object !== 'object') {
