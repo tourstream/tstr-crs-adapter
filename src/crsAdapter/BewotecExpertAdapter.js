@@ -543,7 +543,8 @@ class BewotecExpertAdapter {
         }
 
         switch(serviceType) {
-            case SERVICE_TYPES.car: {
+            case SERVICE_TYPES.car:
+            case SERVICE_TYPES.camper: {
                 let serviceCode = crsService.servicecode;
 
                 // gaps in the regEx result array will result in lined up "." after the join
@@ -551,12 +552,6 @@ class BewotecExpertAdapter {
             }
             case SERVICE_TYPES.hotel: {
                 return !crsService.servicecode || !crsService.accomodation;
-            }
-            case SERVICE_TYPES.camper: {
-                let serviceCode = crsService.servicecode;
-
-                // gaps in the regEx result array will result in lined up "." after the join
-                return !serviceCode || serviceCode.match(CONFIG.services.car.serviceCodeRegEx).join('.').indexOf('..') !== -1;
             }
         }
     };
