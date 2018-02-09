@@ -288,14 +288,18 @@ class BewotecExpertAdapter {
         crsObject.ExpertModel.Services = crsObject.ExpertModel.Services || {};
 
         if (!Array.isArray(crsObject.ExpertModel.Services.Service)) {
-            crsObject.ExpertModel.Services.Service = [crsObject.ExpertModel.Services.Service].filter(Boolean);
+            crsObject.ExpertModel.Services.Service = [crsObject.ExpertModel.Services.Service];
         }
+
+        crsObject.ExpertModel.Services.Service = crsObject.ExpertModel.Services.Service.filter(Boolean);
 
         crsObject.ExpertModel.Travellers = crsObject.ExpertModel.Travellers || {};
 
         if (!Array.isArray(crsObject.ExpertModel.Travellers.Traveller)) {
-            crsObject.ExpertModel.Travellers.Traveller = [crsObject.ExpertModel.Travellers.Traveller].filter(Boolean);
+            crsObject.ExpertModel.Travellers.Traveller = [crsObject.ExpertModel.Travellers.Traveller];
         }
+
+        crsObject.ExpertModel.Travellers.Traveller = crsObject.ExpertModel.Travellers.Traveller.filter(Boolean);
     }
 
     /**
