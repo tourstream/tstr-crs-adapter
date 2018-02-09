@@ -8,7 +8,7 @@ describe('BewotecExpertAdapter', () => {
         logService = require('tests/unit/_mocks/LogService')();
 
         locationHrefSpy = jasmine.createSpyObj('locationHref', ['indexOf']);
-        locationHrefSpy.indexOf.and.returnValue(1);
+        locationHrefSpy.indexOf.and.returnValue(-1);
 
         windowSpy = jasmine.createSpyObj('Window', ['addEventListener', 'open']);
         windowSpy.location = {
@@ -42,10 +42,21 @@ describe('BewotecExpertAdapter', () => {
         });
     });
 
+    it('connect() should reject if no dataBridgeUrl is given', (done) => {
+        adapter.connect({ token: 'token' }).then(() => {
+            done.fail('unexpected result');
+        }, (error) => {
+            expect(error.message).toBe(
+                'Connection options "dataBridgeUrl" needed when adapter is used in non HTTP context.'
+            );
+            done();
+        });
+    });
+
     it('connect() should reject when the connection to expert mask is not possible', (done) => {
         axios.get.and.throwError('expert mask not available');
 
-        adapter.connect({ token: 'token' }).then(() => {
+        adapter.connect({ token: 'token', dataBridgeUrl: 'dataBridgeUrl' }).then(() => {
             done.fail('unexpected result');
         }, (error) => {
             expect(error.message).toBe('expert mask not available');
@@ -56,7 +67,7 @@ describe('BewotecExpertAdapter', () => {
     it('connect() should create connection on error because the expert mask returns a 404 in case of an empty mask', (done) => {
         axios.get.and.returnValue(Promise.reject('empty expert mask'));
 
-        adapter.connect({ token: 'token' }).then(() => {
+        adapter.connect({ token: 'token', dataBridgeUrl: 'dataBridgeUrl' }).then(() => {
             expect(adapter.connection).toBeTruthy();
             done();
         }, (error) => {
@@ -66,7 +77,7 @@ describe('BewotecExpertAdapter', () => {
     });
 
     it('connect() should create connection on success', (done) => {
-        adapter.connect({ token: 'token' }).then(() => {
+        adapter.connect({ token: 'token', dataBridgeUrl: 'dataBridgeUrl' }).then(() => {
             expect(adapter.connection).toBeTruthy();
             done();
         }, (error) => {
@@ -77,18 +88,7 @@ describe('BewotecExpertAdapter', () => {
 
     describe('is not in HTTP context', () => {
         beforeEach(() => {
-            locationHrefSpy.indexOf.and.returnValue(-1);
-        });
-
-        it('connect() should reject if no dataBridgeUrl is given when not in http context', (done) => {
-            adapter.connect({ token: 'token' }).then(() => {
-                done.fail('unexpected result');
-            }, (error) => {
-                expect(error.message).toBe(
-                    'Connection options "dataBridgeUrl" needed when adapter is used in non HTTP context.'
-                );
-                done();
-            });
+            locationHrefSpy.indexOf.and.returnValue(1);
         });
 
         it('connect() should reject if no connection to data bridge is possible', (done) => {
@@ -164,7 +164,7 @@ describe('BewotecExpertAdapter', () => {
         });
 
         it('getData() should reject when connection to expert mask is not possible', (done) => {
-            locationHrefSpy.indexOf.and.returnValue(-1);
+            locationHrefSpy.indexOf.and.returnValue(1);
 
             adapter.getData().then(() => {
                 done.fail('unexpected result');
@@ -1158,7 +1158,7 @@ describe('BewotecExpertAdapter', () => {
         describe('is not in HTTP context', () => {
             beforeEach(() => {
                 axios.get.and.callFake(() => {
-                    locationHrefSpy.indexOf.and.returnValue(-1);
+                    locationHrefSpy.indexOf.and.returnValue(1);
 
                     return Promise.resolve('');
                 });

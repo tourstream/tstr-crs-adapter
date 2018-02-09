@@ -107,7 +107,7 @@ class BewotecExpertAdapter {
                 throw new Error('No token found in connectionOptions.');
             }
 
-            if (!this.isProtocolSameAs('http') && !options.dataBridgeUrl) {
+            if (!options.dataBridgeUrl) {
                 throw new Error('Connection options "dataBridgeUrl" needed when adapter is used in non HTTP context.');
             }
 
@@ -201,14 +201,14 @@ class BewotecExpertAdapter {
                 const baseUrl = CONFIG.crs.connectionUrl + '/expert';
                 const params = { token: options.token };
 
-                if (this.isProtocolSameAs('http')) {
+                if (!this.isProtocolSameAs('https')) {
                     // does not work well - when the Expert mask is "empty" we get a 404 back
                     return axios.get(baseUrl, { params: params }).then(null, () => {
                         return Promise.resolve();
                     });
                 }
 
-                this.logger.warn('will try to get data with a different protocol than HTTP');
+                this.logger.warn('HTTPS detected - will use dataBridge for data transfer');
 
                 return new Promise((resolve, reject) => {
                     this.helper.window.addEventListener('message', (message) => {
@@ -241,11 +241,11 @@ class BewotecExpertAdapter {
                 const baseUrl = CONFIG.crs.connectionUrl + '/fill';
                 const params = extendSendData(data);
 
-                if (this.isProtocolSameAs('http')) {
+                if (!this.isProtocolSameAs('https')) {
                     return axios.get(baseUrl, { params: params });
                 }
 
-                this.logger.warn('will try to send data with a different protocol than HTTP');
+                this.logger.warn('HTTPS detected - will use dataBridge for data transfer');
 
                 const url = baseUrl + '?' + querystring.stringify(params);
                 const sendWindow = this.helper.window.open(url, '_blank', 'height=200,width=200');
