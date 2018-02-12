@@ -121,11 +121,11 @@ CosmoNaut         | UbpCrsAdapter.CRS_TYPES.cosmonaut | dataSourceUrl           
 For some connections you need credentials or other connection data,
 which you can set in the `connectionOptions`.
 
-**[TOMA 2]** _connectionUrl_ is needed, when the adapter is not directly used in the first child window of the TOMA application_
+**[TOMA 2]** _connectionUrl_ is needed, when the adapter is not directly used in the first child window of the TOMA application
 
 **[MyJack]** _dataBridgeUrl_ is needed, if the adapter is used in a non HTTP context. 
 This has to be a site which serves the CRS data per postMessage with the payload 
-`{ name: 'bewotecDataTransfer', error: 'in case of error ...', data: 'CRS data' }`_
+`{ name: 'bewotecDataTransfer', error: 'in case of error ...', data: 'CRS data' }`
 
 **[Cosmo / CosmoNaut]** _dataSourceUrl_ is an url from where the CRS can get the IBE data from
 
