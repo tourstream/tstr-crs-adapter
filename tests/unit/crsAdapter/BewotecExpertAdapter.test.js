@@ -1,5 +1,5 @@
 import injector from 'inject!../../../src/crsAdapter/BewotecExpertAdapter';
-import {DEFAULT_OPTIONS, SERVICE_TYPES} from '../../../src/UbpCrsAdapter';
+import {CRS_TYPES, DEFAULT_OPTIONS, SERVICE_TYPES} from '../../../src/UbpCrsAdapter';
 
 describe('BewotecExpertAdapter', () => {
     let adapter, BewotecExpertAdapter, axios, requestUrl, requestParameter, logService, windowSpy, locationHrefSpy;
@@ -37,7 +37,7 @@ describe('BewotecExpertAdapter', () => {
         adapter.connect().then(() => {
             done.fail('unexpected result');
         }, (error) => {
-            expect(error.message).toBe('No token found in connectionOptions.');
+            expect(error.message).toBe('Connection option "token" missing.');
             done();
         });
     });
@@ -46,9 +46,7 @@ describe('BewotecExpertAdapter', () => {
         adapter.connect({ token: 'token' }).then(() => {
             done.fail('unexpected result');
         }, (error) => {
-            expect(error.message).toBe(
-                'Connection options "dataBridgeUrl" needed when adapter is used in non HTTP context.'
-            );
+            expect(error.message).toBe('Connection option "dataBridgeUrl" missing.');
             done();
         });
     });
@@ -95,7 +93,7 @@ describe('BewotecExpertAdapter', () => {
             adapter.connect({ token: 'token', dataBridgeUrl: 'dataBridgeUrl' }).then(() => {
                 done.fail('unexpected result');
             }, (error) => {
-                expect(error.message).toBe('can not establish connection to data bridge');
+                expect(error.message).toBe('can not establish connection to bewotec data bridge');
                 done();
             });
         });
@@ -105,7 +103,7 @@ describe('BewotecExpertAdapter', () => {
             windowSpy.addEventListener.and.callFake((eventName, callback) => {
                 callback({ data: { name: 'unknown' } });
                 callback({ data: {
-                    name: 'bewotecTransfer',
+                    name: 'bewotecDataTransfer',
                     error: 'transfer error',
                 } });
             });
@@ -123,7 +121,7 @@ describe('BewotecExpertAdapter', () => {
             windowSpy.open.and.returnValue('newWindowRef');
             windowSpy.addEventListener.and.callFake((eventName, callback) => {
                 callback({ data: {
-                    name: 'bewotecTransfer',
+                    name: 'bewotecDataTransfer',
                     some: 'data',
                 } });
             });
@@ -169,7 +167,7 @@ describe('BewotecExpertAdapter', () => {
             adapter.getData().then(() => {
                 done.fail('unexpected result');
             }, (error) => {
-                expect(error.message).toBe('can not establish connection to data bridge');
+                expect(error.message).toBe('can not establish connection to bewotec data bridge');
                 done();
             });
         });
@@ -1205,6 +1203,27 @@ describe('BewotecExpertAdapter', () => {
 
         it('exit() should return nothing', (done) => {
             adapter.exit().then(done, () => {
+                done.fail('unexpected result');
+            });
+        });
+    });
+
+    describe('initialized with jackplus', () => {
+        BewotecExpertAdapter = injector({
+            'axios': axios,
+            '../helper/WindowHelper': jasmine.createSpy().and.returnValue(windowSpy),
+        });
+
+        const adapter = new BewotecExpertAdapter(
+            require('tests/unit/_mocks/LogService')(),
+            Object.assign({}, DEFAULT_OPTIONS, { crsType: CRS_TYPES.jackPlus })
+        );
+
+        it('connect() should not reject if no dataBridgeUrl is given', (done) => {
+            adapter.connect({ token: 'token' }).then(() => {
+                done();
+            }, (error) => {
+                console.log(error.message);
                 done.fail('unexpected result');
             });
         });
