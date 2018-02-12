@@ -24,8 +24,10 @@
                 <button type="button" class="btn btn-outline-primary" value="toma2">TOMA (new)</button>
                 <button type="button" class="btn btn-outline-primary" value="cets">CETS</button>
                 <button type="button" class="btn btn-outline-primary" value="merlin">Merlin</button>
-                <button type="button" class="btn btn-outline-primary" value="bewotec">MyJack / Jack+</button>
-                <button type="button" class="btn btn-outline-primary" value="traffics">Cosmo / CosmoNaut</button>
+                <button type="button" class="btn btn-outline-primary" value="myjack">MyJack</button>
+                <button type="button" class="btn btn-outline-primary" value="jackplus">Jack+</button>
+                <button type="button" class="btn btn-outline-primary" value="cosmo">Cosmo</button>
+                <button type="button" class="btn btn-outline-primary" value="cosmonaut">CosmoNaut</button>
 
                 <span class="mx-4">
                             <button name="connect" class="btn btn-outline-success">connect to CRS</button>
@@ -90,12 +92,20 @@
             <input type="hidden" name="type" value="merlin"/>
         </div>
 
-        <div id="bewotec-form-fields">
-            <input type="hidden" name="type" value="bewotec"/>
+        <div id="myjack-form-fields">
+            <input type="hidden" name="type" value="myjack"/>
 
             <div class="form-row">
                 <div data-form-field data-label="token" data-name="token"></div>
-                <div data-form-field data-label="dataBridgeUrl" data-name="dataBridgeUrl" data-value="http://fti360-bm-staging.firebaseapp.com/bewotec-bridge"></div>
+                <div data-form-field data-label="dataBridgeUrl" data-name="dataBridgeUrl" data-value="http://fti360-bm-staging.firebaseapp.com/bewotec-data-bridge"></div>
+            </div>
+        </div>
+
+        <div id="jackplus-form-fields">
+            <input type="hidden" name="type" value="jackplus"/>
+
+            <div class="form-row">
+                <div data-form-field data-label="token" data-name="token"></div>
             </div>
         </div>
 

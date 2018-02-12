@@ -1,7 +1,7 @@
 import es6shim from 'es6-shim';
 import moment from 'moment';
 import axios from 'axios';
-import { SERVICE_TYPES } from '../UbpCrsAdapter';
+import { SERVICE_TYPES, CRS_TYPES } from '../UbpCrsAdapter';
 import querystring from 'querystring';
 import TravellerHelper from '../helper/TravellerHelper';
 import RoundTripHelper from '../helper/RoundTripHelper';
@@ -103,12 +103,12 @@ class BewotecExpertAdapter {
 
     connect(options = {}) {
         try {
-            if (!options.token) {
-                throw new Error('No token found in connectionOptions.');
+            if (!options['token']) {
+                throw new Error('Connection option "token" missing.');
             }
 
-            if (!options.dataBridgeUrl) {
-                throw new Error('Connection options "dataBridgeUrl" needed when adapter is used in non HTTP context.');
+            if (this.options.crsType !== CRS_TYPES.jackPlus && !options['dataBridgeUrl']) {
+                throw new Error('Connection option "dataBridgeUrl" missing.');
             }
 
             this.connection = this.createConnection(options);
@@ -129,7 +129,7 @@ class BewotecExpertAdapter {
     getData() {
         try {
             return this.getConnection().get().then((response) => {
-                let xml = (response || {}).data;
+                let xml = (response || {}).data || '';
 
                 this.logger.info('RAW XML:');
                 this.logger.info(xml);
@@ -198,6 +198,12 @@ class BewotecExpertAdapter {
 
         return {
             get: () => {
+                if (this.options.crsType === CRS_TYPES.jackPlus) {
+                    this.logger.log('Jack+ does not support reading of the expert mask.');
+
+                    return Promise.resolve();
+                }
+
                 const baseUrl = CONFIG.crs.connectionUrl + '/expert';
                 const params = { token: options.token };
 
@@ -212,28 +218,28 @@ class BewotecExpertAdapter {
 
                 return new Promise((resolve, reject) => {
                     this.helper.window.addEventListener('message', (message) => {
-                        if (message.data.name !== 'bewotecTransfer') {
+                        if (message.data.name !== 'bewotecDataTransfer') {
                             return;
                         }
 
                         this.logger.info(message.data);
 
                         if (message.data.error) {
-                            this.logger.error('received error from bewotec bridge');
+                            this.logger.error('received error from bewotec data bridge');
 
                             return reject(new Error(message.data.error));
                         }
 
-                        this.logger.info('received data from bewotec bridge: ');
+                        this.logger.info('received data from bewotec data bridge: ');
 
                         return resolve(message.data);
                     }, false);
 
-                    const url = options.dataBridgeUrl + '?token=' + options.token;
-                    const getWindow = this.helper.window.open(url, '_blank', 'height=200,width=200');
+                    const url = options.dataBridgeUrl + '?token=' + options.token + (this.options.debug ? '&debug' : '');
+                    const getWindow = this.helper.window.open(url, '_blank', 'height=300,width=400');
 
                     if (!getWindow) {
-                        return reject(new Error('can not establish connection to data bridge'));
+                        return reject(new Error('can not establish connection to bewotec data bridge'));
                     }
                 });
             },

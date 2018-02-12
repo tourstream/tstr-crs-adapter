@@ -17,12 +17,14 @@ const SERVICE_TYPES = {
 
 const CRS_TYPES = {
     toma: 'toma',
-    toma2: 'tomaspc',
+    toma2: 'toma2',
     cets: 'cets',
     bookingManager: 'bm',
     merlin: 'merlin',
-    bewotec: 'bewotec',
-    traffics: 'traffics',
+    myJack: 'myjack',
+    jackPlus: 'jackplus',
+    cosmo: 'cosmo',
+    cosmoNaut: 'cosmonaut',
 };
 
 const GENDER_TYPES = {
@@ -33,16 +35,15 @@ const GENDER_TYPES = {
 };
 
 const CRS_TYPE_2_ADAPTER_MAP = {
-    toma: TomaAdapter,
-    tomaspc: TomaSPCAdapter,
-    toma2: TomaSPCAdapter,
-    cets: CetsAdapter,
-    bm: BmAdapter,
-    merlin: MerlinAdapter,
-    myjack: BewotecExpertAdapter,
-    jackplus: BewotecExpertAdapter,
-    bewotec: BewotecExpertAdapter,
-    traffics: TrafficsTbmAdapter,
+    [CRS_TYPES.toma]: TomaAdapter,
+    [CRS_TYPES.toma2]: TomaSPCAdapter,
+    [CRS_TYPES.cets]: CetsAdapter,
+    [CRS_TYPES.bookingManager]: BmAdapter,
+    [CRS_TYPES.merlin]: MerlinAdapter,
+    [CRS_TYPES.myJack]: BewotecExpertAdapter,
+    [CRS_TYPES.jackPlus]: BewotecExpertAdapter,
+    [CRS_TYPES.cosmo]: TrafficsTbmAdapter,
+    [CRS_TYPES.cosmoNaut]: TrafficsTbmAdapter,
 };
 
 const DEFAULT_OPTIONS = {
@@ -74,11 +75,7 @@ class UbpCrsAdapter {
             (window.location.hash && window.location.hash.indexOf('debug') !== -1)
         );
 
-        if (this.options.debug) {
-            this.logger.enable();
-        }
-
-        if (isDebugUrl) {
+        if (this.options.debug || isDebugUrl) {
             this.logger.enable();
         }
     }
@@ -190,25 +187,16 @@ class UbpCrsAdapter {
 
     /**
      * @private
-     * @param type string
-     * @returns {string}
-     */
-    normalizeCrsType(type = '') {
-        return type.toLowerCase();
-    }
-
-    /**
-     * @private
      * @param crsType string
      */
     loadCrsInstanceAdapter(crsType) {
-        let normalizedCrsType = this.normalizeCrsType(crsType);
+        let normalizedCrsType = crsType.toLowerCase();
 
         if (!CRS_TYPE_2_ADAPTER_MAP[normalizedCrsType]) {
             throw new Error('The CRS "' + normalizedCrsType + '" is currently not supported.');
         }
 
-        this.options.crsType = crsType;
+        this.options.crsType = normalizedCrsType;
 
         return new CRS_TYPE_2_ADAPTER_MAP[normalizedCrsType](this.logger, this.options);
     }
