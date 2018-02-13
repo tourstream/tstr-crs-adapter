@@ -34,7 +34,7 @@ class LogService {
     }
 
     /**
-     * we use an external window because in the CRS CETS there is no console.* possible
+     * we use an external window because in some CRSs there is no console.* possible
      */
     openExternalOutput() {
         if (this.debugWindow && !this.debugWindow.closed) {

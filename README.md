@@ -98,27 +98,38 @@ useTimeFormat | 'HHmm' (according to [momentjs date format](https://momentjs.com
 You can check the currently supported CRSs with `UbpCrsAdapter.CRS_TYPES`.
 Currently this module supports the connection to following CRS masks:
 
-CRS               | connectionType                   | connectionOptions          | example
-:---              | :---                             | :---                       | :---
-CETS              | UbpCrsAdapter.CRS_TYPES.cets     |                            | 
-TOMA (old)        | UbpCrsAdapter.CRS_TYPES.toma     | providerKey                | 'ABC'
-TOMA (new)        | UbpCrsAdapter.CRS_TYPES.toma2    | externalCatalogVersion (*) | '20.5'
-|                 |                                  | connectionUrl              | 'https://url-to-amadeus-selling.plattform'
-|                 |                                  | popupId                    | 'popup_id0123456789abcdef'
-Merlin            | UbpCrsAdapter.CRS_TYPES.merlin   |                            | 
-MyJack / Jack+    | UbpCrsAdapter.CRS_TYPES.bewotec  | token                      | '0123456789abcdef'
-Cosmo / CosmoNaut | UbpCrsAdapter.CRS_TYPES.traffics | dataSourceUrl              | 'example://url.where-the-crs-get-the/adapter-data-from'
-|                 |                                  | environment                | \<environment\>
-|                 |                                  | exportId                   | '0123-456789-abcdef'
+CRS               | connectionType                    | connectionOptions          | example
+:---              | :---                              | :---                       | :---
+CETS              | UbpCrsAdapter.CRS_TYPES.cets      |                            | 
+TOMA (old)        | UbpCrsAdapter.CRS_TYPES.toma      | providerKey                | 'ABC'
+TOMA (new)        | UbpCrsAdapter.CRS_TYPES.toma2     | externalCatalogVersion (*) | '20.5'
+|                 |                                   | connectionUrl              | 'https://url-to-amadeus-selling.plattform'
+|                 |                                   | popupId                    | 'popup_id0123456789abcdef'
+Merlin            | UbpCrsAdapter.CRS_TYPES.merlin    |                            | 
+MyJack            | UbpCrsAdapter.CRS_TYPES.myjack    | token                      | '0123456789abcdef'
+|                 |                                   | dataBridgeUrl              | 'example://url.where-the-adapter/can-get-the-crs-data/when-not-in-http-context'
+Jack+             | UbpCrsAdapter.CRS_TYPES.jackplus  | token                      | '0123456789abcdef'
+Cosmo             | UbpCrsAdapter.CRS_TYPES.cosmo     | dataSourceUrl              | 'example://url.where-the-crs/can-get-the-adapter-data'
+|                 |                                   | environment                | \<environment\>
+|                 |                                   | exportId                   | '0123-456789-abcdef'
+CosmoNaut         | UbpCrsAdapter.CRS_TYPES.cosmonaut | dataSourceUrl              | 'example://url.where-the-crs/can-get-the-adapter-data'
+|                 |                                   | environment                | \<environment\>
+|                 |                                   | exportId                   | '0123-456789-abcdef'
 
 (*) optional
 
 For some connections you need credentials or other connection data,
 which you can set in the `connectionOptions`.
 
-[MyJack / Jack+] _\<environment\>_ is one of **'test', 'live'**
+**[TOMA 2]** _connectionUrl_ is needed, when the adapter is not directly used in the first child window of the TOMA application
 
-_hint: TOMA SPC needs the **connectionUrl** if the website which uses the adapter is not directly the site which is requested by the TOMA application_
+**[MyJack]** _dataBridgeUrl_ is needed, if the adapter is used in a non HTTP context. 
+This has to be a site which serves the CRS data per postMessage with the payload 
+`{ name: 'bewotecDataTransfer', error: 'in case of error ...', data: 'CRS data' }`
+
+**[Cosmo / CosmoNaut]** _dataSourceUrl_ is an url from where the CRS can get the IBE data from
+
+**[Cosmo / CosmoNaut]** _environment_ is one of **'test', 'live'**
 
 
 ### `.services` object structure

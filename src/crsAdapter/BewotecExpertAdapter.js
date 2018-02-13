@@ -1,8 +1,12 @@
 import es6shim from 'es6-shim';
 import moment from 'moment';
 import axios from 'axios';
-import { SERVICE_TYPES } from '../UbpCrsAdapter';
+import { SERVICE_TYPES, CRS_TYPES } from '../UbpCrsAdapter';
+import querystring from 'querystring';
 import TravellerHelper from '../helper/TravellerHelper';
+import RoundTripHelper from '../helper/RoundTripHelper';
+import WindowHelper from '../helper/WindowHelper';
+import fastXmlParser from 'fast-xml-parser';
 
 const CONFIG = {
     crs: {
@@ -23,9 +27,9 @@ const CONFIG = {
         },
         gender2SalutationMap: {
             male: 'H',
-            female: 'F',
+            female: 'D',
             child: 'K',
-            infant: 'K',
+            infant: 'B',
         },
         lineNumberMap: ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'],
     },
@@ -34,64 +38,140 @@ const CONFIG = {
             serviceCodeRegEx: /([A-Z]*[0-9]*)?([A-Z]*[0-9]*)?(\/)?([A-Z]*[0-9]*)?(-)?([A-Z]*[0-9]*)?/,
         },
     },
+    parserOptions: {
+        attrPrefix: '__attributes',
+        textNodeName: '__textNode',
+        ignoreNonTextNodeAttr: false,
+        ignoreTextNodeAttr: false,
+        ignoreNameSpace: true,
+        ignoreRootElement: false,
+        textNodeConversion: false,
+    },
 };
 
 class BewotecExpertAdapter {
     constructor(logger, options = {}) {
         this.options = options;
         this.logger = logger;
+
+        const helperOptions = Object.assign({}, options, {
+            crsDateFormat: CONFIG.crs.dateFormat,
+            gender2SalutationMap: CONFIG.crs.gender2SalutationMap,
+        });
+
         this.helper = {
-            traveller: new TravellerHelper(Object.assign({}, options, {
-                crsDateFormat: CONFIG.crs.dateFormat,
-                gender2SalutationMap: CONFIG.crs.gender2SalutationMap,
-            })),
+            traveller: new TravellerHelper(helperOptions),
+            roundTrip: new RoundTripHelper(helperOptions),
+            window: new WindowHelper(),
+        };
+
+        this.xmlParser = {
+            parse: (xmlString) => {
+                let crsObject = {};
+
+                if (xmlString && fastXmlParser.validate(xmlString) === true) {
+                    crsObject = fastXmlParser.parse(xmlString, CONFIG.parserOptions);
+                }
+
+                const groupObjectAttributes = (object) => {
+                    if (typeof object !== 'object') {
+                        return;
+                    }
+
+                    let propertyNames = Object.getOwnPropertyNames(object);
+
+                    propertyNames.forEach((name) => {
+                        if (name.startsWith(CONFIG.parserOptions.attrPrefix)) {
+                            object[CONFIG.parserOptions.attrPrefix] = object[CONFIG.parserOptions.attrPrefix] || {};
+                            object[CONFIG.parserOptions.attrPrefix][name.substring(CONFIG.parserOptions.attrPrefix.length)] = object[name];
+
+                            delete object[name];
+                        } else {
+                            groupObjectAttributes(object[name]);
+                        }
+                    });
+                };
+
+                groupObjectAttributes(crsObject);
+
+                this.normalizeCrsObject(crsObject);
+
+                return crsObject;
+            }
         };
     }
 
-    connect(options) {
-        if (!options || !options.token) {
-            throw new Error('No token found in connectionOptions.');
-        }
-
-        this.connection = this.createConnection(options);
-
-        return this.connection.get().then(() => {
-            this.logger.log('BewotecExpert connection available');
-        }, (error) => {
-            this.logger.error(error.message);
-            this.logger.info('response is: ' + error.response);
-            this.logger.error('Instantiate connection error - but nevertheless transfer could work');
-            throw error;
-        });
-    }
-
-    getData() {
-        this.logger.warn('BewotecExpert has no mechanism for getting the data');
-
-        return this.getConnection().get().then((data) => {
-            return Promise.resolve(data);
-        }, () => {
-            return Promise.resolve();
-        });
-    }
-
-    setData(dataObject = {}) {
-        let crsObject = this.createBaseCrsObject();
-
-        crsObject = this.assignDataObjectToCrsObject(crsObject, dataObject);
-
-        this.logger.info('BASE OBJECT:');
-        this.logger.info(crsObject);
-
+    connect(options = {}) {
         try {
-            return this.getConnection().send(crsObject).catch((error) => {
-                this.logger.info(error);
-                this.logger.error('error during transfer - please check the result');
+            if (!options['token']) {
+                throw new Error('Connection option "token" missing.');
+            }
+
+            if (this.options.crsType !== CRS_TYPES.jackPlus && !options['dataBridgeUrl']) {
+                throw new Error('Connection option "dataBridgeUrl" missing.');
+            }
+
+            this.connection = this.createConnection(options);
+
+            return this.connection.get().then(() => {
+                this.logger.log('BewotecExpert connection available');
+            }, (error) => {
+                this.logger.error(error.message);
+                this.logger.info('response is: ' + error.response);
+                this.logger.error('Instantiate connection error - but nevertheless transfer could work');
                 throw error;
             });
         } catch (error) {
             return Promise.reject(error);
         }
+    }
+
+    getData() {
+        try {
+            return this.getConnection().get().then((response) => {
+                let xml = (response || {}).data || '';
+
+                this.logger.info('RAW XML:');
+                this.logger.info(xml);
+
+                let crsObject = this.xmlParser.parse(xml);
+
+                this.logger.info('PARSED XML:');
+                this.logger.info(crsObject);
+
+                return this.mapCrsObjectToAdapterObject(crsObject);
+            }, (error) => {
+                this.logger.error(error.message);
+                this.logger.info('response is: ' + error.response);
+                this.logger.error('error getting data');
+
+                return Promise.reject(error);
+            });
+        } catch (error) {
+            return Promise.reject(error);
+        }
+    }
+
+    setData(dataObject = {}) {
+        return this.getData().then((adapterObject) => {
+            let crsObject = this.createBaseCrsObject();
+
+            crsObject = this.assignDataObjectToCrsObject(crsObject, adapterObject);
+            crsObject = this.assignDataObjectToCrsObject(crsObject, dataObject);
+
+            this.logger.info('CRS OBJECT:');
+            this.logger.info(crsObject);
+
+            return this.getConnection().send(crsObject).catch((error) => {
+                this.logger.info(error);
+                this.logger.error('error during transfer - please check the result');
+                throw error;
+            });
+        }).then(null, (error) => {
+            this.logger.error(error);
+
+            return Promise.reject(new Error('[.setData] ' + error.message));
+        });
     }
 
     exit() {
@@ -114,17 +194,87 @@ class BewotecExpertAdapter {
             return data;
         };
 
+        axios.defaults.headers.get['Cache-Control'] = 'no-cache,no-store,must-revalidate,max-age=-1,private';
+
         return {
-            // does not work well - we get a "Network error" as long as we have the CORS issue
-            get: () => axios.get(CONFIG.crs.connectionUrl + '/expert', {
-                params: {
-                    token: options.token,
-                },
-            }),
-            send: (data = {}) => axios.get(CONFIG.crs.connectionUrl + '/fill', {
-                params: extendSendData(data),
-            }),
+            get: () => {
+                if (this.options.crsType === CRS_TYPES.jackPlus) {
+                    this.logger.log('Jack+ does not support reading of the expert mask.');
+
+                    return Promise.resolve();
+                }
+
+                const baseUrl = CONFIG.crs.connectionUrl + '/expert';
+                const params = { token: options.token };
+
+                if (!this.isProtocolSameAs('https')) {
+                    // does not work well - when the Expert mask is "empty" we get a 404 back
+                    return axios.get(baseUrl, { params: params }).then(null, () => {
+                        return Promise.resolve();
+                    });
+                }
+
+                this.logger.warn('HTTPS detected - will use dataBridge for data transfer');
+
+                return new Promise((resolve, reject) => {
+                    this.helper.window.addEventListener('message', (message) => {
+                        if (message.data.name !== 'bewotecDataTransfer') {
+                            return;
+                        }
+
+                        this.logger.info(message.data);
+
+                        if (message.data.error) {
+                            this.logger.error('received error from bewotec data bridge');
+
+                            return reject(new Error(message.data.error));
+                        }
+
+                        this.logger.info('received data from bewotec data bridge: ');
+
+                        return resolve(message.data);
+                    }, false);
+
+                    const url = options.dataBridgeUrl + '?token=' + options.token + (this.options.debug ? '&debug' : '');
+                    const getWindow = this.helper.window.open(url, '_blank', 'height=300,width=400');
+
+                    if (!getWindow) {
+                        return reject(new Error('can not establish connection to bewotec data bridge'));
+                    }
+                });
+            },
+            send: (data = {}) => {
+                const baseUrl = CONFIG.crs.connectionUrl + '/fill';
+                const params = extendSendData(data);
+
+                if (!this.isProtocolSameAs('https')) {
+                    return axios.get(baseUrl, { params: params });
+                }
+
+                this.logger.warn('HTTPS detected - will use dataBridge for data transfer');
+
+                const url = baseUrl + '?' + querystring.stringify(params);
+                const sendWindow = this.helper.window.open(url, '_blank', 'height=200,width=200');
+
+                if (sendWindow) {
+                    while (!sendWindow.document) {}
+
+                    sendWindow.close();
+
+                    return Promise.resolve();
+                }
+
+                // fallback if window open does not work
+                // but this could create a mixed content warning
+                (new Image()).src = url;
+
+                return Promise.resolve();
+            },
         };
+    }
+
+    isProtocolSameAs(type = '') {
+        return this.helper.window.location.href.indexOf(type.toLowerCase() + '://') > -1;
     }
 
     /**
@@ -138,6 +288,283 @@ class BewotecExpertAdapter {
 
         throw new Error('No connection available - please connect to Bewotec application first.');
     }
+
+    normalizeCrsObject(crsObject = {}) {
+        crsObject.ExpertModel = crsObject.ExpertModel || {};
+        crsObject.ExpertModel.Services = crsObject.ExpertModel.Services || {};
+
+        if (!Array.isArray(crsObject.ExpertModel.Services.Service)) {
+            crsObject.ExpertModel.Services.Service = [crsObject.ExpertModel.Services.Service];
+        }
+
+        crsObject.ExpertModel.Services.Service = crsObject.ExpertModel.Services.Service.filter(Boolean);
+
+        crsObject.ExpertModel.Travellers = crsObject.ExpertModel.Travellers || {};
+
+        if (!Array.isArray(crsObject.ExpertModel.Travellers.Traveller)) {
+            crsObject.ExpertModel.Travellers.Traveller = [crsObject.ExpertModel.Travellers.Traveller];
+        }
+
+        crsObject.ExpertModel.Travellers.Traveller = crsObject.ExpertModel.Travellers.Traveller.filter(Boolean);
+    }
+
+    /**
+     * @private
+     * @param crsObject object
+     */
+    mapCrsObjectToAdapterObject(crsObject) {
+        let crsData = crsObject.ExpertModel;
+        let dataObject = {
+            agencyNumber: crsData.Agency,
+            operator: (crsData[CONFIG.parserOptions.attrPrefix] || {}).operator,
+            numberOfTravellers: crsData.PersonCount,
+            travelType: (crsData[CONFIG.parserOptions.attrPrefix] || {}).traveltype,
+            remark: crsData.Remarks,
+            services: [],
+        };
+
+        crsData.Services.Service.forEach((crsService) => {
+            let serviceData = crsService[CONFIG.parserOptions.attrPrefix];
+
+            if (!serviceData.requesttype) return;
+
+            let service;
+
+            switch(serviceData.requesttype) {
+                case CONFIG.crs.serviceTypes.car: {
+                    service = this.mapCarServiceFromCrsObjectToAdapterObject(serviceData);
+                    break;
+                }
+                case CONFIG.crs.serviceTypes.hotel: {
+                    service = this.mapHotelServiceFromCrsObjectToAdapterObject(serviceData, crsData);
+                    break;
+                }
+                case CONFIG.crs.serviceTypes.roundTrip: {
+                    service = this.mapRoundTripServiceFromXmlObjectToAdapterObject(serviceData, crsData);
+                    break;
+                }
+                case CONFIG.crs.serviceTypes.camper: {
+                    service = this.mapCamperServiceFromCrsObjectToAdapterObject(serviceData);
+                    break;
+                }
+            }
+
+            if (service) {
+                service.marked = this.isMarked(serviceData, service.type);
+
+                dataObject.services.push(service);
+            }
+        });
+
+        return JSON.parse(JSON.stringify(dataObject));
+    }
+
+    /**
+     * @private
+     * @param crsService object
+     * @returns {object}
+     */
+    mapCarServiceFromCrsObjectToAdapterObject(crsService) {
+        const mapServiceCodeToService = (code, service) => {
+            if (!code) return;
+
+            const keyRentalCode = 1;
+            const keyVehicleTypeCode = 2;
+            const keySeparator = 3;
+            const keyPickUpLoc = 4;
+            const keyLocDash = 5;
+            const keyDropOffLoc = 6;
+
+            let codeParts = code.match(CONFIG.services.car.serviceCodeRegEx);
+
+            // i.e. MIA or MIA1 or MIA1-TPA
+            if (!codeParts[keySeparator]) {
+                service.pickUpLocation = codeParts[keyRentalCode];
+                service.dropOffLocation = codeParts[keyDropOffLoc];
+
+                return;
+            }
+
+            // i.e USA96/MIA1 or USA96A4/MIA1-TPA"
+            service.rentalCode = codeParts[keyRentalCode];
+            service.vehicleTypeCode = codeParts[keyVehicleTypeCode];
+            service.pickUpLocation = codeParts[keyPickUpLoc];
+            service.dropOffLocation = codeParts[keyDropOffLoc];
+        };
+
+        let pickUpDate = moment(crsService.start, CONFIG.crs.dateFormat);
+        let dropOffDate = moment(crsService.end, CONFIG.crs.dateFormat);
+        let pickUpTime = moment(crsService.accomodation, CONFIG.crs.timeFormat);
+        let service = {
+            pickUpDate: pickUpDate.isValid() ? pickUpDate.format(this.options.useDateFormat) : crsService.start,
+            dropOffDate: dropOffDate.isValid() ? dropOffDate.format(this.options.useDateFormat) : crsService.end,
+            pickUpTime: pickUpTime.isValid() ? pickUpTime.format(this.options.useTimeFormat) : crsService.accomodation,
+            duration: pickUpDate.isValid() && dropOffDate.isValid()
+                ? Math.ceil(dropOffDate.diff(pickUpDate, 'days', true))
+                : void 0,
+            type: SERVICE_TYPES.car,
+        };
+
+        mapServiceCodeToService(crsService.servicecode, service);
+
+        return service;
+    }
+
+    /**
+     * @private
+     * @param crsService object
+     * @param crsObject object
+     * @returns {object}
+     */
+    mapHotelServiceFromCrsObjectToAdapterObject(crsService, crsObject) {
+        let serviceCodes = (crsService.accomodation || '').split(' ');
+        let dateFrom = moment(crsService.start, CONFIG.crs.dateFormat);
+        let dateTo = moment(crsService.end, CONFIG.crs.dateFormat);
+
+        return {
+            roomCode: serviceCodes[0] || void 0,
+            mealCode: serviceCodes[1] || void 0,
+            roomQuantity: crsService.count,
+            roomOccupancy: crsService.occupancy,
+            children: this.helper.traveller.collectTravellers(
+                crsService.allocation,
+                (lineNumber) => this.getTravellerByLineNumber(crsObject.Travellers.Traveller, lineNumber)
+            ).filter((traveller) => ['child', 'infant'].indexOf(traveller.gender) > -1),
+            destination: crsService.servicecode,
+            dateFrom: dateFrom.isValid() ? dateFrom.format(this.options.useDateFormat) : crsService.start,
+            dateTo: dateTo.isValid() ? dateTo.format(this.options.useDateFormat) : crsService.end,
+            type: SERVICE_TYPES.hotel,
+        };
+    }
+
+    /**
+     * @private
+     * @param crsService object
+     * @param crsObject object
+     * @returns {object}
+     */
+    mapRoundTripServiceFromXmlObjectToAdapterObject(crsService, crsObject) {
+        const hasBookingId = (crsService.servicecode || '').indexOf('NEZ') === 0;
+
+        let startDate = moment(crsService.start, CONFIG.crs.dateFormat);
+        let endDate = moment(crsService.end, CONFIG.crs.dateFormat);
+
+        return {
+            type: SERVICE_TYPES.roundTrip,
+            bookingId: hasBookingId ? crsService.servicecode.substring(3) : void 0,
+            destination: hasBookingId ? crsService.accomodation : crsService.servicecode,
+            startDate: startDate.isValid() ? startDate.format(this.options.useDateFormat) : crsService.start,
+            endDate: endDate.isValid() ? endDate.format(this.options.useDateFormat) : crsService.end,
+            travellers: this.helper.traveller.collectTravellers(
+                crsService.allocation,
+                (lineNumber) => this.getTravellerByLineNumber(crsObject.Travellers.Traveller, lineNumber)
+            )
+        };
+    }
+
+    /**
+     * @private
+     * @param crsService object
+     * @returns {object}
+     */
+    mapCamperServiceFromCrsObjectToAdapterObject(crsService) {
+        const mapServiceCodeToService = (code, service) => {
+            if (!code) return;
+
+            const keyRentalCode = 1;
+            const keyVehicleTypeCode = 2;
+            const keySeparator = 3;
+            const keyPickUpLoc = 4;
+            const keyLocDash = 5;
+            const keyDropOffLoc = 6;
+
+            let codeParts = code.match(CONFIG.services.car.serviceCodeRegEx);
+
+            // i.e. MIA or MIA1 or MIA1-TPA
+            if (!codeParts[keySeparator]) {
+                service.pickUpLocation = codeParts[keyRentalCode];
+                service.dropOffLocation = codeParts[keyDropOffLoc];
+
+                return;
+            }
+
+            // i.e USA96/MIA1 or USA96A4/MIA1-TPA
+            service.renterCode = codeParts[keyRentalCode];
+            service.camperCode = codeParts[keyVehicleTypeCode];
+            service.pickUpLocation = codeParts[keyPickUpLoc];
+            service.dropOffLocation = codeParts[keyDropOffLoc];
+        };
+
+        let pickUpDate = moment(crsService.start, CONFIG.crs.dateFormat);
+        let dropOffDate = moment(crsService.end, CONFIG.crs.dateFormat);
+        let pickUpTime = moment(crsService.accomodation, CONFIG.crs.timeFormat);
+        let service = {
+            pickUpDate: pickUpDate.isValid() ? pickUpDate.format(this.options.useDateFormat) : crsService.start,
+            dropOffDate: dropOffDate.isValid() ? dropOffDate.format(this.options.useDateFormat) : crsService.end,
+            pickUpTime: pickUpTime.isValid() ? pickUpTime.format(this.options.useTimeFormat) : crsService.accomodation,
+            duration: pickUpDate.isValid() && dropOffDate.isValid()
+                ? Math.ceil(dropOffDate.diff(pickUpDate, 'days', true))
+                : void 0,
+            milesIncludedPerDay: crsService.count,
+            milesPackagesIncluded: crsService.occupancy,
+            type: SERVICE_TYPES.camper,
+        };
+
+        mapServiceCodeToService(crsService.servicecode, service);
+
+        return service;
+    }
+
+    /**
+     * @private
+     * @param travellers
+     * @param lineNumber
+     * @returns {*}
+     */
+    getTravellerByLineNumber(travellers = [], lineNumber) {
+        let traveller = (travellers[lineNumber - 1] || {})[CONFIG.parserOptions.attrPrefix];
+
+        if (!traveller || !traveller.name) {
+            return void 0;
+        }
+
+        return {
+            gender: Object.entries(CONFIG.crs.gender2SalutationMap).reduce(
+                (reduced, current) => {
+                    reduced[current[1]] = reduced[current[1]] || current[0];
+                    return reduced;
+                },
+                {}
+            )[traveller.salutation],
+            name: traveller.name,
+            age: traveller.age,
+        };
+    }
+
+    /**
+     * @private
+     * @param crsService object
+     * @param serviceType string
+     * @returns {boolean}
+     */
+    isMarked(crsService, serviceType) {
+        if (crsService.marker) {
+            return true;
+        }
+
+        switch(serviceType) {
+            case SERVICE_TYPES.car:
+            case SERVICE_TYPES.camper: {
+                let serviceCode = crsService.servicecode;
+
+                // gaps in the regEx result array will result in lined up "." after the join
+                return !serviceCode || serviceCode.match(CONFIG.services.car.serviceCodeRegEx).join('.').indexOf('..') !== -1;
+            }
+            case SERVICE_TYPES.hotel: {
+                return !crsService.servicecode || !crsService.accomodation;
+            }
+        }
+    };
 
     createBaseCrsObject() {
         return {
@@ -198,9 +625,9 @@ class BewotecExpertAdapter {
      * @param dataObject object
      */
     assignBasicData(crsObject, dataObject) {
-        crsObject.rem = dataObject.remark;
-        crsObject.r = dataObject.travelType;
-        crsObject.p = dataObject.numberOfTravellers || CONFIG.crs.defaultValues.numberOfTravellers;
+        crsObject.rem = [dataObject.remark, crsObject.rem].filter(Boolean).join(',') || void 0;
+        crsObject.r = dataObject.travelType || crsObject.r || void 0;
+        crsObject.p = dataObject.numberOfTravellers || crsObject.p || CONFIG.crs.defaultValues.numberOfTravellers || void 0;
     }
 
     /**

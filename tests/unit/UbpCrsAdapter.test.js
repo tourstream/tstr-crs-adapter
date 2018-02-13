@@ -61,8 +61,10 @@ describe('UbpCrsAdapter', () => {
             cets: jasmine.anything(),
             bookingManager: jasmine.anything(),
             merlin: jasmine.anything(),
-            bewotec: jasmine.anything(),
-            traffics: jasmine.anything(),
+            myJack: jasmine.anything(),
+            jackPlus: jasmine.anything(),
+            cosmo: jasmine.anything(),
+            cosmoNaut: jasmine.anything(),
         });
     });
 

@@ -579,7 +579,7 @@ describe('TomaSPCAdapter', () => {
             let expected = {
                 services: [{
                     type: 'roundTrip',
-                    bookingId: 'NEZE2784NQXTHEN',
+                    bookingId: 'E2784NQXTHEN',
                     destination: 'YYZ',
                     startDate: '05122017',
                     endDate: '16122017',
@@ -622,7 +622,7 @@ describe('TomaSPCAdapter', () => {
             let expected = {
                 services: [{
                     type: 'roundTrip',
-                    bookingId: 'NEZE2784NQXTHEN',
+                    bookingId: 'E2784NQXTHEN',
                     destination: 'YYZ',
                     startDate: '05122017',
                     endDate: '16122017',
