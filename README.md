@@ -173,8 +173,6 @@ CosmoNaut  | X     | X     | X         | X
 |       | .dropOffHotelPhoneNumber | '04031989213' 
 |       | .extras                  | ['\<extraName\>.\<count\>', 'navigationSystem', 'childCareSeat0', 'childCareSeat3'] 
 
-_note: .durationInMinutes is only used for "bm" transfer_
-
 | type    | fields         | example
 | :---    | :---           | :---
 | hotel   | .roomCode      | 'DZ' 
@@ -213,18 +211,6 @@ _note: if .dropOffDate is not set, it will be calculated with .pickUpDate + .dur
 
 Additionally every service has a `.marked` field which is by default falsy.
 But if this service is either "marked" in the crs or detected as "marked" (depends on the type) it will be true.
-
-
-## === Booking Manager (**deprecated**) ===
-
-This adapter supports also the connection to the so called _FTI360 Booking Manager_.
-Use `adapter.connect('bm')` and you unlock the full functionality of it:
-
-* `adapter.addToBasket(outputData)`
-* `adapter.directCheckout(outputData)`
-* `adapter.exit()`
-
-The structure of `outputData` is the same like it is described [above](#interface).
 
 
 ## Debugging

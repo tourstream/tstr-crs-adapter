@@ -2,7 +2,6 @@ import es6shim from 'es6-shim';
 import TomaAdapter from 'crsAdapter/TomaAdapter';
 import TomaSPCAdapter from 'crsAdapter/TomaSPCAdapter';
 import CetsAdapter from 'crsAdapter/CetsAdapter';
-import BmAdapter from 'crsAdapter/BmAdapter';
 import MerlinAdapter from 'crsAdapter/MerlinAdapter';
 import BewotecExpertAdapter from 'crsAdapter/BewotecExpertAdapter';
 import TrafficsTbmAdapter from 'crsAdapter/TrafficsTbmAdapter';
@@ -19,7 +18,6 @@ const CRS_TYPES = {
     toma: 'toma',
     toma2: 'toma2',
     cets: 'cets',
-    bookingManager: 'bm',
     merlin: 'merlin',
     myJack: 'myjack',
     jackPlus: 'jackplus',
@@ -38,7 +36,6 @@ const CRS_TYPE_2_ADAPTER_MAP = {
     [CRS_TYPES.toma]: TomaAdapter,
     [CRS_TYPES.toma2]: TomaSPCAdapter,
     [CRS_TYPES.cets]: CetsAdapter,
-    [CRS_TYPES.bookingManager]: BmAdapter,
     [CRS_TYPES.merlin]: MerlinAdapter,
     [CRS_TYPES.myJack]: BewotecExpertAdapter,
     [CRS_TYPES.jackPlus]: BewotecExpertAdapter,
@@ -134,40 +131,6 @@ class UbpCrsAdapter {
                 Promise.resolve(this.getAdapterInstance().setData(data)).then(resolve, reject);
             } catch (error) {
                 this.logAndThrow('set data error:', error);
-            }
-        });
-    }
-
-    directCheckout(data) {
-        return new Promise((resolve, reject) => {
-            this.logger.info('Try to do a direct checkout:');
-            this.logger.info(data);
-
-            if (!data) {
-                this.logAndThrow('No data given.');
-            }
-
-            try {
-                Promise.resolve(this.getAdapterInstance().directCheckout(data)).then(resolve, reject);
-            } catch (error) {
-                this.logAndThrow('direct checkout error:', error);
-            }
-        });
-    }
-
-    addToBasket(data) {
-        return new Promise((resolve, reject) => {
-            this.logger.info('Try to add to basket:');
-            this.logger.info(data);
-
-            if (!data) {
-                this.logAndThrow('No data given.');
-            }
-
-            try {
-                Promise.resolve(this.getAdapterInstance().addToBasket(data)).then(resolve, reject);
-            } catch (error) {
-                this.logAndThrow('add to basket error:', error);
             }
         });
     }
