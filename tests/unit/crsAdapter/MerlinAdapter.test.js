@@ -23,7 +23,6 @@ describe('MerlinAdapter', () => {
 
         axios.defaults = {headers: {
             post: {},
-            get: {},
         }};
         axios.post.and.callFake((url, parameter) => {
             requestParameter = parameter;
