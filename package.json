@@ -58,7 +58,6 @@
     "es7-shim": "^6.0.0",
     "fast-xml-parser": "^2.9.4",
     "moment": "^2.18.1",
-    "penpal": "^2.6.0",
     "querystring": "^0.2.0",
     "xml2js": "^0.4.17"
   }
