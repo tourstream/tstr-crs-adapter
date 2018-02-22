@@ -176,7 +176,6 @@ class MerlinAdapter {
      */
     createConnection() {
         axios.defaults.headers.post['Content-Type'] = 'application/xml';
-        axios.defaults.headers.get['Cache-Control'] = 'no-cache,no-store,must-revalidate,max-age=-1,private';
 
         return {
             get: () => axios.get(CONFIG.crs.connectionUrl + 'gate2mx'),
