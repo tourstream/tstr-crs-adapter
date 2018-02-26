@@ -1242,7 +1242,9 @@ describe('TomaSPCAdapter', () => {
         });
 
         it('exit() should request to close the popup', (done) => {
-            adapter.exit({popupId: 'pId'}).then(() => {
+            adapter.connectionOptions.popupId = 'pId';
+
+            adapter.exit().then(() => {
                 expect(requestData).toEqual({id: 'pId'});
                 done();
             }, (error) => {
@@ -1273,7 +1275,9 @@ describe('TomaSPCAdapter', () => {
         it('exitData() should throw error if connection failed', (done) => {
             TomaSPCConnection.requestService = void 0;
 
-            adapter.exit({popupId: 'id'}).then(() => {
+            adapter.connectionOptions.popupId = 'popupId';
+
+            adapter.exit().then(() => {
                 done.fail('expectation error');
             }, (error) => {
                 expect(error.toString()).toBe('Error: connection::popups.close: No connection available - please connect to TOMA SPC first.');

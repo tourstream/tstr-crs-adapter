@@ -39,10 +39,10 @@ ubpCrsAdapter.connect(connectionType, connectionOptions);
 
 When you are connected you can get the data from the CRS via:
 ```
-ubpCrsAdapter.getData().then((inputData) => {});
+ubpCrsAdapter.getData().then((crsData) => {});
 ```
 
-The `inputData` you get will look like that:
+The `crsData` you get will look like that:
 ```
 {
     agencyNumber: string,
@@ -56,10 +56,10 @@ The `inputData` you get will look like that:
 
 Or you can set data to the CRS via:
 ```
-ubpCrsAdapter.setData(outputData);
+ubpCrsAdapter.setData(adapterData);
 ```
 
-The `outputData` object has the following structure:
+The `adapterData` object is defined like followed:
 ```
 {
     travelType: string,
@@ -69,16 +69,20 @@ The `outputData` object has the following structure:
 }
 ```
 
-And also you can close the opened frame in the CRS:
+And also you can close the opened iFrame in the CRS:
 ```
-ubpCrsAdapter.exit(exitOptions)
+ubpCrsAdapter.exit()
 ```
 
-_note: every method returns a promise_
 
-_note: `setData` triggers automatically an `exit` 
-which will close the "CRS overlay/popup" (if there is any). 
-but be aware that you have to close any separated opened windows by yourself!_
+#### Additional information
+
+* every method returns a promise
+* the `numberOfTravellers` will be auto-calculated related to traveller data in the service lines
+* be aware that some `services` will set values to the remark field
+* `setData` triggers automatically an `exit` 
+which will close the "CRS overlay/popup" (if there is any)
+* keep in mind that you have to close any separated opened windows by yourself!
 
 
 ### Supported `adapterOptions`
@@ -102,7 +106,7 @@ CRS               | connectionType                    | connectionOptions       
 :---              | :---                              | :---                       | :---
 CETS              | UbpCrsAdapter.CRS_TYPES.cets      |                            | 
 TOMA (old)        | UbpCrsAdapter.CRS_TYPES.toma      | providerKey                | 'ABC'
-TOMA (new)        | UbpCrsAdapter.CRS_TYPES.toma2     | externalCatalogVersion (*) | '20.5'
+TOMA (new)        | UbpCrsAdapter.CRS_TYPES.toma2     | externalCatalogVersion (*) | 'catalogue.version'
 |                 |                                   | connectionUrl              | 'https://url-to-amadeus-selling.plattform'
 |                 |                                   | popupId                    | 'popup_id0123456789abcdef'
 Merlin            | UbpCrsAdapter.CRS_TYPES.merlin    |                            | 
@@ -110,10 +114,10 @@ MyJack            | UbpCrsAdapter.CRS_TYPES.myjack    | token                   
 |                 |                                   | dataBridgeUrl              | 'example://url.where-the-adapter/can-get-the-crs-data/when-not-in-http-context'
 Jack+             | UbpCrsAdapter.CRS_TYPES.jackplus  | token                      | '0123456789abcdef'
 Cosmo             | UbpCrsAdapter.CRS_TYPES.cosmo     | dataSourceUrl              | 'example://url.where-the-crs/can-get-the-adapter-data'
-|                 |                                   | environment                | \<environment\>
+|                 |                                   | environment                | 'test' or 'live'
 |                 |                                   | exportId                   | '0123-456789-abcdef'
 CosmoNaut         | UbpCrsAdapter.CRS_TYPES.cosmonaut | dataSourceUrl              | 'example://url.where-the-crs/can-get-the-adapter-data'
-|                 |                                   | environment                | \<environment\>
+|                 |                                   | environment                | 'test' or 'live'
 |                 |                                   | exportId                   | '0123-456789-abcdef'
 
 (*) optional
@@ -129,12 +133,10 @@ This has to be a site which serves the CRS data per postMessage with the payload
 
 **[Cosmo / CosmoNaut]** _dataSourceUrl_ is an url from where the CRS can get the IBE data from
 
-**[Cosmo / CosmoNaut]** _environment_ is one of **'test', 'live'**
-
 
 ### `.services` object structure
 
-Depending on the `.services[*].type` the structure of a ServiceObject differs.
+Depending on the `.services[*].type` the structure of a `<ServiceObject>` differs.
 
 
 #### Supported service types
@@ -161,7 +163,7 @@ CosmoNaut  | X     | X     | X         | X
 |       | .pickUpDate              | '28122017' 
 |       | .pickUpTime              | '0915' 
 |       | .dropOffLocation         | 'MUC' 
-|       | .dropOffDate             | '04012018'   (**deprecated**)
+|       | .dropOffDate             | '04012018'   
 |       | .dropOffTime             | '1720'       (**deprecated**)
 |       | .duration                | '9' (in days)
 |       | .durationInMinutes       | '12960'
@@ -171,7 +173,7 @@ CosmoNaut  | X     | X     | X         | X
 |       | .dropOffHotelName        | 'Very Best Hotel' 
 |       | .dropOffHotelAddress     | 'hotel drive 34a, famous place' 
 |       | .dropOffHotelPhoneNumber | '04031989213' 
-|       | .extras                  | ['\<extraName\>.\<count\>', 'navigationSystem', 'childCareSeat0', 'childCareSeat3'] 
+|       | .extras                  | ['\<extraName\>\<count\>', 'navigationSystem', 'childCareSeat0', 'childCareSeat3'] 
 
 | type    | fields         | example
 | :---    | :---           | :---

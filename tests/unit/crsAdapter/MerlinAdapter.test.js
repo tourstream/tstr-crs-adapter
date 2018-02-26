@@ -447,16 +447,16 @@ describe('MerlinAdapter', () => {
 
         it('getData() should return camper object with strange values', (done) => {
             axios.get.and.returnValue(Promise.resolve({data: createXML(
-                    '<ServiceBlock>' +
-                    '<ServiceRow positionNo="1">' +
-                    '<KindOfService>WM</KindOfService>' +
-                    '<Service>BGY</Service>' +
-                    '<Accommodation>time</Accommodation>' +
-                    '<FromDate>from</FromDate>' +
-                    '<EndDate>to</EndDate>' +
-                    '</ServiceRow>' +
-                    '</ServiceBlock>'
-                )}));
+                '<ServiceBlock>' +
+                '<ServiceRow positionNo="1">' +
+                '<KindOfService>WM</KindOfService>' +
+                '<Service>BGY</Service>' +
+                '<Accommodation>time</Accommodation>' +
+                '<FromDate>from</FromDate>' +
+                '<EndDate>to</EndDate>' +
+                '</ServiceRow>' +
+                '</ServiceBlock>'
+            )}));
 
             adapter.getData().then((data) => {
                 expect(data).toEqual({
@@ -489,13 +489,26 @@ describe('MerlinAdapter', () => {
             });
         });
 
-        it('setData() without data should send base data', (done) => {
+        it('setData() without data should preserve CRS data', (done) => {
+            const xml = createXML(
+                '<TourOperator>FTI</TourOperator>' +
+                '<TransactionCode>BA</TransactionCode>' +
+                '<TravelType>BAUS</TravelType>' +
+                '<NoOfPersons>2</NoOfPersons>' +
+                '<AgencyNoTouroperator>080215</AgencyNoTouroperator>'
+            );
+
+            axios.get.and.returnValue(Promise.resolve({data: xml}));
+
             let expectation = createXML(
+                '<TourOperator>FTI</TourOperator>' +
+                '<TransactionCode>BA</TransactionCode>' +
+                '<TravelType>BAUS</TravelType>' +
+                '<NoOfPersons>2</NoOfPersons>' +
+                '<AgencyNoTouroperator>080215</AgencyNoTouroperator>' +
                 '<TravellerBlock>' +
                 '<PersonBlock/>' +
-                '</TravellerBlock>' +
-                '<TransactionCode>BA</TransactionCode>' +
-                '<NoOfPersons>1</NoOfPersons>'
+                '</TravellerBlock>'
             );
 
             adapter.setData().then(() => {

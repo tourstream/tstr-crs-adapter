@@ -528,8 +528,12 @@ class TrafficsTbmAdapter {
      */
     assignBasicData(crsObject, dataObject) {
         crsObject['TbmXml.admin.customer.$.rmk'] = dataObject.remark;
-        crsObject['TbmXml.admin.operator.$.knd'] = dataObject.travelType;
-        crsObject['TbmXml.admin.operator.$.psn'] = dataObject.numberOfTravellers || CONFIG.crs.defaultValues.numberOfTravellers;
+        crsObject['TbmXml.admin.operator.$.knd'] = dataObject.travelType || crsObject['TbmXml.admin.operator.$.knd'] || void 0;
+        crsObject['TbmXml.admin.operator.$.psn'] = Math.max(
+            dataObject.numberOfTravellers || 0,
+            crsObject['TbmXml.admin.operator.$.psn'] || 0,
+            CONFIG.crs.defaultValues.numberOfTravellers
+        ) || void 0;
     }
 
     /**
