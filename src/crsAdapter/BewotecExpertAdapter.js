@@ -627,7 +627,11 @@ class BewotecExpertAdapter {
     assignBasicData(crsObject, dataObject) {
         crsObject.rem = [dataObject.remark, crsObject.rem].filter(Boolean).join(',') || void 0;
         crsObject.r = dataObject.travelType || crsObject.r || void 0;
-        crsObject.p = dataObject.numberOfTravellers || crsObject.p || CONFIG.crs.defaultValues.numberOfTravellers || void 0;
+        crsObject.p = Math.max(
+            dataObject.numberOfTravellers || 0,
+            crsObject.p || 0,
+            CONFIG.crs.defaultValues.numberOfTravellers
+        ) || void 0;
     }
 
     /**

@@ -15,7 +15,7 @@ let CONFIG;
 
 class MerlinAdapter {
     constructor(logger, options = {}) {
-        CONFIG = CONFIG = {
+        CONFIG = {
             crs: {
                 dateFormat: 'DDMMYY',
                 timeFormat: 'HHmm',
@@ -500,9 +500,13 @@ class MerlinAdapter {
      */
     assignBasicData(crsData, adapterObject) {
         crsData.TransactionCode = CONFIG.crs.defaultValues.action;
-        crsData.TravelType = adapterObject.travelType;
-        crsData.Remarks = adapterObject.remark;
-        crsData.NoOfPersons = adapterObject.numberOfTravellers || CONFIG.crs.defaultValues.numberOfTravellers;
+        crsData.TravelType = adapterObject.travelType || crsData.TravelType || void 0;
+        crsData.Remarks = [crsData.Remarks, adapterObject.remark].filter(Boolean).join(';') || void 0;
+        crsData.NoOfPersons = Math.max(
+            adapterObject.numberOfTravellers || 0,
+            crsData.NoOfPersons || 0,
+            CONFIG.crs.defaultValues.numberOfTravellers
+        ) || void 0;
     }
 
     /**

@@ -446,10 +446,10 @@ describe('TomaAdapter', () => {
             it('setData() should set numTravellers', () => {
                 let expectXml = createTomaXml(
                     '<Action>BA</Action>' +
-                    '<NoOfPersons>num.travellers</NoOfPersons>'
+                    '<NoOfPersons>3</NoOfPersons>'
                 );
 
-                adapter.setData({numberOfTravellers: 'num.travellers'});
+                adapter.setData({numberOfTravellers: 3});
 
                 expect(TomaConnection.FIFramePutData).toHaveBeenCalledWith(expectXml);
             });

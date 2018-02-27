@@ -25,7 +25,7 @@ const CONFIG = {
         activeXObjectName: 'Spice.Start',
         defaultValues: {
             action: 'BA',
-            numberOfTravellers: '1',
+            numberOfTravellers: 1,
         },
         gender2SalutationMap: {
             male: 'H',
@@ -529,9 +529,13 @@ class TomaAdapter {
      */
     assignBasicData(xmlTom, dataObject) {
         xmlTom.Action = CONFIG.crs.defaultValues.action;
-        xmlTom.Traveltype = dataObject.travelType;
+        xmlTom.Traveltype = dataObject.travelType || xmlTom.Traveltype || void 0;
         xmlTom.Remark = [xmlTom.Remark, dataObject.remark].filter(Boolean).join(',') || void 0;
-        xmlTom.NoOfPersons = dataObject.numberOfTravellers || (xmlTom.NoOfPersons && xmlTom.NoOfPersons[CONFIG.parserOptions.textNodeName]) || CONFIG.crs.defaultValues.numberOfTravellers;
+        xmlTom.NoOfPersons = Math.max(
+            dataObject.numberOfTravellers || 0,
+            (xmlTom.NoOfPersons && xmlTom.NoOfPersons[CONFIG.parserOptions.textNodeName]) || 0,
+            CONFIG.crs.defaultValues.numberOfTravellers
+        ) || void 0;
     }
 
     /**

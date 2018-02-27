@@ -679,9 +679,9 @@ describe('TrafficsTbmAdapter', () => {
             let expected = {
                 'TbmXml.admin.operator.$.act': 'BA',
                 'TbmXml.admin.operator.$.toc': 'FTI',
-                'TbmXml.admin.operator.$.psn': '2',
-                'TbmXml.admin.operator.$.knd': 'travel type',
                 'TbmXml.admin.customer.$.rmk': 'remark',
+                'TbmXml.admin.operator.$.knd': 'travel type',
+                'TbmXml.admin.operator.$.psn': 2,
             };
 
             adapter.setData({

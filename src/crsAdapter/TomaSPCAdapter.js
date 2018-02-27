@@ -86,12 +86,9 @@ class TomaSPCAdapter {
         });
     }
 
-    exit(options = {}) {
+    exit() {
         return new Promise((resolve) => {
-            // BM-134 remove support for options.popupId
-            this.logger.warn('options.popupId is deprecated use the connectionOptions.popupId instead');
-
-            let popupId = this.getUrlParameter('POPUP_ID') || options.popupId || this.connectionOptions.popupId;
+            let popupId = this.getUrlParameter('POPUP_ID') || this.connectionOptions.popupId;
 
             if (!popupId) {
                 throw new Error('can not exit - popupId is missing');
@@ -609,9 +606,13 @@ class TomaSPCAdapter {
      */
     assignBasicData(crsObject, adapterObject) {
         crsObject.action = CONFIG.crs.defaultValues.action;
-        crsObject.traveltype = adapterObject.travelType;
+        crsObject.traveltype = adapterObject.travelType || crsObject.traveltype || void 0;
         crsObject.remark = [crsObject.remark, adapterObject.remark].filter(Boolean).join(',') || void 0;
-        crsObject.numTravellers = adapterObject.numberOfTravellers || crsObject.numTravellers || CONFIG.crs.defaultValues.numberOfTravellers;
+        crsObject.numTravellers = Math.max(
+            adapterObject.numberOfTravellers || 0,
+            crsObject.numTravellers || 0,
+            CONFIG.crs.defaultValues.numberOfTravellers
+        ) || void 0;
     }
 
     /**
