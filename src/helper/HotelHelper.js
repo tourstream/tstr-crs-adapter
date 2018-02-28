@@ -3,14 +3,13 @@ class HotelHelper {
         this.config = config;
     }
 
-    calculateTravellerAllocation(service = {}, customTravellerAllocationNumber = 0) {
-        let roomOccupancy = service.roomOccupancy || 1;
-        let lastTravellerAllocationNumber = Math.max(roomOccupancy, customTravellerAllocationNumber);
-        let firstTravellerAllocationNumber = 1 + lastTravellerAllocationNumber - roomOccupancy;
+    calculateTravellerAllocation(service = {}, startTravellerLineNumber = 1) {
+        let totalOccupancy = (service.roomOccupancy || 1) * (service.roomQuantity || 1);
+        let endTravellerLineNumber = +startTravellerLineNumber + totalOccupancy - 1;
 
-        return firstTravellerAllocationNumber === lastTravellerAllocationNumber
-            ? firstTravellerAllocationNumber.toString()
-            : firstTravellerAllocationNumber + '-' + lastTravellerAllocationNumber;
+        return totalOccupancy > 1
+            ? startTravellerLineNumber + '-' + endTravellerLineNumber
+            : startTravellerLineNumber.toString();
     }
 
     isServiceMarked(service) {

@@ -3,6 +3,10 @@ import es7shim from 'es7-shim';
 import moment from 'moment';
 import { SERVICE_TYPES } from '../UbpCrsAdapter';
 import TravellerHelper from '../helper/TravellerHelper';
+import RoundTripHelper from '../helper/RoundTripHelper';
+import CarHelper from '../helper/CarHelper';
+import CamperHelper from '../helper/CamperHelper';
+import HotelHelper from '../helper/HotelHelper';
 
 const CONFIG = {
     crs: {
@@ -40,11 +44,18 @@ class TomaSPCAdapter {
         this.options = options;
         this.logger = logger;
         this.connectionOptions = {};
+
+        const helperOptions = Object.assign({}, options, {
+            crsDateFormat: CONFIG.crs.dateFormat,
+            gender2SalutationMap: CONFIG.crs.gender2SalutationMap,
+        });
+
         this.helper = {
-            traveller: new TravellerHelper(Object.assign({}, options, {
-                crsDateFormat: CONFIG.crs.dateFormat,
-                gender2SalutationMap: CONFIG.crs.gender2SalutationMap,
-            })),
+            traveller: new TravellerHelper(helperOptions),
+            car: new CarHelper(helperOptions),
+            camper: new CamperHelper(helperOptions),
+            hotel: new HotelHelper(helperOptions),
+            roundTrip: new RoundTripHelper(helperOptions),
         };
     }
 
@@ -592,6 +603,13 @@ class TomaSPCAdapter {
             }
         });
 
+        crsObject.numTravellers = Math.max(
+            crsObject.numTravellers || 0,
+            this.calculateNumberOfTravellers(crsObject),
+            adapterObject.numberOfTravellers || 0,
+            CONFIG.crs.defaultValues.numberOfTravellers
+        );
+
         if ((crsObject.services || []).length === 0) {
             delete crsObject.services;
         }
@@ -608,11 +626,6 @@ class TomaSPCAdapter {
         crsObject.action = CONFIG.crs.defaultValues.action;
         crsObject.traveltype = adapterObject.travelType || crsObject.traveltype || void 0;
         crsObject.remark = [crsObject.remark, adapterObject.remark].filter(Boolean).join(',') || void 0;
-        crsObject.numTravellers = Math.max(
-            adapterObject.numberOfTravellers || 0,
-            crsObject.numTravellers || 0,
-            CONFIG.crs.defaultValues.numberOfTravellers
-        ) || void 0;
     }
 
     /**
@@ -729,28 +742,11 @@ class TomaSPCAdapter {
      * @param crsObject object
      */
     assignHotelServiceFromAdapterObjectToCrsObject(adapterService, crsService, crsObject) {
-        const emptyRelatedTravellers = () => {
-            if (!crsObject.travellers) return;
-
-            let startLineNumber = parseInt(travellerAssociation.substr(0, 1), 10);
-            let endLineNumber = parseInt(travellerAssociation.substr(-1), 10);
-
-            if (!startLineNumber) return;
-
-            do {
-                let traveller = crsObject.travellers[startLineNumber - 1];
-
-                traveller.title = void 0;
-                traveller.name = void 0;
-                traveller.discount = void 0;
-            } while (++startLineNumber <= endLineNumber);
-        };
-
         let dateFrom = moment(adapterService.dateFrom, this.options.useDateFormat);
         let dateTo = moment(adapterService.dateTo, this.options.useDateFormat);
-        let travellerAssociation = crsService.travellerAssociation || '';
-
-        adapterService.roomOccupancy = Math.max(adapterService.roomOccupancy || 1, (adapterService.children || []).length);
+        let firstTravellerAssociation = (adapterService.children && adapterService.children.length)
+            ? this.calculateNumberOfTravellers(crsObject) + 1
+            : this.helper.traveller.extractFirstTravellerAssociation(crsService.travellerAssociation) || 1;
 
         crsService.serviceType = CONFIG.crs.serviceTypes.hotel;
         crsService.serviceCode = adapterService.destination;
@@ -759,11 +755,8 @@ class TomaSPCAdapter {
         crsService.quantity = adapterService.roomQuantity;
         crsService.fromDate = dateFrom.isValid() ? dateFrom.format(CONFIG.crs.dateFormat) : adapterService.dateFrom;
         crsService.toDate = dateTo.isValid() ? dateTo.format(CONFIG.crs.dateFormat) : adapterService.dateTo;
-        crsService.travellerAssociation = '1' + ((adapterService.roomOccupancy > 1) ? '-' + adapterService.roomOccupancy : '');
-
-        emptyRelatedTravellers();
-
-        crsObject.numTravellers = Math.max(crsObject.numTravellers, adapterService.roomOccupancy);
+        crsService.travellerAssociation =
+            this.helper.hotel.calculateTravellerAllocation(adapterService, firstTravellerAssociation);
     }
 
     /**
@@ -777,29 +770,14 @@ class TomaSPCAdapter {
             return;
         }
 
-        const addTravellerAllocation = () => {
-            let lastTravellerLineNumber = Math.max(adapterService.roomOccupancy, travellerLineNumber);
-            let firstTravellerLineNumber = 1 + lastTravellerLineNumber - adapterService.roomOccupancy;
-
-            crsService.travellerAssociation = firstTravellerLineNumber === lastTravellerLineNumber
-                ? firstTravellerLineNumber
-                : firstTravellerLineNumber + '-' + lastTravellerLineNumber;
-        };
-
-        let travellerLineNumber = void 0;
-
         adapterService.children.forEach((child) => {
             let travellerIndex = this.getNextEmptyTravellerIndex(crsObject);
             let traveller = crsObject.travellers[travellerIndex];
-
-            travellerLineNumber = travellerIndex + 1;
 
             traveller.title = CONFIG.crs.gender2SalutationMap.child;
             traveller.name = child.name;
             traveller.discount = child.age;
         });
-
-        addTravellerAllocation();
     }
 
     /**
@@ -845,7 +823,6 @@ class TomaSPCAdapter {
         });
 
         crsService.travellerAssociation = firstLineNumber + (firstLineNumber !== lastLineNumber ? '-' + lastLineNumber : '');
-        crsObject.numTravellers = Math.max(crsObject.numTravellers, adapterService.travellers.length);
     }
 
     /**
@@ -924,7 +901,7 @@ class TomaSPCAdapter {
         let index = void 0;
 
         crsObject.travellers.some((traveller, travellerIndex) =>{
-            if (!traveller.title && !traveller.name && !traveller.discount) {
+            if (!traveller.name && !traveller.discount) {
                 index = travellerIndex;
 
                 return true;
@@ -939,6 +916,20 @@ class TomaSPCAdapter {
 
         return crsObject.travellers.length - 1;
     };
+
+    /**
+     * @private
+     * @param crsObject object
+     * @returns {number}
+     */
+    calculateNumberOfTravellers(crsObject) {
+        return (crsObject.services || []).reduce((lastTravellerAssociation, service) => {
+            return Math.max(
+                lastTravellerAssociation,
+                +this.helper.traveller.extractLastTravellerAssociation(service.travellerAssociation)
+            );
+        }, 0);
+    }
 }
 
 export default TomaSPCAdapter;
