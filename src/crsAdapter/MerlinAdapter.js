@@ -153,6 +153,10 @@ class MerlinAdapter {
             this.logger.info('XML:');
             this.logger.info(xml);
 
+            try {
+                this.options.onSetData && this.options.onSetData(crsObject);
+            } catch (ignore) {}
+
             return this.getConnection().post(xml).catch((error) => {
                 this.logger.info(error);
                 this.logger.error('error during transfer - please check the result');

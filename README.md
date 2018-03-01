@@ -90,11 +90,12 @@ which will close the "CRS overlay/popup" (if there is any)
 You can check the default options with `UbpCrsAdapter.DEFAULT_OPTIONS`.
 This options will be applied on every underlying adapter.
 
-name          | default value  
-:---          | :---           
-debug         | false
-useDateFormat | 'DDMMYYYY' (according to [momentjs date format](https://momentjs.com/docs/#/displaying/))
-useTimeFormat | 'HHmm' (according to [momentjs date format](https://momentjs.com/docs/#/displaying/))
+name          | default value | description 
+:---          | :---          | :--- 
+debug         | `false`       | whether or not showing the debug output
+useDateFormat | `'DDMMYYYY'`  | date format which you want to use on the `setData` object (according to [momentjs date format](https://momentjs.com/docs/#/displaying/))
+useTimeFormat | `'HHmm'`      | time format which you want to use on the `setData` object (according to [momentjs date format](https://momentjs.com/docs/#/displaying/))
+onSetData     | `void 0`      | callback which is invoked with the data object, which will be sent to the CRS
 
 
 ### Supported CRS

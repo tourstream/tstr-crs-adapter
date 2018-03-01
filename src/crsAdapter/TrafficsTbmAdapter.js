@@ -126,6 +126,10 @@ class TrafficsTbmAdapter {
             this.logger.info('BASE OBJECT:');
             this.logger.info(crsObject);
 
+            try {
+                this.options.onSetData && this.options.onSetData(crsObject);
+            } catch (ignore) {}
+
             return this.getConnection().send(crsObject).catch((error) => {
                 this.logger.error(error.message);
                 this.logger.info('response was: ' + error.response);

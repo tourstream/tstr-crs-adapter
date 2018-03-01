@@ -77,6 +77,10 @@ class TomaSPCAdapter {
             this.logger.info('CRS OBJECT:');
             this.logger.info(crsObject);
 
+            try {
+                this.options.onSetData && this.options.onSetData(crsObject);
+            } catch (ignore) {}
+
             return this.sendData(crsObject).then(() => {
                 this.exit();
             });

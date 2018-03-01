@@ -70,6 +70,7 @@ describe('UbpCrsAdapter', () => {
             debug: false,
             useDateFormat: 'DDMMYYYY',
             useTimeFormat: 'HHmm',
+            onSetData: void 0,
         });
     });
 
