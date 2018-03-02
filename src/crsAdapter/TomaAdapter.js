@@ -143,6 +143,10 @@ class TomaAdapter {
         this.logger.info(xml);
 
         try {
+            this.options.onSetData && this.options.onSetData(xmlObject);
+        } catch (ignore) {}
+
+        try {
             this.getConnection().FIFramePutData(xml);
         } catch (error) {
             this.logger.error(error);

@@ -162,6 +162,10 @@ class BewotecExpertAdapter {
             this.logger.info('CRS OBJECT:');
             this.logger.info(crsObject);
 
+            try {
+                this.options.onSetData && this.options.onSetData(crsObject);
+            } catch (ignore) {}
+
             return this.getConnection().send(crsObject).catch((error) => {
                 this.logger.info(error);
                 this.logger.error('error during transfer - please check the result');

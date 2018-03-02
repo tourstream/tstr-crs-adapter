@@ -47,6 +47,7 @@ const DEFAULT_OPTIONS = {
     debug: false,
     useDateFormat: 'DDMMYYYY',
     useTimeFormat: 'HHmm',
+    onSetData: void 0,
 };
 
 class UbpCrsAdapter {
