@@ -670,4 +670,6 @@ class CetsAdapter {
     };
 }
 
+CetsAdapter.type = 'cets';
+
 export default CetsAdapter;

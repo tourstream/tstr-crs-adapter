@@ -120,6 +120,51 @@ class MerlinAdapter {
         });
     }
 
+    getDataDefinition() {
+        return {
+            serviceTypes: CONFIG.crs.serviceTypes,
+            formats: {
+                date: CONFIG.crs.dateFormat,
+                time: CONFIG.crs.timeFormat,
+            },
+            type: MerlinAdapter.type,
+        };
+    }
+
+    fetchData() {
+        return this.getCrsData().then((response) => {
+            const rawData = (response || {}).data;
+            const parsedData = this.xmlParser.parse(rawData);
+            const crsData = parsedData.GATE2MX.SendRequest.Import;
+
+            const collectServices = () => crsData.ServiceBlock.ServiceRow.map((service) => {
+                return {
+                    type: service.KindOfService,
+                    code: service.Service,
+                    accommodation: service.Accommodation,
+                    fromDate: service.FromDate,
+                    toDate: service.EndDate,
+                    occupancy: service.Occupancy,
+                    quantity: service.NoOfServices,
+                }
+            });
+
+            return {
+                raw: rawData,
+                parsed: parsedData,
+                agencyNumber: crsData.AgencyNoTouroperator,
+                operator: crsData.TourOperator,
+                numberOfTravellers: crsData.NoOfPersons,
+                travelType: crsData.TravelType,
+                remark: crsData.Remarks,
+                services: collectServices(),
+            };
+        }, (error) => {
+            this.logger.error(error);
+            throw new Error('[.getData] ' + error.message);
+        });
+    }
+
     getData() {
         return this.getCrsData().then((response) => {
             let data = (response || {}).data;
@@ -836,5 +881,7 @@ class MerlinAdapter {
         }, 0);
     }
 }
+
+MerlinAdapter.type = 'merlin';
 
 export default MerlinAdapter;
