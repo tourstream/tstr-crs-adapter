@@ -26,6 +26,36 @@ const CRS_TYPES = {
     cosmoNaut: 'cosmonaut',
 };
 
+const CRS_OPTIONS = {
+    [CRS_TYPES.toma]: {
+        providerKey: '',
+    },
+    [CRS_TYPES.toma2]: {
+        externalCatalogVersion: '',
+        connectionUrl: '',
+        popupId: '',
+    },
+    [CRS_TYPES.cets]: void 0,
+    [CRS_TYPES.merlin]: void 0,
+    [CRS_TYPES.myJack]: {
+        token: '',
+        dataBridgeUrl: '',
+    },
+    [CRS_TYPES.jackPlus]: {
+        token: '',
+    },
+    [CRS_TYPES.cosmo]: {
+        dataSourceUrl: '',
+        environment: '',
+        exportId: '',
+    },
+    [CRS_TYPES.cosmoNaut]: {
+        dataSourceUrl: '',
+        environment: '',
+        exportId: '',
+    },
+};
+
 const GENDER_TYPES = {
     female: 'female',
     male: 'male',
@@ -53,7 +83,7 @@ const DEFAULT_OPTIONS = {
 
 class UbpCrsAdapter {
     /**
-     * @param options i.e. { debug: false, useDateFormat: 'DDMMYYYY', useTimeFormat: 'HHmm' }
+     * @param options DEFAULT_OPTIONS
      */
     constructor(options = {}) {
         this.options = Object.assign({}, DEFAULT_OPTIONS, options);
@@ -80,8 +110,8 @@ class UbpCrsAdapter {
     }
 
     /**
-     * @param crsType i.e. 'cets'
-     * @param options i.e. { providerKey: 'key' }
+     * @param crsType CRS_TYPES
+     * @param options CRS_OPTIONS
      */
     connect(crsType, options = {}) {
         return new Promise((resolve, reject) => {
