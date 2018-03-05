@@ -490,6 +490,13 @@ class MerlinAdapter {
             crsService.MarkField = adapterService.marked ? 'X' : void 0;
         });
 
+        crsData.NoOfPersons = Math.max(
+            crsData.NoOfPersons || 0,
+            this.calculateNumberOfTravellers(crsData),
+            adapterObject.numberOfTravellers || 0,
+            CONFIG.crs.defaultValues.numberOfTravellers
+        );
+
         try {
             if (crsData.ServiceBlock.ServiceRow.length === 0) {
                 delete crsData.ServiceBlock;
@@ -506,11 +513,6 @@ class MerlinAdapter {
         crsData.TransactionCode = CONFIG.crs.defaultValues.action;
         crsData.TravelType = adapterObject.travelType || crsData.TravelType || void 0;
         crsData.Remarks = [crsData.Remarks, adapterObject.remark].filter(Boolean).join(';') || void 0;
-        crsData.NoOfPersons = Math.max(
-            adapterObject.numberOfTravellers || 0,
-            crsData.NoOfPersons || 0,
-            CONFIG.crs.defaultValues.numberOfTravellers
-        ) || void 0;
     }
 
     /**
@@ -628,28 +630,11 @@ class MerlinAdapter {
      * @param crsData object
      */
     assignHotelServiceFromAdapterObjectToCrsObject(adapterService, crsService, crsData) {
-        const emptyRelatedTravellers = () => {
-            let startLineNumber = parseInt(travellerAssociation.substr(0, 1) || 0, 10);
-            let endLineNumber = parseInt(travellerAssociation.substr(-1) || 0, 10);
-
-            if (!startLineNumber) return;
-
-            do {
-                try {
-                    let traveller = crsData.TravellerBlock.PersonBlock.PersonRow[startLineNumber - 1];
-
-                    traveller.Salutation = void 0;
-                    traveller.Name = void 0;
-                    traveller.Age = void 0;
-                } catch (ignore) {}
-            } while (++startLineNumber <= endLineNumber);
-        };
-
         let dateFrom = moment(adapterService.dateFrom, this.options.useDateFormat);
         let dateTo = moment(adapterService.dateTo, this.options.useDateFormat);
-        let travellerAssociation = crsService.TravellerAllocation || '';
-
-        adapterService.roomOccupancy = Math.max(adapterService.roomOccupancy || 1, (adapterService.children || []).length);
+        let firstTravellerAssociation = (adapterService.children && adapterService.children.length)
+            ? this.calculateNumberOfTravellers(crsData) + 1
+            : this.helper.traveller.extractFirstTravellerAssociation(crsService.TravellerAllocation) || 1;
 
         crsService.KindOfService = CONFIG.crs.serviceTypes.hotel;
         crsService.Service = adapterService.destination;
@@ -658,11 +643,8 @@ class MerlinAdapter {
         crsService.NoOfServices = adapterService.roomQuantity;
         crsService.FromDate = dateFrom.isValid() ? dateFrom.format(CONFIG.crs.dateFormat) : adapterService.dateFrom;
         crsService.EndDate = dateTo.isValid() ? dateTo.format(CONFIG.crs.dateFormat) : adapterService.dateTo;
-        crsService.TravellerAllocation = '1' + ((adapterService.roomOccupancy > 1) ? '-' + adapterService.roomOccupancy : '');
-
-        emptyRelatedTravellers();
-
-        crsData.NoOfPersons = Math.max(crsData.NoOfPersons, adapterService.roomOccupancy);
+        crsService.TravellerAllocation =
+            this.helper.hotel.calculateTravellerAllocation(adapterService, firstTravellerAssociation);
     }
 
     /**
@@ -676,29 +658,14 @@ class MerlinAdapter {
             return;
         }
 
-        const addTravellerAllocation = () => {
-            let lastTravellerLineNumber = Math.max(adapterService.roomOccupancy, travellerLineNumber);
-            let firstTravellerLineNumber = 1 + lastTravellerLineNumber - adapterService.roomOccupancy;
-
-            crsService.TravellerAllocation = firstTravellerLineNumber === lastTravellerLineNumber
-                ? firstTravellerLineNumber
-                : firstTravellerLineNumber + '-' + lastTravellerLineNumber;
-        };
-
-        let travellerLineNumber = void 0;
-
         adapterService.children.forEach((child) => {
             let travellerIndex = this.getNextEmptyTravellerIndex(crsData);
             let traveller = crsData.TravellerBlock.PersonBlock.PersonRow[travellerIndex];
-
-            travellerLineNumber = travellerIndex + 1;
 
             traveller.Salutation = CONFIG.crs.gender2SalutationMap.child;
             traveller.Name = child.name;
             traveller.Age = child.age;
         });
-
-        addTravellerAllocation();
     }
 
     /**
@@ -744,7 +711,6 @@ class MerlinAdapter {
         });
 
         crsService.TravellerAllocation = firstLineNumber + (firstLineNumber !== lastLineNumber ? '-' + lastLineNumber : '');
-        crsData.NoOfPersons = Math.max(crsData.NoOfPersons, adapterService.travellers.length);
     }
 
     /**
@@ -824,7 +790,7 @@ class MerlinAdapter {
         let travellerIndex = void 0;
 
         personRows.some((traveller, index) =>{
-            if (!traveller.Salutation && !traveller.Name && !traveller.Age) {
+            if (!traveller.Name && !traveller.Age) {
                 travellerIndex = index;
 
                 return true;
@@ -843,6 +809,20 @@ class MerlinAdapter {
 
         return personRows.length - 1;
     };
+
+    /**
+     * @private
+     * @param crsObject object
+     * @returns {number}
+     */
+    calculateNumberOfTravellers(crsObject) {
+        return (crsObject.ServiceBlock.ServiceRow || []).reduce((lastTravellerAssociation, service) => {
+            return Math.max(
+                lastTravellerAssociation,
+                +this.helper.traveller.extractLastTravellerAssociation(service.TravellerAllocation)
+            );
+        }, 0);
+    }
 }
 
 export default MerlinAdapter;

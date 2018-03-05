@@ -810,7 +810,6 @@ describe('TrafficsTbmAdapter', () => {
             let expected = {
                 'TbmXml.admin.operator.$.act': 'BA',
                 'TbmXml.admin.operator.$.toc': 'FTI',
-                'TbmXml.admin.operator.$.psn': 4,
 
                 'TbmXml.admin.services.service.0.$.typ': 'H',
                 'TbmXml.admin.services.service.0.$.cod': 'destination',
@@ -819,14 +818,19 @@ describe('TrafficsTbmAdapter', () => {
                 'TbmXml.admin.services.service.0.$.alc': 4,
                 'TbmXml.admin.services.service.0.$.vnd': '010118',
                 'TbmXml.admin.services.service.0.$.bsd': '080118',
-                'TbmXml.admin.services.service.0.$.agn': '1-4',
+                'TbmXml.admin.services.service.0.$.agn': '2-9',
 
                 'TbmXml.admin.travellers.traveller.0.$.typ': 'K',
-                'TbmXml.admin.travellers.traveller.0.$.sur': 'john doe',
-                'TbmXml.admin.travellers.traveller.0.$.age': 8,
+                'TbmXml.admin.travellers.traveller.0.$.sur': 'jake doe',
+                'TbmXml.admin.travellers.traveller.0.$.age': 7,
                 'TbmXml.admin.travellers.traveller.1.$.typ': 'K',
-                'TbmXml.admin.travellers.traveller.1.$.sur': 'jane doe',
-                'TbmXml.admin.travellers.traveller.1.$.age': 14,
+                'TbmXml.admin.travellers.traveller.1.$.sur': 'john doe',
+                'TbmXml.admin.travellers.traveller.1.$.age': 8,
+                'TbmXml.admin.travellers.traveller.2.$.typ': 'K',
+                'TbmXml.admin.travellers.traveller.2.$.sur': 'jane doe',
+                'TbmXml.admin.travellers.traveller.2.$.age': 14,
+
+                'TbmXml.admin.operator.$.psn': 9,
             };
 
             adapter.setData({
@@ -864,7 +868,6 @@ describe('TrafficsTbmAdapter', () => {
             let expected = {
                 'TbmXml.admin.operator.$.act': 'BA',
                 'TbmXml.admin.operator.$.toc': 'FTI',
-                'TbmXml.admin.operator.$.psn': 1,
 
                 'TbmXml.admin.services.service.0.$.typ': 'H',
                 'TbmXml.admin.services.service.0.$.cod': 'destination',
@@ -873,7 +876,9 @@ describe('TrafficsTbmAdapter', () => {
                 'TbmXml.admin.services.service.0.$.alc': 1,
                 'TbmXml.admin.services.service.0.$.vnd': 'from date',
                 'TbmXml.admin.services.service.0.$.bsd': 'to date',
-                'TbmXml.admin.services.service.0.$.agn': '1',
+                'TbmXml.admin.services.service.0.$.agn': '1-2',
+
+                'TbmXml.admin.operator.$.psn': 2,
             };
 
             adapter.setData({
@@ -883,6 +888,7 @@ describe('TrafficsTbmAdapter', () => {
                         destination: 'destination',
                         roomCode: 'rc',
                         mealCode: 'mc',
+                        roomOccupancy: 1,
                         roomQuantity: 2,
                         dateFrom: 'from date',
                         dateTo: 'to date',
@@ -977,7 +983,7 @@ describe('TrafficsTbmAdapter', () => {
                 'TbmXml.admin.services.service.0.$.opt': '1730',
                 'TbmXml.admin.services.service.0.$.op2': '200',
                 'TbmXml.admin.services.service.0.$.alc': '4',
-                'TbmXml.admin.services.service.0.$.agn': '1-2',
+                'TbmXml.admin.services.service.0.$.agn': '1',
 
                 'TbmXml.admin.services.service.1.$.typ': 'TA',
                 'TbmXml.admin.services.service.1.$.cod': 'extra',

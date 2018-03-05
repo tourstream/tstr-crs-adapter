@@ -933,7 +933,7 @@ describe('TomaSPCAdapter', () => {
 
             let expected = {
                 action: 'BA',
-                numTravellers: 4,
+                numTravellers: 8,
                 services: [
                     {
                         serviceType: 'H',
@@ -943,7 +943,7 @@ describe('TomaSPCAdapter', () => {
                         toDate: '080118',
                         quantity: 2,
                         occupancy: 4,
-                        travellerAssociation: '1-4',
+                        travellerAssociation: '1-8',
                     },
                 ],
                 travellers: [
@@ -981,20 +981,22 @@ describe('TomaSPCAdapter', () => {
 
             let expected = {
                 action: 'BA',
-                numTravellers: 1,
+                numTravellers: 2,
                 services: [
                     {
                         serviceType: 'H',
                         serviceCode: 'destination',
                         accommodation: 'rc mc',
-                        occupancy: 1,
                         fromDate: '010118',
                         toDate: '080118',
                         marker: true,
-                        travellerAssociation: '1',
+                        travellerAssociation: '2',
                     },
                 ],
-                travellers: [{}, {}],
+                travellers: [
+                    {},
+                    {title: 'K', name: 'jane doe', discount: '3'},
+                ],
             };
 
             crsData = {
@@ -1004,6 +1006,8 @@ describe('TomaSPCAdapter', () => {
                         serviceType: 'H',
                         serviceCode: 'destination',
                         accommodation: 'rc mc',
+                        occupancy: 1,
+                        quantity: 1,
                         fromDate: '111217',
                         toDate: '221217',
                         travellerAssociation: '2',
@@ -1122,7 +1126,7 @@ describe('TomaSPCAdapter', () => {
 
             let expected = {
                 action: 'BA',
-                numTravellers: 2,
+                numTravellers: 3,
                 services: [
                     {
                         serviceType: 'WM',
@@ -1132,7 +1136,7 @@ describe('TomaSPCAdapter', () => {
                         accommodation: '1730',
                         quantity: '200',
                         occupancy: '4',
-                        travellerAssociation: '1-2',
+                        travellerAssociation: '1',
                     },
                     {
                         serviceType: 'TA',
@@ -1214,7 +1218,6 @@ describe('TomaSPCAdapter', () => {
                         serviceType: 'H',
                         serviceCode: 'destination',
                         accommodation: 'rc mc',
-                        occupancy: 1,
                         fromDate: '010118',
                         toDate: '080118',
                         travellerAssociation: '1',

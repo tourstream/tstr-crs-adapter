@@ -522,6 +522,13 @@ class TrafficsTbmAdapter {
             crsObject['TbmXml.admin.services.service.' + lineIndex + '.$.mrk'] = service.marked ? 'X' : void 0;
         });
 
+        crsObject['TbmXml.admin.operator.$.psn'] = Math.max(
+            crsObject['TbmXml.admin.operator.$.psn'] || 0,
+            this.calculateNumberOfTravellers(crsObject),
+            dataObject.numberOfTravellers || 0,
+            CONFIG.crs.defaultValues.numberOfTravellers
+        );
+
         return JSON.parse(JSON.stringify(crsObject));
     };
 
@@ -533,11 +540,6 @@ class TrafficsTbmAdapter {
     assignBasicData(crsObject, dataObject) {
         crsObject['TbmXml.admin.customer.$.rmk'] = dataObject.remark;
         crsObject['TbmXml.admin.operator.$.knd'] = dataObject.travelType || crsObject['TbmXml.admin.operator.$.knd'] || void 0;
-        crsObject['TbmXml.admin.operator.$.psn'] = Math.max(
-            dataObject.numberOfTravellers || 0,
-            crsObject['TbmXml.admin.operator.$.psn'] || 0,
-            CONFIG.crs.defaultValues.numberOfTravellers
-        ) || void 0;
     }
 
     /**
@@ -595,26 +597,13 @@ class TrafficsTbmAdapter {
      * @param lineIndex int
      */
     assignHotelServiceFromAdapterObjectToCrsObject(service, crsObject, lineIndex) {
-        const emptyRelatedTravellers = (crsObject, travellerAssociation) => {
-            let startLineNumber = parseInt(travellerAssociation.substr(0, 1), 10);
-            let endLineNumber = parseInt(travellerAssociation.substr(-1), 10);
-
-            if (!startLineNumber) return;
-
-            do {
-                let startLineIndex = startLineNumber - 1;
-
-                crsObject['TbmXml.admin.travellers.traveller.' + startLineIndex + '.$.typ'] = void 0;
-                crsObject['TbmXml.admin.travellers.traveller.' + startLineIndex + '.$.sur'] = void 0;
-                crsObject['TbmXml.admin.travellers.traveller.' + startLineIndex + '.$.age'] = void 0;
-            } while (++startLineNumber <= endLineNumber);
-        };
-
         let dateFrom = moment(service.dateFrom, this.options.useDateFormat);
         let dateTo = moment(service.dateTo, this.options.useDateFormat);
-        let travellerAssociation = crsObject['TbmXml.admin.services.service.' + lineIndex + '.$.agn'] || '';
-
-        service.roomOccupancy = Math.max(service.roomOccupancy || 1, (service.children || []).length);
+        let firstTravellerAssociation = (service.children && service.children.length)
+            ? this.calculateNumberOfTravellers(crsObject) + 1
+            : this.helper.traveller.extractFirstTravellerAssociation(
+                crsObject['TbmXml.admin.services.service.' + lineIndex + '.$.agn']
+            ) || 1;
 
         crsObject['TbmXml.admin.services.service.' + lineIndex + '.$.typ'] = CONFIG.crs.serviceTypes.hotel;
         crsObject['TbmXml.admin.services.service.' + lineIndex + '.$.cod'] = service.destination;
@@ -623,11 +612,8 @@ class TrafficsTbmAdapter {
         crsObject['TbmXml.admin.services.service.' + lineIndex + '.$.alc'] = service.roomOccupancy;
         crsObject['TbmXml.admin.services.service.' + lineIndex + '.$.vnd'] = dateFrom.isValid() ? dateFrom.format(CONFIG.crs.dateFormat) : service.dateFrom;
         crsObject['TbmXml.admin.services.service.' + lineIndex + '.$.bsd'] = dateTo.isValid() ? dateTo.format(CONFIG.crs.dateFormat) : service.dateTo;
-        crsObject['TbmXml.admin.services.service.' + lineIndex + '.$.agn'] = '1' + ((service.roomOccupancy > 1) ? '-' + service.roomOccupancy : '');
-
-        emptyRelatedTravellers(crsObject, travellerAssociation);
-
-        crsObject['TbmXml.admin.operator.$.psn'] = Math.max(crsObject['TbmXml.admin.operator.$.psn'], service.roomOccupancy);
+        crsObject['TbmXml.admin.services.service.' + lineIndex + '.$.agn'] =
+            this.helper.hotel.calculateTravellerAllocation(service, firstTravellerAssociation);
     }
 
     /**
@@ -641,19 +627,13 @@ class TrafficsTbmAdapter {
             return;
         }
 
-        let travellerAllocationNumber = void 0;
-
         service.children.forEach((child) => {
             let travellerIndex = this.getNextEmptyTravellerLineIndex(crsObject);
-
-            travellerAllocationNumber = travellerIndex + 1;
 
             crsObject['TbmXml.admin.travellers.traveller.' + travellerIndex + '.$.typ'] = CONFIG.crs.gender2SalutationMap.child;
             crsObject['TbmXml.admin.travellers.traveller.' + travellerIndex + '.$.sur'] = child.name;
             crsObject['TbmXml.admin.travellers.traveller.' + travellerIndex + '.$.age'] = child.age;
         });
-
-        crsObject['TbmXml.admin.services.service.' + lineIndex + '.$.agn'] = this.helper.hotel.calculateTravellerAllocation(service, travellerAllocationNumber);
     }
 
     /**
@@ -699,7 +679,6 @@ class TrafficsTbmAdapter {
         });
 
         crsObject['TbmXml.admin.services.service.' + lineIndex + '.$.agn'] = firstLineNumber + (firstLineNumber !== lastLineNumber ? '-' + lastLineNumber : '');
-        crsObject['TbmXml.admin.operator.$.psn'] = Math.max(crsObject['TbmXml.admin.operator.$.psn'], service.travellers.length);
     }
 
     /**
@@ -806,6 +785,26 @@ class TrafficsTbmAdapter {
             }
         } while (++index)
     };
+
+    /**
+     * @private
+     * @param crsObject object
+     * @returns {number}
+     */
+    calculateNumberOfTravellers(crsObject) {
+        let index = 0;
+        let lastTravellerAssociation = 0;
+
+        do {
+            if (!crsObject['TbmXml.admin.services.service.' + index + '.$.typ']) {
+                return lastTravellerAssociation;
+            }
+
+            lastTravellerAssociation = +this.helper.traveller.extractLastTravellerAssociation(
+                crsObject['TbmXml.admin.services.service.' + index + '.$.agn']
+            );
+        } while (++index);
+    }
 }
 
 export default TrafficsTbmAdapter;

@@ -27,6 +27,14 @@ class TravellerHelper {
 
         return travellers.filter(Boolean);
     }
+
+    extractLastTravellerAssociation(travellerAssociation = '') {
+        return travellerAssociation.split('-').pop();
+    }
+
+    extractFirstTravellerAssociation(travellerAssociation = '') {
+        return travellerAssociation.split('-').shift();
+    }
 }
 
 export {
