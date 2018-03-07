@@ -129,6 +129,55 @@ class CetsAdapter {
         this.createConnection();
     }
 
+    getCrsDataDefinition() {
+        return {
+            serviceTypes: CONFIG.defaults.serviceType,
+            formats: {
+                date: CONFIG.crs.dateFormat,
+                time: CONFIG.crs.timeFormat,
+            },
+            type: CetsAdapter.type,
+        };
+    }
+
+    fetchData() {
+        try {
+            const rawData = this.getCrsXml() || '';
+            const parsedData = this.xmlParser.parse(rawData);
+            const crsData = this.normalizeParsedData(parsedData).Request;
+
+            return Promise.resolve({
+                raw: rawData,
+                parsed: parsedData,
+                agencyNumber: crsData[CONFIG.parserOptions.attrPrefix].Agent,
+                operator: crsData.Fab.TOCode,
+                numberOfTravellers: crsData.Fab.Adults,
+                travelType: CONFIG.catalog2TravelTypeMap[crsData.Fab.Catalog],
+                services: this.collectServices(crsData),
+            });
+        } catch(error) {
+            return Promise.reject(error);
+        }
+    }
+
+    collectServices(crsData) {
+        return crsData.Fab.Fah.map((service) => {
+            return {
+                type: service[CONFIG.parserOptions.attrPrefix].ServiceType,
+                fromDate: service.StartDate,
+                duration: service.Duration,
+                pickUpTime: service.CarDetails.PickUp.Time,
+                pickUpStationCode: service.CarDetails.PickUp.CarStation,
+                dropOffTime: service.CarDetails.DropOff.Time,
+                dropOffStationCode: service.CarDetails.DropOff.CarStation,
+                destination: service.Destination,
+                product: service.Product,
+                room: service.Room,
+                travellerAssociation: service.CarDetails.Persons,
+            }
+        });
+    }
+
     getData() {
         let xml = this.getCrsXml();
 
@@ -140,12 +189,12 @@ class CetsAdapter {
         this.logger.info('PARSED XML:');
         this.logger.info(xmlObject);
 
-        return this.mapXmlObjectToAdapterObject(this.normalizeXmlObject(xmlObject));
+        return this.mapXmlObjectToAdapterObject(this.normalizeParsedData(xmlObject));
     }
 
     setData(dataObject) {
         let xmlObject = this.xmlParser.parse(this.getCrsXml());
-        let normalizedXmlObject = this.normalizeXmlObject(xmlObject);
+        let normalizedXmlObject = this.normalizeParsedData(xmlObject);
 
         if (normalizedXmlObject.Request.Avl) {
             delete normalizedXmlObject.Request.Avl;
@@ -344,7 +393,7 @@ class CetsAdapter {
      * @param xmlObject object
      * @returns {*}
      */
-    normalizeXmlObject(xmlObject) {
+    normalizeParsedData(xmlObject) {
         const addFabNode = () => {
             let normalizedObject = {Request: {}};
 

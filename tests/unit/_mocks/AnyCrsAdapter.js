@@ -5,7 +5,7 @@ export default (() => jasmine.createSpyObj(
         'getData',
         'setData',
         'exit',
-        'getDataDefinition',
+        'getCrsDataDefinition',
         'fetchData',
     ]
 ));

@@ -131,6 +131,54 @@ class BewotecExpertAdapter {
         }
     }
 
+    getCrsDataDefinition() {
+        return {
+            serviceTypes: CONFIG.crs.serviceTypes,
+            formats: {
+                date: CONFIG.crs.dateFormat,
+                time: CONFIG.crs.timeFormat,
+            },
+            type: BewotecExpertAdapter.type,
+        };
+    }
+
+    fetchData() {
+        return this.getConnection().get().then((response) => {
+            const rawData = (response || {}).data || '';
+            const parsedData = this.xmlParser.parse(rawData);
+            const crsData = parsedData.ExpertModel;
+
+            return {
+                raw: rawData,
+                parsed: parsedData,
+                agencyNumber: crsData.Agency,
+                operator: (crsData[CONFIG.parserOptions.attrPrefix] || {}).operator,
+                numberOfTravellers: crsData.PersonCount,
+                travelType: (crsData[CONFIG.parserOptions.attrPrefix] || {}).traveltype,
+                remark: crsData.Remarks,
+                services: this.collectServices(crsData),
+            };
+        });
+    }
+
+    collectServices(crsData) {
+        return crsData.Services.Service.map((service) => {
+            let serviceData = service[CONFIG.parserOptions.attrPrefix];
+
+            return {
+                type: serviceData.requesttype,
+                code: service.servicecode,
+                accommodation: service.accomodation,
+                fromDate: service.start,
+                toDate: service.end,
+                occupancy: service.occupancy,
+                quantity: service.count,
+                travellerAssociation: service.allocation,
+                marker: service.marker,
+            }
+        });
+    }
+
     getData() {
         try {
             return this.getConnection().get().then((response) => {
@@ -980,5 +1028,7 @@ class BewotecExpertAdapter {
         } while (++index);
     }
 }
+
+BewotecExpertAdapter.type = 'bewotec';
 
 export default BewotecExpertAdapter;

@@ -7,8 +7,9 @@ import MerlinAdapter from 'crsAdapter/MerlinAdapter';
 import BewotecExpertAdapter from 'crsAdapter/BewotecExpertAdapter';
 import TrafficsTbmAdapter from 'crsAdapter/TrafficsTbmAdapter';
 import LogService from 'LogService';
-import moment from 'moment/moment';
 import CarHelper from './helper/CarHelper';
+import CarServiceMapper from './mapper/CarServiceMapper';
+import CrsDataMapper from './mapper/CrsDataMapper';
 
 const SERVICE_TYPES = {
     car: 'car',
@@ -141,13 +142,12 @@ class UbpCrsAdapter {
     }
 
     getData() {
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
             this.logger.info('Try to get data');
 
             try {
                 const adapterInstance = this.getAdapterInstance();
-                const dataDefinition = adapterInstance.getDataDefinition();
-                const adapterObject = {};
+                const dataDefinition = adapterInstance.getCrsDataDefinition();
 
                 adapterInstance.fetchData().then((crsData) => {
                     this.logger.info('RAW CRS DATA:');
@@ -156,33 +156,18 @@ class UbpCrsAdapter {
                     this.logger.info('PARSED CRS DATA:');
                     this.logger.info(crsData.parsed);
 
-                    adapterObject.agencyNumber = crsData.agencyNumber;
-                    adapterObject.operator = crsData.operator;
-                    adapterObject.numberOfTravellers = crsData.numberOfTravellers;
-                    adapterObject.travelType = crsData.travelType;
-                    adapterObject.remark = crsData.remark;
-                    adapterObject.services = [];
-
-                    crsData.services.forEach((crsService) => {
-                        let adapterService;
-
-                        switch (crsService.type) {
-                            // carServiceMapper
-                            case dataDefinition.serviceTypes.car:
-                                adapterService = this.mapCarService(crsService, dataDefinition);
-                                adapterService.type = SERVICE_TYPES.car;
-                                break;
-                        }
-
-                        adapterObject.services.push(adapterService);
-                    });
+                    const mapper = {
+                        carService: new CarServiceMapper(this.options, new CarHelper(this.options)),
+                    };
+                    const dataMapper = new CrsDataMapper(this.options, mapper);
+                    const adapterObject = dataMapper.mapToAdapterData(crsData, dataDefinition);
 
                     resolve(JSON.parse(JSON.stringify(adapterObject)));
-                }, reject);
-
-                // Promise.resolve(this.getAdapterInstance().getData()).then(resolve, reject);
+                }, (error) => {
+                    this.logAndThrow('[.fetchData] ', error);
+                });
             } catch (error) {
-                this.logAndThrow('get data error:', error);
+                this.logAndThrow('[.getData] ', error);
             }
         });
     }
@@ -257,56 +242,6 @@ class UbpCrsAdapter {
         }
 
         throw new Error([message, error.message].filter(Boolean).join(' '));
-    }
-
-    mapCarService(crsService, dataDefinition) {
-        switch (dataDefinition.crsType) {
-            case CetsAdapter.type:
-                return this.mapCarServiceFromCets(crsService, dataDefinition);
-            default:
-                return this.mapCarServiceFromCrs(crsService, dataDefinition);
-        }
-    }
-
-    mapCarServiceFromCets(crsService, dataDefinition) {
-        let pickUpDate = moment(crsService.fromDate, dataDefinition.formats.date);
-        let dropOffDate = pickUpDate.clone().add(crsService.duration, 'days');
-        let pickUpTime = moment(crsService.pickUpTime, dataDefinition.formats.time);
-
-        return {
-            pickUpDate: pickUpDate.isValid() ? pickUpDate.format(this.options.useDateFormat) : crsService.fromDate,
-            dropOffDate: dropOffDate.isValid() ? dropOffDate.format(this.options.useDateFormat) : '',
-            pickUpLocation: crsService.pickUpStationCode || crsService.destination,
-            dropOffLocation: crsService.dropOffStationCode,
-            duration: crsService.duration,
-            rentalCode: crsService.product,
-            vehicleTypeCode: crsService.room,
-            pickUpTime: pickUpTime.isValid() ? pickUpTime.format(this.options.useTimeFormat) : crsService.pickUpTime,
-        };
-    }
-
-    mapCarServiceFromCrs(crsService, dataDefinition) {
-        const carHelper = new CarHelper(this.options);
-        const pickUpDate = moment(crsService.fromDate, dataDefinition.formats.date);
-        const dropOffDate = moment(crsService.toDate, dataDefinition.formats.date);
-        const pickUpTime = moment(crsService.accommodation, dataDefinition.formats.time);
-        const adapterService = {
-            pickUpDate: pickUpDate.isValid() ? pickUpDate.format(this.options.useDateFormat) : crsService.fromDate,
-            dropOffDate: dropOffDate.isValid() ? dropOffDate.format(this.options.useDateFormat) : crsService.toDate,
-            pickUpTime: pickUpTime.isValid() ? pickUpTime.format(this.options.useTimeFormat) : crsService.accommodation,
-            duration: pickUpDate.isValid() && dropOffDate.isValid()
-                ? Math.ceil(dropOffDate.diff(pickUpDate, 'days', true))
-                : void 0,
-        };
-
-        const serviceCodeDetails = carHelper.splitServiceCode(crsService.code);
-
-        adapterService.rentalCode = serviceCodeDetails.rentalCode;
-        adapterService.vehicleTypeCode = serviceCodeDetails.vehicleTypeCode;
-        adapterService.pickUpLocation = serviceCodeDetails.pickUpLocation;
-        adapterService.dropOffLocation = serviceCodeDetails.dropOffLocation;
-
-        return adapterService;
     }
 }
 

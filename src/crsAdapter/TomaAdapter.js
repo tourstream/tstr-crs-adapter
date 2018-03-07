@@ -125,6 +125,64 @@ class TomaAdapter {
         }
     }
 
+    getCrsDataDefinition() {
+        return {
+            serviceTypes: CONFIG.crs.serviceTypes,
+            formats: {
+                date: CONFIG.crs.dateFormat,
+                time: CONFIG.crs.timeFormat,
+            },
+            type: TomaAdapter.type,
+        };
+    }
+
+    fetchData() {
+        try{
+            const rawData = this.getCrsXml() || '';
+            const parsedData = this.xmlParser.parse(rawData);
+            const crsData = parsedData.Envelope.Body.TOM;
+
+            return Promise.resolve({
+                raw: rawData,
+                parsed: parsedData,
+                agencyNumber: crsData.AgencyNumber,
+                operator: crsData.Operator,
+                numberOfTravellers: crsData.NoOfPersons || crsData.NoOfPersons[CONFIG.parserOptions.textNodeName],
+                travelType: crsData.Traveltype,
+                remark: crsData.Remark,
+                services: this.collectServices(crsData),
+            });
+        } catch(error) {
+            return Promise.reject(error);
+        }
+    }
+
+    collectServices(crsData) {
+        const services = [];
+
+        let lineNumber = 1;
+
+        do {
+            let serviceType = crsData['KindOfService.' + lineNumber];
+
+            if (!serviceType) break;
+
+            services.push({
+                type: serviceType,
+                code: crsData['ServiceCode.' + lineNumber],
+                accommodation: crsData['Accommodation.' + lineNumber],
+                fromDate: crsData['From.' + lineNumber],
+                toDate: crsData['To.' + lineNumber],
+                occupancy: crsData['Occupancy.' + lineNumber],
+                quantity: crsData['Count.' + lineNumber],
+                travellerAssociation: crsData['TravAssociation.' + lineNumber],
+                marker: crsData['MarkerField.' + lineNumber],
+            });
+        } while (lineNumber++);
+
+        return services;
+    }
+
     getData() {
         let xml = this.getCrsXml();
 
@@ -860,5 +918,7 @@ class TomaAdapter {
         } while (++lineNumber);
     }
 }
+
+TomaAdapter.type = 'toma';
 
 export default TomaAdapter;

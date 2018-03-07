@@ -119,7 +119,7 @@ class MerlinAdapter {
         });
     }
 
-    getDataDefinition() {
+    getCrsDataDefinition() {
         return {
             serviceTypes: CONFIG.crs.serviceTypes,
             formats: {
@@ -132,21 +132,9 @@ class MerlinAdapter {
 
     fetchData() {
         return this.getCrsData().then((response) => {
-            const rawData = (response || {}).data;
+            const rawData = (response || {}).data || '';
             const parsedData = this.xmlParser.parse(rawData);
             const crsData = parsedData.GATE2MX.SendRequest.Import;
-
-            const collectServices = () => crsData.ServiceBlock.ServiceRow.map((service) => {
-                return {
-                    type: service.KindOfService,
-                    code: service.Service,
-                    accommodation: service.Accommodation,
-                    fromDate: service.FromDate,
-                    toDate: service.EndDate,
-                    occupancy: service.Occupancy,
-                    quantity: service.NoOfServices,
-                }
-            });
 
             return {
                 raw: rawData,
@@ -156,11 +144,24 @@ class MerlinAdapter {
                 numberOfTravellers: crsData.NoOfPersons,
                 travelType: crsData.TravelType,
                 remark: crsData.Remarks,
-                services: collectServices(),
+                services: this.collectServices(crsData),
             };
-        }, (error) => {
-            this.logger.error(error);
-            throw new Error('[.getData] ' + error.message);
+        });
+    }
+
+    collectServices(crsData) {
+        return crsData.ServiceBlock.ServiceRow.map((service) => {
+            return {
+                type: service.KindOfService,
+                code: service.Service,
+                accommodation: service.Accommodation,
+                fromDate: service.FromDate,
+                toDate: service.EndDate,
+                occupancy: service.Occupancy,
+                quantity: service.NoOfServices,
+                travellerAssociation: service.TravellerAllocation,
+                marker: service.MarkField,
+            }
         });
     }
 

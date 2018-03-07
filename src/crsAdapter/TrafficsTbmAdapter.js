@@ -96,6 +96,51 @@ class TrafficsTbmAdapter {
         }
     }
 
+    getCrsDataDefinition() {
+        return {
+            serviceTypes: CONFIG.crs.serviceTypes,
+            formats: {
+                date: CONFIG.crs.dateFormat,
+                time: CONFIG.crs.timeFormat,
+            },
+            type: TrafficsTbmAdapter.type,
+        };
+    }
+
+    fetchData() {
+        return this.getConnection().get().then((response) => {
+            const rawData = (response || {}).data || {};
+            const crsData = rawData.admin;
+
+            return {
+                raw: rawData,
+                parsed: rawData,
+                agencyNumber: crsData.operator['$'].agt,
+                operator: crsData.operator['$'].toc,
+                numberOfTravellers: crsData.operator['$'].psn,
+                travelType: crsData.operator['$'].knd,
+                remark: crsData.customer['$'].rmk,
+                services: this.collectServices(crsData),
+            };
+        });
+    }
+
+    collectServices(crsData) {
+        return crsData.services.service.map((service) => {
+            return {
+                type: service['$'].type,
+                code: service['$'].cod,
+                accommodation: service['$'].opt,
+                fromDate: service['$'].vnd,
+                toDate: service['$'].bsd,
+                occupancy: service['$'].alc,
+                quantity: service['$'].cnt,
+                travellerAssociation: service['$'].agn,
+                marker: service['$'].mrk,
+            }
+        });
+    }
+
     getData() {
         try {
             return this.getConnection().get().then((response) => {
@@ -808,5 +853,7 @@ class TrafficsTbmAdapter {
         } while (++index);
     }
 }
+
+TrafficsTbmAdapter.type = 'traffics';
 
 export default TrafficsTbmAdapter;
