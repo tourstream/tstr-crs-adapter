@@ -219,7 +219,7 @@ describe('UbpCrsAdapter', () => {
                     }
                 };
 
-                AnyCrsAdapter.getDataDefinition.and.returnValue(dataDefinitionObject);
+                AnyCrsAdapter.getCrsDataDefinition.and.returnValue(dataDefinitionObject);
                 AnyCrsAdapter.fetchData.and.returnValue(Promise.resolve(dataObject));
             });
 

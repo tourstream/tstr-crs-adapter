@@ -69,6 +69,50 @@ class TomaSPCAdapter {
         return this.createConnection(options);
     }
 
+    getCrsDataDefinition() {
+        return {
+            serviceTypes: CONFIG.crs.serviceTypes,
+            formats: {
+                date: CONFIG.crs.dateFormat,
+                time: CONFIG.crs.timeFormat,
+            },
+            type: TomaSPCAdapter.type,
+        };
+    }
+
+    fetchData() {
+        return this.getCrsObject().then((crsObject) => {
+            const rawData = (crsObject || {});
+
+            return {
+                raw: rawData,
+                parsed: rawData,
+                agencyNumber: rawData.agencyNumber,
+                operator: rawData.operator,
+                numberOfTravellers: rawData.numTravellers,
+                travelType: rawData.traveltype,
+                remark: rawData.remark,
+                services: this.collectServices(rawData),
+            };
+        });
+    }
+
+    collectServices(crsData) {
+        return crsData.services.map((service) => {
+            return {
+                type: service.serviceType,
+                code: service.serviceCode,
+                accommodation: service.accommodation,
+                fromDate: service.fromDate,
+                toDate: service.toDate,
+                occupancy: service.occupancy,
+                quantity: service.quantity,
+                travellerAssociation: service.travellerAssociation,
+                marker: service.marker,
+            }
+        });
+    }
+
     getData() {
         return this.getCrsObject().then((crsObject) => {
             this.logger.info('RAW OBJECT:');
@@ -935,5 +979,7 @@ class TomaSPCAdapter {
         }, 0);
     }
 }
+
+TomaSPCAdapter.type = 'toma2';
 
 export default TomaSPCAdapter;
