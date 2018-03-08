@@ -6,12 +6,13 @@ import MerlinAdapter from 'crsAdapter/MerlinAdapter';
 import BewotecExpertAdapter from 'crsAdapter/BewotecExpertAdapter';
 import TrafficsTbmAdapter from 'crsAdapter/TrafficsTbmAdapter';
 import LogService from 'LogService';
-import CarHelper from './helper/CarHelper';
 import HotelHelper from './helper/HotelHelper';
 import RoundTripHelper from './helper/RoundTripHelper';
+import VehicleHelper from './helper/VehicleHelper';
 import CarServiceMapper from './mapper/CarServiceMapper';
 import HotelServiceMapper from './mapper/HotelServiceMapper';
 import RoundTripServiceMapper from './mapper/RoundTripServiceMapper';
+import CamperServiceMapper from './mapper/CamperServiceMapper';
 import CrsDataMapper from './mapper/CrsDataMapper';
 
 const SERVICE_TYPES = {
@@ -160,9 +161,10 @@ class UbpCrsAdapter {
                     this.logger.info(crsData.parsed);
 
                     const mapper = {
-                        carService: new CarServiceMapper(this.logger, this.options, new CarHelper(this.options)),
+                        carService: new CarServiceMapper(this.logger, this.options, new VehicleHelper(this.options)),
                         hotelService: new HotelServiceMapper(this.logger, this.options, new HotelHelper(this.options)),
                         roundTripService: new RoundTripServiceMapper(this.logger, this.options, new RoundTripHelper(this.options)),
+                        camperService: new CamperServiceMapper(this.logger, this.options, new VehicleHelper(this.options)),
                     };
                     const dataMapper = new CrsDataMapper(this.logger, this.options, mapper);
                     const adapterObject = dataMapper.mapToAdapterData(crsData, dataDefinition);

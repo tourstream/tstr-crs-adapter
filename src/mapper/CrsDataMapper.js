@@ -22,6 +22,7 @@ class CrsDataMapper {
                 [dataDefinition.serviceTypes.car]: this.mapper.carService,
                 [dataDefinition.serviceTypes.hotel]: this.mapper.hotelService,
                 [dataDefinition.serviceTypes.roundTrip]: this.mapper.roundTripService,
+                [dataDefinition.serviceTypes.camper]: this.mapper.camperService,
             }[type];
         };
 

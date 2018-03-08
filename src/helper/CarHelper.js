@@ -74,35 +74,6 @@ class CarHelper {
         // gaps in the regEx result array will result in lined up "." after the join
         return !service.code || service.code.match(CONFIG.serviceCodeRegEx).join('.').indexOf('..') !== -1;
     }
-
-    splitServiceCode(code) {
-        if (!code) return {};
-
-        const keyRentalCode = 1;
-        const keyVehicleTypeCode = 2;
-        const keySeparator = 3;
-        const keyPickUpLocation = 4;
-        const keyLocationSeparator = 5;
-        const keyDropOffLocation = 6;
-
-        let codeParts = code.match(/([A-Z]*[0-9]*)?([A-Z]*[0-9]*)?(\/)?([A-Z]*[0-9]*)?(-)?([A-Z]*[0-9]*)?/);
-
-        // i.e. MIA or MIA1 or MIA1-TPA
-        if (!codeParts[keySeparator]) {
-            return {
-                pickUpLocation: codeParts[keyRentalCode],
-                dropOffLocation: codeParts[keyDropOffLocation],
-            };
-        }
-
-        // i.e USA96/MIA1 or USA96A4/MIA1-TPA"
-        return {
-            rentalCode: codeParts[keyRentalCode],
-            vehicleTypeCode: codeParts[keyVehicleTypeCode],
-            pickUpLocation: codeParts[keyPickUpLocation],
-            dropOffLocation: codeParts[keyDropOffLocation],
-        };
-    };
 }
 
 export {
