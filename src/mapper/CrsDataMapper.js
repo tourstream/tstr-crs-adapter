@@ -8,14 +8,14 @@ class CrsDataMapper {
     }
 
     mapToAdapterData(crsData, dataDefinition) {
-        const adapterObject = {};
+        const adapterData = {};
 
-        adapterObject.agencyNumber = crsData.agencyNumber;
-        adapterObject.operator = crsData.operator;
-        adapterObject.numberOfTravellers = crsData.numberOfTravellers;
-        adapterObject.travelType = crsData.travelType;
-        adapterObject.remark = crsData.remark;
-        adapterObject.services = [];
+        adapterData.agencyNumber = crsData.agencyNumber;
+        adapterData.operator = crsData.operator;
+        adapterData.numberOfTravellers = crsData.numberOfTravellers;
+        adapterData.travelType = crsData.travelType;
+        adapterData.remark = crsData.remark;
+        adapterData.services = [];
 
         const getMapperByServiceType = (type) => {
             return {
@@ -40,10 +40,10 @@ class CrsDataMapper {
                 crsData.travellers, crsService.travellerAssociation, dataDefinition
             );
 
-            adapterObject.services.push(adapterService);
+            adapterData.services.push(adapterService);
         });
 
-        return adapterObject;
+        return adapterData;
     }
 
     // todo: move to own helper/mapper
