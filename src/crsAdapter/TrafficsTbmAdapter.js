@@ -123,6 +123,7 @@ class TrafficsTbmAdapter {
                 travelType: crsData.operator['$'].knd,
                 remark: crsData.customer['$'].rmk,
                 services: this.collectServices(crsData),
+                travellers: this.collectTravellers(crsData),
             };
         });
     }
@@ -139,6 +140,16 @@ class TrafficsTbmAdapter {
                 quantity: service['$'].cnt,
                 travellerAssociation: service['$'].agn,
                 marker: service['$'].mrk,
+            }
+        });
+    }
+
+    collectTravellers(crsData) {
+        return crsData.travellers.traveller.map((traveller) => {
+            return {
+                title: traveller['$'].typ,
+                name: traveller['$'].sur,
+                age: traveller['$'].age,
             }
         });
     }

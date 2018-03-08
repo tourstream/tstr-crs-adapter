@@ -94,6 +94,7 @@ class TomaSPCAdapter {
                 travelType: rawData.traveltype,
                 remark: rawData.remark,
                 services: this.collectServices(rawData),
+                travellers: this.collectTravellers(rawData),
             };
         });
     }
@@ -110,6 +111,16 @@ class TomaSPCAdapter {
                 quantity: service.quantity,
                 travellerAssociation: service.travellerAssociation,
                 marker: service.marker,
+            }
+        });
+    }
+
+    collectTravellers(crsData) {
+        return crsData.travellers.map((traveller) => {
+            return {
+                title: traveller.title,
+                name: traveller.name,
+                age: traveller.discount,
             }
         });
     }
