@@ -15,6 +15,7 @@ import HotelServiceMapper from './mapper/HotelServiceMapper';
 import RoundTripServiceMapper from './mapper/RoundTripServiceMapper';
 import CamperServiceMapper from './mapper/CamperServiceMapper';
 import CrsDataMapper from './mapper/CrsDataMapper';
+import AdapterDataReducer from './reducer/AdapterDataReducer';
 
 const SERVICE_TYPES = {
     car: 'car',
@@ -168,9 +169,9 @@ class UbpCrsAdapter {
                         camperService: new CamperServiceMapper(this.logger, this.options, new VehicleHelper(this.options)),
                     };
                     const dataMapper = new CrsDataMapper(this.logger, this.options, mapper);
-                    const adapterObject = dataMapper.mapToAdapterData(crsData, dataDefinition);
+                    const adapterData = dataMapper.mapToAdapterData(crsData, dataDefinition);
 
-                    resolve(JSON.parse(JSON.stringify(adapterObject)));
+                    resolve(JSON.parse(JSON.stringify(adapterData)));
                 }, (error) => {
                     this.logAndThrow('[.fetchData] ', error);
                 });
@@ -180,22 +181,41 @@ class UbpCrsAdapter {
         });
     }
 
-    setData(data) {
-        // do not forget: [roundTrip] additional .isMarked check
-        // service.code.indexOf(service.bookingId) > -1
-
-        return new Promise((resolve, reject) => {
+    setData(adapterData) {
+        return new Promise((resolve) => {
             this.logger.info('Try to set data:');
-            this.logger.info(data);
-
-            if (!data) {
-                this.logAndThrow('No data given.');
-            }
+            this.logger.info(adapterData);
 
             try {
-                Promise.resolve(this.getAdapterInstance().setData(data)).then(resolve, reject);
+                if (!adapterData) {
+                    this.logAndThrow('No data given.');
+                }
+
+                const adapterInstance = this.getAdapterInstance();
+                const dataDefinition = adapterInstance.getCrsDataDefinition();
+
+                adapterInstance.fetchData().then((crsData) => {
+                    this.logger.info('CRS DATA:');
+                    this.logger.info(crsData.parsed);
+
+                    const reducer = {
+                        carService: new CarServiceReducer(this.logger, this.options, new VehicleHelper(this.options)),
+                    };
+                    const helper = {
+                        carHelper: new VehicleHelper(this.options),
+                    };
+                    const dataReducer = new AdapterDataReducer(this.logger, this.options, reducer, helper);
+
+                    dataReducer.reduceIntoCrsData(adapterData, crsData, dataDefinition);
+
+                    adapterInstance.sendData(crsData).then(resolve, (error) => {
+                        this.logAndThrow('[.sendData] ', error);
+                    });
+                }, (error) => {
+                    this.logAndThrow('[.fetchData] ', error);
+                });
             } catch (error) {
-                this.logAndThrow('set data error:', error);
+                this.logAndThrow('[.setData] ', error);
             }
         });
     }

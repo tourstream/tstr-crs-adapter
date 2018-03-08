@@ -37,9 +37,8 @@ class CarServiceMapper {
             dropOffDate: dropOffDate.isValid() ? dropOffDate.format(this.config.useDateFormat) : '',
             pickUpLocation: crsService.pickUpStationCode || crsService.destination,
             dropOffLocation: crsService.dropOffStationCode,
-            duration: crsService.duration,
-            rentalCode: crsService.product,
-            vehicleTypeCode: crsService.room,
+            renterCode: crsService.product,
+            vehicleCode: crsService.room,
             pickUpTime: pickUpTime.isValid() ? pickUpTime.format(this.config.useTimeFormat) : crsService.pickUpTime,
         };
     }
@@ -52,15 +51,12 @@ class CarServiceMapper {
             pickUpDate: pickUpDate.isValid() ? pickUpDate.format(this.config.useDateFormat) : crsService.fromDate,
             dropOffDate: dropOffDate.isValid() ? dropOffDate.format(this.config.useDateFormat) : crsService.toDate,
             pickUpTime: pickUpTime.isValid() ? pickUpTime.format(this.config.useTimeFormat) : crsService.accommodation,
-            duration: pickUpDate.isValid() && dropOffDate.isValid()
-                ? Math.ceil(dropOffDate.diff(pickUpDate, 'days', true))
-                : void 0,
         };
 
         const serviceCodeDetails = this.helper.splitServiceCode(crsService.code);
 
-        adapterService.rentalCode = serviceCodeDetails.rentalCode;
-        adapterService.vehicleTypeCode = serviceCodeDetails.vehicleTypeCode;
+        adapterService.renterCode = serviceCodeDetails.renterCode;
+        adapterService.vehicleCode = serviceCodeDetails.vehicleCode;
         adapterService.pickUpLocation = serviceCodeDetails.pickUpLocation;
         adapterService.dropOffLocation = serviceCodeDetails.dropOffLocation;
 

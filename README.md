@@ -158,23 +158,20 @@ CosmoNaut  | X     | X     | X         | X
 
 | type  | fields                   | example
 | :---  | :---                     | :---
-| car   | .vehicleTypeCode         | 'E4' 
-|       | .rentalCode              | 'DEU85' 
+| car   | .vehicleCode             | 'E4' 
+|       | .renterCode              | 'DEU85' 
 |       | .pickUpLocation          | 'BER3' 
 |       | .pickUpDate              | '28122017' 
 |       | .pickUpTime              | '0915' 
-|       | .dropOffLocation         | 'MUC' 
-|       | .dropOffDate             | '04012018'   
-|       | .dropOffTime             | '1720'       (**deprecated**)
-|       | .duration                | '9' (in days)
-|       | .durationInMinutes       | '12960'
 |       | .pickUpHotelName         | 'Best Hotel' 
 |       | .pickUpHotelAddress      | 'hotel street 1, 12345 hotel city' 
 |       | .pickUpHotelPhoneNumber  | '+49 172 678 0832 09' 
+|       | .dropOffLocation         | 'MUC' 
+|       | .dropOffDate             | '04012018'   
 |       | .dropOffHotelName        | 'Very Best Hotel' 
 |       | .dropOffHotelAddress     | 'hotel drive 34a, famous place' 
 |       | .dropOffHotelPhoneNumber | '04031989213' 
-|       | .extras                  | ['\<extraName\>\<count\>', 'navigationSystem', 'childCareSeat0', 'childCareSeat3'] 
+|       | .extras                  | ['GPS', 'CS3YRS', 'BS', '...'] 
 
 | type    | fields         | example
 | :---    | :---           | :---
@@ -193,24 +190,21 @@ CosmoNaut  | X     | X     | X         | X
 |           | .destination        | 'YYZ' 
 |           | .startDate          | '05122017' 
 |           | .endDate            | '16122017'
-|           | .travellers         | [ { gender: \<gender\>, firstName: 'john', lastName: 'doe', age: '32' }, ... ]
+|           | .travellers         | [ { gender: _-gender-_, firstName: 'john', lastName: 'doe', age: '32' }, ... ]
 
-_\<gender\>_ is one of **'female', 'male', 'child', 'infant'**
+_-gender-_ is one of **'female', 'male', 'child', 'infant'**
  
 | type     | fields                 | example
 | :---     | :---                   | :---
 | camper   | .renterCode            | 'PRT02' 
-|          | .camperCode            | 'FS' 
+|          | .vehicleCode           | 'FS' 
 |          | .pickUpLocation        | 'LIS1' 
 |          | .pickUpDate            | '10102017' 
 |          | .dropOffLocation       | 'LIS2' 
 |          | .dropOffDate           | '17102017' 
-|          | .duration              | '7' 
 |          | .milesIncludedPerDay   | '300' 
 |          | .milesPackagesIncluded | '3' 
-|          | .extras                | ['\<extraName\>.\<count\>', 'extra.2', 'special']
-
-_note: if .dropOffDate is not set, it will be calculated with .pickUpDate + .duration_
+|          | .extras                | [ { code: 'ECX0001', amount: '2' }, { code: 'USA740', amount: '1' }, ... ]
 
 Additionally every service has a `.marked` field which is by default falsy.
 But if this service is either "marked" in the crs or detected as "marked" (depends on the type) it will be true.
