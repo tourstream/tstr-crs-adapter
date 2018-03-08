@@ -99,6 +99,7 @@ class TrafficsTbmAdapter {
     getCrsDataDefinition() {
         return {
             serviceTypes: CONFIG.crs.serviceTypes,
+            genderTypes: CONFIG.crs.gender2SalutationMap,
             formats: {
                 date: CONFIG.crs.dateFormat,
                 time: CONFIG.crs.timeFormat,

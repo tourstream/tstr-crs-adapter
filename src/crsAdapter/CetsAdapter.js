@@ -132,6 +132,7 @@ class CetsAdapter {
     getCrsDataDefinition() {
         return {
             serviceTypes: CONFIG.defaults.serviceType,
+            genderTypes: CONFIG.gender2SalutationMap,
             formats: {
                 date: CONFIG.crs.dateFormat,
                 time: CONFIG.crs.timeFormat,

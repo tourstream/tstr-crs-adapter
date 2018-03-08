@@ -122,6 +122,7 @@ class MerlinAdapter {
     getCrsDataDefinition() {
         return {
             serviceTypes: CONFIG.crs.serviceTypes,
+            genderTypes: CONFIG.crs.gender2SalutationMap,
             formats: {
                 date: CONFIG.crs.dateFormat,
                 time: CONFIG.crs.timeFormat,
@@ -145,6 +146,7 @@ class MerlinAdapter {
                 travelType: crsData.TravelType,
                 remark: crsData.Remarks,
                 services: this.collectServices(crsData),
+                travellers: this.collectTravellers(crsData),
             };
         });
     }
@@ -161,6 +163,16 @@ class MerlinAdapter {
                 quantity: service.NoOfServices,
                 travellerAssociation: service.TravellerAllocation,
                 marker: service.MarkField,
+            }
+        });
+    }
+
+    collectTravellers(crsData) {
+        return crsData.TravellerBlock.PersonBlock.PersonRow.map((traveller) => {
+            return {
+                title: traveller.Salutation,
+                name: traveller.Name,
+                age: traveller.Age,
             }
         });
     }

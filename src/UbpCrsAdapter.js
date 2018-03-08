@@ -8,7 +8,9 @@ import BewotecExpertAdapter from 'crsAdapter/BewotecExpertAdapter';
 import TrafficsTbmAdapter from 'crsAdapter/TrafficsTbmAdapter';
 import LogService from 'LogService';
 import CarHelper from './helper/CarHelper';
+import HotelHelper from './helper/HotelHelper';
 import CarServiceMapper from './mapper/CarServiceMapper';
+import HotelServiceMapper from './mapper/HotelServiceMapper';
 import CrsDataMapper from './mapper/CrsDataMapper';
 
 const SERVICE_TYPES = {
@@ -157,9 +159,10 @@ class UbpCrsAdapter {
                     this.logger.info(crsData.parsed);
 
                     const mapper = {
-                        carService: new CarServiceMapper(this.options, new CarHelper(this.options)),
+                        carService: new CarServiceMapper(this.logger, this.options, new CarHelper(this.options)),
+                        hotelService: new HotelServiceMapper(this.logger, this.options, new HotelHelper(this.options)),
                     };
-                    const dataMapper = new CrsDataMapper(this.options, mapper);
+                    const dataMapper = new CrsDataMapper(this.logger, this.options, mapper);
                     const adapterObject = dataMapper.mapToAdapterData(crsData, dataDefinition);
 
                     resolve(JSON.parse(JSON.stringify(adapterObject)));
