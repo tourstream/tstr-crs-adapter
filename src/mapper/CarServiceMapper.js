@@ -3,24 +3,21 @@ import CetsAdapter from '../crsAdapter/CetsAdapter';
 import {SERVICE_TYPES} from '../UbpCrsAdapter';
 
 class CarServiceMapper {
-    constructor(config, helper) {
+    constructor(logger, config, helper) {
         this.config = config;
         this.helper = helper;
+        this.logger = logger;
     }
 
-    fromAdapterService() {
-
-    }
-
-    fromCrsService(crsService, dataDefinition) {
+    mapFromCrsService(crsService, dataDefinition) {
         let adapterService = {};
 
         switch (dataDefinition.crsType) {
             case CetsAdapter.type:
-                adapterService = this.mapCarServiceFromCets(crsService, dataDefinition);
+                adapterService = this.mapServiceFromCets(crsService, dataDefinition);
                 break;
             default:
-                adapterService = this.mapCarServiceFromCrs(crsService, dataDefinition);
+                adapterService = this.mapServiceFromGermanCrs(crsService, dataDefinition);
                 break;
         }
 
@@ -30,7 +27,7 @@ class CarServiceMapper {
         return adapterService;
     }
 
-    mapCarServiceFromCets(crsService, dataDefinition) {
+    mapServiceFromCets(crsService, dataDefinition) {
         let pickUpDate = moment(crsService.fromDate, dataDefinition.formats.date);
         let dropOffDate = pickUpDate.clone().add(crsService.duration, 'days');
         let pickUpTime = moment(crsService.pickUpTime, dataDefinition.formats.time);
@@ -47,7 +44,7 @@ class CarServiceMapper {
         };
     }
 
-    mapCarServiceFromCrs(crsService, dataDefinition) {
+    mapServiceFromGermanCrs(crsService, dataDefinition) {
         const pickUpDate = moment(crsService.fromDate, dataDefinition.formats.date);
         const dropOffDate = moment(crsService.toDate, dataDefinition.formats.date);
         const pickUpTime = moment(crsService.accommodation, dataDefinition.formats.time);
