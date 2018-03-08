@@ -155,6 +155,7 @@ class CetsAdapter {
                 numberOfTravellers: crsData.Fab.Adults,
                 travelType: CONFIG.catalog2TravelTypeMap[crsData.Fab.Catalog],
                 services: this.collectServices(crsData),
+                travellers: this.collectTravellers(crsData),
             });
         } catch(error) {
             return Promise.reject(error);
@@ -177,6 +178,10 @@ class CetsAdapter {
                 travellerAssociation: service.CarDetails.Persons,
             }
         });
+    }
+
+    collectTravellers(crsData) {
+        return [];
     }
 
     getData() {

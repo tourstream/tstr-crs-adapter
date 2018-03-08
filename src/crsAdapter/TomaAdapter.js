@@ -152,6 +152,7 @@ class TomaAdapter {
                 travelType: crsData.Traveltype,
                 remark: crsData.Remark,
                 services: this.collectServices(crsData),
+                travellers: this.collectTravellers(crsData),
             });
         } catch(error) {
             return Promise.reject(error);
@@ -160,7 +161,6 @@ class TomaAdapter {
 
     collectServices(crsData) {
         const services = [];
-
         let lineNumber = 1;
 
         do {
@@ -182,6 +182,21 @@ class TomaAdapter {
         } while (lineNumber++);
 
         return services;
+    }
+
+    collectTravellers(crsData) {
+        const travellers = [];
+        let lineNumber = 1;
+
+        do {
+            travellers.push({
+                title: crsData['Title.' + lineNumber],
+                name: crsData['Name.' + lineNumber],
+                age: crsData['Reduction.' + lineNumber],
+            });
+        } while (lineNumber++);
+
+        return travellers;
     }
 
     getData() {

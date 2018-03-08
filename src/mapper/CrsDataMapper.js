@@ -1,4 +1,4 @@
-import CetsAdapter from "../crsAdapter/CetsAdapter";
+import CetsAdapter from '../crsAdapter/CetsAdapter';
 
 class CrsDataMapper {
     constructor(logger, config, mapper) {
@@ -21,6 +21,7 @@ class CrsDataMapper {
             return {
                 [dataDefinition.serviceTypes.car]: this.mapper.carService,
                 [dataDefinition.serviceTypes.hotel]: this.mapper.hotelService,
+                [dataDefinition.serviceTypes.roundTrip]: this.mapper.roundTripService,
             }[type];
         };
 

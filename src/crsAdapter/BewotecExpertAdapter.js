@@ -158,6 +158,7 @@ class BewotecExpertAdapter {
                 travelType: (crsData[CONFIG.parserOptions.attrPrefix] || {}).traveltype,
                 remark: crsData.Remarks,
                 services: this.collectServices(crsData),
+                travellers: this.collectTravellers(crsData),
             };
         });
     }
@@ -176,6 +177,18 @@ class BewotecExpertAdapter {
                 quantity: service.count,
                 travellerAssociation: service.allocation,
                 marker: service.marker,
+            }
+        });
+    }
+
+    collectTravellers(crsData) {
+        return crsData.Travellers.Traveller.map((traveller) => {
+            const travellerData = traveller[CONFIG.parserOptions.attrPrefix];
+
+            return {
+                title: travellerData.salutation,
+                name: travellerData.name,
+                age: travellerData.age,
             }
         });
     }

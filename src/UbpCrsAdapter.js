@@ -9,8 +9,10 @@ import TrafficsTbmAdapter from 'crsAdapter/TrafficsTbmAdapter';
 import LogService from 'LogService';
 import CarHelper from './helper/CarHelper';
 import HotelHelper from './helper/HotelHelper';
+import RoundTripHelper from './helper/RoundTripHelper';
 import CarServiceMapper from './mapper/CarServiceMapper';
 import HotelServiceMapper from './mapper/HotelServiceMapper';
+import RoundTripServiceMapper from './mapper/RoundTripServiceMapper';
 import CrsDataMapper from './mapper/CrsDataMapper';
 
 const SERVICE_TYPES = {
@@ -161,6 +163,7 @@ class UbpCrsAdapter {
                     const mapper = {
                         carService: new CarServiceMapper(this.logger, this.options, new CarHelper(this.options)),
                         hotelService: new HotelServiceMapper(this.logger, this.options, new HotelHelper(this.options)),
+                        roundTripService: new RoundTripServiceMapper(this.logger, this.options, new RoundTripHelper(this.options)),
                     };
                     const dataMapper = new CrsDataMapper(this.logger, this.options, mapper);
                     const adapterObject = dataMapper.mapToAdapterData(crsData, dataDefinition);
@@ -176,6 +179,9 @@ class UbpCrsAdapter {
     }
 
     setData(data) {
+        // do not forget: [roundTrip] additional .isMarked check
+        // service.code.indexOf(service.bookingId) > -1
+
         return new Promise((resolve, reject) => {
             this.logger.info('Try to set data:');
             this.logger.info(data);
