@@ -224,11 +224,20 @@ describe('TomaAdapter', () => {
                 type: 'hotel',
                 roomQuantity: '2',
                 roomOccupancy: '4',
-                children: [{
-                    gender: 'child',
-                    name: 'child 1',
-                    age: '13',
-                }],
+                travellers: [
+                    {
+                        gender: 'child',
+                        firstName: 'child',
+                        lastName: '1',
+                        age: '13',
+                    },
+                    {
+                        gender: 'male',
+                        firstName: 'John',
+                        lastName: '',
+                        age: '42',
+                    }
+                ],
             };
 
             TomaConnection.GetXmlData.and.returnValue(xml);
@@ -259,7 +268,7 @@ describe('TomaAdapter', () => {
                 type: 'hotel',
                 roomQuantity: '2',
                 roomOccupancy: '4',
-                children: [],
+                travellers: [],
             };
 
             TomaConnection.GetXmlData.and.returnValue(xml);
@@ -603,8 +612,10 @@ describe('TomaAdapter', () => {
                             roomOccupancy: 4,
                             dateFrom: '10022018',
                             dateTo: '15022018',
-                            children: [{
-                                name: 'child 1',
+                            travellers: [{
+                                firstName: 'child',
+                                lastName: '1',
+                                gender: 'child',
                                 age: 13,
                             }],
                         },

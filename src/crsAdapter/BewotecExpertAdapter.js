@@ -430,10 +430,10 @@ class BewotecExpertAdapter {
             mealCode: serviceCodes[1] || void 0,
             roomQuantity: crsService.count,
             roomOccupancy: crsService.occupancy,
-            children: this.helper.traveller.collectTravellers(
+            travellers: this.helper.traveller.collectTravellers(
                 crsService.allocation,
-                (lineNumber) => this.getTravellerByLineNumber(crsObject.Travellers.Traveller, lineNumber)
-            ).filter((traveller) => ['child', 'infant'].indexOf(traveller.gender) > -1),
+                (lineNumber) => this.getTravellerByLineNumber(crsObject.Travellers.Traveller, lineNumber, crsService.requesttype)
+            ),
             destination: crsService.servicecode,
             dateFrom: dateFrom.isValid() ? dateFrom.format(this.options.useDateFormat) : crsService.start,
             dateTo: dateTo.isValid() ? dateTo.format(this.options.useDateFormat) : crsService.end,
@@ -461,7 +461,7 @@ class BewotecExpertAdapter {
             endDate: endDate.isValid() ? endDate.format(this.options.useDateFormat) : crsService.end,
             travellers: this.helper.traveller.collectTravellers(
                 crsService.allocation,
-                (lineNumber) => this.getTravellerByLineNumber(crsObject.Travellers.Traveller, lineNumber)
+                (lineNumber) => this.getTravellerByLineNumber(crsObject.Travellers.Traveller, lineNumber, crsService.requesttype)
             )
         };
     }
@@ -525,24 +525,40 @@ class BewotecExpertAdapter {
      * @param lineNumber
      * @returns {*}
      */
-    getTravellerByLineNumber(travellers = [], lineNumber) {
+    getTravellerByLineNumber(travellers = [], lineNumber , serviceType) {
         let traveller = (travellers[lineNumber - 1] || {})[CONFIG.parserOptions.attrPrefix];
 
         if (!traveller || !traveller.name) {
             return void 0;
         }
-
-        return {
-            gender: Object.entries(CONFIG.crs.gender2SalutationMap).reduce(
-                (reduced, current) => {
-                    reduced[current[1]] = reduced[current[1]] || current[0];
-                    return reduced;
-                },
-                {}
-            )[traveller.salutation],
-            name: traveller.name,
-            age: traveller.age,
-        };
+        switch (serviceType) {
+            case CONFIG.crs.serviceTypes.hotel:
+                const travellerName = traveller.name.split(' ');
+                return {
+                    gender: Object.entries(CONFIG.crs.gender2SalutationMap).reduce(
+                        (reduced, current) => {
+                            reduced[current[1]] = reduced[current[1]] || current[0];
+                            return reduced;
+                        },
+                        {}
+                    )[traveller.salutation],
+                    firstName: travellerName[0],
+                    lastName: travellerName[travellerName.length - 1],
+                    age: traveller.age,
+                };
+            default:
+                return {
+                    gender: Object.entries(CONFIG.crs.gender2SalutationMap).reduce(
+                        (reduced, current) => {
+                            reduced[current[1]] = reduced[current[1]] || current[0];
+                            return reduced;
+                        },
+                        {}
+                    )[traveller.salutation],
+                    name: traveller.name,
+                    age: traveller.age,
+                };
+        }
     }
 
     /**
@@ -597,7 +613,7 @@ class BewotecExpertAdapter {
                 }
                 case SERVICE_TYPES.hotel: {
                     this.assignHotelServiceFromAdapterObjectToCrsObject(service, crsObject, lineIndex);
-                    this.assignChildrenData(service, crsObject, lineIndex);
+                    this.assignHotelTravellersData(service, crsObject, lineIndex);
                     break;
                 }
                 case SERVICE_TYPES.camper: {
@@ -773,8 +789,8 @@ class BewotecExpertAdapter {
      * @param crsObject object
      * @param lineIndex number
      */
-    assignChildrenData(service, crsObject, lineIndex) {
-        if (!service.children || !service.children.length) {
+    assignHotelTravellersData(service, crsObject, lineIndex) {
+        if (!service.travellers || !service.travellers.length) {
             return;
         }
 
@@ -791,15 +807,16 @@ class BewotecExpertAdapter {
 
         let travellerAllocationNumber = void 0;
 
-        service.children.forEach((child) => {
+        service.travellers.forEach((ServiceTraveller) => {
+            const traveller = this.helper.traveller.normalizeTraveller(ServiceTraveller, SERVICE_TYPES.hotel);
             let travellerIndex = this.getNextEmptyTravellerLineIndex(crsObject);
             let travellerNumber = CONFIG.crs.lineNumberMap[travellerIndex];
 
             travellerAllocationNumber = travellerIndex + 1;
 
-            crsObject['ta' + travellerNumber] = CONFIG.crs.gender2SalutationMap.child;
-            crsObject['tn' + travellerNumber] = child.name;
-            crsObject['te' + travellerNumber] = child.age;
+            crsObject['ta' + travellerNumber] = traveller.salutation;
+            crsObject['tn' + travellerNumber] = traveller.firstName + ' ' + traveller.lastName;
+            crsObject['te' + travellerNumber] = traveller.age;
         });
 
         addTravellerAllocation();

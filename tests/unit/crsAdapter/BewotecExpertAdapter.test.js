@@ -368,7 +368,7 @@ describe('BewotecExpertAdapter', () => {
                         roomCode: 'accomodation',
                         roomQuantity: 'count',
                         roomOccupancy: 'occupancy',
-                        children: [],
+                        travellers: [],
                         destination: 'service code',
                         dateFrom: 'start',
                         dateTo: 'end',
@@ -401,7 +401,7 @@ describe('BewotecExpertAdapter', () => {
             adapter.getData().then((result) => {
                 expect(result).toEqual({
                     services: [{
-                        children: [],
+                        travellers: [],
                         type: SERVICE_TYPES.hotel,
                         marked: true,
                     }],
@@ -445,9 +445,10 @@ describe('BewotecExpertAdapter', () => {
                         mealCode: 'U',
                         roomQuantity: '1',
                         roomOccupancy: '2',
-                        children: [
-                            { gender: 'child', name: 'k name', age: 'k age' },
-                            { gender: 'infant', name: 'b name', age: 'b age' },
+                        travellers: [
+                            { gender: 'child', firstName: 'k', lastName: 'name', age: 'k age' },
+                            { gender: 'male', firstName: 'h', lastName: 'name', age: 'h age' },
+                            { gender: 'infant', firstName: 'b', lastName: 'name', age: 'b age' },
                         ],
                         destination: 'LAX20S',
                         dateFrom: '14072018',
@@ -907,10 +908,10 @@ describe('BewotecExpertAdapter', () => {
                 z0: 2,
                 e0: 4,
                 d0: '1-4',
-                ta0: 'K',
+                ta0: 'H',
                 tn0: 'john doe',
                 te0: '7',
-                ta1: 'K',
+                ta1: 'H',
                 tn1: 'jane doe',
                 te1: '11',
             });
@@ -926,9 +927,9 @@ describe('BewotecExpertAdapter', () => {
                         roomQuantity: 2,
                         dateFrom: '23122018',
                         dateTo: '04012019',
-                        children: [
-                            { name: 'john doe', age: '7' },
-                            { name: 'jane doe', age: '11' },
+                        travellers: [
+                            { firstName: 'john', lastName: 'doe', age: '7', gender: 'male'},
+                            { firstName: 'jane', lastName: 'doe', age: '11', gender: 'male' },
                         ],
                     },
                 ],

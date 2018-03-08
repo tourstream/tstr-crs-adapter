@@ -316,10 +316,10 @@ class TrafficsTbmAdapter {
             mealCode: serviceCodes[1] || void 0,
             roomQuantity: crsService.cnt,
             roomOccupancy: crsService.alc,
-            children: this.helper.traveller.collectTravellers(
+            travellers: this.helper.traveller.collectTravellers(
                 crsService.agn,
-                (lineNumber) => this.getTravellerByLineNumber(travellers, lineNumber)
-            ).filter((traveller) => ['child', 'infant'].indexOf(traveller.gender) > -1),
+                (lineNumber) => this.getTravellerByLineNumber(travellers, lineNumber, crsService.typ)
+            ),
             destination: crsService.cod,
             dateFrom: dateFrom.isValid() ? dateFrom.format(this.options.useDateFormat) : crsService.vnd,
             dateTo: dateTo.isValid() ? dateTo.format(this.options.useDateFormat) : crsService.bsd,
@@ -413,24 +413,41 @@ class TrafficsTbmAdapter {
      * @param lineNumber
      * @returns {*}
      */
-    getTravellerByLineNumber(travellers = [], lineNumber) {
+    getTravellerByLineNumber(travellers = [], lineNumber, serviceType = '') {
         let traveller = travellers[lineNumber - 1];
 
         if (!traveller) {
             return void 0;
         }
 
-        return {
-            gender: Object.entries(CONFIG.crs.gender2SalutationMap).reduce(
-                (reduced, current) => {
-                    reduced[current[1]] = reduced[current[1]] || current[0];
-                    return reduced;
-                },
-                {}
-            )[traveller['$'].typ],
-            name: traveller['$'].sur,
-            age: traveller['$'].age,
-        };
+        switch (serviceType) {
+            case CONFIG.crs.serviceTypes.hotel:
+                const travellerName = traveller['$'].sur.split(' ');
+                return {
+                    gender: Object.entries(CONFIG.crs.gender2SalutationMap).reduce(
+                        (reduced, current) => {
+                            reduced[current[1]] = reduced[current[1]] || current[0];
+                            return reduced;
+                        },
+                        {}
+                    )[traveller['$'].typ],
+                    firstName: travellerName[0],
+                    lastName: travellerName.length - 1 ? travellerName[travellerName.length - 1] : '',
+                    age: traveller['$'].age,
+                };
+            default:
+                return {
+                    gender: Object.entries(CONFIG.crs.gender2SalutationMap).reduce(
+                        (reduced, current) => {
+                            reduced[current[1]] = reduced[current[1]] || current[0];
+                            return reduced;
+                        },
+                        {}
+                    )[traveller['$'].typ],
+                    name: traveller['$'].sur,
+                    age: traveller['$'].age,
+                };
+        }
     }
 
     /**
@@ -499,7 +516,7 @@ class TrafficsTbmAdapter {
                 }
                 case SERVICE_TYPES.hotel: {
                     this.assignHotelServiceFromAdapterObjectToCrsObject(service, crsObject, lineIndex);
-                    this.assignChildrenData(service, crsObject, lineIndex);
+                    this.assignHotelTravellersData(service, crsObject, lineIndex);
                     break;
                 }
                 case SERVICE_TYPES.camper: {
@@ -636,21 +653,21 @@ class TrafficsTbmAdapter {
      * @param crsObject object
      * @param lineIndex number
      */
-    assignChildrenData(service, crsObject, lineIndex) {
-        if (!service.children || !service.children.length) {
+    assignHotelTravellersData(service, crsObject, lineIndex) {
+        if (!service.travellers || !service.travellers.length) {
             return;
         }
 
         let travellerAllocationNumber = void 0;
 
-        service.children.forEach((child) => {
+        service.travellers.forEach((traveller) => {
             let travellerIndex = this.getNextEmptyTravellerLineIndex(crsObject);
 
             travellerAllocationNumber = travellerIndex + 1;
 
             crsObject['TbmXml.admin.travellers.traveller.' + travellerIndex + '.$.typ'] = CONFIG.crs.gender2SalutationMap.child;
-            crsObject['TbmXml.admin.travellers.traveller.' + travellerIndex + '.$.sur'] = child.name;
-            crsObject['TbmXml.admin.travellers.traveller.' + travellerIndex + '.$.age'] = child.age;
+            crsObject['TbmXml.admin.travellers.traveller.' + travellerIndex + '.$.sur'] = traveller.firstName + ' ' + traveller.lastName;
+            crsObject['TbmXml.admin.travellers.traveller.' + travellerIndex + '.$.age'] = traveller.age;
         });
 
         crsObject['TbmXml.admin.services.service.' + lineIndex + '.$.agn'] = this.helper.hotel.calculateTravellerAllocation(service, travellerAllocationNumber);

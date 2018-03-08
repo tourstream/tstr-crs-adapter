@@ -271,8 +271,19 @@ describe('MerlinAdapter', () => {
                             mealCode: 'U',
                             roomQuantity: '2',
                             roomOccupancy: '4',
-                            children: [
-                                { gender: 'child', name: 'john doe', age: '11' },
+                            travellers: [
+                                {
+                                    gender: 'child',
+                                    firstName: 'john',
+                                    lastName: 'doe',
+                                    age: '11'
+                                },
+                                {
+                                    gender: 'male',
+                                    firstName: 'john',
+                                    lastName: 'doe',
+                                    age: '30'
+                                },
                             ],
                             destination: 'LAX20S',
                             dateFrom: '02022018',
@@ -313,7 +324,7 @@ describe('MerlinAdapter', () => {
                     services: [
                         {
                             type: SERVICE_TYPES.hotel,
-                            children: [],
+                            travellers: [],
                             dateFrom: 'from',
                             dateTo: 'to',
                             marked: true,
@@ -793,9 +804,9 @@ describe('MerlinAdapter', () => {
                         roomOccupancy: 4,
                         dateFrom: '23122018',
                         dateTo: '04012019',
-                        children: [
-                            { name: 'john doe', age: 8 },
-                            { name: 'jane doe', age: 14 },
+                        travellers: [
+                            { firstName: 'john', lastName: 'doe', age: 8, gender: 'child' },
+                            { firstName: 'jane', lastName: 'doe', age: 14, gender: 'child' },
                         ],
                     },
                 ],
@@ -825,7 +836,7 @@ describe('MerlinAdapter', () => {
                 '<TravellerBlock>' +
                 '<PersonBlock>' +
                 '<PersonRow travellerNo="1">' +
-                '<Salutation>K</Salutation>' +
+                '<Salutation>F</Salutation>' +
                 '<Name>john doe</Name>' +
                 '<Age>11</Age>' +
                 '</PersonRow>' +
@@ -845,8 +856,8 @@ describe('MerlinAdapter', () => {
                         roomOccupancy: 2,
                         dateFrom: '23122018',
                         dateTo: '04012019',
-                        children: [
-                            { name: 'jane doe', age: 3 },
+                        travellers: [
+                            { firstName: 'jane', lastName: 'doe', age: 3, gender: 'female' },
                         ],
                         marked: true,
                     },
@@ -859,7 +870,7 @@ describe('MerlinAdapter', () => {
                         dateFrom: '23122018',
                         dateTo: '04012019',
                         marked: true,
-                        children: [],
+                        travellers: [],
                     },
                     {
                         type: 'hotel',
@@ -869,8 +880,8 @@ describe('MerlinAdapter', () => {
                         roomOccupancy: 3,
                         dateFrom: '23122018',
                         dateTo: '04012019',
-                        children: [
-                            { name: 'john doe', age: 11 },
+                        travellers: [
+                            { firstName: 'john', lastName: 'doe', age: 11, gender: 'female' },
                         ],
                     },
                 ],

@@ -336,9 +336,19 @@ describe('TomaSPCAdapter', () => {
                         dateFrom: '11122017',
                         dateTo: '22122017',
                         marked: false,
-                        children: [
-                            {gender: 'child', name: 'john doe', age: '13'},
-                            {gender: 'child', name: 'jane doe', age: '9'},
+                        travellers: [
+                            {
+                                gender: 'child',
+                                firstName: 'john',
+                                lastName: 'doe',
+                                age: '13'
+                            },
+                            {
+                                gender: 'child',
+                                firstName: 'jane',
+                                lastName: 'doe',
+                                age: '9'
+                            },
                         ],
                         roomQuantity: 2,
                         roomOccupancy: 4,
@@ -364,7 +374,6 @@ describe('TomaSPCAdapter', () => {
                     {},
                     {title: 'K', name: 'john doe', discount: '13'},
                     {title: 'K', name: 'jane doe', discount: '9'},
-                    {title: 'F', name: 'tinker bell', discount: '102'},
                 ],
             };
 
@@ -387,7 +396,7 @@ describe('TomaSPCAdapter', () => {
                         dateFrom: '11122017',
                         dateTo: '22122017',
                         marked: false,
-                        children: [],
+                        travellers: [],
                     }
                 ],
             };
@@ -421,7 +430,7 @@ describe('TomaSPCAdapter', () => {
                         roomCode: 'rc',
                         mealCode: 'mc',
                         marked: true,
-                        children: [],
+                        travellers: [],
                     }
                 ],
             };
@@ -451,7 +460,7 @@ describe('TomaSPCAdapter', () => {
                         type: SERVICE_TYPES.hotel,
                         destination: 'destination',
                         marked: true,
-                        children: [],
+                        travellers: [],
                     }
                 ],
             };
@@ -923,9 +932,19 @@ describe('TomaSPCAdapter', () => {
                         roomOccupancy: 4,
                         dateFrom: '01012018',
                         dateTo: '08012018',
-                        children: [
-                            {name: 'john doe', age: 8},
-                            {name: 'jane doe', age: 14},
+                        travellers: [
+                            {
+                                firstName: 'john',
+                                lastName: 'doe',
+                                age: 8,
+                                gender: 'children'
+                            },
+                            {
+                                firstName: 'jane',
+                                lastName: 'doe',
+                                age: 14,
+                                gender: 'children'
+                            },
                         ],
                     },
                 ],

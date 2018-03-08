@@ -405,10 +405,10 @@ class TomaSPCAdapter {
             mealCode: serviceCodes[1] || void 0,
             roomQuantity: crsService.quantity,
             roomOccupancy: crsService.occupancy,
-            children: this.helper.traveller.collectTravellers(
+            travellers: this.helper.traveller.collectTravellers(
                 crsService.travellerAssociation,
-                (lineNumber) => this.getTravellerByLineNumber(crsObject.travellers, lineNumber)
-            ).filter((traveller) => ['child', 'infant'].indexOf(traveller.gender) > -1),
+                (lineNumber) => this.getTravellerByLineNumber(crsObject.travellers, lineNumber, crsService.serviceType)
+            ),
             destination: crsService.serviceCode,
             dateFrom: dateFrom.isValid() ? dateFrom.format(this.options.useDateFormat) : crsService.fromDate,
             dateTo: dateTo.isValid() ? dateTo.format(this.options.useDateFormat) : crsService.toDate,
@@ -500,20 +500,33 @@ class TomaSPCAdapter {
      * @param lineNumber
      * @returns {*}
      */
-    getTravellerByLineNumber(travellers = [], lineNumber) {
+    getTravellerByLineNumber(travellers = [], lineNumber, serviceType = '') {
         let traveller = travellers[lineNumber - 1];
 
-        if (!traveller) {
+        if (!traveller || !traveller.name) {
             return void 0;
         }
 
-        return {
-            gender: (Object.entries(CONFIG.crs.gender2SalutationMap).find(
-                (row) => row[1] === traveller.title
-            ) || [])[0],
-            name: traveller.name,
-            age: traveller.discount,
-        };
+        switch (serviceType) {
+            case CONFIG.crs.serviceTypes.hotel:
+                const travellerName = traveller.name.split(' ');
+                return {
+                    gender: (Object.entries(CONFIG.crs.gender2SalutationMap).find(
+                        (row) => row[1] === traveller.title
+                    ) || [])[0],
+                    firstName: travellerName[0],
+                    lastName: travellerName[travellerName.length - 1],
+                    age: traveller.discount,
+                };
+            default:
+                return {
+                    gender: (Object.entries(CONFIG.crs.gender2SalutationMap).find(
+                        (row) => row[1] === traveller.title
+                    ) || [])[0],
+                    name: traveller.name,
+                    age: traveller.discount,
+                };
+        }
     }
 
     /**
@@ -574,7 +587,7 @@ class TomaSPCAdapter {
                 }
                 case SERVICE_TYPES.hotel: {
                     this.assignHotelServiceFromAdapterObjectToCrsObject(adapterService, crsService, crsObject);
-                    this.assignChildrenData(adapterService, crsService, crsObject);
+                    this.assignHotelTravellersData(adapterService, crsService, crsObject);
                     break;
                 }
                 case SERVICE_TYPES.camper: {
@@ -776,8 +789,8 @@ class TomaSPCAdapter {
      * @param crsService object
      * @param crsObject object
      */
-    assignChildrenData(adapterService, crsService, crsObject) {
-        if (!adapterService.children || !adapterService.children.length) {
+    assignHotelTravellersData(adapterService, crsService, crsObject) {
+        if (!adapterService.travellers || !adapterService.travellers.length) {
             return;
         }
 
@@ -792,15 +805,15 @@ class TomaSPCAdapter {
 
         let travellerLineNumber = void 0;
 
-        adapterService.children.forEach((child) => {
+        adapterService.travellers.forEach((serviceTraveller) => {
             let travellerIndex = this.getNextEmptyTravellerIndex(crsObject);
             let traveller = crsObject.travellers[travellerIndex];
 
             travellerLineNumber = travellerIndex + 1;
 
             traveller.title = CONFIG.crs.gender2SalutationMap.child;
-            traveller.name = child.name;
-            traveller.discount = child.age;
+            traveller.name = serviceTraveller.firstName + ' ' + serviceTraveller.lastName;
+            traveller.discount = serviceTraveller.age;
         });
 
         addTravellerAllocation();

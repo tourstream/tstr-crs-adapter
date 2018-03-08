@@ -125,23 +125,25 @@ describe('TrafficsTbmAdapter', () => {
         }
 
         beforeEach(() => {
-            exportData = { data: {
-                admin: {
-                    operator: {
-                        '$': {
-                            agt: 'agency number',
-                            toc: 'tour operator',
-                            psn: 'persons',
-                            knd: 'travel type',
-                        }
-                    },
-                    customer: {
-                        '$': {
-                            rmk: 'remark',
-                        }
-                    },
+            exportData = {
+                data: {
+                    admin: {
+                        operator: {
+                            '$': {
+                                agt: 'agency number',
+                                toc: 'tour operator',
+                                psn: 'persons',
+                                knd: 'travel type',
+                            }
+                        },
+                        customer: {
+                            '$': {
+                                rmk: 'remark',
+                            }
+                        },
+                    }
                 }
-            }};
+            };
 
             axios.get.and.returnValue(Promise.resolve(exportData));
 
@@ -177,7 +179,7 @@ describe('TrafficsTbmAdapter', () => {
         });
 
         it('getData() should return nothing when no admin field is in export available', (done) => {
-            axios.get.and.returnValue(Promise.resolve({ data: {} }));
+            axios.get.and.returnValue(Promise.resolve({data: {}}));
 
             adapter.getData().then((data) => {
                 expect(data).toBeUndefined();
@@ -188,23 +190,25 @@ describe('TrafficsTbmAdapter', () => {
         });
 
         it('getData() should return base data', (done) => {
-            axios.get.and.returnValue(Promise.resolve({ data: {
-                admin: {
-                    operator: {
-                        '$': {
-                            agt: 'agency number',
-                            toc: 'tour operator',
-                            psn: 'persons',
-                            knd: 'travel type',
-                        }
-                    },
-                    customer: {
-                        '$': {
-                            rmk: 'remark',
-                        }
-                    },
+            axios.get.and.returnValue(Promise.resolve({
+                data: {
+                    admin: {
+                        operator: {
+                            '$': {
+                                agt: 'agency number',
+                                toc: 'tour operator',
+                                psn: 'persons',
+                                knd: 'travel type',
+                            }
+                        },
+                        customer: {
+                            '$': {
+                                rmk: 'remark',
+                            }
+                        },
+                    }
                 }
-            }}));
+            }));
 
             adapter.getData().then((data) => {
                 expect(data).toEqual({
@@ -341,9 +345,10 @@ describe('TrafficsTbmAdapter', () => {
                     mealCode: 'mc',
                     roomQuantity: 1,
                     roomOccupancy: 3,
-                    children: [{
+                    travellers: [{
                         gender: 'child',
-                        name: 'jake',
+                        firstName: 'jake',
+                        lastName: '',
                         age: '4'
                     }],
                     destination: 'dest',
@@ -392,7 +397,13 @@ describe('TrafficsTbmAdapter', () => {
                     destination: 'dest',
                     dateFrom: 'from date',
                     dateTo: 'to date',
-                    children: [],
+                    travellers: [
+                        {
+                            gender: 'male',
+                            firstName: 'john',
+                            lastName: '',
+                            age: '44'
+                        }],
                     type: SERVICE_TYPES.hotel,
                     marked: true,
                 }]);
@@ -417,7 +428,7 @@ describe('TrafficsTbmAdapter', () => {
                 expect(data.services).toEqual([{
                     type: SERVICE_TYPES.hotel,
                     marked: true,
-                    children: [],
+                    travellers: [],
                 }]);
 
                 done();
@@ -835,8 +846,13 @@ describe('TrafficsTbmAdapter', () => {
                         type: SERVICE_TYPES.hotel,
                         roomQuantity: 1,
                         roomOccupancy: 1,
-                        children: [
-                            {name: 'jake doe', age: 7},
+                        travellers: [
+                            {
+                                firstName: 'jake',
+                                lastName: 'doe',
+                                gender: 'child',
+                                age: 7
+                            },
                         ],
                         marked: true,
                     },
@@ -849,9 +865,19 @@ describe('TrafficsTbmAdapter', () => {
                         roomOccupancy: 4,
                         dateFrom: '01012018',
                         dateTo: '08012018',
-                        children: [
-                            {name: 'john doe', age: 8},
-                            {name: 'jane doe', age: 14},
+                        travellers: [
+                            {
+                                firstName: 'john',
+                                lastName: 'doe',
+                                gender: 'child',
+                                age: 8
+                            },
+                            {
+                                firstName: 'jane',
+                                lastName: 'doe',
+                                gender: 'child',
+                                age: 14
+                            },
                         ],
                     },
                 ],

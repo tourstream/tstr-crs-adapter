@@ -236,7 +236,7 @@ class TomaAdapter {
                     break;
                 }
                 case CONFIG.crs.serviceTypes.hotel: {
-                    service = this.mapHotelServiceFromXmlObjectToAdapterObject(xmlTom, lineNumber);
+                    service = this.mapHotelServiceFromXmlObjectToAdapterObject(xmlTom, lineNumber, serviceType);
                     break;
                 }
                 case CONFIG.crs.serviceTypes.roundTrip: {
@@ -317,7 +317,7 @@ class TomaAdapter {
      * @param lineNumber number
      * @returns {object}
      */
-    mapHotelServiceFromXmlObjectToAdapterObject(xml, lineNumber) {
+    mapHotelServiceFromXmlObjectToAdapterObject(xml, lineNumber, serviceType) {
         let serviceCodes = (xml['Accommodation.' + lineNumber] || '').split(' ');
         let dateFrom = moment(xml['From.' + lineNumber], CONFIG.crs.dateFormat);
         let dateTo = moment(xml['To.' + lineNumber], CONFIG.crs.dateFormat);
@@ -327,10 +327,10 @@ class TomaAdapter {
             mealCode: serviceCodes[1] || void 0,
             roomQuantity: xml['Count.' + lineNumber],
             roomOccupancy: xml['Occupancy.' + lineNumber],
-            children: this.helper.traveller.collectTravellers(
+            travellers: this.helper.traveller.collectTravellers(
                 xml['TravAssociation.' + lineNumber],
-                (travellerLineNumber) => this.getTravellerByLineNumber(xml, travellerLineNumber)
-            ).filter((traveller) => ['child', 'infant'].indexOf(traveller.gender) > -1),
+                (travellerLineNumber) => this.getTravellerByLineNumber(xml, travellerLineNumber, serviceType)
+            ),
             destination: xml['ServiceCode.' + lineNumber],
             dateFrom: dateFrom.isValid() ? dateFrom.format(this.options.useDateFormat) : xml['From.' + lineNumber],
             dateTo: dateTo.isValid() ? dateTo.format(this.options.useDateFormat) : xml['To.' + lineNumber],
@@ -423,22 +423,39 @@ class TomaAdapter {
      * @param lineNumber
      * @returns {*}
      */
-    getTravellerByLineNumber(xml = {}, lineNumber) {
+    getTravellerByLineNumber(xml = {}, lineNumber, serviceType = '') {
         if (!xml['Title.' + lineNumber]) {
             return void 0;
         }
 
-        return {
-            gender: Object.entries(CONFIG.crs.gender2SalutationMap).reduce(
-                (reduced, current) => {
-                    reduced[current[1]] = reduced[current[1]] || current[0];
-                    return reduced;
-                },
-                {}
-            )[xml['Title.' + lineNumber]],
-            name: xml['Name.' + lineNumber],
-            age: xml['Reduction.' + lineNumber],
-        };
+        switch (serviceType) {
+            case CONFIG.crs.serviceTypes.hotel:
+                const travellerName = xml['Name.' + lineNumber].split(' ');
+                return {
+                    gender: Object.entries(CONFIG.crs.gender2SalutationMap).reduce(
+                        (reduced, current) => {
+                            reduced[current[1]] = reduced[current[1]] || current[0];
+                            return reduced;
+                        },
+                        {}
+                    )[xml['Title.' + lineNumber]],
+                    firstName: travellerName[0],
+                    lastName: travellerName.length - 1 ? travellerName[travellerName.length - 1] : '',
+                    age: xml['Reduction.' + lineNumber],
+                };
+            default:
+                return {
+                    gender: Object.entries(CONFIG.crs.gender2SalutationMap).reduce(
+                        (reduced, current) => {
+                            reduced[current[1]] = reduced[current[1]] || current[0];
+                            return reduced;
+                        },
+                        {}
+                    )[xml['Title.' + lineNumber]],
+                    name: xml['Name.' + lineNumber],
+                    age: xml['Reduction.' + lineNumber],
+                };
+        }
     }
 
     /**
@@ -507,7 +524,7 @@ class TomaAdapter {
                 }
                 case SERVICE_TYPES.hotel: {
                     this.assignHotelServiceFromAdapterObjectToXmlObject(service, xmlTom, lineNumber);
-                    this.assignChildrenData(service, xmlTom, lineNumber);
+                    this.assignHotelTravellersData(service, xmlTom, lineNumber);
                     break;
                 }
                 case SERVICE_TYPES.camper: {
@@ -692,8 +709,8 @@ class TomaAdapter {
      * @param xml object
      * @param lineNumber number
      */
-    assignChildrenData(service, xml, lineNumber) {
-        if (!service.children || !service.children.length) {
+    assignHotelTravellersData(service, xml, lineNumber) {
+        if (!service.travellers || !service.travellers.length) {
             return;
         }
 
@@ -708,12 +725,12 @@ class TomaAdapter {
 
         let travellerLineNumber = void 0;
 
-        service.children.forEach((child) => {
+        service.travellers.forEach((traveller) => {
             travellerLineNumber = this.getNextEmptyTravellerLineNumber(xml);
 
             xml['Title.' + travellerLineNumber] = CONFIG.crs.gender2SalutationMap.child;
-            xml['Name.' + travellerLineNumber] = child.name;
-            xml['Reduction.' + travellerLineNumber] = child.age;
+            xml['Name.' + travellerLineNumber] = traveller.firstName + ' ' + traveller.lastName;
+            xml['Reduction.' + travellerLineNumber] = traveller.age;
         });
 
         addTravellerAllocation();

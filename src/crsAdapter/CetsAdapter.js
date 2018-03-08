@@ -2,7 +2,7 @@ import es6shim from 'es6-shim';
 import xml2js from 'xml2js';
 import fastXmlParser from 'fast-xml-parser';
 import moment from 'moment';
-import {SERVICE_TYPES} from '../UbpCrsAdapter';
+import {CRS_TYPES, SERVICE_TYPES} from '../UbpCrsAdapter';
 import TravellerHelper from '../helper/TravellerHelper';
 import ObjectHelper from '../helper/ObjectHelper';
 
@@ -20,6 +20,7 @@ const CONFIG = {
             car: 'C',
             customerRequest: 'Q',
             roundTrip: 'R',
+            hotel: 'H'
         },
         pickUp: {
             walkIn: {
@@ -222,6 +223,10 @@ class CetsAdapter {
                     service = this.mapRoundTripServiceFromXmlObjectToAdapterObject(xmlService);
                     break;
                 }
+                case CONFIG.defaults.serviceType.hotel: {
+                    service = this.mapHotelServiceFromXmlObjectToAdapterObject(xmlService);
+                    break;
+                }
                 default:
                     break;
             }
@@ -252,7 +257,6 @@ class CetsAdapter {
                 dataObject.services.push(service);
             }
         }
-
         return JSON.parse(JSON.stringify(dataObject));
     }
 
@@ -303,6 +307,22 @@ class CetsAdapter {
             destination: xmlService.Destination === 'NEZ' ? xmlService.Room : xmlService.Product,
             startDate: startDate.isValid() ? startDate.format(this.options.useDateFormat) : xmlService.StartDate,
             endDate: endDate.isValid() ? endDate.format(this.options.useDateFormat) : '',
+        };
+    }
+
+    mapHotelServiceFromXmlObjectToAdapterObject(xmlService) {
+        let startDate = moment(xmlService.StartDate, CONFIG.crs.dateFormat);
+        let endDate = startDate.clone().add(xmlService.Duration, 'days');
+
+        return {
+            type: SERVICE_TYPES.hotel,
+            roomCode: xmlService.Room,
+            mealCode: xmlService.Meal,
+            roomQuantity: xmlService.MaxAdults,
+            roomOccupancy: xmlService.Norm,
+            destination: xmlService.Destination,
+            dateFrom: startDate.isValid() ? startDate.format(this.options.useDateFormat) : xmlService.StartDate,
+            dateTo: endDate.isValid() ? endDate.format(this.options.useDateFormat) : '',
         };
     }
 
@@ -398,6 +418,12 @@ class CetsAdapter {
                 case SERVICE_TYPES.roundTrip: {
                     this.assignRoundTripServiceFromAdapterObjectToXmlObject(service, xmlRequest);
                     this.assignRoundTripTravellers(service, xmlRequest);
+
+                    break;
+                }
+                case SERVICE_TYPES.hotel: {
+                    this.assignHotelServiceFromAdapterObjectToXmlObject(service, xmlRequest);
+                    this.assignHotelTravellers(service, xmlRequest);
 
                     break;
                 }
@@ -545,6 +571,48 @@ class CetsAdapter {
                 PersonType: traveller.salutation,
                 Name: traveller.name,
                 Birth: traveller.age,
+            });
+
+            xml.Fah[xml.Fah.length - 1].Persons = (xml.Fah[xml.Fah.length - 1].Persons || '') + (index + 1);
+        });
+    }
+
+    assignHotelServiceFromAdapterObjectToXmlObject(service, xml) {
+        let startDate = moment(service.startDate, this.options.useDateFormat);
+
+        let xmlService = {
+            [CONFIG.builderOptions.attrkey]: {
+                ServiceType: CONFIG.defaults.serviceType.hotel,
+            },
+            Product: service.destination.substring(3),
+            Program: 'HOTEL',
+            Destination: service.destination.substring(0,3),
+            Room: service.roomCode,
+            Norm: service.roomOccupancy,
+            MaxAdults: service.roomQuantity,
+            Meal: service.mealCode,
+            StartDate: startDate.isValid() ? startDate.format(CONFIG.crs.dateFormat) : service.dateFrom,
+            Duration: this.calculateDuration(service.dateFrom, service.dateTo),
+        };
+
+        xml.Fah.push(xmlService);
+    }
+
+    assignHotelTravellers(service, xml) {
+        if (!service.travellers) return;
+
+        xml.Fap = [];
+
+        service.travellers.forEach((serviceTraveller, index) => {
+            const traveller = this.helper.traveller.normalizeTraveller(serviceTraveller, SERVICE_TYPES.hotel);
+
+            xml.Fap.push({
+                [CONFIG.builderOptions.attrkey]: {
+                    ID: index + 1,
+                },
+                PersonType: traveller.salutation,
+                Name: traveller.firstName + ' ' + traveller.lastName,
+                FirstName: traveller.firstName,
             });
 
             xml.Fah[xml.Fah.length - 1].Persons = (xml.Fah[xml.Fah.length - 1].Persons || '') + (index + 1);
