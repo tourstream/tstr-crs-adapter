@@ -1,5 +1,4 @@
 import CetsAdapter from '../crsAdapter/CetsAdapter';
-import {SERVICE_TYPES} from '../UbpCrsAdapter';
 
 class AdapterDataReducer {
     constructor(logger, config, reducer) {

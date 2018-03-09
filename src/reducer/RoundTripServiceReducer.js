@@ -13,6 +13,7 @@ class RoundTripServiceReducer {
         const endDate = moment(adapterService.endDate, this.config.useDateFormat);
 
         crsService.type = dataDefinition.serviceTypes.roundTrip;
+        crsService.marker = adapterService.marked ? 'X' : '';
 
         crsService.code = adapterService.bookingId ? 'NEZ' + adapterService.bookingId : void 0;
         crsService.accommodation = adapterService.destination;

@@ -14,6 +14,7 @@ class CamperServiceReducer {
         const pickUpTime = moment(adapterService.pickUpTime, this.config.useTimeFormat);
 
         crsService.type = dataDefinition.serviceTypes.camper;
+        crsService.marker = adapterService.marked ? 'X' : '';
 
         // PRT02FS/LIS1-LIS2
         crsService.code = [
