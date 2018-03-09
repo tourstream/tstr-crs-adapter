@@ -13,6 +13,7 @@ class HotelServiceReducer {
         const dateTo = moment(adapterService.dateTo, this.config.useDateFormat);
 
         crsService.type = dataDefinition.serviceTypes.hotel;
+        crsService.marker = adapterService.marked ? 'X' : '';
 
         crsService.code = adapterService.destination;
         crsService.accommodation = [adapterService.roomCode, adapterService.mealCode].filter(Boolean).join(' ');

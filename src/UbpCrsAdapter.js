@@ -192,7 +192,7 @@ class UbpCrsAdapter {
 
     setData(adapterData) {
         return new Promise((resolve) => {
-            this.logger.info('Try to set data:');
+            this.logger.info('ADAPTER DATA:');
             this.logger.info(adapterData);
 
             try {
@@ -204,9 +204,6 @@ class UbpCrsAdapter {
                 const dataDefinition = adapterInstance.getCrsDataDefinition();
 
                 adapterInstance.fetchData().then((crsData) => {
-                    this.logger.info('CRS DATA:');
-                    this.logger.info(crsData.parsed);
-
                     const helper = {
                         vehicle: new VehicleHelper(this.options),
                         roundTrip: new RoundTripHelper(this.options),
@@ -221,9 +218,20 @@ class UbpCrsAdapter {
                     };
                     const dataReducer = new AdapterDataReducer(this.logger, this.options, reducer);
 
-                    crsData = dataReducer.reduceIntoCrsData(adapterData, crsData, dataDefinition);
+                    const reducedData = dataReducer.reduceIntoCrsData(adapterData, crsData, dataDefinition);
+                    const convertedData = adapterInstance.convert(reducedData);
 
-                    adapterInstance.sendData(crsData).then(resolve, (error) => {
+                    this.logger.info('PARSED CRS DATA:');
+                    this.logger.info(convertedData.parsed);
+
+                    this.logger.info('RAW CRS DATA:');
+                    this.logger.info(convertedData.raw);
+
+                    try {
+                        this.options.onSetData && this.options.onSetData(convertedData.parsed);
+                    } catch (ignore) {}
+
+                    adapterInstance.sendData(convertedData.raw).then(resolve, (error) => {
                         this.logAndThrow('[.sendData] ', error);
                     });
                 }, (error) => {

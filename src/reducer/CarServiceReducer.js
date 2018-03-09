@@ -14,6 +14,7 @@ class CarServiceReducer {
         const pickUpTime = moment(adapterService.pickUpTime, this.config.useTimeFormat);
 
         crsService.type = dataDefinition.serviceTypes.car;
+        crsService.marker = adapterService.marked ? 'X' : '';
 
         // USA96A4/MIA1-TPA
         crsService.code = [

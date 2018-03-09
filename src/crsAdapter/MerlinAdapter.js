@@ -177,6 +177,57 @@ class MerlinAdapter {
         });
     }
 
+    convert(crsData) {
+        const crsDataObject = crsData.parsed.GATE2MX.SendRequest.Import;
+
+        crsDataObject.AgencyNoTouroperator = crsData.agencyNumber;
+        crsDataObject.TourOperator = crsData.operator;
+        crsDataObject.NoOfPersons = crsData.numberOfTravellers;
+        crsDataObject.TravelType = crsData.travelType;
+        crsDataObject.Remarks = crsData.remark;
+
+        this.assignServices(crsData);
+        this.assignTravellers(crsData);
+
+        crsData.raw = this.xmlBuilder.build(crsData.parsed);
+
+        return crsData;
+    }
+
+    assignServices(crsData) {
+        crsData.services.forEach((service, index) => {
+            const crsServiceObject = crsData.parsed.GATE2MX.SendRequest.Import.ServiceBlock.ServiceRow[index];
+
+            crsServiceObject.KindOfService = crsServiceObject.type;
+            crsServiceObject.Service = crsServiceObject.code;
+            crsServiceObject.Accommodation = crsServiceObject.accommodation;
+            crsServiceObject.FromDate = crsServiceObject.fromDate;
+            crsServiceObject.EndDate = crsServiceObject.toDate;
+            crsServiceObject.Occupancy = crsServiceObject.occupancy;
+            crsServiceObject.NoOfServices = crsServiceObject.quantity;
+            crsServiceObject.TravellerAllocation = crsServiceObject.travellerAssociation;
+            crsServiceObject.MarkField = crsServiceObject.marker;
+        });
+    }
+
+    assignTravellers(crsData) {
+        crsData.travellers.forEach((traveller, index) => {
+            const crsTravellerObject = crsData.parsed.GATE2MX.SendRequest.Import.TravellerBlock.PersonBlock.PersonRow[index];
+
+            crsTravellerObject.Salutation = traveller.title;
+            crsTravellerObject.Name = traveller.name;
+            crsTravellerObject.Age = traveller.age;
+        });
+    }
+
+    sendData(rawCrsData) {
+        return this.getConnection().post(rawCrsData).catch((error) => {
+            this.logger.info(error);
+            this.logger.error('error during transfer - please check the result');
+            throw error;
+        });
+    }
+
     getData() {
         return this.getCrsData().then((response) => {
             let data = (response || {}).data;
