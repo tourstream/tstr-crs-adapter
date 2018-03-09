@@ -35,6 +35,27 @@ class TravellerHelper {
     extractFirstTravellerAssociation(travellerAssociation = '') {
         return travellerAssociation.split('-').shift();
     }
+
+    reduceIntoCrsData(adapterService, crsService, crsData, dataDefinition) {
+        adapterService.travellers.forEach((adapterTraveller) => {
+            const crsTraveller = {};
+
+            crsData.travellers.push(crsTraveller);
+
+            crsTraveller.title = dataDefinition.genderTypes[adapterTraveller.gender];
+            crsTraveller.name = adapterTraveller.name;
+            crsTraveller.age = adapterTraveller.age;
+
+            const serviceFirstAssociation = +crsService.travellerAssociation.split('-').shift() || 1;
+            const serviceLastAssociation = +crsService.travellerAssociation.split('-').pop() || 1;
+            const crsTravellerAssociation = crsData.travellers.indexOf(crsTraveller) + 1;
+
+            crsService.travellerAssociation = [
+                Math.min(serviceFirstAssociation, crsTravellerAssociation),
+                Math.max(serviceLastAssociation, crsTravellerAssociation),
+            ].filter((value, index, array) => array.indexOf(value) === index).join('-');
+        });
+    }
 }
 
 export {

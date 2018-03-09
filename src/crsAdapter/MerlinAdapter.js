@@ -20,7 +20,7 @@ class MerlinAdapter {
                 timeFormat: 'HHmm',
                 serviceTypes: {
                     car: 'MW',
-                    carExtras: 'E',
+                    carExtra: 'E',
                     hotel: 'H',
                     roundTrip: 'R',
                     camper: 'WM',
@@ -685,7 +685,7 @@ class MerlinAdapter {
 
             crsData.ServiceBlock.ServiceRow.push(emptyService);
 
-            emptyService.KindOfService = CONFIG.crs.serviceTypes.carExtras;
+            emptyService.KindOfService = CONFIG.crs.serviceTypes.carExtra;
             emptyService.Service = hotelName;
             emptyService.FromDate = pickUpDate.isValid() ? pickUpDate.format(CONFIG.crs.dateFormat) : adapterService.pickUpDate;
             emptyService.EndDate = dropOffDate.isValid() ? dropOffDate.format(CONFIG.crs.dateFormat) : adapterService.dropOffDate;

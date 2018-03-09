@@ -14,7 +14,7 @@ const CONFIG = {
         timeFormat: 'HHmm',
         serviceTypes: {
             car: 'MW',
-            carExtras: 'E',
+            carExtra: 'E',
             hotel: 'H',
             roundTrip: 'R',
             camper: 'WM',
@@ -640,7 +640,7 @@ class TrafficsTbmAdapter {
             let lineIndex = this.getNextEmptyServiceLineIndex(crsObject);
             let hotelDataString = this.helper.car.reduceHotelData(service);
 
-            crsObject['TbmXml.admin.services.service.' + lineIndex + '.$.typ'] = CONFIG.crs.serviceTypes.carExtras;
+            crsObject['TbmXml.admin.services.service.' + lineIndex + '.$.typ'] = CONFIG.crs.serviceTypes.carExtra;
             crsObject['TbmXml.admin.services.service.' + lineIndex + '.$.cod'] = hotelName;
             crsObject['TbmXml.admin.services.service.' + lineIndex + '.$.vnd'] = pickUpDate.isValid() ? pickUpDate.format(CONFIG.crs.dateFormat) : service.pickUpDate;
             crsObject['TbmXml.admin.services.service.' + lineIndex + '.$.bsd'] = dropOffDate.isValid() ? dropOffDate.format(CONFIG.crs.dateFormat) : service.dropOffDate;

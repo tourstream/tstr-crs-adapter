@@ -16,7 +16,7 @@ const CONFIG = {
         timeFormat: 'HHmm',
         serviceTypes: {
             car: 'MW',
-            carExtras: 'E',
+            carExtra: 'E',
             hotel: 'H',
             roundTrip: 'R',
             camper: 'WM',
@@ -786,7 +786,7 @@ class BewotecExpertAdapter {
 
             const lineNumber = CONFIG.crs.lineNumberMap[lineIndex];
 
-            crsObject['n' + lineNumber] = CONFIG.crs.serviceTypes.carExtras;
+            crsObject['n' + lineNumber] = CONFIG.crs.serviceTypes.carExtra;
             crsObject['l' + lineNumber] = hotelName;
             crsObject['s' + lineNumber] = pickUpDate.isValid() ? pickUpDate.format(CONFIG.crs.dateFormat) : service.pickUpDate;
             crsObject['i' + lineNumber] = dropOffDate.isValid() ? dropOffDate.format(CONFIG.crs.dateFormat) : service.dropOffDate;

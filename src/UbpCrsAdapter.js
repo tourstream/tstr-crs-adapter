@@ -1,21 +1,30 @@
 import 'polyfills';
 
+import LogService from 'LogService';
+
 import TomaAdapter from 'crsAdapter/TomaAdapter';
 import TomaSPCAdapter from 'crsAdapter/TomaSPCAdapter';
 import CetsAdapter from 'crsAdapter/CetsAdapter';
 import MerlinAdapter from 'crsAdapter/MerlinAdapter';
 import BewotecExpertAdapter from 'crsAdapter/BewotecExpertAdapter';
 import TrafficsTbmAdapter from 'crsAdapter/TrafficsTbmAdapter';
-import LogService from 'LogService';
+
+import VehicleHelper from './helper/VehicleHelper';
 import HotelHelper from './helper/HotelHelper';
 import RoundTripHelper from './helper/RoundTripHelper';
-import VehicleHelper from './helper/VehicleHelper';
+import TravellerHelper from './helper/TravellerHelper';
+
+import CrsDataMapper from './mapper/CrsDataMapper';
 import CarServiceMapper from './mapper/CarServiceMapper';
 import HotelServiceMapper from './mapper/HotelServiceMapper';
 import RoundTripServiceMapper from './mapper/RoundTripServiceMapper';
 import CamperServiceMapper from './mapper/CamperServiceMapper';
-import CrsDataMapper from './mapper/CrsDataMapper';
+
 import AdapterDataReducer from './reducer/AdapterDataReducer';
+import CarServiceReducer from './reducer/CarServiceReducer';
+import HotelServiceReducer from './reducer/HotelServiceReducer';
+import RoundTripServiceReducer from './reducer/RoundTripServiceReducer';
+import CamperServiceReducer from './reducer/CamperServiceReducer';
 
 const SERVICE_TYPES = {
     car: 'car',
@@ -163,10 +172,10 @@ class UbpCrsAdapter {
                     this.logger.info(crsData.parsed);
 
                     const mapper = {
-                        carService: new CarServiceMapper(this.logger, this.options, new VehicleHelper(this.options)),
-                        hotelService: new HotelServiceMapper(this.logger, this.options, new HotelHelper(this.options)),
-                        roundTripService: new RoundTripServiceMapper(this.logger, this.options, new RoundTripHelper(this.options)),
-                        camperService: new CamperServiceMapper(this.logger, this.options, new VehicleHelper(this.options)),
+                        [dataDefinition.serviceTypes.car]: new CarServiceMapper(this.logger, this.options, new VehicleHelper(this.options)),
+                        [dataDefinition.serviceTypes.hotel]: new HotelServiceMapper(this.logger, this.options, new HotelHelper(this.options)),
+                        [dataDefinition.serviceTypes.roundTrip]: new RoundTripServiceMapper(this.logger, this.options, new RoundTripHelper(this.options)),
+                        [dataDefinition.serviceTypes.camper]: new CamperServiceMapper(this.logger, this.options, new VehicleHelper(this.options)),
                     };
                     const dataMapper = new CrsDataMapper(this.logger, this.options, mapper);
                     const adapterData = dataMapper.mapToAdapterData(crsData, dataDefinition);
@@ -198,15 +207,21 @@ class UbpCrsAdapter {
                     this.logger.info('CRS DATA:');
                     this.logger.info(crsData.parsed);
 
-                    const reducer = {
-                        carService: new CarServiceReducer(this.logger, this.options, new VehicleHelper(this.options)),
-                    };
                     const helper = {
-                        carHelper: new VehicleHelper(this.options),
+                        vehicle: new VehicleHelper(this.options),
+                        roundTrip: new RoundTripHelper(this.options),
+                        hotel: new HotelHelper(this.options),
+                        traveller: new TravellerHelper(this.options),
                     };
-                    const dataReducer = new AdapterDataReducer(this.logger, this.options, reducer, helper);
+                    const reducer = {
+                        [SERVICE_TYPES.car]: new CarServiceReducer(this.logger, this.options, helper),
+                        [SERVICE_TYPES.hotel]: new HotelServiceReducer(this.logger, this.options, helper),
+                        [SERVICE_TYPES.roundTrip]: new RoundTripServiceReducer(this.logger, this.options, helper),
+                        [SERVICE_TYPES.camper]: new CamperServiceReducer(this.logger, this.options, helper),
+                    };
+                    const dataReducer = new AdapterDataReducer(this.logger, this.options, reducer);
 
-                    dataReducer.reduceIntoCrsData(adapterData, crsData, dataDefinition);
+                    crsData = dataReducer.reduceIntoCrsData(adapterData, crsData, dataDefinition);
 
                     adapterInstance.sendData(crsData).then(resolve, (error) => {
                         this.logAndThrow('[.sendData] ', error);

@@ -1,5 +1,4 @@
 import moment from 'moment/moment';
-import CetsAdapter from '../crsAdapter/CetsAdapter';
 import {SERVICE_TYPES} from '../UbpCrsAdapter';
 
 class HotelServiceMapper {
@@ -9,30 +8,12 @@ class HotelServiceMapper {
         this.logger = logger;
     }
 
-    mapFromCrsService(crsService, dataDefinition) {
-        let adapterService = {};
+    mapToAdapterService(crsService, dataDefinition) {
+        const serviceCodes = (crsService.accommodation || '').split(' ');
+        const dateFrom = moment(crsService.fromDate, dataDefinition.formats.date);
+        const dateTo = moment(crsService.toDate, dataDefinition.formats.date);
 
-        switch (dataDefinition.crsType) {
-            case CetsAdapter.type:
-                this.logger.warn('[.mapFromCrsService] hotel service is not supported by CETS');
-                break;
-            default:
-                adapterService = this.mapServiceFromGermanCrs(crsService, dataDefinition);
-                break;
-        }
-
-        adapterService.marked = this.isMarked(crsService);
-        adapterService.type = SERVICE_TYPES.hotel;
-
-        return adapterService;
-    }
-
-    mapServiceFromGermanCrs(crsService, dataDefinition) {
-        let serviceCodes = (crsService.accommodation || '').split(' ');
-        let dateFrom = moment(crsService.fromDate, dataDefinition.formats.date);
-        let dateTo = moment(crsService.toDate, dataDefinition.formats.date);
-
-        return {
+        const adapterService = {
             roomCode: serviceCodes[0] || void 0,
             mealCode: serviceCodes[1] || void 0,
             roomQuantity: crsService.quantity,
@@ -41,6 +22,11 @@ class HotelServiceMapper {
             dateFrom: dateFrom.isValid() ? dateFrom.format(this.config.useDateFormat) : crsService.fromDate,
             dateTo: dateTo.isValid() ? dateTo.format(this.config.useDateFormat) : crsService.toDate,
         };
+
+        adapterService.marked = this.isMarked(crsService);
+        adapterService.type = SERVICE_TYPES.hotel;
+
+        return adapterService;
     }
 
     isMarked(crsService) {

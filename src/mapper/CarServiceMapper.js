@@ -1,5 +1,4 @@
 import moment from 'moment/moment';
-import CetsAdapter from '../crsAdapter/CetsAdapter';
 import {SERVICE_TYPES} from '../UbpCrsAdapter';
 
 class CarServiceMapper {
@@ -9,41 +8,7 @@ class CarServiceMapper {
         this.logger = logger;
     }
 
-    mapFromCrsService(crsService, dataDefinition) {
-        let adapterService = {};
-
-        switch (dataDefinition.crsType) {
-            case CetsAdapter.type:
-                adapterService = this.mapServiceFromCets(crsService, dataDefinition);
-                break;
-            default:
-                adapterService = this.mapServiceFromGermanCrs(crsService, dataDefinition);
-                break;
-        }
-
-        adapterService.marked = this.isMarked(crsService);
-        adapterService.type = SERVICE_TYPES.car;
-
-        return adapterService;
-    }
-
-    mapServiceFromCets(crsService, dataDefinition) {
-        let pickUpDate = moment(crsService.fromDate, dataDefinition.formats.date);
-        let dropOffDate = pickUpDate.clone().add(crsService.duration, 'days');
-        let pickUpTime = moment(crsService.pickUpTime, dataDefinition.formats.time);
-
-        return {
-            pickUpDate: pickUpDate.isValid() ? pickUpDate.format(this.config.useDateFormat) : crsService.fromDate,
-            dropOffDate: dropOffDate.isValid() ? dropOffDate.format(this.config.useDateFormat) : '',
-            pickUpLocation: crsService.pickUpStationCode || crsService.destination,
-            dropOffLocation: crsService.dropOffStationCode,
-            renterCode: crsService.product,
-            vehicleCode: crsService.room,
-            pickUpTime: pickUpTime.isValid() ? pickUpTime.format(this.config.useTimeFormat) : crsService.pickUpTime,
-        };
-    }
-
-    mapServiceFromGermanCrs(crsService, dataDefinition) {
+    mapToAdapterService(crsService, dataDefinition) {
         const pickUpDate = moment(crsService.fromDate, dataDefinition.formats.date);
         const dropOffDate = moment(crsService.toDate, dataDefinition.formats.date);
         const pickUpTime = moment(crsService.accommodation, dataDefinition.formats.time);
@@ -59,6 +24,9 @@ class CarServiceMapper {
         adapterService.vehicleCode = serviceCodeDetails.vehicleCode;
         adapterService.pickUpLocation = serviceCodeDetails.pickUpLocation;
         adapterService.dropOffLocation = serviceCodeDetails.dropOffLocation;
+
+        adapterService.marked = this.isMarked(crsService);
+        adapterService.type = SERVICE_TYPES.car;
 
         return adapterService;
     }

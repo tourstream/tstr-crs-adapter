@@ -1,4 +1,5 @@
 import CetsAdapter from '../crsAdapter/CetsAdapter';
+import {SERVICE_TYPES} from "../UbpCrsAdapter";
 
 class CrsDataMapper {
     constructor(logger, config, mapper) {
@@ -8,6 +9,14 @@ class CrsDataMapper {
     }
 
     mapToAdapterData(crsData, dataDefinition) {
+        if (dataDefinition.type === CetsAdapter.type) {
+            return crsData;
+        }
+
+        return this.mapFromGermanCrs(crsData, dataDefinition);
+    }
+
+    mapFromGermanCrs(crsData, dataDefinition) {
         const adapterData = {};
 
         adapterData.agencyNumber = crsData.agencyNumber;
@@ -17,24 +26,15 @@ class CrsDataMapper {
         adapterData.remark = crsData.remark;
         adapterData.services = [];
 
-        const getMapperByServiceType = (type) => {
-            return {
-                [dataDefinition.serviceTypes.car]: this.mapper.carService,
-                [dataDefinition.serviceTypes.hotel]: this.mapper.hotelService,
-                [dataDefinition.serviceTypes.roundTrip]: this.mapper.roundTripService,
-                [dataDefinition.serviceTypes.camper]: this.mapper.camperService,
-            }[type];
-        };
-
         crsData.services.forEach((crsService) => {
-            const mapper = getMapperByServiceType(crsService.type);
+            const mapper = this.mapper[crsService.type];
 
             if (!mapper) {
-                this.logger.warn('[.mapToAdapterData] service type ' + crsService.type + ' is not supported');
+                this.logger.warn('[.mapToAdapterData] service type "' + crsService.type + '" is not supported');
                 return;
             }
 
-            const adapterService = mapper.mapFromCrsService(crsService, dataDefinition);
+            const adapterService = mapper.mapToAdapterService(crsService, dataDefinition);
 
             adapterService.travellers = this.filterTravellers(
                 crsData.travellers, crsService.travellerAssociation, dataDefinition
@@ -46,14 +46,9 @@ class CrsDataMapper {
         return adapterData;
     }
 
-    // todo: move to own helper/mapper
+    // todo: move to own helper/mapper/???
     filterTravellers(crsTravellers, travellerAssociation, dataDefinition) {
         const travellers = [];
-
-        if (dataDefinition.type === CetsAdapter.type) {
-            this.logger.warn('[.filterTravellers] travellers in CETS are not supported');
-            return travellers;
-        }
 
         const startTravellerId = +travellerAssociation.split('-').shift();
         const endTravellerId = +travellerAssociation.split('-').pop();
