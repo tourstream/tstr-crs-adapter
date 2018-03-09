@@ -132,12 +132,6 @@ class CetsAdapter {
 
     getCrsDataDefinition() {
         return {
-            serviceTypes: CONFIG.defaults.serviceType,
-            genderTypes: CONFIG.gender2SalutationMap,
-            formats: {
-                date: CONFIG.crs.dateFormat,
-                time: CONFIG.crs.timeFormat,
-            },
             type: CetsAdapter.type,
         };
     }
@@ -148,41 +142,10 @@ class CetsAdapter {
             const parsedData = this.xmlParser.parse(rawData);
             const crsData = this.normalizeParsedData(parsedData).Request;
 
-            return Promise.resolve({
-                raw: rawData,
-                parsed: parsedData,
-                agencyNumber: crsData[CONFIG.parserOptions.attrPrefix].Agent,
-                operator: crsData.Fab.TOCode,
-                numberOfTravellers: crsData.Fab.Adults,
-                travelType: CONFIG.catalog2TravelTypeMap[crsData.Fab.Catalog],
-                services: this.collectServices(crsData),
-                travellers: this.collectTravellers(crsData),
-            });
+            return Promise.resolve(this.mapXmlObjectToAdapterObject(crsData));
         } catch(error) {
             return Promise.reject(error);
         }
-    }
-
-    collectServices(crsData) {
-        return crsData.Fab.Fah.map((service) => {
-            return {
-                type: service[CONFIG.parserOptions.attrPrefix].ServiceType,
-                fromDate: service.StartDate,
-                duration: service.Duration,
-                pickUpTime: service.CarDetails.PickUp.Time,
-                pickUpStationCode: service.CarDetails.PickUp.CarStation,
-                dropOffTime: service.CarDetails.DropOff.Time,
-                dropOffStationCode: service.CarDetails.DropOff.CarStation,
-                destination: service.Destination,
-                product: service.Product,
-                room: service.Room,
-                travellerAssociation: service.CarDetails.Persons,
-            }
-        });
-    }
-
-    collectTravellers(crsData) {
-        return [];
     }
 
     getData() {
@@ -294,6 +257,11 @@ class CetsAdapter {
                     break;
                 }
                 default:
+                    this.logger.warn(
+                        '[.mapXmlObjectToAdapterObject] service type "'
+                        + xmlService[CONFIG.parserOptions.attrPrefix].ServiceType
+                        + '" is not supported'
+                    );
                     break;
             }
 
@@ -509,7 +477,7 @@ class CetsAdapter {
                     break;
                 }
                 default:
-                    this.logger.warn('type ' + service.type + ' is not supported by the CETS adapter');
+                    this.logger.warn('type "' + service.type + '" is not supported by the CETS adapter');
             }
         });
         this.detectCatalogChange(xmlObject);

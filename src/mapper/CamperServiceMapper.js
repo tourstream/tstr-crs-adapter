@@ -1,5 +1,4 @@
 import moment from 'moment/moment';
-import CetsAdapter from '../crsAdapter/CetsAdapter';
 import {SERVICE_TYPES} from '../UbpCrsAdapter';
 
 class CamperServiceMapper {
@@ -9,29 +8,11 @@ class CamperServiceMapper {
         this.logger = logger;
     }
 
-    mapFromCrsService(crsService, dataDefinition) {
-        let adapterService = {};
-
-        switch (dataDefinition.crsType) {
-            case CetsAdapter.type:
-                this.logger.warn('[.mapFromCrsService] camper service is not supported by CETS');
-                break;
-            default:
-                adapterService = this.mapServiceFromGermanCrs(crsService, dataDefinition);
-                break;
-        }
-
-        adapterService.marked = this.isMarked(crsService);
-        adapterService.type = SERVICE_TYPES.camper;
-
-        return adapterService;
-    }
-
-    mapServiceFromGermanCrs(crsService, dataDefinition) {
-        let pickUpDate = moment(crsService.fromDate, dataDefinition.formats.date);
-        let dropOffDate = moment(crsService.toDate, dataDefinition.formats.date);
-        let pickUpTime = moment(crsService.accommodation, dataDefinition.formats.time);
-        let adapterService = {
+    mapToAdapterService(crsService, dataDefinition) {
+        const pickUpDate = moment(crsService.fromDate, dataDefinition.formats.date);
+        const dropOffDate = moment(crsService.toDate, dataDefinition.formats.date);
+        const pickUpTime = moment(crsService.accommodation, dataDefinition.formats.time);
+        const adapterService = {
             pickUpDate: pickUpDate.isValid() ? pickUpDate.format(this.config.useDateFormat) : crsService.fromDate,
             dropOffDate: dropOffDate.isValid() ? dropOffDate.format(this.config.useDateFormat) : crsService.toDate,
             pickUpTime: pickUpTime.isValid() ? pickUpTime.format(this.config.useTimeFormat) : crsService.accommodation,
@@ -45,6 +26,9 @@ class CamperServiceMapper {
         adapterService.vehicleCode = serviceCodeDetails.vehicleCode;
         adapterService.pickUpLocation = serviceCodeDetails.pickUpLocation;
         adapterService.dropOffLocation = serviceCodeDetails.dropOffLocation;
+
+        adapterService.marked = this.isMarked(crsService);
+        adapterService.type = SERVICE_TYPES.camper;
 
         return adapterService;
     }
