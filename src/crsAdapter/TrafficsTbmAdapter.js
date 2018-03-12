@@ -97,18 +97,6 @@ class TrafficsTbmAdapter {
         }
     }
 
-    getCrsDataDefinition() {
-        return {
-            serviceTypes: CONFIG.crs.serviceTypes,
-            genderTypes: CONFIG.crs.gender2SalutationMap,
-            formats: {
-                date: CONFIG.crs.dateFormat,
-                time: CONFIG.crs.timeFormat,
-            },
-            type: TrafficsTbmAdapter.type,
-        };
-    }
-
     fetchData() {
         return this.getConnection().get().then((response) => {
             const rawData = (response || {}).data || {};
@@ -117,13 +105,24 @@ class TrafficsTbmAdapter {
             return {
                 raw: rawData,
                 parsed: rawData,
-                agencyNumber: crsData.operator['$'].agt,
-                operator: crsData.operator['$'].toc,
-                numberOfTravellers: crsData.operator['$'].psn,
-                travelType: crsData.operator['$'].knd,
-                remark: crsData.customer['$'].rmk,
-                services: this.collectServices(crsData),
-                travellers: this.collectTravellers(crsData),
+                normalized: {
+                    agencyNumber: crsData.operator['$'].agt,
+                    operator: crsData.operator['$'].toc,
+                    numberOfTravellers: crsData.operator['$'].psn,
+                    travelType: crsData.operator['$'].knd,
+                    remark: crsData.customer['$'].rmk,
+                    services: this.collectServices(crsData),
+                    travellers: this.collectTravellers(crsData),
+                },
+                meta: {
+                    serviceTypes: CONFIG.crs.serviceTypes,
+                    genderTypes: CONFIG.crs.gender2SalutationMap,
+                    formats: {
+                        date: CONFIG.crs.dateFormat,
+                        time: CONFIG.crs.timeFormat,
+                    },
+                    type: TrafficsTbmAdapter.type,
+                },
             };
         });
     }
@@ -152,6 +151,50 @@ class TrafficsTbmAdapter {
                 age: traveller['$'].age,
             }
         });
+    }
+
+    convert(crsData) {
+        crsData.converted = {
+            'TbmXml.admin.operator.$.act': CONFIG.crs.defaultValues.action,
+            'TbmXml.admin.customer.$.rmk': [crsData.parsed.customer['$'].rmk, crsData.normalized.remark].filter(Boolean).join(';'),
+            'TbmXml.admin.operator.$.knd': crsData.normalized.traveltype || crsData.parsed.operator['$'].knd,
+            'TbmXml.admin.operator.$.psn': crsData.normalized.numberOfTravellers || crsData.parsed.operator['$'].psn,
+            'TbmXml.admin.operator.$.agt': crsData.normalized.agencyNumber || crsData.parsed.operator['$'].agt,
+            'TbmXml.admin.operator.$.toc': crsData.normalized.operator || crsData.parsed.operator['$'].toc,
+        };
+
+        this.assignServices(crsData);
+        this.assignTravellers(crsData);
+
+        crsData.build = crsData.converted;
+
+        return crsData;
+    }
+
+    assignServices(crsData) {
+        crsData.normalized.services.forEach((service, index) => {
+            crsData.converted['TbmXml.admin.services.service.' + index + '.$.mrk'] = service.marker;
+            crsData.converted['TbmXml.admin.services.service.' + index + '.$.typ'] = service.type;
+            crsData.converted['TbmXml.admin.services.service.' + index + '.$.cod'] = service.code;
+            crsData.converted['TbmXml.admin.services.service.' + index + '.$.opt'] = service.accommodation;
+            crsData.converted['TbmXml.admin.services.service.' + index + '.$.alc'] = service.occupancy;
+            crsData.converted['TbmXml.admin.services.service.' + index + '.$.cnt'] = service.quantity;
+            crsData.converted['TbmXml.admin.services.service.' + index + '.$.vnd'] = service.fromDate;
+            crsData.converted['TbmXml.admin.services.service.' + index + '.$.bsd'] = service.toDate;
+            crsData.converted['TbmXml.admin.services.service.' + index + '.$.agn'] = service.travellerAssociation;
+        });
+    }
+
+    assignTravellers(crsData) {
+        crsData.normalized.travellers.forEach((traveller, index) => {
+            crsData.converted['TbmXml.admin.travellers.traveller.' + index + '.$.typ'] = traveller.title;
+            crsData.converted['TbmXml.admin.travellers.traveller.' + index + '.$.sur'] = traveller.name;
+            crsData.converted['TbmXml.admin.travellers.traveller.' + index + '.$.age'] = traveller.age;
+        });
+    }
+
+    sendData(crsData) {
+        return this.getConnection().send(crsData.build);
     }
 
     getData() {

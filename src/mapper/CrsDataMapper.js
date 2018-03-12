@@ -1,5 +1,4 @@
 import CetsAdapter from '../crsAdapter/CetsAdapter';
-import {SERVICE_TYPES} from "../UbpCrsAdapter";
 
 class CrsDataMapper {
     constructor(logger, config, mapper) {
@@ -8,15 +7,15 @@ class CrsDataMapper {
         this.logger = logger;
     }
 
-    mapToAdapterData(crsData, dataDefinition) {
-        if (dataDefinition.type === CetsAdapter.type) {
+    mapToAdapterData(crsData) {
+        if (crsData.meta.type === CetsAdapter.type) {
             return crsData;
         }
 
-        return this.mapFromGermanCrs(crsData, dataDefinition);
+        return this.mapFromGermanCrs(crsData);
     }
 
-    mapFromGermanCrs(crsData, dataDefinition) {
+    mapFromGermanCrs(crsData) {
         const adapterData = {};
 
         adapterData.agencyNumber = crsData.agencyNumber;
@@ -34,10 +33,10 @@ class CrsDataMapper {
                 return;
             }
 
-            const adapterService = mapper.mapToAdapterService(crsService, dataDefinition);
+            const adapterService = mapper.mapToAdapterService(crsService, crsData.meta);
 
             adapterService.travellers = this.filterTravellers(
-                crsData.travellers, crsService.travellerAssociation, dataDefinition
+                crsData.travellers, crsService.travellerAssociation, crsData.meta
             );
 
             adapterData.services.push(adapterService);

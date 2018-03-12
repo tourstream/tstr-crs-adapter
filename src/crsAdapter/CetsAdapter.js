@@ -130,19 +130,20 @@ class CetsAdapter {
         this.createConnection();
     }
 
-    getCrsDataDefinition() {
-        return {
-            type: CetsAdapter.type,
-        };
-    }
-
     fetchData() {
         try {
             const rawData = this.getCrsXml() || '';
             const parsedData = this.xmlParser.parse(rawData);
             const crsData = this.normalizeParsedData(parsedData).Request;
 
-            return Promise.resolve(this.mapXmlObjectToAdapterObject(crsData));
+            return Promise.resolve({
+                raw: rawData,
+                parsed: parsedData,
+                normalized: this.mapXmlObjectToAdapterObject(crsData),
+                meta: {
+                    type: CetsAdapter.type,
+                },
+            });
         } catch(error) {
             return Promise.reject(error);
         }

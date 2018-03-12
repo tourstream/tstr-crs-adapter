@@ -7,20 +7,20 @@ class RoundTripServiceReducer {
         this.logger = logger;
     }
 
-    reduceIntoCrsData(adapterService, crsData, dataDefinition) {
+    reduceIntoCrsData(adapterService, crsData) {
         const crsService = this.findCrsService(adapterService, crsData) || this.createEmptyService(crsData);
         const startDate = moment(adapterService.startDate, this.config.useDateFormat);
         const endDate = moment(adapterService.endDate, this.config.useDateFormat);
 
-        crsService.type = dataDefinition.serviceTypes.roundTrip;
-        crsService.marker = adapterService.marked ? 'X' : '';
+        crsService.type = crsData.meta.serviceTypes.roundTrip;
+        crsService.marker = adapterService.marked ? 'X' : void 0;
 
         crsService.code = adapterService.bookingId ? 'NEZ' + adapterService.bookingId : void 0;
         crsService.accommodation = adapterService.destination;
-        crsService.fromDate = startDate.isValid() ? startDate.format(dataDefinition.formats.date) : adapterService.startDate;
-        crsService.toDate = endDate.isValid() ? endDate.format(dataDefinition.formats.date) : adapterService.endDate;
+        crsService.fromDate = startDate.isValid() ? startDate.format(crsData.meta.formats.date) : adapterService.startDate;
+        crsService.toDate = endDate.isValid() ? endDate.format(crsData.meta.formats.date) : adapterService.endDate;
 
-        this.helper.traveller.reduceIntoCrsData(adapterService, crsService, crsData, dataDefinition);
+        this.helper.traveller.reduceIntoCrsData(adapterService, crsService, crsData);
     }
 
     findCrsService(adapterService, crsData) {

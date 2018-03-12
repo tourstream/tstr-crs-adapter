@@ -120,18 +120,6 @@ class MerlinAdapter {
         });
     }
 
-    getCrsDataDefinition() {
-        return {
-            serviceTypes: CONFIG.crs.serviceTypes,
-            genderTypes: CONFIG.crs.gender2SalutationMap,
-            formats: {
-                date: CONFIG.crs.dateFormat,
-                time: CONFIG.crs.timeFormat,
-            },
-            type: MerlinAdapter.type,
-        };
-    }
-
     fetchData() {
         return this.getCrsData().then((response) => {
             const rawData = (response || {}).data || '';
@@ -141,13 +129,24 @@ class MerlinAdapter {
             return {
                 raw: rawData,
                 parsed: parsedData,
-                agencyNumber: crsData.AgencyNoTouroperator,
-                operator: crsData.TourOperator,
-                numberOfTravellers: crsData.NoOfPersons,
-                travelType: crsData.TravelType,
-                remark: crsData.Remarks,
-                services: this.collectServices(crsData),
-                travellers: this.collectTravellers(crsData),
+                normalized: {
+                    agencyNumber: crsData.AgencyNoTouroperator,
+                    operator: crsData.TourOperator,
+                    numberOfTravellers: crsData.NoOfPersons,
+                    travelType: crsData.TravelType,
+                    remark: crsData.Remarks,
+                    services: this.collectServices(crsData),
+                    travellers: this.collectTravellers(crsData),
+                },
+                meta: {
+                    serviceTypes: CONFIG.crs.serviceTypes,
+                    genderTypes: CONFIG.crs.gender2SalutationMap,
+                    formats: {
+                        date: CONFIG.crs.dateFormat,
+                        time: CONFIG.crs.timeFormat,
+                    },
+                    type: MerlinAdapter.type,
+                },
             };
         });
     }
@@ -155,6 +154,7 @@ class MerlinAdapter {
     collectServices(crsData) {
         return crsData.ServiceBlock.ServiceRow.map((service) => {
             return {
+                marker: service.MarkField,
                 type: service.KindOfService,
                 code: service.Service,
                 accommodation: service.Accommodation,
@@ -163,7 +163,6 @@ class MerlinAdapter {
                 occupancy: service.Occupancy,
                 quantity: service.NoOfServices,
                 travellerAssociation: service.TravellerAllocation,
-                marker: service.MarkField,
             }
         });
     }
@@ -179,7 +178,9 @@ class MerlinAdapter {
     }
 
     convert(crsData) {
-        const crsDataObject = crsData.parsed.GATE2MX.SendRequest.Import;
+        crsData.converted = JSON.parse(JSON.stringify(crsData.parsed));
+
+        const crsDataObject = crsData.converted.GATE2MX.SendRequest.Import;
 
         crsDataObject.AgencyNoTouroperator = crsData.agencyNumber;
         crsDataObject.TourOperator = crsData.operator;
@@ -190,30 +191,30 @@ class MerlinAdapter {
         this.assignServices(crsData);
         this.assignTravellers(crsData);
 
-        crsData.raw = this.xmlBuilder.build(crsData.parsed);
+        crsData.build = this.xmlBuilder.build(crsData.converted);
 
         return crsData;
     }
 
     assignServices(crsData) {
-        crsData.services.forEach((service, index) => {
-            const crsServiceObject = crsData.parsed.GATE2MX.SendRequest.Import.ServiceBlock.ServiceRow[index];
+        crsData.normalized.services.forEach((service, index) => {
+            const crsServiceObject = crsData.converted.GATE2MX.SendRequest.Import.ServiceBlock.ServiceRow[index];
 
-            crsServiceObject.KindOfService = crsServiceObject.type;
-            crsServiceObject.Service = crsServiceObject.code;
-            crsServiceObject.Accommodation = crsServiceObject.accommodation;
-            crsServiceObject.FromDate = crsServiceObject.fromDate;
-            crsServiceObject.EndDate = crsServiceObject.toDate;
-            crsServiceObject.Occupancy = crsServiceObject.occupancy;
-            crsServiceObject.NoOfServices = crsServiceObject.quantity;
-            crsServiceObject.TravellerAllocation = crsServiceObject.travellerAssociation;
-            crsServiceObject.MarkField = crsServiceObject.marker;
+            crsServiceObject.MarkField = service.marker;
+            crsServiceObject.KindOfService = service.type;
+            crsServiceObject.Service = service.code;
+            crsServiceObject.Accommodation = service.accommodation;
+            crsServiceObject.FromDate = service.fromDate;
+            crsServiceObject.EndDate = service.toDate;
+            crsServiceObject.Occupancy = service.occupancy;
+            crsServiceObject.NoOfServices = service.quantity;
+            crsServiceObject.TravellerAllocation = service.travellerAssociation;
         });
     }
 
     assignTravellers(crsData) {
-        crsData.travellers.forEach((traveller, index) => {
-            const crsTravellerObject = crsData.parsed.GATE2MX.SendRequest.Import.TravellerBlock.PersonBlock.PersonRow[index];
+        crsData.normalized.travellers.forEach((traveller, index) => {
+            const crsTravellerObject = crsData.converted.GATE2MX.SendRequest.Import.TravellerBlock.PersonBlock.PersonRow[index];
 
             crsTravellerObject.Salutation = traveller.title;
             crsTravellerObject.Name = traveller.name;
@@ -221,12 +222,8 @@ class MerlinAdapter {
         });
     }
 
-    sendData(rawCrsData) {
-        return this.getConnection().post(rawCrsData).catch((error) => {
-            this.logger.info(error);
-            this.logger.error('error during transfer - please check the result');
-            throw error;
-        });
+    sendData(crsData) {
+        return this.getConnection().post(crsData.build);
     }
 
     getData() {
