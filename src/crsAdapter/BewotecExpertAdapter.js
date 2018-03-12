@@ -7,6 +7,9 @@ import TravellerHelper from '../helper/TravellerHelper';
 import RoundTripHelper from '../helper/RoundTripHelper';
 import WindowHelper from '../helper/WindowHelper';
 import fastXmlParser from 'fast-xml-parser';
+import HotelHelper from '../helper/HotelHelper';
+import CarHelper from '../helper/CarHelper';
+import CamperHelper from '../helper/CamperHelper';
 
 const CONFIG = {
     crs: {
@@ -61,6 +64,9 @@ class BewotecExpertAdapter {
 
         this.helper = {
             traveller: new TravellerHelper(helperOptions),
+            car: new CarHelper(helperOptions),
+            camper: new CamperHelper(helperOptions),
+            hotel: new HotelHelper(helperOptions),
             roundTrip: new RoundTripHelper(helperOptions),
             window: new WindowHelper(),
         };
@@ -636,6 +642,13 @@ class BewotecExpertAdapter {
             crsObject['m' + CONFIG.crs.lineNumberMap[lineIndex]] = service.marked ? 'X' : void 0;
         });
 
+        crsObject.p = Math.max(
+            crsObject.p || 0,
+            this.calculateNumberOfTravellers(crsObject),
+            dataObject.numberOfTravellers || 0,
+            CONFIG.crs.defaultValues.numberOfTravellers
+        );
+
         return JSON.parse(JSON.stringify(crsObject));
     };
 
@@ -647,11 +660,6 @@ class BewotecExpertAdapter {
     assignBasicData(crsObject, dataObject) {
         crsObject.rem = [dataObject.remark, crsObject.rem].filter(Boolean).join(',') || void 0;
         crsObject.r = dataObject.travelType || crsObject.r || void 0;
-        crsObject.p = Math.max(
-            dataObject.numberOfTravellers || 0,
-            crsObject.p || 0,
-            CONFIG.crs.defaultValues.numberOfTravellers
-        ) || void 0;
     }
 
     /**
@@ -746,28 +754,13 @@ class BewotecExpertAdapter {
      * @param lineIndex int
      */
     assignHotelServiceFromAdapterObjectToCrsObject(service, crsObject, lineIndex) {
-        const emptyRelatedTravellers = () => {
-            let startLineNumber = parseInt(travellerAssociation.substr(0, 1), 10);
-            let endLineNumber = parseInt(travellerAssociation.substr(-1), 10);
-
-            if (!startLineNumber) return;
-
-            do {
-                let startLineIndex = CONFIG.crs.lineNumberMap[startLineNumber - 1];
-
-                crsObject['ta' + startLineIndex] = void 0;
-                crsObject['tn' + startLineIndex] = void 0;
-                crsObject['te' + startLineIndex] = void 0;
-            } while (++startLineNumber <= endLineNumber);
-        };
-
         const lineNumber = CONFIG.crs.lineNumberMap[lineIndex];
 
         let dateFrom = moment(service.dateFrom, this.options.useDateFormat);
         let dateTo = moment(service.dateTo, this.options.useDateFormat);
-        let travellerAssociation = crsObject['d' + lineNumber] || '';
-
-        service.roomOccupancy = Math.max(service.roomOccupancy || 1, (service.children || []).length);
+        let firstTravellerAssociation = (service.children && service.children.length)
+            ? this.calculateNumberOfTravellers(crsObject) + 1
+            : this.helper.traveller.extractFirstTravellerAssociation(crsObject['d' + lineNumber]) || 1;
 
         crsObject['n' + lineNumber] = CONFIG.crs.serviceTypes.hotel;
         crsObject['l' + lineNumber] = service.destination;
@@ -776,11 +769,8 @@ class BewotecExpertAdapter {
         crsObject['e' + lineNumber] = service.roomOccupancy;
         crsObject['s' + lineNumber] = dateFrom.isValid() ? dateFrom.format(CONFIG.crs.dateFormat) : service.dateFrom;
         crsObject['i' + lineNumber] = dateTo.isValid() ? dateTo.format(CONFIG.crs.dateFormat) : service.dateTo;
-        crsObject['d' + lineNumber] = '1' + ((service.roomOccupancy > 1) ? '-' + service.roomOccupancy : '');
-
-        emptyRelatedTravellers();
-
-        crsObject.p = Math.max(crsObject.p, service.roomOccupancy);
+        crsObject['d' + lineNumber] =
+            this.helper.hotel.calculateTravellerAllocation(service, firstTravellerAssociation);
     }
 
     /**
@@ -794,32 +784,15 @@ class BewotecExpertAdapter {
             return;
         }
 
-        const lineNumber = CONFIG.crs.lineNumberMap[lineIndex];
-
-        const addTravellerAllocation = () => {
-            let lastTravellerAllocationNumber = Math.max(service.roomOccupancy, travellerAllocationNumber);
-            let firstTravellerAllocationNumber = 1 + lastTravellerAllocationNumber - service.roomOccupancy;
-
-            crsObject['d' + lineNumber] = firstTravellerAllocationNumber === lastTravellerAllocationNumber
-                ? firstTravellerAllocationNumber
-                : firstTravellerAllocationNumber + '-' + lastTravellerAllocationNumber;
-        };
-
-        let travellerAllocationNumber = void 0;
-
         service.travellers.forEach((ServiceTraveller) => {
             const traveller = this.helper.traveller.normalizeTraveller(ServiceTraveller, SERVICE_TYPES.hotel);
             let travellerIndex = this.getNextEmptyTravellerLineIndex(crsObject);
             let travellerNumber = CONFIG.crs.lineNumberMap[travellerIndex];
 
-            travellerAllocationNumber = travellerIndex + 1;
-
             crsObject['ta' + travellerNumber] = traveller.salutation;
             crsObject['tn' + travellerNumber] = traveller.firstName + ' ' + traveller.lastName;
             crsObject['te' + travellerNumber] = traveller.age;
         });
-
-        addTravellerAllocation();
     }
 
     /**
@@ -871,7 +844,6 @@ class BewotecExpertAdapter {
         });
 
         crsObject['d' + lineNumber] = firstLineNumber + (firstLineNumber !== lastLineNumber ? '-' + lastLineNumber : '');
-        crsObject.p = Math.max(crsObject.p, service.travellers.length);
     }
 
     /**
@@ -966,9 +938,11 @@ class BewotecExpertAdapter {
         let index = 0;
 
         do {
-            let markerField = crsObject['m' + CONFIG.crs.lineNumberMap[index]];
-            let serviceType = crsObject['n' + CONFIG.crs.lineNumberMap[index]];
-            let serviceCode = crsObject['l' + CONFIG.crs.lineNumberMap[index]];
+            let lineNumber = CONFIG.crs.lineNumberMap[index];
+
+            let markerField = crsObject['m' + lineNumber];
+            let serviceType = crsObject['n' + lineNumber];
+            let serviceCode = crsObject['l' + lineNumber];
 
             if (!markerField && !serviceType && !serviceCode) {
                 return index;
@@ -996,6 +970,28 @@ class BewotecExpertAdapter {
             }
         } while (++index)
     };
+
+    /**
+     * @private
+     * @param crsObject object
+     * @returns {number}
+     */
+    calculateNumberOfTravellers(crsObject) {
+        let index = 0;
+        let lastTravellerAssociation = 0;
+
+        do {
+            let lineNumber = CONFIG.crs.lineNumberMap[index];
+
+            if (!crsObject['n' + lineNumber]) {
+                return lastTravellerAssociation;
+            }
+
+            lastTravellerAssociation = +this.helper.traveller.extractLastTravellerAssociation(
+                crsObject['d' + lineNumber]
+            );
+        } while (++index);
+    }
 }
 
 export default BewotecExpertAdapter;

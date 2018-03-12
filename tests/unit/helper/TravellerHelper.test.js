@@ -60,5 +60,17 @@ describe('TravellerHelper', () => {
         expect(actual[0]).toBe(traveller1);
         expect(actual[1]).toBe(traveller2);
     });
+
+    it('extractFirstTravellerAssociation should return correct value', () => {
+        expect(helper.extractFirstTravellerAssociation()).toBe('');
+        expect(helper.extractFirstTravellerAssociation('2')).toBe('2');
+        expect(helper.extractFirstTravellerAssociation('2-7')).toBe('2');
+    });
+
+    it('extractLastTravellerAssociation should return correct value', () => {
+        expect(helper.extractLastTravellerAssociation()).toBe('');
+        expect(helper.extractLastTravellerAssociation('2')).toBe('2');
+        expect(helper.extractLastTravellerAssociation('2-7')).toBe('7');
+    });
 });
 

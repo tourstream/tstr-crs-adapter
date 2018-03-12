@@ -772,7 +772,7 @@ describe('MerlinAdapter', () => {
                         '<NoOfServices>2</NoOfServices>' +
                         '<FromDate>231218</FromDate>' +
                         '<EndDate>040119</EndDate>' +
-                        '<TravellerAllocation>1-4</TravellerAllocation>' +
+                        '<TravellerAllocation>1-8</TravellerAllocation>' +
                     '</ServiceRow>' +
                 '</ServiceBlock>' +
                 '<TravellerBlock>' +
@@ -790,7 +790,7 @@ describe('MerlinAdapter', () => {
                     '</PersonBlock>' +
                 '</TravellerBlock>' +
                 '<TransactionCode>BA</TransactionCode>' +
-                '<NoOfPersons>4</NoOfPersons>'
+                '<NoOfPersons>8</NoOfPersons>'
             );
 
             let data = {
@@ -830,9 +830,10 @@ describe('MerlinAdapter', () => {
                 '<Occupancy>3</Occupancy>' +
                 '<FromDate>231218</FromDate>' +
                 '<EndDate>040119</EndDate>' +
-                '<TravellerAllocation>1-3</TravellerAllocation>' +
+                '<TravellerAllocation>2-4</TravellerAllocation>' +
                 '</ServiceRow>' +
                 '</ServiceBlock>' +
+
                 '<TravellerBlock>' +
                 '<PersonBlock>' +
                 '<PersonRow travellerNo="1">' +
@@ -842,8 +843,9 @@ describe('MerlinAdapter', () => {
                 '</PersonRow>' +
                 '</PersonBlock>' +
                 '</TravellerBlock>' +
+
                 '<TransactionCode>BA</TransactionCode>' +
-                '<NoOfPersons>3</NoOfPersons>'
+                '<NoOfPersons>4</NoOfPersons>'
             );
 
             let data = {
@@ -961,7 +963,7 @@ describe('MerlinAdapter', () => {
                 '<Occupancy>4</Occupancy>' +
                 '<FromDate>040518</FromDate>' +
                 '<EndDate>070518</EndDate>' +
-                '<TravellerAllocation>1-2</TravellerAllocation>' +
+                '<TravellerAllocation>1</TravellerAllocation>' +
                 '</ServiceRow>' +
 
                 '<ServiceRow positionNo="2">' +
@@ -985,7 +987,7 @@ describe('MerlinAdapter', () => {
                 '<PersonBlock/>' +
                 '</TravellerBlock>' +
                 '<TransactionCode>BA</TransactionCode>' +
-                '<NoOfPersons>2</NoOfPersons>'
+                '<NoOfPersons>3</NoOfPersons>'
             );
 
             let data = {
@@ -1031,14 +1033,12 @@ describe('MerlinAdapter', () => {
                         '<KindOfService>H</KindOfService>' +
                         '<Service>dest.5</Service>' +
                         '<Accommodation>rc.5 mc.5</Accommodation>' +
-                        '<Occupancy>1</Occupancy>' +
                         '<TravellerAllocation>1</TravellerAllocation>' +
                     '</ServiceRow>' +
                     '<ServiceRow positionNo="4">' +
                         '<KindOfService>H</KindOfService>' +
                         '<Service>dest.6</Service>' +
                         '<Accommodation>rc.6 mc.6</Accommodation>' +
-                        '<Occupancy>1</Occupancy>' +
                         '<TravellerAllocation>1</TravellerAllocation>' +
                     '</ServiceRow>' +
                 '</ServiceBlock>' +

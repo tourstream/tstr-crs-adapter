@@ -4,6 +4,10 @@ import fastXmlParser from 'fast-xml-parser';
 import moment from 'moment';
 import {SERVICE_TYPES} from '../UbpCrsAdapter';
 import TravellerHelper from '../helper/TravellerHelper';
+import RoundTripHelper from '../helper/RoundTripHelper';
+import CarHelper from '../helper/CarHelper';
+import CamperHelper from '../helper/CamperHelper';
+import HotelHelper from '../helper/HotelHelper';
 
 /**
  * need to be true:
@@ -75,11 +79,18 @@ class TomaAdapter {
     constructor(logger, options = {}) {
         this.options = options;
         this.logger = logger;
+
+        const helperOptions = Object.assign({}, options, {
+            crsDateFormat: CONFIG.crs.dateFormat,
+            gender2SalutationMap: CONFIG.crs.gender2SalutationMap,
+        });
+
         this.helper = {
-            traveller: new TravellerHelper(Object.assign({}, options, {
-                crsDateFormat: CONFIG.crs.dateFormat,
-                gender2SalutationMap: CONFIG.crs.gender2SalutationMap,
-            })),
+            traveller: new TravellerHelper(helperOptions),
+            car: new CarHelper(helperOptions),
+            camper: new CamperHelper(helperOptions),
+            hotel: new HotelHelper(helperOptions),
+            roundTrip: new RoundTripHelper(helperOptions),
         };
 
         this.xmlParser = {
@@ -541,6 +552,13 @@ class TomaAdapter {
                 default: this.logger.warn('type ' + service.type + ' is not supported by the TOMA adapter');
             }
         });
+
+        xmlTom.NoOfPersons = Math.max(
+            (xmlTom.NoOfPersons && xmlTom.NoOfPersons[CONFIG.parserOptions.textNodeName]) || 0,
+            this.calculateNumberOfTravellers(xmlTom),
+            dataObject.numberOfTravellers || 0,
+            CONFIG.crs.defaultValues.numberOfTravellers
+        );
     };
 
     /**
@@ -552,11 +570,6 @@ class TomaAdapter {
         xmlTom.Action = CONFIG.crs.defaultValues.action;
         xmlTom.Traveltype = dataObject.travelType || xmlTom.Traveltype || void 0;
         xmlTom.Remark = [xmlTom.Remark, dataObject.remark].filter(Boolean).join(',') || void 0;
-        xmlTom.NoOfPersons = Math.max(
-            dataObject.numberOfTravellers || 0,
-            (xmlTom.NoOfPersons && xmlTom.NoOfPersons[CONFIG.parserOptions.textNodeName]) || 0,
-            CONFIG.crs.defaultValues.numberOfTravellers
-        ) || void 0;
     }
 
     /**
@@ -670,24 +683,11 @@ class TomaAdapter {
      * @param lineNumber number
      */
     assignHotelServiceFromAdapterObjectToXmlObject(service, xml, lineNumber) {
-        const emptyRelatedTravellers = () => {
-            let startLineNumber = parseInt(travellerAssociation.substr(0, 1), 10);
-            let endLineNumber = parseInt(travellerAssociation.substr(-1), 10);
-
-            if (!startLineNumber) return;
-
-            do {
-                xml['Title.' + startLineNumber] = void 0;
-                xml['Name.' + startLineNumber] = void 0;
-                xml['Reduction.' + startLineNumber] = void 0;
-            } while (++startLineNumber <= endLineNumber);
-        };
-
         let dateFrom = moment(service.dateFrom, this.options.useDateFormat);
         let dateTo = moment(service.dateTo, this.options.useDateFormat);
-        let travellerAssociation = xml['TravAssociation.' + lineNumber] || '';
-
-        service.roomOccupancy = Math.max(service.roomOccupancy || 1, (service.children || []).length);
+        let firstTravellerAssociation = (service.children && service.children.length)
+            ? this.calculateNumberOfTravellers(xml) + 1
+            : this.helper.traveller.extractFirstTravellerAssociation(xml['TravAssociation.' + lineNumber]) || 1;
 
         xml['KindOfService.' + lineNumber] = CONFIG.crs.serviceTypes.hotel;
         xml['ServiceCode.' + lineNumber] = service.destination;
@@ -696,11 +696,8 @@ class TomaAdapter {
         xml['Count.' + lineNumber] = service.roomQuantity;
         xml['From.' + lineNumber] = dateFrom.isValid() ? dateFrom.format(CONFIG.crs.dateFormat) : service.dateFrom;
         xml['To.' + lineNumber] = dateTo.isValid() ? dateTo.format(CONFIG.crs.dateFormat) : service.dateTo;
-        xml['TravAssociation.' + lineNumber] = '1' + ((service.roomOccupancy > 1) ? '-' + service.roomOccupancy : '');
-
-        emptyRelatedTravellers();
-
-        xml.NoOfPersons = Math.max(xml.NoOfPersons, service.roomOccupancy);
+        xml['TravAssociation.' + lineNumber] =
+            this.helper.hotel.calculateTravellerAllocation(service, firstTravellerAssociation);
     }
 
     /**
@@ -714,15 +711,6 @@ class TomaAdapter {
             return;
         }
 
-        const addTravellerAllocation = () => {
-            let lastTravellerLineNumber = Math.max(service.roomOccupancy, travellerLineNumber);
-            let firstTravellerLineNumber = 1 + lastTravellerLineNumber - service.roomOccupancy;
-
-            xml['TravAssociation.' + lineNumber] = firstTravellerLineNumber === lastTravellerLineNumber
-                ? firstTravellerLineNumber
-                : firstTravellerLineNumber + '-' + lastTravellerLineNumber;
-        };
-
         let travellerLineNumber = void 0;
 
         service.travellers.forEach((traveller) => {
@@ -732,8 +720,6 @@ class TomaAdapter {
             xml['Name.' + travellerLineNumber] = traveller.firstName + ' ' + traveller.lastName;
             xml['Reduction.' + travellerLineNumber] = traveller.age;
         });
-
-        addTravellerAllocation();
     }
 
     /**
@@ -778,7 +764,6 @@ class TomaAdapter {
         });
 
         xml['TravAssociation.' + lineNumber] = firstLineNumber + (firstLineNumber !== lastLineNumber ? '-' + lastLineNumber : '');
-        xml.NoOfPersons = Math.max(xml.NoOfPersons, service.travellers.length);
     }
 
     /**
@@ -866,6 +851,26 @@ class TomaAdapter {
             }
         } while (lineNumber++);
     };
+
+    /**
+     * @private
+     * @param xml object
+     * @returns {number}
+     */
+    calculateNumberOfTravellers(xml) {
+        let lineNumber = 1;
+        let lastTravellerAssociation = 0;
+
+        do {
+            if (!xml['KindOfService.' + lineNumber]) {
+                return lastTravellerAssociation;
+            }
+
+            lastTravellerAssociation = +this.helper.traveller.extractLastTravellerAssociation(
+                xml['TravAssociation.' + lineNumber]
+            );
+        } while (++lineNumber);
+    }
 }
 
 export default TomaAdapter;

@@ -899,7 +899,7 @@ describe('BewotecExpertAdapter', () => {
 
         it('setData() should send complete hotel data', (done) => {
             let expectation = createParams({
-                p: 4,
+                p: 8,
                 n0: 'H',
                 l0: 'dest',
                 s0: '231218',
@@ -951,7 +951,6 @@ describe('BewotecExpertAdapter', () => {
                 s0: '231218',
                 i0: '040119',
                 u0: 'rc mc',
-                e0: 1,
                 d0: '1',
             });
 
@@ -980,16 +979,21 @@ describe('BewotecExpertAdapter', () => {
 
         it('setData() should replace hotel data', (done) => {
             let expectation = createParams({
-                p: 4,
+                p: 1,
                 n0: 'H',
                 l0: 'neverland',
                 s0: '011218',
                 i0: '051218',
                 u0: 'xs ss',
-                e0: 1,
                 d0: '1',
                 n1: 'MW',
                 l1: '/-',
+                ta0: 'K',
+                tn0: 'john doe',
+                te0: '7',
+                ta1: 'K',
+                tn1: 'jane doe',
+                te1: '11',
             });
 
             let data = {

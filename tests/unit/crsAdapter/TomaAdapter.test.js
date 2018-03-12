@@ -478,12 +478,12 @@ describe('TomaAdapter', () => {
             it('setData() should set minimal car service', () => {
                 let expectXml = createTomaXml(
                     '<Action>BA</Action>' +
-                    '<NoOfPersons>1</NoOfPersons>' +
                     '<KindOfService.1>MW</KindOfService.1>' +
                     '<ServiceCode.1>rent.codevehicle.type.code/from.loc-to.loc</ServiceCode.1>' +
                     '<Accommodation.1>from.time</Accommodation.1>' +
                     '<From.1>110918</From.1>' +
-                    '<To.1>150918</To.1>'
+                    '<To.1>150918</To.1>' +
+                    '<NoOfPersons>1</NoOfPersons>'
                 );
 
                 adapter.setData({
@@ -508,7 +508,6 @@ describe('TomaAdapter', () => {
                 let expectXml = createTomaXml(
                     '<Action>BA</Action>' +
                     '<Remark>remark,CS3YRS;GPS;BS,pu h.address pu h.number;do h.name;do h.address do h.number</Remark>' +
-                    '<NoOfPersons>1</NoOfPersons>' +
                     '<KindOfService.1>MW</KindOfService.1>' +
                     '<ServiceCode.1>rent.codevehicle.type.code/from.loc-to.loc</ServiceCode.1>' +
                     '<Accommodation.1>from.time</Accommodation.1>' +
@@ -518,7 +517,9 @@ describe('TomaAdapter', () => {
                     '<KindOfService.2>E</KindOfService.2>' +
                     '<ServiceCode.2>pu h.name</ServiceCode.2>' +
                     '<From.2>231218</From.2>' +
-                    '<To.2>040119</To.2>'
+                    '<To.2>040119</To.2>' +
+
+                    '<NoOfPersons>1</NoOfPersons>'
                 );
 
                 adapter.setData({
@@ -555,12 +556,12 @@ describe('TomaAdapter', () => {
                 let expectXml = createTomaXml(
                     '<Action>BA</Action>' +
                     '<Remark>CS3YRS;GPS;BS</Remark>' +
-                    '<NoOfPersons>1</NoOfPersons>' +
                     '<KindOfService.1>MW</KindOfService.1>' +
                     '<ServiceCode.1>rent.codevehicle.type.code/from.loc-to.loc</ServiceCode.1>' +
                     '<Accommodation.1>from.time</Accommodation.1>' +
                     '<From.1>231218</From.1>' +
-                    '<To.1>040119</To.1>'
+                    '<To.1>040119</To.1>' +
+                    '<NoOfPersons>1</NoOfPersons>'
                 );
 
                 adapter.setData({
@@ -586,7 +587,6 @@ describe('TomaAdapter', () => {
             it('setData() should set hotel service', () => {
                 let expectXml = createTomaXml(
                     '<Action>BA</Action>' +
-                    '<NoOfPersons>4</NoOfPersons>' +
                     '<KindOfService.1>H</KindOfService.1>' +
                     '<ServiceCode.1>destination</ServiceCode.1>' +
                     '<Accommodation.1>room.code meal.code</Accommodation.1>' +
@@ -594,10 +594,11 @@ describe('TomaAdapter', () => {
                     '<Count.1>2</Count.1>' +
                     '<From.1>100218</From.1>' +
                     '<To.1>150218</To.1>' +
-                    '<TravAssociation.1>1-4</TravAssociation.1>' +
+                    '<TravAssociation.1>1-8</TravAssociation.1>' +
                     '<Title.1>K</Title.1>' +
                     '<Name.1>child 1</Name.1>' +
-                    '<Reduction.1>13</Reduction.1>'
+                    '<Reduction.1>13</Reduction.1>' +
+                    '<NoOfPersons>8</NoOfPersons>'
                 );
 
                 adapter.setData({
@@ -629,15 +630,18 @@ describe('TomaAdapter', () => {
                 let expectXml = createTomaXml(
                     '<KindOfService.1>H</KindOfService.1>' +
                     '<MarkerField.1>X</MarkerField.1>' +
-                    '<TravAssociation.1>1</TravAssociation.1>' +
+                    '<TravAssociation.1>2-3</TravAssociation.1>' +
+                    '<Title.2>F</Title.2>' +
+                    '<Name.2>Jane</Name.2>' +
+                    '<Reduction.2>3</Reduction.2>' +
                     '<Action>BA</Action>' +
-                    '<NoOfPersons>2</NoOfPersons>' +
                     '<ServiceCode.1>destination</ServiceCode.1>' +
                     '<Accommodation.1>room.code meal.code</Accommodation.1>' +
                     '<Occupancy.1>1</Occupancy.1>' +
                     '<Count.1>2</Count.1>' +
                     '<From.1>100218</From.1>' +
-                    '<To.1>150218</To.1>'
+                    '<To.1>150218</To.1>' +
+                    '<NoOfPersons>3</NoOfPersons>'
                 );
 
                 let xml = createTomaXml(
@@ -685,7 +689,6 @@ describe('TomaAdapter', () => {
             it('setData() should set round-trip service', () => {
                 let expectXml = createTomaXml(
                     '<Action>BA</Action>' +
-                    '<NoOfPersons>1</NoOfPersons>' +
                     '<KindOfService.1>R</KindOfService.1>' +
                     '<ServiceCode.1>NEZE2784NQXTHEN</ServiceCode.1>' +
                     '<Accommodation.1>YYZ</Accommodation.1>' +
@@ -694,7 +697,8 @@ describe('TomaAdapter', () => {
                     '<Title.1>H</Title.1>' +
                     '<Name.1>DOE/JOHN</Name.1>' +
                     '<Reduction.1>32</Reduction.1>' +
-                    '<TravAssociation.1>1</TravAssociation.1>'
+                    '<TravAssociation.1>1</TravAssociation.1>' +
+                    '<NoOfPersons>1</NoOfPersons>'
                 );
 
                 adapter.setData({
@@ -722,10 +726,10 @@ describe('TomaAdapter', () => {
             it('setData() should set minimal round-trip service', () => {
                 let expectXml = createTomaXml(
                     '<Action>BA</Action>' +
-                    '<NoOfPersons>1</NoOfPersons>' +
                     '<KindOfService.1>R</KindOfService.1>' +
                     '<From.1>start</From.1>' +
-                    '<To.1>end</To.1>'
+                    '<To.1>end</To.1>' +
+                    '<NoOfPersons>1</NoOfPersons>'
                 );
 
                 adapter.setData({
@@ -745,14 +749,13 @@ describe('TomaAdapter', () => {
             it('setData() should set camper service', () => {
                 let expectXml = createTomaXml(
                     '<Action>BA</Action>' +
-                    '<NoOfPersons>2</NoOfPersons>' +
                     '<KindOfService.1>WM</KindOfService.1>' +
                     '<ServiceCode.1>rent.codecamper.code/from.loc-to.loc</ServiceCode.1>' +
                     '<Count.1>miles.per.day</Count.1>' +
                     '<Occupancy.1>miles.packages</Occupancy.1>' +
                     '<From.1>231218</From.1>' +
                     '<To.1>040119</To.1>' +
-                    '<TravAssociation.1>1-2</TravAssociation.1>' +
+                    '<TravAssociation.1>1</TravAssociation.1>' +
 
                     '<KindOfService.2>TA</KindOfService.2>' +
                     '<ServiceCode.2>extra</ServiceCode.2>' +
@@ -770,7 +773,9 @@ describe('TomaAdapter', () => {
                     '<ServiceCode.4>extra</ServiceCode.4>' +
                     '<From.4>231218</From.4>' +
                     '<To.4>231218</To.4>' +
-                    '<TravAssociation.4>1</TravAssociation.4>'
+                    '<TravAssociation.4>1</TravAssociation.4>' +
+
+                    '<NoOfPersons>2</NoOfPersons>'
                 );
 
                 adapter.setData({
@@ -804,13 +809,13 @@ describe('TomaAdapter', () => {
                     '<KindOfService.3>MW</KindOfService.3>' +
                     '<ServiceCode.3>rent.codevehicle.type.code/from.loc-to.loc</ServiceCode.3>' +
                     '<Action>BA</Action>' +
-                    '<NoOfPersons>1</NoOfPersons>' +
                     '<From.3>110918</From.3>' +
                     '<To.3>150918</To.3>' +
                     '<KindOfService.4>E</KindOfService.4>' +
                     '<ServiceCode.4>do h.name</ServiceCode.4>' +
                     '<From.4>110918</From.4>' +
-                    '<To.4>150918</To.4>'
+                    '<To.4>150918</To.4>' +
+                    '<NoOfPersons>1</NoOfPersons>'
                 );
 
                 let xml = createTomaXml(
@@ -848,13 +853,13 @@ describe('TomaAdapter', () => {
                     '<ServiceCode.1>rent.codevehicle.type.code/from.loc-to.loc</ServiceCode.1>' +
                     '<KindOfService.2>unknown</KindOfService.2>' +
                     '<Action>BA</Action>' +
-                    '<NoOfPersons>1</NoOfPersons>' +
                     '<From.1>110918</From.1>' +
                     '<To.1>150918</To.1>' +
                     '<KindOfService.3>E</KindOfService.3>' +
                     '<ServiceCode.3>do h.name</ServiceCode.3>' +
                     '<From.3>110918</From.3>' +
-                    '<To.3>150918</To.3>'
+                    '<To.3>150918</To.3>' +
+                    '<NoOfPersons>1</NoOfPersons>'
                 );
 
                 let xml = createTomaXml(
