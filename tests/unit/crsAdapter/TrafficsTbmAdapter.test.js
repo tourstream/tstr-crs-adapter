@@ -829,19 +829,19 @@ describe('TrafficsTbmAdapter', () => {
                 'TbmXml.admin.services.service.0.$.alc': 4,
                 'TbmXml.admin.services.service.0.$.vnd': '010118',
                 'TbmXml.admin.services.service.0.$.bsd': '080118',
-                'TbmXml.admin.services.service.0.$.agn': '2-9',
+                'TbmXml.admin.services.service.0.$.agn': '1-8',
 
-                'TbmXml.admin.travellers.traveller.0.$.typ': 'K',
+                'TbmXml.admin.travellers.traveller.0.$.typ': 'F',
                 'TbmXml.admin.travellers.traveller.0.$.sur': 'jake doe',
                 'TbmXml.admin.travellers.traveller.0.$.age': 7,
-                'TbmXml.admin.travellers.traveller.1.$.typ': 'K',
+                'TbmXml.admin.travellers.traveller.1.$.typ': 'F',
                 'TbmXml.admin.travellers.traveller.1.$.sur': 'john doe',
                 'TbmXml.admin.travellers.traveller.1.$.age': 8,
-                'TbmXml.admin.travellers.traveller.2.$.typ': 'K',
+                'TbmXml.admin.travellers.traveller.2.$.typ': 'H',
                 'TbmXml.admin.travellers.traveller.2.$.sur': 'jane doe',
                 'TbmXml.admin.travellers.traveller.2.$.age': 14,
 
-                'TbmXml.admin.operator.$.psn': 9,
+                'TbmXml.admin.operator.$.psn': 8,
             };
 
             adapter.setData({
@@ -854,7 +854,7 @@ describe('TrafficsTbmAdapter', () => {
                             {
                                 firstName: 'jake',
                                 lastName: 'doe',
-                                gender: 'child',
+                                gender: 'female',
                                 age: 7
                             },
                         ],
@@ -873,13 +873,13 @@ describe('TrafficsTbmAdapter', () => {
                             {
                                 firstName: 'john',
                                 lastName: 'doe',
-                                gender: 'child',
+                                gender: 'female',
                                 age: 8
                             },
                             {
                                 firstName: 'jane',
                                 lastName: 'doe',
-                                gender: 'child',
+                                gender: 'male',
                                 age: 14
                             },
                         ],

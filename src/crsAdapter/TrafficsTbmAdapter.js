@@ -647,7 +647,7 @@ class TrafficsTbmAdapter {
         service.travellers.forEach((traveller) => {
             let travellerIndex = this.getNextEmptyTravellerLineIndex(crsObject);
 
-            crsObject['TbmXml.admin.travellers.traveller.' + travellerIndex + '.$.typ'] = traveller.gender;
+            crsObject['TbmXml.admin.travellers.traveller.' + travellerIndex + '.$.typ'] = CONFIG.crs.gender2SalutationMap[traveller.gender];
             crsObject['TbmXml.admin.travellers.traveller.' + travellerIndex + '.$.sur'] = traveller.firstName + ' ' + traveller.lastName;
             crsObject['TbmXml.admin.travellers.traveller.' + travellerIndex + '.$.age'] = traveller.age;
         });

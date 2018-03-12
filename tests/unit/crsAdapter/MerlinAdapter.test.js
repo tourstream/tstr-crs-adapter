@@ -852,19 +852,6 @@ describe('MerlinAdapter', () => {
                 services: [
                     {
                         type: 'hotel',
-                        destination: 'neverland',
-                        roomCode: 'oak',
-                        mealCode: 'bg',
-                        roomOccupancy: 2,
-                        dateFrom: '23122018',
-                        dateTo: '04012019',
-                        travellers: [
-                            { firstName: 'jane', lastName: 'doe', age: 3, gender: 'female' },
-                        ],
-                        marked: true,
-                    },
-                    {
-                        type: 'hotel',
                         destination: 'dest',
                         roomCode: 'rc',
                         mealCode: 'mc',

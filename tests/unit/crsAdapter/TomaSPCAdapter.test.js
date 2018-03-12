@@ -937,13 +937,13 @@ describe('TomaSPCAdapter', () => {
                                 firstName: 'john',
                                 lastName: 'doe',
                                 age: 8,
-                                gender: 'children'
+                                gender: 'male'
                             },
                             {
                                 firstName: 'jane',
                                 lastName: 'doe',
                                 age: 14,
-                                gender: 'children'
+                                gender: 'female'
                             },
                         ],
                     },
@@ -966,8 +966,8 @@ describe('TomaSPCAdapter', () => {
                     },
                 ],
                 travellers: [
-                    {title: 'K', name: 'john doe', discount: 8},
-                    {title: 'K', name: 'jane doe', discount: 14},
+                    {title: 'H', name: 'john doe', discount: 8},
+                    {title: 'D', name: 'jane doe', discount: 14},
                 ],
             };
 
@@ -993,7 +993,7 @@ describe('TomaSPCAdapter', () => {
                         mealCode: 'mc',
                         dateFrom: '01012018',
                         dateTo: '08012018',
-                        children: [],
+                        travellers: [],
                     },
                 ],
             };

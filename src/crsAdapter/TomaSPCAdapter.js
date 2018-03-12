@@ -761,7 +761,7 @@ class TomaSPCAdapter {
     assignHotelServiceFromAdapterObjectToCrsObject(adapterService, crsService, crsObject) {
         let dateFrom = moment(adapterService.dateFrom, this.options.useDateFormat);
         let dateTo = moment(adapterService.dateTo, this.options.useDateFormat);
-        let firstTravellerAssociation = (adapterService.children && adapterService.children.length)
+        let firstTravellerAssociation = (adapterService.travellers && adapterService.travellers.length)
             ? this.calculateNumberOfTravellers(crsObject) + 1
             : this.helper.traveller.extractFirstTravellerAssociation(crsService.travellerAssociation) || 1;
 
@@ -791,7 +791,7 @@ class TomaSPCAdapter {
             let travellerIndex = this.getNextEmptyTravellerIndex(crsObject);
             let traveller = crsObject.travellers[travellerIndex];
 
-            traveller.title = serviceTraveller.gender;
+            traveller.title = CONFIG.crs.gender2SalutationMap[serviceTraveller.gender];
             traveller.name = serviceTraveller.firstName + ' ' + serviceTraveller.lastName;
             traveller.discount = serviceTraveller.age;
         });

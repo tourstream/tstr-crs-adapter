@@ -668,7 +668,7 @@ describe('TomaAdapter', () => {
                             dateFrom: '10022018',
                             dateTo: '15022018',
                             marked: true,
-                            children: [],
+                            travellers: [],
                         },
                         {
                             type: 'hotel',

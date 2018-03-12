@@ -685,7 +685,7 @@ class TomaAdapter {
     assignHotelServiceFromAdapterObjectToXmlObject(service, xml, lineNumber) {
         let dateFrom = moment(service.dateFrom, this.options.useDateFormat);
         let dateTo = moment(service.dateTo, this.options.useDateFormat);
-        let firstTravellerAssociation = (service.children && service.children.length)
+        let firstTravellerAssociation = (service.travellers && service.travellers.length)
             ? this.calculateNumberOfTravellers(xml) + 1
             : this.helper.traveller.extractFirstTravellerAssociation(xml['TravAssociation.' + lineNumber]) || 1;
 
