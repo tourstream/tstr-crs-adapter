@@ -36,13 +36,13 @@ class TravellerHelper {
         return travellerAssociation.split('-').shift();
     }
 
-    reduceIntoCrsData(adapterService, crsService, crsData, dataDefinition) {
+    reduceIntoCrsData(adapterService, crsService, crsData) {
         adapterService.travellers.forEach((adapterTraveller) => {
             const crsTraveller = {};
 
             crsData.travellers.push(crsTraveller);
 
-            crsTraveller.title = dataDefinition.genderTypes[adapterTraveller.gender];
+            crsTraveller.title = crsData.meta.genderTypes[adapterTraveller.gender];
             crsTraveller.name = adapterTraveller.name;
             crsTraveller.age = adapterTraveller.age;
 

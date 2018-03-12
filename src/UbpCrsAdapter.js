@@ -162,9 +162,10 @@ class UbpCrsAdapter {
 
             try {
                 const adapterInstance = this.getAdapterInstance();
-                const dataDefinition = adapterInstance.getCrsDataDefinition();
 
                 adapterInstance.fetchData().then((crsData) => {
+                    const metaData = crsData.meta;
+
                     this.logger.info('RAW CRS DATA:');
                     this.logger.info(crsData.raw);
 
@@ -172,13 +173,13 @@ class UbpCrsAdapter {
                     this.logger.info(crsData.parsed);
 
                     const mapper = {
-                        [dataDefinition.serviceTypes.car]: new CarServiceMapper(this.logger, this.options, new VehicleHelper(this.options)),
-                        [dataDefinition.serviceTypes.hotel]: new HotelServiceMapper(this.logger, this.options, new HotelHelper(this.options)),
-                        [dataDefinition.serviceTypes.roundTrip]: new RoundTripServiceMapper(this.logger, this.options, new RoundTripHelper(this.options)),
-                        [dataDefinition.serviceTypes.camper]: new CamperServiceMapper(this.logger, this.options, new VehicleHelper(this.options)),
+                        [metaData.serviceTypes.car]: new CarServiceMapper(this.logger, this.options, new VehicleHelper(this.options)),
+                        [metaData.serviceTypes.hotel]: new HotelServiceMapper(this.logger, this.options, new HotelHelper(this.options)),
+                        [metaData.serviceTypes.roundTrip]: new RoundTripServiceMapper(this.logger, this.options, new RoundTripHelper(this.options)),
+                        [metaData.serviceTypes.camper]: new CamperServiceMapper(this.logger, this.options, new VehicleHelper(this.options)),
                     };
                     const dataMapper = new CrsDataMapper(this.logger, this.options, mapper);
-                    const adapterData = dataMapper.mapToAdapterData(crsData, dataDefinition);
+                    const adapterData = dataMapper.mapToAdapterData(crsData);
 
                     resolve(JSON.parse(JSON.stringify(adapterData)));
                 }, (error) => {
@@ -201,7 +202,6 @@ class UbpCrsAdapter {
                 }
 
                 const adapterInstance = this.getAdapterInstance();
-                const dataDefinition = adapterInstance.getCrsDataDefinition();
 
                 adapterInstance.fetchData().then((crsData) => {
                     const helper = {
@@ -218,20 +218,20 @@ class UbpCrsAdapter {
                     };
                     const dataReducer = new AdapterDataReducer(this.logger, this.options, reducer);
 
-                    const reducedData = dataReducer.reduceIntoCrsData(adapterData, crsData, dataDefinition);
+                    const reducedData = dataReducer.reduceIntoCrsData(adapterData, crsData);
                     const convertedData = adapterInstance.convert(reducedData);
 
-                    this.logger.info('PARSED CRS DATA:');
-                    this.logger.info(convertedData.parsed);
+                    this.logger.info('CONVERTED CRS DATA:');
+                    this.logger.info(convertedData.converted);
 
-                    this.logger.info('RAW CRS DATA:');
-                    this.logger.info(convertedData.raw);
+                    this.logger.info('BUILD CRS DATA:');
+                    this.logger.info(convertedData.build);
 
                     try {
-                        this.options.onSetData && this.options.onSetData(convertedData.parsed);
+                        this.options.onSetData && this.options.onSetData(convertedData);
                     } catch (ignore) {}
 
-                    adapterInstance.sendData(convertedData.raw).then(resolve, (error) => {
+                    adapterInstance.sendData(convertedData).then(resolve, (error) => {
                         this.logAndThrow('[.sendData] ', error);
                     });
                 }, (error) => {

@@ -125,18 +125,6 @@ class TomaAdapter {
         }
     }
 
-    getCrsDataDefinition() {
-        return {
-            serviceTypes: CONFIG.crs.serviceTypes,
-            genderTypes: CONFIG.crs.gender2SalutationMap,
-            formats: {
-                date: CONFIG.crs.dateFormat,
-                time: CONFIG.crs.timeFormat,
-            },
-            type: TomaAdapter.type,
-        };
-    }
-
     fetchData() {
         try{
             const rawData = this.getCrsXml() || '';
@@ -146,13 +134,24 @@ class TomaAdapter {
             return Promise.resolve({
                 raw: rawData,
                 parsed: parsedData,
-                agencyNumber: crsData.AgencyNumber,
-                operator: crsData.Operator,
-                numberOfTravellers: crsData.NoOfPersons || crsData.NoOfPersons[CONFIG.parserOptions.textNodeName],
-                travelType: crsData.Traveltype,
-                remark: crsData.Remark,
-                services: this.collectServices(crsData),
-                travellers: this.collectTravellers(crsData),
+                normalized: {
+                    agencyNumber: crsData.AgencyNumber,
+                    operator: crsData.Operator,
+                    numberOfTravellers: crsData.NoOfPersons || crsData.NoOfPersons[CONFIG.parserOptions.textNodeName],
+                    travelType: crsData.Traveltype,
+                    remark: crsData.Remark,
+                    services: this.collectServices(crsData),
+                    travellers: this.collectTravellers(crsData),
+                },
+                meta: {
+                    serviceTypes: CONFIG.crs.serviceTypes,
+                    genderTypes: CONFIG.crs.gender2SalutationMap,
+                    formats: {
+                        date: CONFIG.crs.dateFormat,
+                        time: CONFIG.crs.timeFormat,
+                    },
+                    type: TomaAdapter.type,
+                },
             });
         } catch(error) {
             return Promise.reject(error);
@@ -169,6 +168,7 @@ class TomaAdapter {
             if (!serviceType) break;
 
             services.push({
+                marker: crsData['MarkerField.' + lineNumber],
                 type: serviceType,
                 code: crsData['ServiceCode.' + lineNumber],
                 accommodation: crsData['Accommodation.' + lineNumber],
@@ -177,7 +177,6 @@ class TomaAdapter {
                 occupancy: crsData['Occupancy.' + lineNumber],
                 quantity: crsData['Count.' + lineNumber],
                 travellerAssociation: crsData['TravAssociation.' + lineNumber],
-                marker: crsData['MarkerField.' + lineNumber],
             });
         } while (lineNumber++);
 
@@ -197,6 +196,55 @@ class TomaAdapter {
         } while (lineNumber++);
 
         return travellers;
+    }
+
+    convert(crsData) {
+        crsData.converted = JSON.parse(JSON.stringify(crsData.parsed));
+
+        const crsDataObject = crsData.converted.Envelope.Body.TOM;
+
+        crsDataObject.AgencyNumber = crsData.agencyNumber;
+        crsDataObject.Operator = crsData.operator;
+        crsDataObject.NoOfPersons = crsData.numberOfTravellers;
+        crsDataObject.Traveltype = crsData.travelType;
+        crsDataObject.Remark = crsData.remark;
+
+        this.assignServices(crsData);
+        this.assignTravellers(crsData);
+
+        crsData.build = this.xmlBuilder.build(crsData.converted);
+
+        return crsData;
+    }
+
+    assignServices(crsData) {
+        crsData.normalized.services.forEach((service, index) => {
+            const lineNumber = index + 1;
+
+            crsData.converted['MarkerField.' + lineNumber] = service.marker;
+            crsData.converted['KindOfService.' + lineNumber] = service.type;
+            crsData.converted['ServiceCode.' + lineNumber] = service.code;
+            crsData.converted['Accommodation.' + lineNumber] = service.accommodation;
+            crsData.converted['Occupancy.' + lineNumber] = service.occupancy;
+            crsData.converted['Count.' + lineNumber] = service.quantity;
+            crsData.converted['From.' + lineNumber] = service.fromDate;
+            crsData.converted['To.' + lineNumber] = service.toDate;
+            crsData.converted['TravAssociation.' + lineNumber] = service.travellerAssociation;
+        });
+    }
+
+    assignTravellers(crsData) {
+        crsData.normalized.travellers.forEach((traveller, index) => {
+            const lineNumber = index + 1;
+
+            crsData.converted['Title' + lineNumber] = traveller.title;
+            crsData.converted['Name' + lineNumber] = traveller.name;
+            crsData.converted['Reduction' + lineNumber] = traveller.age;
+        });
+    }
+
+    sendData(crsData) {
+        return this.getConnection().send(crsData.build);
     }
 
     getData() {

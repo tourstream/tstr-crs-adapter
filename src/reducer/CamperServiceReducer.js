@@ -7,14 +7,14 @@ class CamperServiceReducer {
         this.logger = logger;
     }
 
-    reduceIntoCrsData(adapterService, crsData, dataDefinition) {
+    reduceIntoCrsData(adapterService, crsData) {
         const crsService = this.findCrsService(adapterService, crsData) || this.createEmptyService(crsData);
         const pickUpDate = moment(adapterService.pickUpDate, this.config.useDateFormat);
         const dropOffDate = moment(adapterService.dropOffDate, this.config.useDateFormat);
         const pickUpTime = moment(adapterService.pickUpTime, this.config.useTimeFormat);
 
-        crsService.type = dataDefinition.serviceTypes.camper;
-        crsService.marker = adapterService.marked ? 'X' : '';
+        crsService.type = crsData.meta.serviceTypes.camper;
+        crsService.marker = adapterService.marked ? 'X' : void;
 
         // PRT02FS/LIS1-LIS2
         crsService.code = [
@@ -26,16 +26,16 @@ class CamperServiceReducer {
             adapterService.dropOffLocation,
         ].join('');
 
-        crsService.accommodation = pickUpTime.isValid() ? pickUpTime.format(dataDefinition.formats.time) : adapterService.pickUpTime;
+        crsService.accommodation = pickUpTime.isValid() ? pickUpTime.format(crsData.meta.formats.time) : adapterService.pickUpTime;
         crsService.quantity = adapterService.milesIncludedPerDay;
         crsService.occupancy = adapterService.milesPackagesIncluded;
-        crsService.fromDate = pickUpDate.isValid() ? pickUpDate.format(dataDefinition.formats.date) : adapterService.pickUpDate;
-        crsService.toDate = dropOffDate.isValid() ? dropOffDate.format(dataDefinition.formats.date) : adapterService.dropOffDate;
+        crsService.fromDate = pickUpDate.isValid() ? pickUpDate.format(crsData.meta.formats.date) : adapterService.pickUpDate;
+        crsService.toDate = dropOffDate.isValid() ? dropOffDate.format(crsData.meta.formats.date) : adapterService.dropOffDate;
 
         (adapterService.extras || []).forEach((extra) => {
             const service = this.createEmptyService(crsData);
 
-            service.type = dataDefinition.serviceTypes.camperExtra;
+            service.type = crsData.meta.serviceTypes.camperExtra;
             service.code = extra.code;
             service.fromDate = crsService.fromDate;
             service.toDate = crsService.fromDate;
@@ -44,7 +44,7 @@ class CamperServiceReducer {
             ).join('-');
         });
 
-        this.helper.traveller.reduceIntoCrsData(adapterService, crsService, crsData, dataDefinition);
+        this.helper.traveller.reduceIntoCrsData(adapterService, crsService, crsData);
     }
 
     findCrsService(adapterService, crsData) {

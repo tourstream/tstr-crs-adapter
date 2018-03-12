@@ -7,8 +7,8 @@ class AdapterDataReducer {
         this.logger = logger;
     }
 
-    reduceIntoCrsData(adapterData, crsData, dataDefinition) {
-        if (dataDefinition.type === CetsAdapter.type) {
+    reduceIntoCrsData(adapterData, crsData) {
+        if (crsData.meta.type === CetsAdapter.type) {
             return adapterData;
         }
 
@@ -26,7 +26,7 @@ class AdapterDataReducer {
                 return;
             }
 
-            reducer.reduceIntoCrsData(adapterService, crsData, dataDefinition);
+            reducer.reduceIntoCrsData(adapterService, crsData);
         });
 
         // assign auto calculation data (number of travellers)

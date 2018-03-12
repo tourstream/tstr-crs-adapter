@@ -131,18 +131,6 @@ class BewotecExpertAdapter {
         }
     }
 
-    getCrsDataDefinition() {
-        return {
-            serviceTypes: CONFIG.crs.serviceTypes,
-            genderTypes: CONFIG.crs.gender2SalutationMap,
-            formats: {
-                date: CONFIG.crs.dateFormat,
-                time: CONFIG.crs.timeFormat,
-            },
-            type: BewotecExpertAdapter.type,
-        };
-    }
-
     fetchData() {
         return this.getConnection().get().then((response) => {
             const rawData = (response || {}).data || '';
@@ -152,13 +140,24 @@ class BewotecExpertAdapter {
             return {
                 raw: rawData,
                 parsed: parsedData,
-                agencyNumber: crsData.Agency,
-                operator: (crsData[CONFIG.parserOptions.attrPrefix] || {}).operator,
-                numberOfTravellers: crsData.PersonCount,
-                travelType: (crsData[CONFIG.parserOptions.attrPrefix] || {}).traveltype,
-                remark: crsData.Remarks,
-                services: this.collectServices(crsData),
-                travellers: this.collectTravellers(crsData),
+                normalized: {
+                    agencyNumber: crsData.Agency,
+                    operator: (crsData[CONFIG.parserOptions.attrPrefix] || {}).operator,
+                    numberOfTravellers: crsData.PersonCount,
+                    travelType: (crsData[CONFIG.parserOptions.attrPrefix] || {}).traveltype,
+                    remark: crsData.Remarks,
+                    services: this.collectServices(crsData),
+                    travellers: this.collectTravellers(crsData),
+                },
+                meta: {
+                    serviceTypes: CONFIG.crs.serviceTypes,
+                    genderTypes: CONFIG.crs.gender2SalutationMap,
+                    formats: {
+                        date: CONFIG.crs.dateFormat,
+                        time: CONFIG.crs.timeFormat,
+                    },
+                    type: BewotecExpertAdapter.type,
+                },
             };
         });
     }
@@ -168,6 +167,7 @@ class BewotecExpertAdapter {
             let serviceData = service[CONFIG.parserOptions.attrPrefix];
 
             return {
+                marker: service.marker,
                 type: serviceData.requesttype,
                 code: service.servicecode,
                 accommodation: service.accomodation,
@@ -176,7 +176,6 @@ class BewotecExpertAdapter {
                 occupancy: service.occupancy,
                 quantity: service.count,
                 travellerAssociation: service.allocation,
-                marker: service.marker,
             }
         });
     }
@@ -194,61 +193,51 @@ class BewotecExpertAdapter {
     }
 
     convert(crsData) {
-        let crsObject = this.createBaseCrsObject();
-
-        crsObject.rem = [crsData.parsed.ExpertModel.Remarks, crsData.remark].filter(Boolean).join(';');
-        crsObject.r = crsData.traveltype || (crsData[CONFIG.parserOptions.attrPrefix] || {}).traveltype || void 0;
-
-
-
-        const crsDataObject = crsData.parsed.GATE2MX.SendRequest.Import;
-
-        crsDataObject.AgencyNoTouroperator = crsData.agencyNumber;
-        crsDataObject.TourOperator = crsData.operator;
-        crsDataObject.NoOfPersons = crsData.numberOfTravellers;
-        crsDataObject.TravelType = crsData.travelType;
-        crsDataObject.Remarks = crsData.remark;
+        crsData.converted = {
+            a: CONFIG.crs.defaultValues.action,
+            rem: [crsData.parsed.ExpertModel.Remarks, crsData.normalized.remark].filter(Boolean).join(';'),
+            r: crsData.normalized.traveltype || (crsData.parsed[CONFIG.parserOptions.attrPrefix] || {}).traveltype || void 0,
+            p: crsData.normalized.numberOfTravellers || crsData.parsed.PersonCount,
+            g: crsData.normalized.agencyNumber || crsData.parsed.Agency,
+            v: crsData.normalized.operator || (crsData.parsed[CONFIG.parserOptions.attrPrefix] || {}).operator || void 0,
+        };
 
         this.assignServices(crsData);
         this.assignTravellers(crsData);
 
-        crsData.raw = this.xmlBuilder.build(crsData.parsed);
+        crsData.build = crsData.converted;
 
         return crsData;
     }
 
     assignServices(crsData) {
-        crsData.services.forEach((service, index) => {
-            const crsServiceObject = crsData.parsed.GATE2MX.SendRequest.Import.ServiceBlock.ServiceRow[index];
+        crsData.normalized.services.forEach((service, index) => {
+            const lineNumber = CONFIG.crs.lineNumberMap[index];
 
-            crsServiceObject.KindOfService = crsServiceObject.type;
-            crsServiceObject.Service = crsServiceObject.code;
-            crsServiceObject.Accommodation = crsServiceObject.accommodation;
-            crsServiceObject.FromDate = crsServiceObject.fromDate;
-            crsServiceObject.EndDate = crsServiceObject.toDate;
-            crsServiceObject.Occupancy = crsServiceObject.occupancy;
-            crsServiceObject.NoOfServices = crsServiceObject.quantity;
-            crsServiceObject.TravellerAllocation = crsServiceObject.travellerAssociation;
-            crsServiceObject.MarkField = crsServiceObject.marker;
+            crsData.converted['m' + lineNumber] = service.marker;
+            crsData.converted['n' + lineNumber] = service.type;
+            crsData.converted['l' + lineNumber] = service.code;
+            crsData.converted['u' + lineNumber] = service.accommodation;
+            crsData.converted['e' + lineNumber] = service.occupancy;
+            crsData.converted['z' + lineNumber] = service.quantity;
+            crsData.converted['s' + lineNumber] = service.fromDate;
+            crsData.converted['i' + lineNumber] = service.toDate;
+            crsData.converted['d' + lineNumber] = service.travellerAssociation;
         });
     }
 
     assignTravellers(crsData) {
-        crsData.travellers.forEach((traveller, index) => {
-            const crsTravellerObject = crsData.parsed.GATE2MX.SendRequest.Import.TravellerBlock.PersonBlock.PersonRow[index];
+        crsData.normalized.travellers.forEach((traveller, index) => {
+            const lineNumber = CONFIG.crs.lineNumberMap[index];
 
-            crsTravellerObject.Salutation = traveller.title;
-            crsTravellerObject.Name = traveller.name;
-            crsTravellerObject.Age = traveller.age;
+            crsData.converted['ta' + lineNumber] = traveller.title;
+            crsData.converted['tn' + lineNumber] = traveller.name;
+            crsData.converted['te' + lineNumber] = traveller.age;
         });
     }
 
-    sendData(rawCrsData) {
-        return this.getConnection().send(rawCrsData).catch((error) => {
-            this.logger.info(error);
-            this.logger.error('error during transfer - please check the result');
-            throw error;
-        });
+    sendData(crsData) {
+        return this.getConnection().send(crsData.build);
     }
 
     getData() {

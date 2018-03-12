@@ -7,14 +7,14 @@ class CarServiceReducer {
         this.logger = logger;
     }
 
-    reduceIntoCrsData(adapterService, crsData, dataDefinition) {
+    reduceIntoCrsData(adapterService, crsData) {
         const crsService = this.findCrsService(adapterService, crsData) || this.createEmptyService(crsData);
         const pickUpDate = moment(adapterService.pickUpDate, this.config.useDateFormat);
         const dropOffDate = moment(adapterService.dropOffDate, this.config.useDateFormat);
         const pickUpTime = moment(adapterService.pickUpTime, this.config.useTimeFormat);
 
-        crsService.type = dataDefinition.serviceTypes.car;
-        crsService.marker = adapterService.marked ? 'X' : '';
+        crsService.type = crsData.meta.serviceTypes.car;
+        crsService.marker = adapterService.marked ? 'X' : void 0;
 
         // USA96A4/MIA1-TPA
         crsService.code = [
@@ -26,16 +26,16 @@ class CarServiceReducer {
             adapterService.dropOffLocation,
         ].join('');
 
-        crsService.fromDate = pickUpDate.isValid() ? pickUpDate.format(dataDefinition.formats.date) : adapterService.pickUpDate;
-        crsService.toDate = dropOffDate.isValid() ? dropOffDate.format(dataDefinition.formats.date) : adapterService.dropOffDate;
-        crsService.accommodation = pickUpTime.isValid() ? pickUpTime.format(dataDefinition.formats.time) : adapterService.pickUpTime;
+        crsService.fromDate = pickUpDate.isValid() ? pickUpDate.format(crsData.meta.formats.date) : adapterService.pickUpDate;
+        crsService.toDate = dropOffDate.isValid() ? dropOffDate.format(crsData.meta.formats.date) : adapterService.dropOffDate;
+        crsService.accommodation = pickUpTime.isValid() ? pickUpTime.format(crsData.meta.formats.time) : adapterService.pickUpTime;
 
         let hotelName = adapterService.pickUpHotelName || adapterService.dropOffHotelName;
 
         if (hotelName) {
             let hotelService = this.createEmptyService(crsData);
 
-            hotelService.type = dataDefinition.serviceTypes.carExtra;
+            hotelService.type = crsData.meta.serviceTypes.carExtra;
             hotelService.code = hotelName;
             hotelService.fromDate = crsService.fromDate;
             hotelService.toDate = crsService.toDate;
@@ -47,7 +47,7 @@ class CarServiceReducer {
             this.reduceHotelDataToString(adapterService),
         ].filter(Boolean).join(';');
 
-        this.helper.traveller.reduceIntoCrsData(adapterService, crsService, crsData, dataDefinition);
+        this.helper.traveller.reduceIntoCrsData(adapterService, crsService, crsData);
     }
 
     findCrsService(adapterService, crsData) {

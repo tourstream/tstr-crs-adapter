@@ -67,18 +67,6 @@ class TomaSPCAdapter {
         return this.createConnection(options);
     }
 
-    getCrsDataDefinition() {
-        return {
-            serviceTypes: CONFIG.crs.serviceTypes,
-            genderTypes: CONFIG.crs.gender2SalutationMap,
-            formats: {
-                date: CONFIG.crs.dateFormat,
-                time: CONFIG.crs.timeFormat,
-            },
-            type: TomaSPCAdapter.type,
-        };
-    }
-
     fetchData() {
         return this.getCrsObject().then((crsObject) => {
             const rawData = (crsObject || {});
@@ -86,13 +74,24 @@ class TomaSPCAdapter {
             return {
                 raw: rawData,
                 parsed: rawData,
-                agencyNumber: rawData.agencyNumber,
-                operator: rawData.operator,
-                numberOfTravellers: rawData.numTravellers,
-                travelType: rawData.traveltype,
-                remark: rawData.remark,
-                services: this.collectServices(rawData),
-                travellers: this.collectTravellers(rawData),
+                normalized: {
+                    agencyNumber: rawData.agencyNumber,
+                    operator: rawData.operator,
+                    numberOfTravellers: rawData.numTravellers,
+                    travelType: rawData.traveltype,
+                    remark: rawData.remark,
+                    services: this.collectServices(rawData),
+                    travellers: this.collectTravellers(rawData),
+                },
+                meta: {
+                    serviceTypes: CONFIG.crs.serviceTypes,
+                    genderTypes: CONFIG.crs.gender2SalutationMap,
+                    formats: {
+                        date: CONFIG.crs.dateFormat,
+                        time: CONFIG.crs.timeFormat,
+                    },
+                    type: TomaSPCAdapter.type,
+                },
             };
         });
     }
@@ -100,6 +99,7 @@ class TomaSPCAdapter {
     collectServices(crsData) {
         return crsData.services.map((service) => {
             return {
+                marker: service.marker,
                 type: service.serviceType,
                 code: service.serviceCode,
                 accommodation: service.accommodation,
@@ -108,7 +108,6 @@ class TomaSPCAdapter {
                 occupancy: service.occupancy,
                 quantity: service.quantity,
                 travellerAssociation: service.travellerAssociation,
-                marker: service.marker,
             }
         });
     }
@@ -120,6 +119,55 @@ class TomaSPCAdapter {
                 name: traveller.name,
                 age: traveller.discount,
             }
+        });
+    }
+
+    convert(crsData) {
+        crsData.converted = JSON.parse(JSON.stringify(crsData.parsed));
+
+        crsData.converted.agencyNumber = crsData.agencyNumber;
+        crsData.converted.operator = crsData.operator;
+        crsData.converted.numTravellers = crsData.numberOfTravellers;
+        crsData.converted.traveltype = crsData.travelType;
+        crsData.converted.remark = crsData.remark;
+
+        this.assignServices(crsData);
+        this.assignTravellers(crsData);
+
+        crsData.build = crsData.converted;
+
+        return crsData;
+    }
+
+    assignServices(crsData) {
+        crsData.normalized.services.forEach((service, index) => {
+            const crsServiceObject = crsData.converted.GATE2MX.SendRequest.Import.ServiceBlock.ServiceRow[index];
+
+            crsServiceObject.marker = service.marker;
+            crsServiceObject.serviceType = service.type;
+            crsServiceObject.serviceCode = service.code;
+            crsServiceObject.accommodation = service.accommodation;
+            crsServiceObject.fromDate = service.fromDate;
+            crsServiceObject.toDate = service.toDate;
+            crsServiceObject.occupancy = service.occupancy;
+            crsServiceObject.quantity = service.quantity;
+            crsServiceObject.travellerAssociation = service.travellerAssociation;
+        });
+    }
+
+    assignTravellers(crsData) {
+        crsData.normalized.travellers.forEach((traveller, index) => {
+            const crsTravellerObject = crsData.converted.GATE2MX.SendRequest.Import.TravellerBlock.PersonBlock.PersonRow[index];
+
+            crsTravellerObject.title = traveller.title;
+            crsTravellerObject.name = traveller.name;
+            crsTravellerObject.discount = traveller.age;
+        });
+    }
+
+    sendData(crsData) {
+        return this.sendCrsObject(crsData.build).then(() => {
+            this.exit();
         });
     }
 
@@ -146,7 +194,7 @@ class TomaSPCAdapter {
                 this.options.onSetData && this.options.onSetData(crsObject);
             } catch (ignore) {}
 
-            return this.sendData(crsObject).then(() => {
+            return this.sendCrsObject(crsObject).then(() => {
                 return this.exit();
             });
         }).then(null, (error) => {
@@ -291,7 +339,7 @@ class TomaSPCAdapter {
      * @param crsObject
      * @returns {Promise}
      */
-    sendData(crsObject) {
+    sendCrsObject(crsObject) {
         return new Promise((resolve) => {
             this.getConnection().requestService('bookingfile.toma.setData', [crsObject], this.createCallbackObject(resolve, null, 'sending data failed'));
         });
