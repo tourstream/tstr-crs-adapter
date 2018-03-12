@@ -59,13 +59,13 @@ describe('CetsAdapter', () => {
                 '</Request>';
         }
 
-        function createResponseXml(data = '') {
+        function createResponseXml(data = '', catalog = 'DCH') {
             let xml = '<?xml version="1.0" encoding="windows-1252"?>';
 
             return xml + '<Request Version="2.5" From="FTI" To="cets" TermId="CC1937" Window="A" Date="11052017" Time="081635" Type="AVL" SubType="S" Confirm="NO" Agent="549870" Lang="DE" LayoutLang="EN" UserCode="tourCH" UserType="M" UserName="Pan" UserFirstName="Peter" UserMail="peter.pan@tourstream.eu" Source="DPL" Mode="Test" DeepLinkURL="YES">' +
                 '<Fab>' +
                 createFapXml() +
-                '<Catalog>DCH</Catalog>' +
+                '<Catalog>'+ catalog +'</Catalog>' +
                 '<TOCode>FTI</TOCode>' +
                 '<Adults>1</Adults>' +
                 data +
@@ -241,6 +241,55 @@ describe('CetsAdapter', () => {
                         startDate: '02072017',
                         endDate: '09072017',
                         marked: true,
+                    },
+                ],
+            };
+
+            CetsConnection.getXmlRequest.and.returnValue(xml);
+
+            expect(adapter.getData()).toEqual(expectation);
+        });
+
+        it('getData() should return hotel model', () => {
+            let xml = createRequestXml(
+                '<Avl ServiceType="H">' +
+                '<TOCode>FTI</TOCode>' +
+                '<Catalog>TCH</Catalog>' +
+                '<StartDate>02072017</StartDate>' +
+                '<Duration>7</Duration>' +
+                '<Destination>LAX</Destination>' +
+                '<Adults>1</Adults>' +
+                '</Avl>' +
+
+                '<Fah ServiceType="H">' +
+                '<Product>20S</Product>' +
+                '<Program>HOTEL</Program>' +
+                '<Destination>LAX</Destination>' +
+                '<Room>DZ</Room>' +
+                '<Norm>4</Norm>' +
+                '<MaxAdults>2</MaxAdults>' +
+                '<Meal>U</Meal>' +
+                '<StartDate>12122017</StartDate>' +
+                '<Duration>7</Duration>' +
+                '<Persons>1</Persons>' +
+                '</Fah>'
+            );
+
+            let expectation = {
+                operator: 'FTI',
+                agencyNumber: '549870',
+                travelType: 'BAUS',
+                numberOfTravellers: '1',
+                services: [
+                    {
+                        type: 'hotel',
+                        roomCode: 'DZ',
+                        mealCode: 'U',
+                        roomQuantity: '2',
+                        roomOccupancy: '4',
+                        destination: 'LAX20S',
+                        dateFrom: '12122017',
+                        dateTo: '19122017',
                     },
                 ],
             };
@@ -605,7 +654,7 @@ describe('CetsAdapter', () => {
                     '<Birth>3</Birth>' +
                     '</Fap>' +
 
-                    '<Catalog>DCH</Catalog>' +
+                    '<Catalog>360C</Catalog>' +
                     '<TOCode>FTI</TOCode>' +
                     '<Adults>1</Adults>' +
 
@@ -647,7 +696,7 @@ describe('CetsAdapter', () => {
                     '<Duration/>' +
                     '</Fah>';
 
-                let expectedXml = createResponseXml(service);
+                let expectedXml = createResponseXml(service, '360C');
 
                 adapter.setData(data);
 

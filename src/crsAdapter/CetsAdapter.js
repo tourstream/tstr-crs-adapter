@@ -15,7 +15,7 @@ const CONFIG = {
     },
     defaults: {
         personCount: 1,
-        serviceCode: { car: 'MIETW' },
+        serviceCode: {car: 'MIETW'},
         serviceType: {
             car: 'C',
             customerRequest: 'Q',
@@ -44,6 +44,17 @@ const CONFIG = {
         '360': 'BAUS',
         '360C': 'BAUS',
         '360E': 'BAUS',
+    },
+    catalogs2serviceType: {
+        DCH: 'C',
+        TCH: 'H',
+        '360C': 'R'
+    },
+    serviceType2catalog: {
+        C: 'DCH',
+        H: 'TCH',
+        R: '360C',
+        M: '360'
     },
     gender2SalutationMap: {
         male: 'M',
@@ -90,7 +101,7 @@ class CetsAdapter {
                 crsDateFormat: CONFIG.crs.dateFormat,
                 gender2SalutationMap: CONFIG.gender2SalutationMap,
             })),
-            object: new ObjectHelper({ attrPrefix: CONFIG.parserOptions.attrPrefix }),
+            object: new ObjectHelper({attrPrefix: CONFIG.parserOptions.attrPrefix}),
         };
 
         this.xmlParser = {
@@ -320,7 +331,7 @@ class CetsAdapter {
             mealCode: xmlService.Meal,
             roomQuantity: xmlService.MaxAdults,
             roomOccupancy: xmlService.Norm,
-            destination: xmlService.Destination,
+            destination: xmlService.Destination + xmlService.Product,
             dateFrom: startDate.isValid() ? startDate.format(this.options.useDateFormat) : xmlService.StartDate,
             dateTo: endDate.isValid() ? endDate.format(this.options.useDateFormat) : '',
         };
@@ -335,8 +346,8 @@ class CetsAdapter {
      * @returns {*}
      */
     normalizeXmlObject(xmlObject) {
-        const addFabNode = () =>  {
-            let normalizedObject = { Request: {} };
+        const addFabNode = () => {
+            let normalizedObject = {Request: {}};
 
             normalizedObject.Request[CONFIG.parserOptions.attrPrefix] = xmlObject.Request[CONFIG.parserOptions.attrPrefix];
 
@@ -374,6 +385,19 @@ class CetsAdapter {
         return xmlObject;
     }
 
+    detectCatalogChange(xmlObject) {
+        if (!Array.isArray(xmlObject.Request.Fab.Fah) || xmlObject.Request.Fab.Fah.length === 0) return;
+        if (xmlObject.Request.Fab.Fah.length > 1) {
+            xmlObject.Request.Fab.Fah.reduce((previousService, currentService) => {
+                if (currentService[CONFIG.parserOptions.attrPrefix].ServiceType !== previousService[CONFIG.parserOptions.attrPrefix].ServiceType) {
+                    xmlObject.Request.Fab.Catalog = CONFIG.serviceType2catalog.M
+                }
+            });
+        } else if (xmlObject.Request.Fab.Fah[0][CONFIG.parserOptions.attrPrefix].ServiceType != CONFIG.catalogs2serviceType[xmlObject.Request.Fab.Catalog]) {
+            xmlObject.Request.Fab.Catalog = CONFIG.serviceType2catalog[xmlObject.Request.Fab.Fah[0][CONFIG.builderOptions.attrkey].ServiceType];
+        }
+    }
+
     /**
      * @private
      *
@@ -389,13 +413,15 @@ class CetsAdapter {
                             xmlRequest.Fah = xmlRequest.Fah.filter((compareService) => {
                                 return CONFIG.defaults.serviceType.car !== compareService[CONFIG.builderOptions.attrkey].ServiceType;
                             });
-                        } catch (ignore) {}
+                        } catch (ignore) {
+                        }
 
                         try {
                             xmlRequest.Faq = xmlRequest.Faq.filter((compareService) => {
                                 return CONFIG.defaults.serviceType.customerRequest !== compareService[CONFIG.builderOptions.attrkey].ServiceType;
                             });
-                        } catch (ignore) {}
+                        } catch (ignore) {
+                        }
                     }
 
                     break;
@@ -427,9 +453,11 @@ class CetsAdapter {
 
                     break;
                 }
-                default: this.logger.warn('type ' + service.type + ' is not supported by the CETS adapter');
+                default:
+                    this.logger.warn('type ' + service.type + ' is not supported by the CETS adapter');
             }
         });
+        this.detectCatalogChange(xmlObject);
     }
 
     /**
@@ -586,7 +614,7 @@ class CetsAdapter {
             },
             Product: service.destination.substring(3),
             Program: 'HOTEL',
-            Destination: service.destination.substring(0,3),
+            Destination: service.destination.substring(0, 3),
             Room: service.roomCode,
             Norm: service.roomOccupancy,
             MaxAdults: service.roomQuantity,
