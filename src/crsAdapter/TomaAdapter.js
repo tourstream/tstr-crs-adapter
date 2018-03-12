@@ -247,7 +247,7 @@ class TomaAdapter {
                     break;
                 }
                 case CONFIG.crs.serviceTypes.hotel: {
-                    service = this.mapHotelServiceFromXmlObjectToAdapterObject(xmlTom, lineNumber, serviceType);
+                    service = this.mapHotelServiceFromXmlObjectToAdapterObject(xmlTom, lineNumber);
                     break;
                 }
                 case CONFIG.crs.serviceTypes.roundTrip: {
@@ -328,7 +328,7 @@ class TomaAdapter {
      * @param lineNumber number
      * @returns {object}
      */
-    mapHotelServiceFromXmlObjectToAdapterObject(xml, lineNumber, serviceType) {
+    mapHotelServiceFromXmlObjectToAdapterObject(xml, lineNumber) {
         let serviceCodes = (xml['Accommodation.' + lineNumber] || '').split(' ');
         let dateFrom = moment(xml['From.' + lineNumber], CONFIG.crs.dateFormat);
         let dateTo = moment(xml['To.' + lineNumber], CONFIG.crs.dateFormat);
@@ -340,7 +340,7 @@ class TomaAdapter {
             roomOccupancy: xml['Occupancy.' + lineNumber],
             travellers: this.helper.traveller.collectTravellers(
                 xml['TravAssociation.' + lineNumber],
-                (travellerLineNumber) => this.getTravellerByLineNumber(xml, travellerLineNumber, serviceType)
+                (travellerLineNumber) => this.getTravellerByLineNumber(xml, travellerLineNumber, xml['KindOfService.' + lineNumber])
             ),
             destination: xml['ServiceCode.' + lineNumber],
             dateFrom: dateFrom.isValid() ? dateFrom.format(this.options.useDateFormat) : xml['From.' + lineNumber],
