@@ -5,24 +5,14 @@ class TravellerHelper {
         this.config = config;
     }
 
-    normalizeTraveller(traveller = {}, serviceType = '') {
+    normalizeTraveller(traveller = {}) {
         const gender = (traveller.gender || '').toLowerCase();
 
-        switch (serviceType) {
-            case SERVICE_TYPES.hotel:
-                return JSON.parse(JSON.stringify({
-                    salutation: (this.config.gender2SalutationMap || {})[gender] || void 0,
-                    firstName: traveller.firstName,
-                    lastName: traveller.lastName,
-                    age: traveller.age
-                }));
-            default:
-                return JSON.parse(JSON.stringify({
-                    salutation: (this.config.gender2SalutationMap || {})[gender] || void 0,
-                    name: traveller.name,
-                    age: traveller.age,
-                }));
-        }
+        return JSON.parse(JSON.stringify({
+            salutation: (this.config.gender2SalutationMap || {})[gender] || void 0,
+            name: traveller.name,
+            age: traveller.age,
+        }));
     }
 
     collectTravellers(travellerAssociation = '', getTravellerByLineNumber) {

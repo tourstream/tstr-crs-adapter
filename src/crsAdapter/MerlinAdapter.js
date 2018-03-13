@@ -400,26 +400,13 @@ class MerlinAdapter {
             return void 0;
         }
 
-        switch (serviceType) {
-            case CONFIG.crs.serviceTypes.hotel:
-                const travellerName = traveller.Name.split(' ');
-                return {
-                    gender: (Object.entries(CONFIG.crs.gender2SalutationMap).find(
-                        (row) => row[1] === traveller.Salutation
-                    ) || [])[0],
-                    firstName: travellerName[0],
-                    lastName: travellerName[travellerName.length - 1],
-                    age: traveller.Age,
-                };
-            default:
-                return {
-                    gender: (Object.entries(CONFIG.crs.gender2SalutationMap).find(
-                        (row) => row[1] === traveller.Salutation
-                    ) || [])[0],
-                        name: traveller.Name,
-                        age: traveller.Age,
-                };
-        }
+        return {
+            gender: (Object.entries(CONFIG.crs.gender2SalutationMap).find(
+                (row) => row[1] === traveller.Salutation
+            ) || [])[0],
+            name: traveller.Name,
+            age: traveller.Age,
+        };
     }
 
     /**
@@ -681,7 +668,7 @@ class MerlinAdapter {
             let traveller = crsData.TravellerBlock.PersonBlock.PersonRow[travellerIndex];
 
             traveller.Salutation = CONFIG.crs.gender2SalutationMap[serviceTraveller.gender];
-            traveller.Name = serviceTraveller.firstName + ' ' + serviceTraveller.lastName;
+            traveller.Name = serviceTraveller.name;
             traveller.Age = serviceTraveller.age;
         });
     }

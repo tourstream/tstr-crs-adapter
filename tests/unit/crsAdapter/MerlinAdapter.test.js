@@ -274,14 +274,12 @@ describe('MerlinAdapter', () => {
                             travellers: [
                                 {
                                     gender: 'child',
-                                    firstName: 'john',
-                                    lastName: 'doe',
+                                    name: 'john doe',
                                     age: '11'
                                 },
                                 {
                                     gender: 'male',
-                                    firstName: 'john',
-                                    lastName: 'doe',
+                                    name: 'john doe',
                                     age: '30'
                                 },
                             ],
@@ -805,8 +803,8 @@ describe('MerlinAdapter', () => {
                         dateFrom: '23122018',
                         dateTo: '04012019',
                         travellers: [
-                            { firstName: 'john', lastName: 'doe', age: 8, gender: 'child' },
-                            { firstName: 'jane', lastName: 'doe', age: 14, gender: 'child' },
+                            { name: 'john doe', age: 8, gender: 'child' },
+                            { name: 'jane doe', lastName: 'doe', age: 14, gender: 'child' },
                         ],
                     },
                 ],
@@ -870,7 +868,7 @@ describe('MerlinAdapter', () => {
                         dateFrom: '23122018',
                         dateTo: '04012019',
                         travellers: [
-                            { firstName: 'john', lastName: 'doe', age: 11, gender: 'female' },
+                            { name: 'john doe', age: 11, gender: 'female' },
                         ],
                     },
                 ],

@@ -434,39 +434,22 @@ class TomaAdapter {
      * @param lineNumber
      * @returns {*}
      */
-    getTravellerByLineNumber(xml = {}, lineNumber, serviceType = '') {
+    getTravellerByLineNumber(xml = {}, lineNumber) {
         if (!xml['Title.' + lineNumber]) {
             return void 0;
         }
 
-        switch (serviceType) {
-            case CONFIG.crs.serviceTypes.hotel:
-                const travellerName = xml['Name.' + lineNumber].split(' ');
-                return {
-                    gender: Object.entries(CONFIG.crs.gender2SalutationMap).reduce(
-                        (reduced, current) => {
-                            reduced[current[1]] = reduced[current[1]] || current[0];
-                            return reduced;
-                        },
-                        {}
-                    )[xml['Title.' + lineNumber]],
-                    firstName: travellerName[0],
-                    lastName: travellerName.length - 1 ? travellerName[travellerName.length - 1] : '',
-                    age: xml['Reduction.' + lineNumber],
-                };
-            default:
-                return {
-                    gender: Object.entries(CONFIG.crs.gender2SalutationMap).reduce(
-                        (reduced, current) => {
-                            reduced[current[1]] = reduced[current[1]] || current[0];
-                            return reduced;
-                        },
-                        {}
-                    )[xml['Title.' + lineNumber]],
-                    name: xml['Name.' + lineNumber],
-                    age: xml['Reduction.' + lineNumber],
-                };
-        }
+        return {
+            gender: Object.entries(CONFIG.crs.gender2SalutationMap).reduce(
+                (reduced, current) => {
+                    reduced[current[1]] = reduced[current[1]] || current[0];
+                    return reduced;
+                },
+                {}
+            )[xml['Title.' + lineNumber]],
+            name: xml['Name.' + lineNumber],
+            age: xml['Reduction.' + lineNumber],
+        };
     }
 
     /**
@@ -717,7 +700,7 @@ class TomaAdapter {
             travellerLineNumber = this.getNextEmptyTravellerLineNumber(xml);
 
             xml['Title.' + travellerLineNumber] = CONFIG.crs.gender2SalutationMap.child;
-            xml['Name.' + travellerLineNumber] = traveller.firstName + ' ' + traveller.lastName;
+            xml['Name.' + travellerLineNumber] = traveller.name;
             xml['Reduction.' + travellerLineNumber] = traveller.age;
         });
     }

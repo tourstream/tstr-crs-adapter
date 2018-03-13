@@ -413,41 +413,24 @@ class TrafficsTbmAdapter {
      * @param lineNumber
      * @returns {*}
      */
-    getTravellerByLineNumber(travellers = [], lineNumber, serviceType = '') {
+    getTravellerByLineNumber(travellers = [], lineNumber) {
         let traveller = travellers[lineNumber - 1];
 
         if (!traveller) {
             return void 0;
         }
 
-        switch (serviceType) {
-            case CONFIG.crs.serviceTypes.hotel:
-                const travellerName = traveller['$'].sur.split(' ');
-                return {
-                    gender: Object.entries(CONFIG.crs.gender2SalutationMap).reduce(
-                        (reduced, current) => {
-                            reduced[current[1]] = reduced[current[1]] || current[0];
-                            return reduced;
-                        },
-                        {}
-                    )[traveller['$'].typ],
-                    firstName: travellerName[0],
-                    lastName: travellerName.length - 1 ? travellerName[travellerName.length - 1] : '',
-                    age: traveller['$'].age,
-                };
-            default:
-                return {
-                    gender: Object.entries(CONFIG.crs.gender2SalutationMap).reduce(
-                        (reduced, current) => {
-                            reduced[current[1]] = reduced[current[1]] || current[0];
-                            return reduced;
-                        },
-                        {}
-                    )[traveller['$'].typ],
-                    name: traveller['$'].sur,
-                    age: traveller['$'].age,
-                };
-        }
+        return {
+            gender: Object.entries(CONFIG.crs.gender2SalutationMap).reduce(
+                (reduced, current) => {
+                    reduced[current[1]] = reduced[current[1]] || current[0];
+                    return reduced;
+                },
+                {}
+            )[traveller['$'].typ],
+            name: traveller['$'].sur,
+            age: traveller['$'].age,
+        };
     }
 
     /**
@@ -648,7 +631,7 @@ class TrafficsTbmAdapter {
             let travellerIndex = this.getNextEmptyTravellerLineIndex(crsObject);
 
             crsObject['TbmXml.admin.travellers.traveller.' + travellerIndex + '.$.typ'] = CONFIG.crs.gender2SalutationMap[traveller.gender];
-            crsObject['TbmXml.admin.travellers.traveller.' + travellerIndex + '.$.sur'] = traveller.firstName + ' ' + traveller.lastName;
+            crsObject['TbmXml.admin.travellers.traveller.' + travellerIndex + '.$.sur'] = traveller.name;
             crsObject['TbmXml.admin.travellers.traveller.' + travellerIndex + '.$.age'] = traveller.age;
         });
     }

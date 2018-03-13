@@ -227,14 +227,12 @@ describe('TomaAdapter', () => {
                 travellers: [
                     {
                         gender: 'child',
-                        firstName: 'child',
-                        lastName: '1',
+                        name: 'child 1',
                         age: '13',
                     },
                     {
                         gender: 'male',
-                        firstName: 'John',
-                        lastName: '',
+                        name: 'John',
                         age: '42',
                     }
                 ],
@@ -614,8 +612,7 @@ describe('TomaAdapter', () => {
                             dateFrom: '10022018',
                             dateTo: '15022018',
                             travellers: [{
-                                firstName: 'child',
-                                lastName: '1',
+                                name: 'child 1',
                                 gender: 'child',
                                 age: 13,
                             }],

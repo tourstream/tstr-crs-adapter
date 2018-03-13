@@ -347,8 +347,7 @@ describe('TrafficsTbmAdapter', () => {
                     roomOccupancy: 3,
                     travellers: [{
                         gender: 'child',
-                        firstName: 'jake',
-                        lastName: '',
+                        name: 'jake',
                         age: '4'
                     }],
                     destination: 'dest',
@@ -400,8 +399,7 @@ describe('TrafficsTbmAdapter', () => {
                     travellers: [
                         {
                             gender: 'male',
-                            firstName: 'john',
-                            lastName: '',
+                            name: 'john',
                             age: '44'
                         }],
                     type: SERVICE_TYPES.hotel,
@@ -852,8 +850,7 @@ describe('TrafficsTbmAdapter', () => {
                         roomOccupancy: 1,
                         travellers: [
                             {
-                                firstName: 'jake',
-                                lastName: 'doe',
+                                name: 'jake doe',
                                 gender: 'female',
                                 age: 7
                             },
@@ -871,14 +868,12 @@ describe('TrafficsTbmAdapter', () => {
                         dateTo: '08012018',
                         travellers: [
                             {
-                                firstName: 'john',
-                                lastName: 'doe',
+                                name: 'john doe',
                                 gender: 'female',
                                 age: 8
                             },
                             {
-                                firstName: 'jane',
-                                lastName: 'doe',
+                                name: 'jane doe',
                                 gender: 'male',
                                 age: 14
                             },

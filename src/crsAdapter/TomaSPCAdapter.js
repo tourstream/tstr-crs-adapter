@@ -518,26 +518,13 @@ class TomaSPCAdapter {
             return void 0;
         }
 
-        switch (serviceType) {
-            case CONFIG.crs.serviceTypes.hotel:
-                const travellerName = traveller.name.split(' ');
-                return {
-                    gender: (Object.entries(CONFIG.crs.gender2SalutationMap).find(
-                        (row) => row[1] === traveller.title
-                    ) || [])[0],
-                    firstName: travellerName[0],
-                    lastName: travellerName[travellerName.length - 1],
-                    age: traveller.discount,
-                };
-            default:
-                return {
-                    gender: (Object.entries(CONFIG.crs.gender2SalutationMap).find(
-                        (row) => row[1] === traveller.title
-                    ) || [])[0],
-                    name: traveller.name,
-                    age: traveller.discount,
-                };
-        }
+        return {
+            gender: (Object.entries(CONFIG.crs.gender2SalutationMap).find(
+                (row) => row[1] === traveller.title
+            ) || [])[0],
+            name: traveller.name,
+            age: traveller.discount,
+        };
     }
 
     /**
@@ -792,7 +779,7 @@ class TomaSPCAdapter {
             let traveller = crsObject.travellers[travellerIndex];
 
             traveller.title = CONFIG.crs.gender2SalutationMap[serviceTraveller.gender];
-            traveller.name = serviceTraveller.firstName + ' ' + serviceTraveller.lastName;
+            traveller.name = serviceTraveller.name;
             traveller.discount = serviceTraveller.age;
         });
     }

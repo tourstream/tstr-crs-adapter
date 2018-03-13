@@ -1,7 +1,7 @@
 import es6shim from 'es6-shim';
 import moment from 'moment';
 import axios from 'axios';
-import { SERVICE_TYPES, CRS_TYPES } from '../UbpCrsAdapter';
+import {SERVICE_TYPES, CRS_TYPES} from '../UbpCrsAdapter';
 import querystring from 'querystring';
 import TravellerHelper from '../helper/TravellerHelper';
 import RoundTripHelper from '../helper/RoundTripHelper';
@@ -170,7 +170,8 @@ class BewotecExpertAdapter {
 
             try {
                 this.options.onSetData && this.options.onSetData(crsObject);
-            } catch (ignore) {}
+            } catch (ignore) {
+            }
 
             return this.getConnection().send(crsObject).catch((error) => {
                 this.logger.info(error);
@@ -215,11 +216,11 @@ class BewotecExpertAdapter {
                 }
 
                 const baseUrl = CONFIG.crs.connectionUrl + '/expert';
-                const params = { token: options.token };
+                const params = {token: options.token};
 
                 if (!this.isProtocolSameAs('https')) {
                     // does not work well - when the Expert mask is "empty" we get a 404 back
-                    return axios.get(baseUrl, { params: params }).then(null, () => {
+                    return axios.get(baseUrl, {params: params}).then(null, () => {
                         return Promise.resolve();
                     });
                 }
@@ -258,7 +259,7 @@ class BewotecExpertAdapter {
                 const params = extendSendData(data);
 
                 if (!this.isProtocolSameAs('https')) {
-                    return axios.get(baseUrl, { params: params });
+                    return axios.get(baseUrl, {params: params});
                 }
 
                 this.logger.warn('HTTPS detected - will use dataBridge for data transfer');
@@ -267,7 +268,8 @@ class BewotecExpertAdapter {
                 const sendWindow = this.helper.window.open(url, '_blank', 'height=200,width=200');
 
                 if (sendWindow) {
-                    while (!sendWindow.document) {}
+                    while (!sendWindow.document) {
+                    }
 
                     sendWindow.close();
 
@@ -340,7 +342,7 @@ class BewotecExpertAdapter {
 
             let service;
 
-            switch(serviceData.requesttype) {
+            switch (serviceData.requesttype) {
                 case CONFIG.crs.serviceTypes.car: {
                     service = this.mapCarServiceFromCrsObjectToAdapterObject(serviceData);
                     break;
@@ -438,7 +440,7 @@ class BewotecExpertAdapter {
             roomOccupancy: crsService.occupancy,
             travellers: this.helper.traveller.collectTravellers(
                 crsService.allocation,
-                (lineNumber) => this.getTravellerByLineNumber(crsObject.Travellers.Traveller, lineNumber, crsService.requesttype)
+                (lineNumber) => this.getTravellerByLineNumber(crsObject.Travellers.Traveller, lineNumber)
             ),
             destination: crsService.servicecode,
             dateFrom: dateFrom.isValid() ? dateFrom.format(this.options.useDateFormat) : crsService.start,
@@ -467,7 +469,7 @@ class BewotecExpertAdapter {
             endDate: endDate.isValid() ? endDate.format(this.options.useDateFormat) : crsService.end,
             travellers: this.helper.traveller.collectTravellers(
                 crsService.allocation,
-                (lineNumber) => this.getTravellerByLineNumber(crsObject.Travellers.Traveller, lineNumber, crsService.requesttype)
+                (lineNumber) => this.getTravellerByLineNumber(crsObject.Travellers.Traveller, lineNumber)
             )
         };
     }
@@ -531,40 +533,23 @@ class BewotecExpertAdapter {
      * @param lineNumber
      * @returns {*}
      */
-    getTravellerByLineNumber(travellers = [], lineNumber , serviceType) {
+    getTravellerByLineNumber(travellers = [], lineNumber) {
         let traveller = (travellers[lineNumber - 1] || {})[CONFIG.parserOptions.attrPrefix];
 
         if (!traveller || !traveller.name) {
             return void 0;
         }
-        switch (serviceType) {
-            case CONFIG.crs.serviceTypes.hotel:
-                const travellerName = traveller.name.split(' ');
-                return {
-                    gender: Object.entries(CONFIG.crs.gender2SalutationMap).reduce(
-                        (reduced, current) => {
-                            reduced[current[1]] = reduced[current[1]] || current[0];
-                            return reduced;
-                        },
-                        {}
-                    )[traveller.salutation],
-                    firstName: travellerName[0],
-                    lastName: travellerName[travellerName.length - 1],
-                    age: traveller.age,
-                };
-            default:
-                return {
-                    gender: Object.entries(CONFIG.crs.gender2SalutationMap).reduce(
-                        (reduced, current) => {
-                            reduced[current[1]] = reduced[current[1]] || current[0];
-                            return reduced;
-                        },
-                        {}
-                    )[traveller.salutation],
-                    name: traveller.name,
-                    age: traveller.age,
-                };
-        }
+        return {
+            gender: Object.entries(CONFIG.crs.gender2SalutationMap).reduce(
+                (reduced, current) => {
+                    reduced[current[1]] = reduced[current[1]] || current[0];
+                    return reduced;
+                },
+                {}
+            )[traveller.salutation],
+            name: traveller.name,
+            age: traveller.age,
+        };
     }
 
     /**
@@ -578,7 +563,7 @@ class BewotecExpertAdapter {
             return true;
         }
 
-        switch(serviceType) {
+        switch (serviceType) {
             case SERVICE_TYPES.car:
             case SERVICE_TYPES.camper: {
                 let serviceCode = crsService.servicecode;
@@ -608,7 +593,7 @@ class BewotecExpertAdapter {
         this.assignBasicData(crsObject, dataObject);
 
         (dataObject.services || []).forEach((service) => {
-            let markedLineIndex= this.getMarkedLineIndexForService(crsObject, service);
+            let markedLineIndex = this.getMarkedLineIndexForService(crsObject, service);
             let lineIndex = markedLineIndex === void 0 ? this.getNextEmptyServiceLineIndex(crsObject) : markedLineIndex;
 
             switch (service.type) {
@@ -785,12 +770,12 @@ class BewotecExpertAdapter {
         }
 
         service.travellers.forEach((ServiceTraveller) => {
-            const traveller = this.helper.traveller.normalizeTraveller(ServiceTraveller, SERVICE_TYPES.hotel);
+            const traveller = this.helper.traveller.normalizeTraveller(ServiceTraveller);
             let travellerIndex = this.getNextEmptyTravellerLineIndex(crsObject);
             let travellerNumber = CONFIG.crs.lineNumberMap[travellerIndex];
 
             crsObject['ta' + travellerNumber] = traveller.salutation;
-            crsObject['tn' + travellerNumber] = traveller.firstName + ' ' + traveller.lastName;
+            crsObject['tn' + travellerNumber] = traveller.name;
             crsObject['te' + travellerNumber] = traveller.age;
         });
     }

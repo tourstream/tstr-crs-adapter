@@ -730,13 +730,11 @@ describe('CetsAdapter', () => {
                             travellers: [
                                 {
                                     gender: 'female',
-                                    firstName: 'Jane',
-                                    lastName: 'Doe'
+                                    name: 'Jane Doe',
                                 },
                                 {
                                     gender: 'child',
-                                    firstName: 'Joe',
-                                    lastName: 'Doe',
+                                    name: 'Joe Doe',
                                 }
                             ],
                         },

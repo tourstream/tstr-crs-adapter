@@ -339,14 +339,12 @@ describe('TomaSPCAdapter', () => {
                         travellers: [
                             {
                                 gender: 'child',
-                                firstName: 'john',
-                                lastName: 'doe',
+                                name: 'john doe',
                                 age: '13'
                             },
                             {
                                 gender: 'child',
-                                firstName: 'jane',
-                                lastName: 'doe',
+                                name: 'jane doe',
                                 age: '9'
                             },
                         ],
@@ -934,14 +932,12 @@ describe('TomaSPCAdapter', () => {
                         dateTo: '08012018',
                         travellers: [
                             {
-                                firstName: 'john',
-                                lastName: 'doe',
+                                name: 'john doe',
                                 age: 8,
                                 gender: 'male'
                             },
                             {
-                                firstName: 'jane',
-                                lastName: 'doe',
+                                name: 'jane doe',
                                 age: 14,
                                 gender: 'female'
                             },
