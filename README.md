@@ -182,7 +182,7 @@ CosmoNaut  | X     | X     | X         | X
 |         | .destination   | 'LAX20S' 
 |         | .dateFrom      | '20092017' 
 |         | .dateTo        | '20092017' 
-|         | .travellers    | [ { gender: \<gender\>, firstName: 'john', lastName: 'doe', age: '32' }, ... ]
+|         | .travellers    | [ { gender: _-gender-_, firstName: 'john', lastName: 'doe', age: '32' }, ... ]
 
 | type      | fields              | example
 | :---      | :---                | :---

@@ -1,10 +1,11 @@
 import CetsAdapter from '../crsAdapter/CetsAdapter';
 
 class CrsDataMapper {
-    constructor(logger, config, mapper) {
+    constructor(logger, config, mapper, helpers) {
         this.config = config;
         this.mapper = mapper;
         this.logger = logger;
+        this.helpers = helpers;
     }
 
     mapToAdapterData(crsData) {
@@ -18,14 +19,14 @@ class CrsDataMapper {
     mapFromGermanCrs(crsData) {
         const adapterData = {};
 
-        adapterData.agencyNumber = crsData.agencyNumber;
-        adapterData.operator = crsData.operator;
-        adapterData.numberOfTravellers = crsData.numberOfTravellers;
-        adapterData.travelType = crsData.travelType;
-        adapterData.remark = crsData.remark;
+        adapterData.agencyNumber = crsData.normalized.agencyNumber;
+        adapterData.operator = crsData.normalized.operator;
+        adapterData.numberOfTravellers = crsData.normalized.numberOfTravellers;
+        adapterData.travelType = crsData.normalized.travelType;
+        adapterData.remark = crsData.normalized.remark;
         adapterData.services = [];
 
-        crsData.services.forEach((crsService) => {
+        crsData.normalized.services.forEach((crsService) => {
             const mapper = this.mapper[crsService.type];
 
             if (!mapper) {
@@ -35,46 +36,12 @@ class CrsDataMapper {
 
             const adapterService = mapper.mapToAdapterService(crsService, crsData.meta);
 
-            adapterService.travellers = this.filterTravellers(
-                crsData.travellers, crsService.travellerAssociation, crsData.meta
-            );
+            adapterService.travellers = this.helpers.traveller.mapToAdapterTravellers(crsService, crsData);
 
             adapterData.services.push(adapterService);
         });
 
         return adapterData;
-    }
-
-    // todo: move to own helper/mapper/???
-    filterTravellers(crsTravellers, travellerAssociation, dataDefinition) {
-        const travellers = [];
-
-        const startTravellerId = +travellerAssociation.split('-').shift();
-        const endTravellerId = +travellerAssociation.split('-').pop();
-
-        if (!startTravellerId) {
-            return travellers;
-        }
-
-        const genderMap = {};
-
-        Object.entries(dataDefinition.genderTypes).forEach((entry) => {
-            genderMap[entry[1]] = genderMap[entry[1]] || entry[0];
-        });
-
-        let counter = 0;
-
-        do {
-            const traveller = crsTravellers[startTravellerId + counter];
-
-            travellers.push({
-                gender: genderMap[traveller.title],
-                name: traveller.name,
-                age: traveller.age,
-            });
-        } while (++counter + startTravellerId <= endTravellerId);
-
-        return travellers;
     }
 }
 

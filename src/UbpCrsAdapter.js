@@ -172,16 +172,26 @@ class UbpCrsAdapter {
                     this.logger.info('PARSED CRS DATA:');
                     this.logger.info(crsData.parsed);
 
-                    const mapper = {
-                        [metaData.serviceTypes.car]: new CarServiceMapper(this.logger, this.options, new VehicleHelper(this.options)),
-                        [metaData.serviceTypes.hotel]: new HotelServiceMapper(this.logger, this.options, new HotelHelper(this.options)),
-                        [metaData.serviceTypes.roundTrip]: new RoundTripServiceMapper(this.logger, this.options, new RoundTripHelper(this.options)),
-                        [metaData.serviceTypes.camper]: new CamperServiceMapper(this.logger, this.options, new VehicleHelper(this.options)),
+                    const helper = {
+                        vehicle: new VehicleHelper(this.options),
+                        roundTrip: new RoundTripHelper(this.options),
+                        hotel: new HotelHelper(this.options),
+                        traveller: new TravellerHelper(this.options),
                     };
-                    const dataMapper = new CrsDataMapper(this.logger, this.options, mapper);
-                    const adapterData = dataMapper.mapToAdapterData(crsData);
 
-                    resolve(JSON.parse(JSON.stringify(adapterData)));
+                    const mapper = {
+                        [metaData.serviceTypes.car]: new CarServiceMapper(this.logger, this.options, helper.vehicle),
+                        [metaData.serviceTypes.hotel]: new HotelServiceMapper(this.logger, this.options, helper.hotel),
+                        [metaData.serviceTypes.roundTrip]: new RoundTripServiceMapper(this.logger, this.options, helper.roundTrip),
+                        [metaData.serviceTypes.camper]: new CamperServiceMapper(this.logger, this.options, helper.vehicle),
+                    };
+                    const dataMapper = new CrsDataMapper(this.logger, this.options, mapper, helper);
+                    const adapterData = JSON.parse(JSON.stringify(dataMapper.mapToAdapterData(crsData)));
+
+                    this.logger.info('ADAPTER DATA:');
+                    this.logger.info(adapterData);
+
+                    resolve(adapterData);
                 }, (error) => {
                     this.logAndThrow('[.fetchData] ', error);
                 });
@@ -204,6 +214,8 @@ class UbpCrsAdapter {
                 const adapterInstance = this.getAdapterInstance();
 
                 adapterInstance.fetchData().then((crsData) => {
+                    adapterData.services = adapterData.services || [];
+
                     const helper = {
                         vehicle: new VehicleHelper(this.options),
                         roundTrip: new RoundTripHelper(this.options),
@@ -216,8 +228,7 @@ class UbpCrsAdapter {
                         [SERVICE_TYPES.roundTrip]: new RoundTripServiceReducer(this.logger, this.options, helper),
                         [SERVICE_TYPES.camper]: new CamperServiceReducer(this.logger, this.options, helper),
                     };
-                    const dataReducer = new AdapterDataReducer(this.logger, this.options, reducer);
-
+                    const dataReducer = new AdapterDataReducer(this.logger, this.options, reducer, helper);
                     const reducedData = dataReducer.reduceIntoCrsData(adapterData, crsData);
                     const convertedData = adapterInstance.convert(reducedData);
 
@@ -232,13 +243,13 @@ class UbpCrsAdapter {
                     } catch (ignore) {}
 
                     adapterInstance.sendData(convertedData).then(resolve, (error) => {
-                        this.logAndThrow('[.sendData] ', error);
+                        this.logAndThrow('[.sendData] error', error);
                     });
                 }, (error) => {
-                    this.logAndThrow('[.fetchData] ', error);
+                    this.logAndThrow('[.fetchData] error', error);
                 });
             } catch (error) {
-                this.logAndThrow('[.setData] ', error);
+                this.logAndThrow('[.setData] error', error);
             }
         });
     }

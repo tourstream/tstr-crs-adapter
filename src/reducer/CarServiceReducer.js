@@ -41,8 +41,8 @@ class CarServiceReducer {
             hotelService.toDate = crsService.toDate;
         }
 
-        crsData.remark = [
-            crsData.remark,
+        crsData.normalized.remark = [
+            crsData.normalized.remark,
             adapterService.extras.filter(Boolean).join(','),
             this.reduceHotelDataToString(adapterService),
         ].filter(Boolean).join(';');
@@ -51,8 +51,8 @@ class CarServiceReducer {
     }
 
     findCrsService(adapterService, crsData) {
-        return crsData.services.find((crsService) => {
-            if (crsService.type !== adapterService.type) {
+        return crsData.normalized.services.find((crsService) => {
+            if (crsService.type !== crsData.meta.serviceTypes[adapterService.type]) {
                 return false;
             }
 
@@ -63,7 +63,7 @@ class CarServiceReducer {
     createEmptyService(crsData) {
         const service = {};
 
-        crsData.services.push(service);
+        crsData.normalized.services.push(service);
 
         return service;
     }

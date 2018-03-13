@@ -169,13 +169,13 @@ class BewotecExpertAdapter {
             return {
                 marker: service.marker,
                 type: serviceData.requesttype,
-                code: service.servicecode,
-                accommodation: service.accomodation,
-                fromDate: service.start,
-                toDate: service.end,
-                occupancy: service.occupancy,
-                quantity: service.count,
-                travellerAssociation: service.allocation,
+                code: serviceData.servicecode,
+                accommodation: serviceData.accomodation,
+                fromDate: serviceData.start,
+                toDate: serviceData.end,
+                occupancy: serviceData.occupancy,
+                quantity: serviceData.count,
+                travellerAssociation: serviceData.allocation,
             }
         });
     }
@@ -328,7 +328,9 @@ class BewotecExpertAdapter {
 
                 if (!this.isProtocolSameAs('https')) {
                     // does not work well - when the Expert mask is "empty" we get a 404 back
-                    return axios.get(baseUrl, {params: params}).then(null, () => {
+                    return axios.get(baseUrl, {params: params}).then(null, (error) => {
+                        this.logger.error(error.message);
+                        this.logger.error(error);
                         return Promise.resolve();
                     });
                 }
@@ -341,6 +343,7 @@ class BewotecExpertAdapter {
                             return;
                         }
 
+                        this.logger.info('received data from bewotec data bridge: ');
                         this.logger.info(message.data);
 
                         if (message.data.error) {
@@ -348,8 +351,6 @@ class BewotecExpertAdapter {
 
                             return reject(new Error(message.data.error));
                         }
-
-                        this.logger.info('received data from bewotec data bridge: ');
 
                         return resolve(message.data);
                     }, false);

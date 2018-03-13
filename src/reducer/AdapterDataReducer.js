@@ -1,10 +1,11 @@
 import CetsAdapter from '../crsAdapter/CetsAdapter';
 
 class AdapterDataReducer {
-    constructor(logger, config, reducer) {
+    constructor(logger, config, reducer, helpers) {
         this.config = config;
         this.reducer = reducer;
         this.logger = logger;
+        this.helpers = helpers;
     }
 
     reduceIntoCrsData(adapterData, crsData) {
@@ -12,11 +13,11 @@ class AdapterDataReducer {
             return adapterData;
         }
 
-        crsData.agencyNumber = adapterData.agencyNumber || crsData.agencyNumber;
-        crsData.operator = adapterData.operator || crsData.operator;
-        crsData.numberOfTravellers = adapterData.numberOfTravellers || crsData.numberOfTravellers;
-        crsData.travelType = adapterData.travelType || crsData.travelType;
-        crsData.remark = adapterData.remark || crsData.remark;
+        crsData.normalized.agencyNumber = adapterData.agencyNumber || crsData.normalized.agencyNumber;
+        crsData.normalized.operator = adapterData.operator || crsData.normalized.operator;
+        crsData.normalized.numberOfTravellers = adapterData.numberOfTravellers || crsData.normalized.numberOfTravellers;
+        crsData.normalized.travelType = adapterData.travelType || crsData.normalized.travelType;
+        crsData.normalized.remark = adapterData.remark || crsData.normalized.remark;
 
         adapterData.services.forEach((adapterService) => {
             const reducer = this.reducer[adapterService.type];
@@ -29,7 +30,13 @@ class AdapterDataReducer {
             reducer.reduceIntoCrsData(adapterService, crsData);
         });
 
-        // assign auto calculation data (number of travellers)
+        crsData.normalized.numberOfTravellers = Math.max(
+            +crsData.normalized.numberOfTravellers || 0,
+            +adapterData.numberOfTravellers || 0,
+            (crsData.normalized.travellers || []).length,
+            this.helpers.traveller.calculateNumberOfTravellers(crsData),
+            1
+        );
 
         return crsData;
     }

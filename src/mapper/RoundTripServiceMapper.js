@@ -19,18 +19,10 @@ class RoundTripServiceMapper {
             endDate: endDate.isValid() ? endDate.format(this.config.useDateFormat) : crsService.toDate,
         };
 
-        adapterService.marked = this.isMarked(crsService);
+        adapterService.marked = this.helper.isServiceMarked(crsService);
         adapterService.type = SERVICE_TYPES.roundTrip;
 
         return adapterService;
-    }
-
-    isMarked(crsService) {
-        if (crsService.marker) {
-            return true;
-        }
-
-        return this.helper.isServiceMarked(crsService);
     }
 }
 

@@ -4,6 +4,10 @@ class RoundTripHelper {
     }
 
     isServiceMarked(service) {
+        if (service.marker) {
+            return true;
+        }
+
         return !service.code || service.code.indexOf(service.bookingId) > -1;
     }
 }
