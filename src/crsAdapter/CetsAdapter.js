@@ -633,7 +633,7 @@ class CetsAdapter {
 
         service.travellers.forEach((serviceTraveller, index) => {
             const traveller = this.helper.traveller.normalizeTraveller(serviceTraveller);
-
+            
             const travellerName = traveller.name.split(' ');
             xml.Fap.push({
                 [CONFIG.builderOptions.attrkey]: {
@@ -641,7 +641,7 @@ class CetsAdapter {
                 },
                 PersonType: traveller.salutation,
                 Name: travellerName[0] + ' ' + travellerName[1],
-                FirstName: traveller.name.split(' ')[0],
+                FirstName: travellerName[0],
             });
 
             xml.Fah[xml.Fah.length - 1].Persons = (xml.Fah[xml.Fah.length - 1].Persons || '') + (index + 1);
