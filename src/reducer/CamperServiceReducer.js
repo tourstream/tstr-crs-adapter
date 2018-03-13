@@ -14,7 +14,7 @@ class CamperServiceReducer {
         const pickUpTime = moment(adapterService.pickUpTime, this.config.useTimeFormat);
 
         crsService.type = crsData.meta.serviceTypes.camper;
-        crsService.marker = adapterService.marked ? 'X' : void;
+        crsService.marker = adapterService.marked ? 'X' : void 0;
 
         // PRT02FS/LIS1-LIS2
         crsService.code = [
@@ -34,12 +34,13 @@ class CamperServiceReducer {
 
         (adapterService.extras || []).forEach((extra) => {
             const service = this.createEmptyService(crsData);
+            const startAssociation = this.helper.traveller.calculateStartAssociation(service, crsData);
 
             service.type = crsData.meta.serviceTypes.camperExtra;
             service.code = extra.code;
             service.fromDate = crsService.fromDate;
             service.toDate = crsService.fromDate;
-            service.travellerAssociation = ['1', extra.amount].filter(
+            service.travellerAssociation = [startAssociation, startAssociation + +extra.amount - 1].filter(
                 (value, index, array) => array.indexOf(value) === index
             ).join('-');
         });
@@ -48,8 +49,8 @@ class CamperServiceReducer {
     }
 
     findCrsService(adapterService, crsData) {
-        return crsData.services.find((crsService) => {
-            if (crsService.type !== adapterService.type) {
+        return crsData.normalized.services.find((crsService) => {
+            if (crsService.type !== crsData.meta.serviceTypes[adapterService.type]) {
                 return false;
             }
 
@@ -60,7 +61,7 @@ class CamperServiceReducer {
     createEmptyService(crsData) {
         const service = {};
 
-        crsData.services.push(service);
+        crsData.normalized.services.push(service);
 
         return service;
     }

@@ -8,6 +8,10 @@ class VehicleHelper {
     }
 
     isServiceMarked(service) {
+        if (service.marker) {
+            return true;
+        }
+
         // gaps in the regEx result array will result in lined up "." after the join
         return !service.code || service.code.match(CONFIG.serviceCodeRegEx).join('.').indexOf('..') !== -1;
     }

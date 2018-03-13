@@ -13,6 +13,10 @@ class HotelHelper {
     }
 
     isServiceMarked(service) {
+        if (service.marker) {
+            return true;
+        }
+
         return !service.code || !service.accommodation;
     }
 }

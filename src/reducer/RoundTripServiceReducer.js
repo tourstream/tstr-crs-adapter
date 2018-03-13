@@ -24,8 +24,8 @@ class RoundTripServiceReducer {
     }
 
     findCrsService(adapterService, crsData) {
-        return crsData.services.find((crsService) => {
-            if (crsService.type !== adapterService.type) {
+        return crsData.normalized.services.find((crsService) => {
+            if (crsService.type !== crsData.meta.serviceTypes[adapterService.type]) {
                 return false;
             }
 
@@ -40,7 +40,7 @@ class RoundTripServiceReducer {
     createEmptyService(crsData) {
         const service = {};
 
-        crsData.services.push(service);
+        crsData.normalized.services.push(service);
 
         return service;
     }

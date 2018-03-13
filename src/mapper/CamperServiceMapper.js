@@ -27,18 +27,10 @@ class CamperServiceMapper {
         adapterService.pickUpLocation = serviceCodeDetails.pickUpLocation;
         adapterService.dropOffLocation = serviceCodeDetails.dropOffLocation;
 
-        adapterService.marked = this.isMarked(crsService);
+        adapterService.marked = this.helper.isServiceMarked(crsService);
         adapterService.type = SERVICE_TYPES.camper;
 
         return adapterService;
-    }
-
-    isMarked(crsService) {
-        if (crsService.marker) {
-            return true;
-        }
-
-        return this.helper.isServiceMarked(crsService);
     }
 }
 

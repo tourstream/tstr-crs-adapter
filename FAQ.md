@@ -50,3 +50,12 @@ It gets the data directly as "raw" format.
 
 Unfortunately this is an issue of the IE. It prevents opening our debug window and other connections.
 You have to disable this protection in order to get it work.
+
+
+#### I get an error about loading of mixed content. What can I do?
+
+Some browsers block the load of insecure content in a secured environment. 
+You have to disable that, to get it work.
+
+Firefox: https://marketing.adobe.com/resources/help/de_DE/target/target/t_mixed_content_firefox.html
+Internet Explorer: https://marketing.adobe.com/resources/help/de_DE/target/target/t_mixed_content_ie.html

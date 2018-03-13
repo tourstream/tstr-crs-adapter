@@ -26,13 +26,9 @@ class HotelServiceReducer {
     }
 
     findCrsService(adapterService, crsData) {
-        return crsData.services.find((crsService) => {
-            if (crsService.type !== adapterService.type) {
+        return crsData.normalized.services.find((crsService) => {
+            if (crsService.type !== crsData.meta.serviceTypes[adapterService.type]) {
                 return false;
-            }
-
-            if (crsService.code.indexOf(adapterService.bookingId) > -1) {
-                return true
             }
 
             return this.helper.hotel.isServiceMarked(crsService);
@@ -42,7 +38,7 @@ class HotelServiceReducer {
     createEmptyService(crsData) {
         const service = {};
 
-        crsData.services.push(service);
+        crsData.normalized.services.push(service);
 
         return service;
     }
