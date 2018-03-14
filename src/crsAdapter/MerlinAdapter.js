@@ -1,8 +1,7 @@
 import es6shim from 'es6-shim';
 import xml2js from 'xml2js';
-import moment from 'moment';
 import axios from 'axios';
-import {SERVICE_TYPES, GENDER_TYPES} from '../UbpCrsAdapter';
+import {GENDER_TYPES} from '../UbpCrsAdapter';
 import TravellerHelper from '../helper/TravellerHelper';
 import ObjectHelper from '../helper/ObjectHelper';
 import fastXmlParser from 'fast-xml-parser';
