@@ -640,7 +640,7 @@ class CetsAdapter {
                     ID: index + 1,
                 },
                 PersonType: traveller.salutation,
-                Name: travellerName[0] + ' ' + travellerName[1],
+                Name: travellerName[1],
                 FirstName: travellerName[0],
             });
 

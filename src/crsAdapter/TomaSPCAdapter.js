@@ -418,7 +418,7 @@ class TomaSPCAdapter {
             roomOccupancy: crsService.occupancy,
             travellers: this.helper.traveller.collectTravellers(
                 crsService.travellerAssociation,
-                (lineNumber) => this.getTravellerByLineNumber(crsObject.travellers, lineNumber, crsService.serviceType)
+                (lineNumber) => this.getTravellerByLineNumber(crsObject.travellers, lineNumber)
             ),
             destination: crsService.serviceCode,
             dateFrom: dateFrom.isValid() ? dateFrom.format(this.options.useDateFormat) : crsService.fromDate,
@@ -511,7 +511,7 @@ class TomaSPCAdapter {
      * @param lineNumber
      * @returns {*}
      */
-    getTravellerByLineNumber(travellers = [], lineNumber, serviceType = '') {
+    getTravellerByLineNumber(travellers = [], lineNumber) {
         let traveller = travellers[lineNumber - 1];
 
         if (!traveller || !traveller.name) {
