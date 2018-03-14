@@ -38,7 +38,7 @@ class TravellerHelper {
         return travellerAssociation.split('-').shift();
     }
 
-    reduceIntoCrsData(adapterService, crsService, crsData) {
+    reduceTravellersIntoCrsData(adapterService, crsService, crsData) {
         if (!adapterService.travellers) {
             return;
         }

@@ -22,7 +22,7 @@ class HotelServiceReducer {
         crsService.fromDate = dateFrom.isValid() ? dateFrom.format(crsData.meta.formats.date) : adapterService.dateFrom;
         crsService.toDate = dateTo.isValid() ? dateTo.format(crsData.meta.formats.date) : adapterService.dateTo;
 
-        this.helper.traveller.reduceIntoCrsData(adapterService, crsService, crsData);
+        this.helper.traveller.reduceTravellersIntoCrsData(adapterService, crsService, crsData);
     }
 
     findCrsService(adapterService, crsData) {

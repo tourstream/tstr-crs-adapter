@@ -125,11 +125,11 @@ class TomaSPCAdapter {
     convert(crsData) {
         crsData.converted = JSON.parse(JSON.stringify(crsData.parsed));
 
-        crsData.converted.agencyNumber = crsData.agencyNumber;
-        crsData.converted.operator = crsData.operator;
-        crsData.converted.numTravellers = crsData.numberOfTravellers;
-        crsData.converted.traveltype = crsData.travelType;
-        crsData.converted.remark = crsData.remark;
+        crsData.converted.agencyNumber = crsData.normalized.agencyNumber;
+        crsData.converted.operator = crsData.normalized.operator;
+        crsData.converted.numTravellers = crsData.normalized.numberOfTravellers;
+        crsData.converted.traveltype = crsData.normalized.travelType;
+        crsData.converted.remark = crsData.normalized.remark;
 
         this.assignServices(crsData);
         this.assignTravellers(crsData);
@@ -141,7 +141,7 @@ class TomaSPCAdapter {
 
     assignServices(crsData) {
         crsData.normalized.services.forEach((service, index) => {
-            const crsServiceObject = crsData.converted.GATE2MX.SendRequest.Import.ServiceBlock.ServiceRow[index];
+            const crsServiceObject = {};
 
             crsServiceObject.marker = service.marker;
             crsServiceObject.serviceType = service.type;
@@ -152,16 +152,20 @@ class TomaSPCAdapter {
             crsServiceObject.occupancy = service.occupancy;
             crsServiceObject.quantity = service.quantity;
             crsServiceObject.travellerAssociation = service.travellerAssociation;
+
+            crsData.converted.travellers[index] = crsServiceObject;
         });
     }
 
     assignTravellers(crsData) {
         crsData.normalized.travellers.forEach((traveller, index) => {
-            const crsTravellerObject = crsData.converted.GATE2MX.SendRequest.Import.TravellerBlock.PersonBlock.PersonRow[index];
+            const crsTravellerObject = {};
 
             crsTravellerObject.title = traveller.title;
             crsTravellerObject.name = traveller.name;
             crsTravellerObject.discount = traveller.age;
+
+            crsData.converted.travellers[index] = crsTravellerObject;
         });
     }
 

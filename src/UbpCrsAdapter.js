@@ -163,6 +163,10 @@ class UbpCrsAdapter {
             try {
                 const adapterInstance = this.getAdapterInstance();
 
+                if (adapterInstance instanceof CetsAdapter) {
+                    return resolve(adapterInstance.getData());
+                }
+
                 adapterInstance.fetchData().then((crsData) => {
                     const metaData = crsData.meta;
 
@@ -193,16 +197,18 @@ class UbpCrsAdapter {
 
                     resolve(adapterData);
                 }, (error) => {
-                    this.logAndThrow('[.fetchData] ', error);
+                    this.logAndThrow('[.fetchData] error', error);
                 });
             } catch (error) {
-                this.logAndThrow('[.getData] ', error);
+                this.logAndThrow('[.getData] error', error);
             }
         });
     }
 
     setData(adapterData) {
         return new Promise((resolve) => {
+            this.logger.info('Try to set data');
+
             this.logger.info('ADAPTER DATA:');
             this.logger.info(adapterData);
 
@@ -213,8 +219,15 @@ class UbpCrsAdapter {
 
                 const adapterInstance = this.getAdapterInstance();
 
+                if (adapterInstance instanceof CetsAdapter) {
+                    return resolve(adapterInstance.setData(adapterData));
+                }
+
                 adapterInstance.fetchData().then((crsData) => {
                     adapterData.services = adapterData.services || [];
+
+                    this.logger.info('FETCHED CRS DATA:');
+                    this.logger.info(crsData.parsed);
 
                     const helper = {
                         vehicle: new VehicleHelper(this.options),

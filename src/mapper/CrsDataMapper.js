@@ -1,5 +1,3 @@
-import CetsAdapter from '../crsAdapter/CetsAdapter';
-
 class CrsDataMapper {
     constructor(logger, config, mapper, helpers) {
         this.config = config;
@@ -9,10 +7,6 @@ class CrsDataMapper {
     }
 
     mapToAdapterData(crsData) {
-        if (crsData.meta.type === CetsAdapter.type) {
-            return crsData;
-        }
-
         return this.mapFromGermanCrs(crsData);
     }
 

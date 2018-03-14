@@ -8,6 +8,8 @@ class CarServiceReducer {
     }
 
     reduceIntoCrsData(adapterService, crsData) {
+        adapterService.extras = adapterService.extras || [];
+
         const crsService = this.findCrsService(adapterService, crsData) || this.createEmptyService(crsData);
         const pickUpDate = moment(adapterService.pickUpDate, this.config.useDateFormat);
         const dropOffDate = moment(adapterService.dropOffDate, this.config.useDateFormat);
@@ -47,7 +49,7 @@ class CarServiceReducer {
             this.reduceHotelDataToString(adapterService),
         ].filter(Boolean).join(';');
 
-        this.helper.traveller.reduceIntoCrsData(adapterService, crsService, crsData);
+        this.helper.traveller.reduceTravellersIntoCrsData(adapterService, crsService, crsData);
     }
 
     findCrsService(adapterService, crsData) {

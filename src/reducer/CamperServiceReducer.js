@@ -32,9 +32,10 @@ class CamperServiceReducer {
         crsService.fromDate = pickUpDate.isValid() ? pickUpDate.format(crsData.meta.formats.date) : adapterService.pickUpDate;
         crsService.toDate = dropOffDate.isValid() ? dropOffDate.format(crsData.meta.formats.date) : adapterService.dropOffDate;
 
+        const startAssociation = this.helper.traveller.calculateStartAssociation({}, crsData);
+
         (adapterService.extras || []).forEach((extra) => {
             const service = this.createEmptyService(crsData);
-            const startAssociation = this.helper.traveller.calculateStartAssociation(service, crsData);
 
             service.type = crsData.meta.serviceTypes.camperExtra;
             service.code = extra.code;
@@ -45,7 +46,7 @@ class CamperServiceReducer {
             ).join('-');
         });
 
-        this.helper.traveller.reduceIntoCrsData(adapterService, crsService, crsData);
+        this.helper.traveller.reduceTravellersIntoCrsData(adapterService, crsService, crsData);
     }
 
     findCrsService(adapterService, crsData) {

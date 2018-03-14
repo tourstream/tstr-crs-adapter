@@ -307,9 +307,8 @@ class CetsAdapter {
             pickUpDate: pickUpDate.isValid() ? pickUpDate.format(this.options.useDateFormat) : xmlService.StartDate,
             dropOffDate: dropOffDate.isValid() ? dropOffDate.format(this.options.useDateFormat) : '',
             pickUpLocation: xmlService.Destination,
-            duration: xmlService.Duration,
-            rentalCode: xmlService.Product,
-            vehicleTypeCode: xmlService.Room,
+            renterCode: xmlService.Product,
+            vehicleCode: xmlService.Room,
             type: SERVICE_TYPES.car,
         };
 
@@ -491,10 +490,10 @@ class CetsAdapter {
      */
     assignCarServiceFromAdapterObjectToXmlObject(service, xml) {
         const normalizeService = (service) => {
-            service.vehicleTypeCode = service.vehicleTypeCode.toUpperCase();
-            service.rentalCode = service.rentalCode.toUpperCase();
-            service.pickUpLocation = service.pickUpLocation.toUpperCase();
-            service.dropOffLocation = service.dropOffLocation.toUpperCase();
+            service.vehicleCode = (service.vehicleCode || '').toUpperCase();
+            service.renterCode = (service.renterCode || '').toUpperCase();
+            service.pickUpLocation = (service.pickUpLocation || '').toUpperCase();
+            service.dropOffLocation = (service.dropOffLocation || '').toUpperCase();
         };
 
         normalizeService(service);
@@ -506,13 +505,13 @@ class CetsAdapter {
         let xmlService = {
             [CONFIG.builderOptions.attrkey]: {
                 ServiceType: CONFIG.defaults.serviceType.car,
-                Key: service.vehicleTypeCode + '/' + service.pickUpLocation + '-' + service.dropOffLocation,
+                Key: service.vehicleCode + '/' + service.pickUpLocation + '-' + service.dropOffLocation,
             },
             StartDate: pickUpDate.isValid() ? pickUpDate.format(CONFIG.crs.dateFormat) : service.pickUpDate,
-            Duration: service.duration || this.calculateDuration(service.pickUpDate, service.dropOffDate),
+            Duration: this.calculateDuration(service.pickUpDate, service.dropOffDate),
             Destination: service.pickUpLocation,
-            Product: service.rentalCode,
-            Room: service.vehicleTypeCode,
+            Product: service.renterCode,
+            Room: service.vehicleCode,
             Norm: CONFIG.defaults.personCount,
             MaxAdults: CONFIG.defaults.personCount,
             Meal: CONFIG.defaults.serviceCode.car,
@@ -601,7 +600,7 @@ class CetsAdapter {
             Destination: 'NEZ',
             Room: service.destination,
             StartDate: startDate.isValid() ? startDate.format(CONFIG.crs.dateFormat) : service.startDate,
-            Duration: service.duration || this.calculateDuration(service.startDate, service.endDate),
+            Duration: this.calculateDuration(service.startDate, service.endDate),
         };
 
         xml.Fah.push(xmlService);
