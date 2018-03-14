@@ -20,7 +20,7 @@ class RoundTripServiceReducer {
         crsService.fromDate = startDate.isValid() ? startDate.format(crsData.meta.formats.date) : adapterService.startDate;
         crsService.toDate = endDate.isValid() ? endDate.format(crsData.meta.formats.date) : adapterService.endDate;
 
-        this.helper.traveller.reduceIntoCrsData(adapterService, crsService, crsData);
+        this.helper.traveller.reduceTravellersIntoCrsData(adapterService, crsService, crsData);
     }
 
     findCrsService(adapterService, crsData) {

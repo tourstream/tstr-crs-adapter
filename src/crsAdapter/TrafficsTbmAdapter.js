@@ -100,6 +100,11 @@ class TrafficsTbmAdapter {
     fetchData() {
         return this.getConnection().get().then((response) => {
             const rawData = (response || {}).data || {};
+
+            if (rawData.error) {
+                throw new Error(rawData.error);
+            }
+
             const crsData = rawData.admin;
 
             return {
@@ -130,7 +135,7 @@ class TrafficsTbmAdapter {
     collectServices(crsData) {
         return crsData.services.service.map((service) => {
             return {
-                type: service['$'].type,
+                type: service['$'].typ,
                 code: service['$'].cod,
                 accommodation: service['$'].opt,
                 fromDate: service['$'].vnd,
@@ -156,11 +161,11 @@ class TrafficsTbmAdapter {
     convert(crsData) {
         crsData.converted = {
             'TbmXml.admin.operator.$.act': CONFIG.crs.defaultValues.action,
-            'TbmXml.admin.customer.$.rmk': [crsData.parsed.customer['$'].rmk, crsData.normalized.remark].filter(Boolean).join(';'),
-            'TbmXml.admin.operator.$.knd': crsData.normalized.traveltype || crsData.parsed.operator['$'].knd,
-            'TbmXml.admin.operator.$.psn': crsData.normalized.numberOfTravellers || crsData.parsed.operator['$'].psn,
-            'TbmXml.admin.operator.$.agt': crsData.normalized.agencyNumber || crsData.parsed.operator['$'].agt,
-            'TbmXml.admin.operator.$.toc': crsData.normalized.operator || crsData.parsed.operator['$'].toc,
+            'TbmXml.admin.customer.$.rmk': crsData.normalized.remark,
+            'TbmXml.admin.operator.$.knd': crsData.normalized.traveltype,
+            'TbmXml.admin.operator.$.psn': crsData.normalized.numberOfTravellers,
+            'TbmXml.admin.operator.$.agt': crsData.normalized.agencyNumber,
+            'TbmXml.admin.operator.$.toc': crsData.normalized.operator,
         };
 
         this.assignServices(crsData);
