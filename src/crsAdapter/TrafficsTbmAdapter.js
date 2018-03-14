@@ -318,7 +318,7 @@ class TrafficsTbmAdapter {
             roomOccupancy: crsService.alc,
             travellers: this.helper.traveller.collectTravellers(
                 crsService.agn,
-                (lineNumber) => this.getTravellerByLineNumber(travellers, lineNumber, crsService.typ)
+                (lineNumber) => this.getTravellerByLineNumber(travellers, lineNumber)
             ),
             destination: crsService.cod,
             dateFrom: dateFrom.isValid() ? dateFrom.format(this.options.useDateFormat) : crsService.vnd,

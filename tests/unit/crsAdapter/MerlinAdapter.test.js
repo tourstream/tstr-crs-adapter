@@ -804,7 +804,7 @@ describe('MerlinAdapter', () => {
                         dateTo: '04012019',
                         travellers: [
                             { name: 'john doe', age: 8, gender: 'child' },
-                            { name: 'jane doe', lastName: 'doe', age: 14, gender: 'child' },
+                            { name: 'jane doe', age: 14, gender: 'child' },
                         ],
                     },
                 ],

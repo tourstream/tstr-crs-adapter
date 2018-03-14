@@ -340,7 +340,7 @@ class TomaAdapter {
             roomOccupancy: xml['Occupancy.' + lineNumber],
             travellers: this.helper.traveller.collectTravellers(
                 xml['TravAssociation.' + lineNumber],
-                (travellerLineNumber) => this.getTravellerByLineNumber(xml, travellerLineNumber, xml['KindOfService.' + lineNumber])
+                (travellerLineNumber) => this.getTravellerByLineNumber(xml, travellerLineNumber)
             ),
             destination: xml['ServiceCode.' + lineNumber],
             dateFrom: dateFrom.isValid() ? dateFrom.format(this.options.useDateFormat) : xml['From.' + lineNumber],
@@ -699,7 +699,7 @@ class TomaAdapter {
         service.travellers.forEach((traveller) => {
             travellerLineNumber = this.getNextEmptyTravellerLineNumber(xml);
 
-            xml['Title.' + travellerLineNumber] = CONFIG.crs.gender2SalutationMap.child;
+            xml['Title.' + travellerLineNumber] = CONFIG.crs.gender2SalutationMap[traveller.gender];
             xml['Name.' + travellerLineNumber] = traveller.name;
             xml['Reduction.' + travellerLineNumber] = traveller.age;
         });

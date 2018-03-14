@@ -1,5 +1,3 @@
-import {SERVICE_TYPES} from '../UbpCrsAdapter';
-
 class TravellerHelper {
     constructor(config) {
         this.config = config;

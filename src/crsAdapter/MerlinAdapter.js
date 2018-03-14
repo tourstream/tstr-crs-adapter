@@ -325,7 +325,7 @@ class MerlinAdapter {
             roomOccupancy: crsService.Occupancy,
             travellers: this.helper.traveller.collectTravellers(
                 crsService.TravellerAllocation,
-                (lineNumber) => this.getTravellerByLineNumber(crsData.TravellerBlock.PersonBlock.PersonRow, lineNumber, crsService.KindOfService)
+                (lineNumber) => this.getTravellerByLineNumber(crsData.TravellerBlock.PersonBlock.PersonRow, lineNumber)
             ),
             destination: crsService.Service,
             dateFrom: dateFrom.isValid() ? dateFrom.format(this.options.useDateFormat) : crsService.FromDate,
@@ -354,7 +354,7 @@ class MerlinAdapter {
             endDate: endDate.isValid() ? endDate.format(this.options.useDateFormat) : crsService.EndDate,
             travellers: this.helper.traveller.collectTravellers(
                 crsService.TravellerAllocation,
-                (lineNumber) => this.getTravellerByLineNumber(crsData.TravellerBlock.PersonBlock.PersonRow, lineNumber, crsService.KindOfService)
+                (lineNumber) => this.getTravellerByLineNumber(crsData.TravellerBlock.PersonBlock.PersonRow, lineNumber)
             )
         };
     }
@@ -391,7 +391,7 @@ class MerlinAdapter {
      * @param lineNumber
      * @returns {*}
      */
-    getTravellerByLineNumber(travellers = [], lineNumber, serviceType) {
+    getTravellerByLineNumber(travellers = [], lineNumber) {
         let traveller = travellers.find(
             (traveller) => traveller[CONFIG.parserOptions.attrPrefix].travellerNo == lineNumber
         );
