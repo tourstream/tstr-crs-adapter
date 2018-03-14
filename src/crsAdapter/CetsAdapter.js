@@ -633,7 +633,7 @@ class CetsAdapter {
 
         service.travellers.forEach((serviceTraveller, index) => {
             const traveller = this.helper.traveller.normalizeTraveller(serviceTraveller);
-            
+
             const travellerName = traveller.name.split(' ');
             xml.Fap.push({
                 [CONFIG.builderOptions.attrkey]: {
