@@ -197,10 +197,10 @@ class UbpCrsAdapter {
 
                     resolve(adapterData);
                 }, (error) => {
-                    this.logAndThrow('[.fetchData] error', error);
+                    this.logAndThrow('[.fetchData] error:', error);
                 });
             } catch (error) {
-                this.logAndThrow('[.getData] error', error);
+                this.logAndThrow('[.getData] error:', error);
             }
         });
     }
@@ -256,13 +256,13 @@ class UbpCrsAdapter {
                     } catch (ignore) {}
 
                     adapterInstance.sendData(convertedData).then(resolve, (error) => {
-                        this.logAndThrow('[.sendData] error', error);
+                        this.logAndThrow('[.sendData] error:', error);
                     });
                 }, (error) => {
-                    this.logAndThrow('[.fetchData] error', error);
+                    this.logAndThrow('[.fetchData] error:', error);
                 });
             } catch (error) {
-                this.logAndThrow('[.setData] error', error);
+                this.logAndThrow('[.setData] error:', error);
             }
         });
     }
@@ -274,7 +274,7 @@ class UbpCrsAdapter {
             try {
                 Promise.resolve(this.getAdapterInstance().exit()).then(resolve, reject);
             } catch (error) {
-                this.logAndThrow('exit error:', error);
+                this.logAndThrow('[.exit] error:', error);
             }
         });
     }

@@ -1,7 +1,12 @@
 import injector from 'inject!../../src/UbpCrsAdapter';
 import CetsAdapter from '../../src/crsAdapter/CetsAdapter';
+import TomaAdapter from '../../src/crsAdapter/TomaAdapter';
+import TomaSPCAdapter from '../../src/crsAdapter/TomaSPCAdapter';
+import BewotecExpertAdapter from '../../src/crsAdapter/BewotecExpertAdapter';
+import MerlinAdapter from '../../src/crsAdapter/MerlinAdapter';
+import TrafficsTbmAdapter from '../../src/crsAdapter/TrafficsTbmAdapter';
 
-describe('UbpCrsAdapter', () => {
+fdescribe('UbpCrsAdapter', () => {
     let adapter, UbpCrsAdapter, AnyCrsAdapter, LogService;
 
     beforeEach(() => {
@@ -16,10 +21,12 @@ describe('UbpCrsAdapter', () => {
         AnyCrsAdapter = require('tests/unit/_mocks/AnyCrsAdapter')();
         LogService = require('tests/unit/_mocks/LogService');
         UbpCrsAdapter = injector({
-            'crsAdapter/TomaAdapter': createCrsAdapterImport('toma'),
+            'crsAdapter/TomaAdapter': createCrsAdapterImport(TomaAdapter.type),
+            'crsAdapter/TomaSPCAdapter': createCrsAdapterImport(TomaSPCAdapter.type),
             'crsAdapter/CetsAdapter': createCrsAdapterImport(CetsAdapter.type),
-            'crsAdapter/TomaSPCAdapter': createCrsAdapterImport('toma2'),
-            'crsAdapter/BewotecExpertAdapter': createCrsAdapterImport('myjack'),
+            'crsAdapter/BewotecExpertAdapter': createCrsAdapterImport(BewotecExpertAdapter.type),
+            'crsAdapter/MerlinAdapter': createCrsAdapterImport(MerlinAdapter.type),
+            'crsAdapter/TrafficsTbmAdapter': createCrsAdapterImport(TrafficsTbmAdapter.type),
             'LogService': LogService,
         });
 
@@ -104,7 +111,11 @@ describe('UbpCrsAdapter', () => {
     it('connect() should throw exception if CRS connection failed', (done) => {
         AnyCrsAdapter.connect.and.throwError('adapter.error');
 
-        adapter.connect(UbpCrsAdapter.CRS_TYPES.cets).then(() => {
+        const connectPromises = Object.keys(UbpCrsAdapter.CRS_TYPES).map((key) => {
+            return adapter.connect(UbpCrsAdapter.CRS_TYPES[key]);
+        });
+
+        Promise.all(connectPromises).then(() => {
             done.fail('expectation error');
         }).catch((error) => {
             expect(error.toString()).toBe('Error: connect error: adapter.error');
@@ -112,26 +123,26 @@ describe('UbpCrsAdapter', () => {
         });
     });
 
-    it('should throw exception if any method is used without crs-connection', (done) => {
+    fit('should throw exception if any method is used without crs-connection', (done) => {
         let message = 'Adapter is not connected to any CRS. Please connect first.';
 
         Promise.all([
             adapter.getData().then(() => {
                 done.fail('get data: expectation error');
             }).catch((error) => {
-                expect(error.toString()).toBe('Error: get data error: ' + message);
+                expect(error.toString()).toBe('Error: [.getData] error: ' + message);
             }),
 
             adapter.setData({}).then(() => {
                 done.fail('set data: expectation error');
             }).catch((error) => {
-                expect(error.toString()).toBe('Error: set data error: ' + message);
+                expect(error.toString()).toBe('Error: [.setData] error: ' + message);
             }),
 
             adapter.exit().then(() => {
                 done.fail('exit: expectation error');
             }).catch((error) => {
-                expect(error.toString()).toBe('Error: exit error: ' + message);
+                expect(error.toString()).toBe('Error: [.exit] error: ' + message);
             }),
         ]).then(done);
     });
@@ -193,7 +204,7 @@ describe('UbpCrsAdapter', () => {
             });
         });
 
-        fdescribe('refactor v1', () => {
+        describe('refactor v1', () => {
             let dataObject, dataDefinitionObject;
 
             beforeEach(() => {

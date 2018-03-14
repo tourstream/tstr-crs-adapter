@@ -1,4 +1,4 @@
-import {SERVICE_TYPES} from "../UbpCrsAdapter";
+import {SERVICE_TYPES} from '../UbpCrsAdapter';
 
 class TravellerHelper {
     constructor(config) {
