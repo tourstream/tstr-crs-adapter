@@ -130,25 +130,6 @@ class CetsAdapter {
     }
 
     fetchData() {
-        try {
-            const rawData = this.getCrsXml() || '';
-            const parsedData = this.xmlParser.parse(rawData);
-            const crsData = this.normalizeParsedData(parsedData).Request;
-
-            return Promise.resolve({
-                raw: rawData,
-                parsed: parsedData,
-                normalized: this.mapXmlObjectToAdapterObject(crsData),
-                meta: {
-                    type: CetsAdapter.type,
-                },
-            });
-        } catch(error) {
-            return Promise.reject(error);
-        }
-    }
-
-    getData() {
         let xml = this.getCrsXml();
 
         this.logger.info('RAW XML:');
@@ -162,7 +143,7 @@ class CetsAdapter {
         return this.mapXmlObjectToAdapterObject(this.normalizeParsedData(xmlObject));
     }
 
-    setData(dataObject) {
+    sendData(dataObject) {
         let xmlObject = this.xmlParser.parse(this.getCrsXml());
         let normalizedXmlObject = this.normalizeParsedData(xmlObject);
 

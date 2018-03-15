@@ -63,7 +63,7 @@ describe('BewotecExpertAdapter', () => {
     });
 
     it('connect() should create connection on error because the expert mask returns a 404 in case of an empty mask', (done) => {
-        axios.get.and.returnValue(Promise.reject('empty expert mask'));
+        axios.get.and.returnValue(Promise.reject(new Error('empty expert mask')));
 
         adapter.connect({ token: 'token', dataBridgeUrl: 'dataBridgeUrl' }).then(() => {
             expect(adapter.connection).toBeTruthy();

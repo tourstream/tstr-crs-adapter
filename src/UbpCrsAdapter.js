@@ -25,6 +25,7 @@ import CarServiceReducer from './reducer/CarServiceReducer';
 import HotelServiceReducer from './reducer/HotelServiceReducer';
 import RoundTripServiceReducer from './reducer/RoundTripServiceReducer';
 import CamperServiceReducer from './reducer/CamperServiceReducer';
+import AnyCrsAdapter from "../tests/unit/_mocks/AnyCrsAdapter";
 
 const SERVICE_TYPES = {
     car: 'car',
@@ -136,13 +137,13 @@ class UbpCrsAdapter {
             this.logger.info('Try to connect to CRS: ' + crsType);
 
             if (!crsType) {
-                this.logAndThrow('No CRS type given.');
+                this.logAndReject(reject, 'No CRS type given.');
             }
 
             try {
                 this.adapterInstance = this.loadCrsInstanceAdapter(crsType);
             } catch (error) {
-                this.logAndThrow('load error:', error);
+                this.logAndReject(reject, 'load error:', error);
             }
 
             try {
@@ -151,25 +152,29 @@ class UbpCrsAdapter {
 
                 Promise.resolve(this.getAdapterInstance().connect(options)).then(resolve, reject);
             } catch (error) {
-                this.logAndThrow('connect error:', error);
+                this.logAndReject(reject, 'connect error:', error);
             }
         });
     }
 
     getData() {
-        return new Promise((resolve) => {
+        return new Promise((resolve, reject) => {
             this.logger.info('Try to get data');
 
             try {
                 const adapterInstance = this.getAdapterInstance();
 
-                if (adapterInstance instanceof CetsAdapter) {
-                    return resolve(adapterInstance.getData());
+                if (this.options.crsType === CetsAdapter.type) {
+                    try {
+                        resolve(adapterInstance.fetchData());
+                    } catch (error) {
+                        this.logAndReject(reject, '[.fetchData] error:', error);
+                    }
+
+                    return;
                 }
 
-                adapterInstance.fetchData().then((crsData) => {
-                    const metaData = crsData.meta;
-
+                return adapterInstance.fetchData().then((crsData) => {
                     this.logger.info('RAW CRS DATA:');
                     this.logger.info(crsData.raw);
 
@@ -184,11 +189,12 @@ class UbpCrsAdapter {
                     };
 
                     const mapper = {
-                        [metaData.serviceTypes.car]: new CarServiceMapper(this.logger, this.options, helper.vehicle),
-                        [metaData.serviceTypes.hotel]: new HotelServiceMapper(this.logger, this.options, helper.hotel),
-                        [metaData.serviceTypes.roundTrip]: new RoundTripServiceMapper(this.logger, this.options, helper.roundTrip),
-                        [metaData.serviceTypes.camper]: new CamperServiceMapper(this.logger, this.options, helper.vehicle),
+                        [SERVICE_TYPES.car]: new CarServiceMapper(this.logger, this.options, helper.vehicle),
+                        [SERVICE_TYPES.hotel]: new HotelServiceMapper(this.logger, this.options, helper.hotel),
+                        [SERVICE_TYPES.roundTrip]: new RoundTripServiceMapper(this.logger, this.options, helper.roundTrip),
+                        [SERVICE_TYPES.camper]: new CamperServiceMapper(this.logger, this.options, helper.vehicle),
                     };
+
                     const dataMapper = new CrsDataMapper(this.logger, this.options, mapper, helper);
                     const adapterData = JSON.parse(JSON.stringify(dataMapper.mapToAdapterData(crsData)));
 
@@ -197,16 +203,16 @@ class UbpCrsAdapter {
 
                     resolve(adapterData);
                 }, (error) => {
-                    this.logAndThrow('[.fetchData] error:', error);
+                    this.logAndReject(reject, '[.fetchData] error:', error);
                 });
             } catch (error) {
-                this.logAndThrow('[.getData] error:', error);
+                this.logAndReject(reject, '[.getData] error:', error);
             }
         });
     }
 
     setData(adapterData) {
-        return new Promise((resolve) => {
+        return new Promise((resolve, reject) => {
             this.logger.info('Try to set data');
 
             this.logger.info('ADAPTER DATA:');
@@ -214,13 +220,20 @@ class UbpCrsAdapter {
 
             try {
                 if (!adapterData) {
-                    this.logAndThrow('No data given.');
+                    this.logAndReject(reject, 'No data given.');
                 }
 
                 const adapterInstance = this.getAdapterInstance();
 
-                if (adapterInstance instanceof CetsAdapter) {
-                    return resolve(adapterInstance.setData(adapterData));
+                if (this.options.crsType === CetsAdapter.type) {
+                    try {
+                        adapterInstance.sendData(adapterData);
+                        resolve();
+                    } catch (error) {
+                        this.logAndReject(reject, '[.sendData] error:', error);
+                    }
+
+                    return;
                 }
 
                 adapterInstance.fetchData().then((crsData) => {
@@ -256,13 +269,13 @@ class UbpCrsAdapter {
                     } catch (ignore) {}
 
                     adapterInstance.sendData(convertedData).then(resolve, (error) => {
-                        this.logAndThrow('[.sendData] error:', error);
+                        this.logAndReject(reject, '[.sendData] error:', error);
                     });
                 }, (error) => {
-                    this.logAndThrow('[.fetchData] error:', error);
+                    this.logAndReject(reject, '[.fetchData] error:', error);
                 });
             } catch (error) {
-                this.logAndThrow('[.setData] error:', error);
+                this.logAndReject(reject, '[.setData] error:', error);
             }
         });
     }
@@ -274,7 +287,7 @@ class UbpCrsAdapter {
             try {
                 Promise.resolve(this.getAdapterInstance().exit()).then(resolve, reject);
             } catch (error) {
-                this.logAndThrow('[.exit] error:', error);
+                this.logAndReject(reject, '[.exit] error:', error);
             }
         });
     }
@@ -309,17 +322,18 @@ class UbpCrsAdapter {
 
     /**
      * @private
+     * @param reject Function
      * @param message string
      * @param error object
      */
-    logAndThrow(message, error = {}) {
+    logAndReject(reject, message, error = {}) {
         this.logger.error(message);
 
         if (error.message) {
             this.logger.error(error);
         }
 
-        throw new Error([message, error.message].filter(Boolean).join(' '));
+        reject(new Error([message, error.message].filter(Boolean).join(' ')));
     }
 }
 
