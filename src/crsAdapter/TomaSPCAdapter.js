@@ -70,18 +70,22 @@ class TomaSPCAdapter {
     fetchData() {
         return this.getCrsObject().then((crsObject) => {
             const rawData = (crsObject || {});
+            const parsed = JSON.parse(JSON.stringify(rawData));
+
+            parsed.services = parsed.services || [];
+            parsed.travellers = parsed.travellers || [];
 
             return {
                 raw: rawData,
-                parsed: rawData,
+                parsed: parsed,
                 normalized: {
-                    agencyNumber: rawData.agencyNumber,
-                    operator: rawData.operator,
-                    numberOfTravellers: rawData.numTravellers,
-                    travelType: rawData.traveltype,
-                    remark: rawData.remark,
-                    services: this.collectServices(rawData),
-                    travellers: this.collectTravellers(rawData),
+                    agencyNumber: parsed.agencyNumber,
+                    operator: parsed.operator,
+                    numberOfTravellers: parsed.numTravellers,
+                    travelType: parsed.traveltype,
+                    remark: parsed.remark,
+                    services: this.collectServices(parsed),
+                    travellers: this.collectTravellers(parsed),
                 },
                 meta: {
                     serviceTypes: CONFIG.crs.serviceTypes,
@@ -153,7 +157,7 @@ class TomaSPCAdapter {
             crsServiceObject.quantity = service.quantity;
             crsServiceObject.travellerAssociation = service.travellerAssociation;
 
-            crsData.converted.travellers[index] = crsServiceObject;
+            crsData.converted.services[index] = crsServiceObject;
         });
     }
 
