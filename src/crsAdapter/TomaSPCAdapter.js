@@ -748,9 +748,9 @@ class TomaSPCAdapter {
     assignHotelServiceFromAdapterObjectToCrsObject(adapterService, crsService, crsObject) {
         let dateFrom = moment(adapterService.dateFrom, this.options.useDateFormat);
         let dateTo = moment(adapterService.dateTo, this.options.useDateFormat);
-        let firstTravellerAssociation = (adapterService.children && adapterService.children.length)
-            ? this.calculateNumberOfTravellers(crsObject) + 1
-            : this.helper.traveller.extractFirstTravellerAssociation(crsService.travellerAssociation) || 1;
+        let firstTravellerAssociation = (crsService.travellerAssociation)
+            ? this.helper.traveller.extractFirstTravellerAssociation(crsService.travellerAssociation)
+            : this.calculateNumberOfTravellers(crsObject) + 1;
 
         crsService.serviceType = CONFIG.crs.serviceTypes.hotel;
         crsService.serviceCode = adapterService.destination;
