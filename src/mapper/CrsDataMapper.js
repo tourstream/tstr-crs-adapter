@@ -11,6 +11,12 @@ class CrsDataMapper {
     }
 
     mapFromGermanCrs(crsData) {
+        const findAdapterServiceType = (crsServiceType) => {
+            return Object.keys(crsData.meta.serviceTypes).find(
+                (key) => crsData.meta.serviceTypes[key] === crsServiceType
+            )
+        };
+
         const adapterData = {};
 
         adapterData.agencyNumber = crsData.normalized.agencyNumber;
@@ -21,7 +27,7 @@ class CrsDataMapper {
         adapterData.services = [];
 
         crsData.normalized.services.forEach((crsService) => {
-            const mapper = this.mapper[crsService.type];
+            const mapper = this.mapper[findAdapterServiceType(crsService.type)];
 
             if (!mapper) {
                 this.logger.warn('[.mapToAdapterData] service type "' + crsService.type + '" is not supported');
