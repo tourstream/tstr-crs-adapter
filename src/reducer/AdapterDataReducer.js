@@ -7,11 +7,17 @@ class AdapterDataReducer {
     }
 
     reduceIntoCrsData(adapterData, crsData) {
+        if (!adapterData) {
+            return;
+        }
+
+        adapterData.services = adapterData.services || [];
+
         crsData.normalized.agencyNumber = adapterData.agencyNumber || crsData.normalized.agencyNumber;
         crsData.normalized.operator = adapterData.operator || crsData.normalized.operator;
         crsData.normalized.numberOfTravellers = adapterData.numberOfTravellers || crsData.normalized.numberOfTravellers;
         crsData.normalized.travelType = adapterData.travelType || crsData.normalized.travelType;
-        crsData.normalized.remark = [crsData.normalized.remark, adapterData.remark].filter(Boolean).join(';');
+        crsData.normalized.remark = [crsData.normalized.remark, adapterData.remark].filter(Boolean).join(';') || void 0;
 
         adapterData.services.forEach((adapterService) => {
             const reducer = this.reducer[adapterService.type];
@@ -30,7 +36,7 @@ class AdapterDataReducer {
             (crsData.normalized.travellers || []).length,
             this.helpers.traveller.calculateNumberOfTravellers(crsData),
             1
-        );
+        ) || void 0;
 
         return crsData;
     }
