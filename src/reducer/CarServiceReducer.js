@@ -8,6 +8,12 @@ class CarServiceReducer {
     }
 
     reduceIntoCrsData(adapterService, crsData) {
+        if (!adapterService) {
+            return;
+        }
+
+        crsData.normalized.services = crsData.normalized.services || [];
+
         adapterService.extras = adapterService.extras || [];
 
         const crsService = this.findCrsService(adapterService, crsData) || this.createEmptyService(crsData);
@@ -26,7 +32,7 @@ class CarServiceReducer {
             adapterService.pickUpLocation,
             '-',
             adapterService.dropOffLocation,
-        ].join('');
+        ].join('').replace('/-', '') || void 0;
 
         crsService.fromDate = pickUpDate.isValid() ? pickUpDate.format(crsData.meta.formats.date) : adapterService.pickUpDate;
         crsService.toDate = dropOffDate.isValid() ? dropOffDate.format(crsData.meta.formats.date) : adapterService.dropOffDate;
@@ -47,7 +53,7 @@ class CarServiceReducer {
             crsData.normalized.remark,
             adapterService.extras.filter(Boolean).join(','),
             this.reduceHotelDataToString(adapterService),
-        ].filter(Boolean).join(';');
+        ].filter(Boolean).join(';') || void 0;
 
         this.helper.traveller.reduceTravellersIntoCrsData(adapterService, crsService, crsData);
     }
@@ -89,7 +95,7 @@ class CarServiceReducer {
             );
         }
 
-        return hotelData.filter(Boolean).join(';');
+        return hotelData.filter(Boolean).join(';') || void 0;
     };
 }
 

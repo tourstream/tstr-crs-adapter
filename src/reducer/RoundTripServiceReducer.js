@@ -8,6 +8,12 @@ class RoundTripServiceReducer {
     }
 
     reduceIntoCrsData(adapterService, crsData) {
+        if (!adapterService) {
+            return;
+        }
+
+        crsData.normalized.services = crsData.normalized.services || [];
+
         const crsService = this.findCrsService(adapterService, crsData) || this.createEmptyService(crsData);
         const startDate = moment(adapterService.startDate, this.config.useDateFormat);
         const endDate = moment(adapterService.endDate, this.config.useDateFormat);
@@ -29,7 +35,7 @@ class RoundTripServiceReducer {
                 return false;
             }
 
-            if (crsService.code.indexOf(adapterService.bookingId) > -1) {
+            if ((crsService.code || '').indexOf(adapterService.bookingId) > -1) {
                 return true
             }
 
