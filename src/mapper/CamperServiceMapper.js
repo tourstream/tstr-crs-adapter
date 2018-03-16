@@ -9,13 +9,15 @@ class CamperServiceMapper {
     }
 
     mapToAdapterService(crsService, dataDefinition) {
-        const pickUpDate = moment(crsService.fromDate, dataDefinition.formats.date);
-        const dropOffDate = moment(crsService.toDate, dataDefinition.formats.date);
-        const pickUpTime = moment(crsService.accommodation, dataDefinition.formats.time);
+        if (!crsService) {
+            return;
+        }
+
+        const pickUpDate = crsService.fromDate ? moment(crsService.fromDate, dataDefinition.formats.date) : void 0;
+        const dropOffDate = crsService.toDate ? moment(crsService.toDate, dataDefinition.formats.date) : void 0;
         const adapterService = {
-            pickUpDate: pickUpDate.isValid() ? pickUpDate.format(this.config.useDateFormat) : crsService.fromDate,
-            dropOffDate: dropOffDate.isValid() ? dropOffDate.format(this.config.useDateFormat) : crsService.toDate,
-            pickUpTime: pickUpTime.isValid() ? pickUpTime.format(this.config.useTimeFormat) : crsService.accommodation,
+            pickUpDate: pickUpDate && pickUpDate.isValid() ? pickUpDate.format(this.config.useDateFormat) : crsService.fromDate,
+            dropOffDate: dropOffDate && dropOffDate.isValid() ? dropOffDate.format(this.config.useDateFormat) : crsService.toDate,
             milesIncludedPerDay: crsService.quantity,
             milesPackagesIncluded: crsService.occupancy,
         };

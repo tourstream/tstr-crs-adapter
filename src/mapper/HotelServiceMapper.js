@@ -9,18 +9,22 @@ class HotelServiceMapper {
     }
 
     mapToAdapterService(crsService, dataDefinition) {
+        if (!crsService) {
+            return;
+        }
+
         const serviceCodes = (crsService.accommodation || '').split(' ');
-        const dateFrom = moment(crsService.fromDate, dataDefinition.formats.date);
-        const dateTo = moment(crsService.toDate, dataDefinition.formats.date);
+        const dateFrom = crsService.fromDate ? moment(crsService.fromDate, dataDefinition.formats.date) : void 0;
+        const dateTo = crsService.toDate ? moment(crsService.toDate, dataDefinition.formats.date) : void 0;
 
         const adapterService = {
+            destination: crsService.code,
             roomCode: serviceCodes[0] || void 0,
             mealCode: serviceCodes[1] || void 0,
             roomQuantity: crsService.quantity,
             roomOccupancy: crsService.occupancy,
-            destination: crsService.code,
-            dateFrom: dateFrom.isValid() ? dateFrom.format(this.config.useDateFormat) : crsService.fromDate,
-            dateTo: dateTo.isValid() ? dateTo.format(this.config.useDateFormat) : crsService.toDate,
+            dateFrom: dateFrom && dateFrom.isValid() ? dateFrom.format(this.config.useDateFormat) : crsService.fromDate,
+            dateTo: dateTo && dateTo.isValid() ? dateTo.format(this.config.useDateFormat) : crsService.toDate,
         };
 
         adapterService.marked = this.helper.isServiceMarked(crsService);

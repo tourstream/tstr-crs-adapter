@@ -9,14 +9,18 @@ class RoundTripServiceMapper {
     }
 
     mapToAdapterService(crsService, dataDefinition) {
+        if (!crsService) {
+            return;
+        }
+
         const hasBookingId = (crsService.code || '').indexOf('NEZ') === 0;
-        const startDate = moment(crsService.fromDate, dataDefinition.formats.date);
-        const endDate = moment(crsService.toDate, dataDefinition.formats.date);
+        const startDate = crsService.fromDate ? moment(crsService.fromDate, dataDefinition.formats.date) : void 0;
+        const endDate = crsService.toDate ? moment(crsService.toDate, dataDefinition.formats.date) : void 0;
         const adapterService = {
             bookingId: hasBookingId ? crsService.code.substring(3) : void 0,
             destination: hasBookingId ? crsService.accommodation : crsService.code,
-            startDate: startDate.isValid() ? startDate.format(this.config.useDateFormat) : crsService.fromDate,
-            endDate: endDate.isValid() ? endDate.format(this.config.useDateFormat) : crsService.toDate,
+            startDate: startDate && startDate.isValid() ? startDate.format(this.config.useDateFormat) : crsService.fromDate,
+            endDate: endDate && endDate.isValid() ? endDate.format(this.config.useDateFormat) : crsService.toDate,
         };
 
         adapterService.marked = this.helper.isServiceMarked(crsService);
