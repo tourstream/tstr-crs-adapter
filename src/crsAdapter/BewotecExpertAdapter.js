@@ -742,9 +742,9 @@ class BewotecExpertAdapter {
 
         let dateFrom = moment(service.dateFrom, this.options.useDateFormat);
         let dateTo = moment(service.dateTo, this.options.useDateFormat);
-        let firstTravellerAssociation = (service.children && service.children.length)
-            ? this.calculateNumberOfTravellers(crsObject) + 1
-            : this.helper.traveller.extractFirstTravellerAssociation(crsObject['d' + lineNumber]) || 1;
+        let firstTravellerAssociation = (crsObject['d' + lineNumber])
+            ? this.helper.traveller.extractFirstTravellerAssociation(crsObject['d' + lineNumber])
+            : this.calculateNumberOfTravellers(crsObject) + 1;
 
         crsObject['n' + lineNumber] = CONFIG.crs.serviceTypes.hotel;
         crsObject['l' + lineNumber] = service.destination;

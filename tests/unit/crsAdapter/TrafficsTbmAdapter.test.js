@@ -818,7 +818,7 @@ describe('TrafficsTbmAdapter', () => {
                 'TbmXml.admin.services.service.0.$.alc': 4,
                 'TbmXml.admin.services.service.0.$.vnd': '010118',
                 'TbmXml.admin.services.service.0.$.bsd': '080118',
-                'TbmXml.admin.services.service.0.$.agn': '2-9',
+                'TbmXml.admin.services.service.0.$.agn': '1-8',
 
                 'TbmXml.admin.travellers.traveller.0.$.typ': 'K',
                 'TbmXml.admin.travellers.traveller.0.$.sur': 'jake doe',
@@ -830,7 +830,7 @@ describe('TrafficsTbmAdapter', () => {
                 'TbmXml.admin.travellers.traveller.2.$.sur': 'jane doe',
                 'TbmXml.admin.travellers.traveller.2.$.age': 14,
 
-                'TbmXml.admin.operator.$.psn': 9,
+                'TbmXml.admin.operator.$.psn': 8,
             };
 
             adapter.setData({

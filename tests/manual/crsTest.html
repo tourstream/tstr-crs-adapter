@@ -51,7 +51,8 @@
 
                 <span class="mx-4">
                     <button name="get" class="btn btn-outline-warning">get data from CRS</button>
-                    <button name="send" class="btn btn-outline-warning">send data to CRS</button>
+                    <button name="add" class="btn btn-outline-warning">collect data</button>
+                    <button name="send" class="btn btn-outline-warning">send collected data to CRS</button>
                     <button name="exit" class="btn btn-outline-warning">exit</button>
                 </span>
             </div>
@@ -130,144 +131,144 @@
         </div>
 
         <div id="car-form-fields">
-            <input type="hidden" name="services.0.type" value="car"/>
+            <input type="hidden" name="services.$.type" value="car"/>
 
             <div class="form-row">
                 <fieldset class="col my-1">
-                    <div data-form-field data-label="vehicleTypeCode" data-name="services.0.vehicleTypeCode" data-value="B1"></div>
-                    <div data-form-field data-label="rentalCode" data-name="services.0.rentalCode" data-value="ITL22"></div>
+                    <div data-form-field data-label="vehicleTypeCode" data-name="services.$.vehicleTypeCode" data-value="B1"></div>
+                    <div data-form-field data-label="rentalCode" data-name="services.$.rentalCode" data-value="ITL22"></div>
                 </fieldset>
 
                 <fieldset class="col my-1">
-                    <div data-form-field data-label="pickUpLocation" data-name="services.0.pickUpLocation" data-value="ROMH"></div>
-                    <div data-form-field data-label="pickUpTime" data-name="services.0.pickUpTime" data-value="0940"></div>
-                    <div data-form-field data-label="pickUpDate" data-name="services.0.pickUpDate" data-dynamic-date="14"></div>
+                    <div data-form-field data-label="pickUpLocation" data-name="services.$.pickUpLocation" data-value="ROMH"></div>
+                    <div data-form-field data-label="pickUpTime" data-name="services.$.pickUpTime" data-value="0940"></div>
+                    <div data-form-field data-label="pickUpDate" data-name="services.$.pickUpDate" data-dynamic-date="14"></div>
                 </fieldset>
 
                 <fieldset class="col my-1">
-                    <div data-form-field data-label="dropOffLocation" data-name="services.0.dropOffLocation" data-value="ROMH"></div>
-                    <div data-form-field data-label="duration" data-name="services.0.duration" data-value="4"></div>
-                    <div data-form-field data-label="durationInMinutes" data-name="services.0.durationInMinutes" data-value="5800"></div>
+                    <div data-form-field data-label="dropOffLocation" data-name="services.$.dropOffLocation" data-value="ROMH"></div>
+                    <div data-form-field data-label="duration" data-name="services.$.duration" data-value="4"></div>
+                    <div data-form-field data-label="durationInMinutes" data-name="services.$.durationInMinutes" data-value="5800"></div>
                 </fieldset>
             </div>
 
             <div class="form-row">
                 <fieldset class="col my-1">
-                    <div data-form-field data-label="pickUpHotelName" data-name="services.0.pickUpHotelName" data-value="pu name"></div>
-                    <div data-form-field data-label="pickUpHotelAddress" data-name="services.0.pickUpHotelAddress" data-value="pu address"></div>
-                    <div data-form-field data-label="pickUpHotelPhoneNumber" data-name="services.0.pickUpHotelPhoneNumber" data-value="pu number"></div>
+                    <div data-form-field data-label="pickUpHotelName" data-name="services.$.pickUpHotelName" data-value="pu name"></div>
+                    <div data-form-field data-label="pickUpHotelAddress" data-name="services.$.pickUpHotelAddress" data-value="pu address"></div>
+                    <div data-form-field data-label="pickUpHotelPhoneNumber" data-name="services.$.pickUpHotelPhoneNumber" data-value="pu number"></div>
                 </fieldset>
 
                 <fieldset class="col my-1">
-                    <div data-form-field data-label="dropOffHotelName" data-name="services.0.dropOffHotelName" data-value="do name"></div>
-                    <div data-form-field data-label="dropOffHotelAddress" data-name="services.0.dropOffHotelAddress" data-value="do address"></div>
-                    <div data-form-field data-label="dropOffHotelPhoneNumber" data-name="services.0.dropOffHotelPhoneNumber" data-value="do number"></div>
+                    <div data-form-field data-label="dropOffHotelName" data-name="services.$.dropOffHotelName" data-value="do name"></div>
+                    <div data-form-field data-label="dropOffHotelAddress" data-name="services.$.dropOffHotelAddress" data-value="do address"></div>
+                    <div data-form-field data-label="dropOffHotelPhoneNumber" data-name="services.$.dropOffHotelPhoneNumber" data-value="do number"></div>
                 </fieldset>
             </div>
 
             <div class="form-row">
                 <fieldset class="col my-1">
-                    <div data-form-field data-label="extra 1" data-name="services.0.extras.0" data-value="childCareSeat0"></div>
-                    <div data-form-field data-label="extra 2" data-name="services.0.extras.1" data-value="navigationSystem"></div>
-                    <div data-form-field data-label="extra 3" data-name="services.0.extras.2" data-value="additionalDriver.2"></div>
-                    <div data-form-field data-label="extra 4" data-name="services.0.extras.3" data-value="childCareSeat3"></div>
+                    <div data-form-field data-label="extra 1" data-name="services.$.extras.0" data-value="childCareSeat0"></div>
+                    <div data-form-field data-label="extra 2" data-name="services.$.extras.1" data-value="navigationSystem"></div>
+                    <div data-form-field data-label="extra 3" data-name="services.$.extras.2" data-value="additionalDriver.2"></div>
+                    <div data-form-field data-label="extra 4" data-name="services.$.extras.3" data-value="childCareSeat3"></div>
                 </fieldset>
             </div>
         </div>
 
         <div id="hotel-form-fields">
-            <input type="hidden" name="services.0.type" value="hotel"/>
+            <input type="hidden" name="services.$.type" value="hotel"/>
 
             <div class="form-row">
                 <fieldset class="col my-1">
-                    <div data-form-field data-label="roomCode" data-name="services.0.roomCode" data-value="DZ"></div>
-                    <div data-form-field data-label="mealCode" data-name="services.0.mealCode" data-value="U"></div>
-                    <div data-form-field data-label="roomQuantity" data-name="services.0.roomQuantity" data-value="2"></div>
-                    <div data-form-field data-label="roomOccupancy" data-name="services.0.roomOccupancy" data-value="4"></div>
+                    <div data-form-field data-label="roomCode" data-name="services.$.roomCode" data-value="DZ"></div>
+                    <div data-form-field data-label="mealCode" data-name="services.$.mealCode" data-value="U"></div>
+                    <div data-form-field data-label="roomQuantity" data-name="services.$.roomQuantity" data-value="2"></div>
+                    <div data-form-field data-label="roomOccupancy" data-name="services.$.roomOccupancy" data-value="4"></div>
                 </fieldset>
 
                 <fieldset class="col my-1">
-                    <div data-form-field data-label="destination" data-name="services.0.destination" data-value="LAX20S"></div>
-                    <div data-form-field data-label="dateFrom" data-name="services.0.dateFrom" data-dynamic-date="14"></div>
-                    <div data-form-field data-label="dateTo" data-name="services.0.dateTo" data-dynamic-date="21"></div>
+                    <div data-form-field data-label="destination" data-name="services.$.destination" data-value="LAX20S"></div>
+                    <div data-form-field data-label="dateFrom" data-name="services.$.dateFrom" data-dynamic-date="14"></div>
+                    <div data-form-field data-label="dateTo" data-name="services.$.dateTo" data-dynamic-date="21"></div>
                 </fieldset>
             </div>
 
             <div class="form-row">
                 <fieldset class="col my-1">
-                    <div data-form-field data-label="child 1 name" data-name="services.0.children.0.name" data-value="john doe"></div>
-                    <div data-form-field data-label="child 1 age" data-name="services.0.children.0.age" data-value="11"></div>
+                    <div data-form-field data-label="child 1 name" data-name="services.$.children.0.name" data-value="john doe"></div>
+                    <div data-form-field data-label="child 1 age" data-name="services.$.children.0.age" data-value="11"></div>
                 </fieldset>
 
                 <fieldset class="col my-1">
-                    <div data-form-field data-label="child 2 name" data-name="services.0.children.1.name" data-value="jane doe"></div>
-                    <div data-form-field data-label="child 2 age" data-name="services.0.children.1.age" data-value="7"></div>
+                    <div data-form-field data-label="child 2 name" data-name="services.$.children.1.name" data-value="jane doe"></div>
+                    <div data-form-field data-label="child 2 age" data-name="services.$.children.1.age" data-value="7"></div>
                 </fieldset>
             </div>
         </div>
 
         <div id="roundTrip-form-fields">
-            <input type="hidden" name="services.0.type" value="roundTrip"/>
+            <input type="hidden" name="services.$.type" value="roundTrip"/>
 
             <div class="form-row">
                 <fieldset class="col my-1">
-                    <div data-form-field data-label="bookingId" data-name="services.0.bookingId" data-value="E2784NQXTHEN"></div>
-                    <div data-form-field data-label="destination" data-name="services.0.destination" data-value="YYZ"></div>
+                    <div data-form-field data-label="bookingId" data-name="services.$.bookingId" data-value="E2784NQXTHEN"></div>
+                    <div data-form-field data-label="destination" data-name="services.$.destination" data-value="YYZ"></div>
                 </fieldset>
 
                 <fieldset class="col my-1">
-                    <div data-form-field data-label="startDate" data-name="services.0.startDate" data-dynamic-date="14"></div>
-                    <div data-form-field data-label="endDate" data-name="services.0.endDate" data-dynamic-date="21"></div>
+                    <div data-form-field data-label="startDate" data-name="services.$.startDate" data-dynamic-date="14"></div>
+                    <div data-form-field data-label="endDate" data-name="services.$.endDate" data-dynamic-date="21"></div>
                 </fieldset>
             </div>
 
             <div class="form-row">
                 <fieldset class="col my-1">
-                    <div data-form-field data-label="traveller 1 gender" data-name="services.0.travellers.0.gender" data-value="female"></div>
-                    <div data-form-field data-label="traveller 1 name" data-name="services.0.travellers.0.name" data-value="jane doe"></div>
-                    <div data-form-field data-label="traveller 1 age" data-name="services.0.travellers.0.age" data-value="11"></div>
+                    <div data-form-field data-label="traveller 1 gender" data-name="services.$.travellers.0.gender" data-value="female"></div>
+                    <div data-form-field data-label="traveller 1 name" data-name="services.$.travellers.0.name" data-value="jane doe"></div>
+                    <div data-form-field data-label="traveller 1 age" data-name="services.$.travellers.0.age" data-value="11"></div>
                 </fieldset>
 
                 <fieldset class="col my-1">
-                    <div data-form-field data-label="traveller 2 gender" data-name="services.0.travellers.1.gender" data-value="male"></div>
-                    <div data-form-field data-label="traveller 2 name" data-name="services.0.travellers.1.name" data-value="john doe"></div>
-                    <div data-form-field data-label="traveller 2 age" data-name="services.0.travellers.1.age" data-value="32"></div>
+                    <div data-form-field data-label="traveller 2 gender" data-name="services.$.travellers.1.gender" data-value="male"></div>
+                    <div data-form-field data-label="traveller 2 name" data-name="services.$.travellers.1.name" data-value="john doe"></div>
+                    <div data-form-field data-label="traveller 2 age" data-name="services.$.travellers.1.age" data-value="32"></div>
                 </fieldset>
             </div>
         </div>
 
         <div id="camper-form-fields">
-            <input type="hidden" name="services.0.type" value="camper"/>
+            <input type="hidden" name="services.$.type" value="camper"/>
 
             <div class="form-row">
                 <fieldset class="col my-1">
-                    <div data-form-field data-label="camperCode" data-name="services.0.camperCode" data-value="FS"></div>
-                    <div data-form-field data-label="renterCode" data-name="services.0.renterCode" data-value="PRT02"></div>
+                    <div data-form-field data-label="camperCode" data-name="services.$.camperCode" data-value="FS"></div>
+                    <div data-form-field data-label="renterCode" data-name="services.$.renterCode" data-value="PRT02"></div>
                 </fieldset>
 
                 <fieldset class="col my-1">
-                    <div data-form-field data-label="pickUpLocation" data-name="services.0.pickUpLocation" data-value="LIS1"></div>
-                    <div data-form-field data-label="dropOffLocation" data-name="services.0.dropOffLocation" data-value="LIS2"></div>
+                    <div data-form-field data-label="pickUpLocation" data-name="services.$.pickUpLocation" data-value="LIS1"></div>
+                    <div data-form-field data-label="dropOffLocation" data-name="services.$.dropOffLocation" data-value="LIS2"></div>
                 </fieldset>
             </div>
 
             <div class="form-row">
                 <fieldset class="col my-1">
-                    <div data-form-field data-label="pickUpDate" data-name="services.0.pickUpDate" data-dynamic-date="14"></div>
-                    <div data-form-field data-label="duration" data-name="services.0.duration" data-value="4"></div>
+                    <div data-form-field data-label="pickUpDate" data-name="services.$.pickUpDate" data-dynamic-date="14"></div>
+                    <div data-form-field data-label="duration" data-name="services.$.duration" data-value="4"></div>
                 </fieldset>
 
                 <fieldset class="col my-1">
-                    <div data-form-field data-label="milesIncludedPerDay" data-name="services.0.milesIncludedPerDay" data-value="200"></div>
-                    <div data-form-field data-label="milesPackagesIncluded" data-name="services.0.milesPackagesIncluded" data-value="3"></div>
+                    <div data-form-field data-label="milesIncludedPerDay" data-name="services.$.milesIncludedPerDay" data-value="200"></div>
+                    <div data-form-field data-label="milesPackagesIncluded" data-name="services.$.milesPackagesIncluded" data-value="3"></div>
                 </fieldset>
             </div>
 
             <div class="form-row">
                 <fieldset class="col my-1">
-                    <div data-form-field data-label="extra 1" data-name="services.0.extras.0" data-value="extra.2"></div>
-                    <div data-form-field data-label="extra 2" data-name="services.0.extras.1" data-value="special"></div>
-                    <div data-form-field data-label="extra 3" data-name="services.0.extras.2" data-value="extra.4"></div>
+                    <div data-form-field data-label="extra 1" data-name="services.$.extras.0" data-value="extra.2"></div>
+                    <div data-form-field data-label="extra 2" data-name="services.$.extras.1" data-value="special"></div>
+                    <div data-form-field data-label="extra 3" data-name="services.$.extras.2" data-value="extra.4"></div>
                 </fieldset>
             </div>
         </div>

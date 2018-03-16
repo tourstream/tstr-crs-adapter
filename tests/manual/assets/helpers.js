@@ -8,6 +8,7 @@
     const productSelectionButtons = document.getElementById('product-selection').getElementsByTagName('button');
     const formFieldTemplate = document.getElementById('form-field-template');
     const reportBlock = window.document.getElementById('report');
+    const data = {};
 
     init();
 
@@ -75,6 +76,10 @@
                             getData();
                             break;
                         }
+                        case 'add': {
+                            addData();
+                            break;
+                        }
                         case 'send': {
                             sendData();
                             break;
@@ -121,18 +126,28 @@
         }
     }
 
-    function sendData() {
+    function addData() {
         resetReport();
 
-        let data = {};
+        const serviceIndex = (data.services || []).length;
 
         Object.keys(productForm).forEach(function(key) {
             if (!productForm[key].name || productForm[key].value === '') return;
 
-            setValueToPropertyPath(data, productForm[key].name, productForm[key].value);
+            const path = productForm[key].name.replace('services.$', 'services.' + serviceIndex);
+
+            setValueToPropertyPath(data, path, productForm[key].value);
         });
 
-        crsAdapter.setData(data).catch(log);
+        log(data);
+    }
+
+    function sendData() {
+        resetReport();
+
+        crsAdapter.setData(data).then(function() {
+            data.services = []
+        }).catch(log);
     }
 
     function log(text) {

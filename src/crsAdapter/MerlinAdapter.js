@@ -632,9 +632,9 @@ class MerlinAdapter {
     assignHotelServiceFromAdapterObjectToCrsObject(adapterService, crsService, crsData) {
         let dateFrom = moment(adapterService.dateFrom, this.options.useDateFormat);
         let dateTo = moment(adapterService.dateTo, this.options.useDateFormat);
-        let firstTravellerAssociation = (adapterService.children && adapterService.children.length)
-            ? this.calculateNumberOfTravellers(crsData) + 1
-            : this.helper.traveller.extractFirstTravellerAssociation(crsService.TravellerAllocation) || 1;
+        let firstTravellerAssociation = (crsService.TravellerAllocation)
+            ? this.helper.traveller.extractFirstTravellerAssociation(crsService.TravellerAllocation)
+            : this.calculateNumberOfTravellers(crsData) + 1;
 
         crsService.KindOfService = CONFIG.crs.serviceTypes.hotel;
         crsService.Service = adapterService.destination;
