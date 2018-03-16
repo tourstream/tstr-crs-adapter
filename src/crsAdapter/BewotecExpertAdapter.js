@@ -275,9 +275,10 @@ class BewotecExpertAdapter {
 
                 if (!this.isProtocolSameAs('https')) {
                     // does not work well - when the Expert mask is "empty" we get a 404 back
-                    return axios.get(baseUrl, {params: params}).then(null, (error) => {
+                    return axios.get(baseUrl, {params: params}).catch((error) => {
                         this.logger.error(error.message);
                         this.logger.error(error);
+
                         return Promise.resolve();
                     });
                 }

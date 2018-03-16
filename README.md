@@ -42,14 +42,14 @@ When you are connected you can get the data from the CRS via:
 ubpCrsAdapter.getData().then((crsData) => {});
 ```
 
-The `crsData` you get will look like that:
+The `crsData` you get is an `<CrsData>` object and will look like that:
 ```
 {
     agencyNumber: string,
     operator: string,
     numberOfTravellers: string,
     travelType: string,
-    services: Array<ServiceObject>,
+    services: Array<ServiceData>,
     remark: string,
 }
 ```
@@ -59,15 +59,7 @@ Or you can set data to the CRS via:
 ubpCrsAdapter.setData(adapterData);
 ```
 
-The `adapterData` object is defined like followed:
-```
-{
-    travelType: string,
-    numberOfTravellers: string,
-    services: Array<ServiceObject>,
-    remark: string,
-}
-```
+The `adapterData` is also a `<CrsData>` object and is defined like above.
 
 And also you can close the opened iFrame in the CRS:
 ```
@@ -80,8 +72,7 @@ ubpCrsAdapter.exit()
 * every method returns a promise
 * the `numberOfTravellers` will be auto-calculated related to traveller data in the service lines
 * be aware that some `services` will set values to the remark field
-* `setData` triggers automatically an `exit` 
-which will close the "CRS overlay/popup" (if there is any)
+* `setData` triggers automatically an `exit` which will close the "CRS overlay/popup" (if there is any)
 * keep in mind that you have to close any separated opened windows by yourself!
 
 
@@ -135,12 +126,12 @@ This has to be a site which serves the CRS data per postMessage with the payload
 **[Cosmo / CosmoNaut]** _dataSourceUrl_ is an url from where the CRS can get the IBE data from
 
 
-### `.services` object structure
+### `<ServiceData>` object structure
 
-Depending on the `.services[*].type` the structure of a `<ServiceObject>` differs.
+Depending on the `<ServiceData>.type` the structure of a `<ServiceData>` object differs.
 
 
-#### Supported service types
+#### Supported `<ServiceData>.type`
 
 You can check the currently supported service types with `UbpCrsAdapter.SERVICE_TYPES`.
 
@@ -156,7 +147,9 @@ Cosmo      | X     | X     | X         | X
 CosmoNaut  | X     | X     | X         | X
 
 
-| type  | fields                   | example
+##### `<ServiceData>` structure
+
+| type | fields                   | example
 | :---  | :---                     | :---
 | car   | .vehicleCode             | 'E4' 
 |       | .renterCode              | 'DEU85' 
