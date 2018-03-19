@@ -1,10 +1,5 @@
 import xml2js from 'xml2js';
 import fastXmlParser from 'fast-xml-parser';
-import TravellerHelper from '../helper/TravellerHelper';
-import RoundTripHelper from '../helper/RoundTripHelper';
-import CarHelper from '../helper/CarHelper';
-import CamperHelper from '../helper/CamperHelper';
-import HotelHelper from '../helper/HotelHelper';
 
 /**
  * need to be true:
@@ -77,19 +72,6 @@ class TomaAdapter {
         this.options = options;
         this.logger = logger;
 
-        const helperOptions = Object.assign({}, options, {
-            crsDateFormat: CONFIG.crs.dateFormat,
-            gender2SalutationMap: CONFIG.crs.gender2SalutationMap,
-        });
-
-        this.helper = {
-            traveller: new TravellerHelper(helperOptions),
-            car: new CarHelper(helperOptions),
-            camper: new CamperHelper(helperOptions),
-            hotel: new HotelHelper(helperOptions),
-            roundTrip: new RoundTripHelper(helperOptions),
-        };
-
         this.xmlParser = {
             parse: xmlString => fastXmlParser.parse(xmlString, CONFIG.parserOptions)
         };
@@ -124,7 +106,7 @@ class TomaAdapter {
     }
 
     fetchData() {
-        try{
+        try {
             const rawData = this.getCrsXml() || '';
             const parsedData = this.xmlParser.parse(rawData);
             const crsData = parsedData.Envelope.Body.TOM;
@@ -135,7 +117,7 @@ class TomaAdapter {
                 normalized: {
                     agencyNumber: crsData.AgencyNumber,
                     operator: crsData.Operator,
-                    numberOfTravellers: crsData.NoOfPersons[CONFIG.parserOptions.textNodeName],
+                    numberOfTravellers: crsData.NoOfPersons ? crsData.NoOfPersons[CONFIG.parserOptions.textNodeName] : void 0,
                     travelType: crsData.Traveltype,
                     remark: crsData.Remark,
                     services: this.collectServices(crsData),
@@ -199,7 +181,18 @@ class TomaAdapter {
     }
 
     convert(crsData) {
-        crsData.converted = JSON.parse(JSON.stringify(crsData.parsed));
+        crsData.normalized.services = crsData.normalized.services || [];
+        crsData.normalized.travellers = crsData.normalized.travellers || [];
+
+        crsData.converted = crsData.parsed
+            ? JSON.parse(JSON.stringify(crsData.parsed))
+            : {
+                Envelope: {
+                    Body: {
+                        TOM: {},
+                    },
+                },
+            };
 
         const crsDataObject = crsData.converted.Envelope.Body.TOM;
 
@@ -248,15 +241,20 @@ class TomaAdapter {
     }
 
     sendData(crsData) {
-        return this.getConnection().FIFramePutData(crsData.build);
+        try {
+            return this.getConnection().FIFramePutData(crsData.build);
+        } catch (error) {
+            return Promise.reject(error);
+        }
     }
 
     exit() {
         try {
             this.getConnection().FIFrameCancel();
+            return Promise.resolve();
         } catch (error) {
             this.logger.error(error);
-            throw new Error('connection::FIFrameCancel: ' + error.message);
+            return Promise.reject(error);
         }
     }
 
@@ -297,7 +295,7 @@ class TomaAdapter {
             return this.getConnection().GetXmlData();
         } catch (error) {
             this.logger.error(error);
-            throw new Error('connection::GetXmlData: ' + error.message);
+            throw error;
         }
     }
 }
