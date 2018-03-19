@@ -13,8 +13,8 @@ describe('CetsAdapter', () => {
     it('should throw error if any method is used without crs-connection', () => {
         let message = 'connection::getXmlRequest: No connection available - please connect to CETS first.';
 
-        expect(adapter.getData.bind(adapter)).toThrowError(message);
-        expect(() => adapter.setData({}).bind(adapter)).toThrowError(message);
+        expect(adapter.fetchData.bind(adapter)).toThrowError(message);
+        expect(() => adapter.sendData({}).bind(adapter)).toThrowError(message);
         expect(adapter.exit.bind(adapter)).toThrowError(message);
     });
 
@@ -91,21 +91,21 @@ describe('CetsAdapter', () => {
             adapter.connect();
         });
 
-        it('getData() should throw error if connection is not able to give data back', () => {
+        it('fetchData() should throw error if connection is not able to give data back', () => {
             CetsConnection.getXmlRequest.and.throwError('error');
 
-            expect(adapter.getData.bind(adapter)).toThrowError('connection::getXmlRequest: error');
+            expect(adapter.fetchData.bind(adapter)).toThrowError('connection::getXmlRequest: error');
         });
 
-        it('getData() should return nothing if no xml data is provided by the CRS', () => {
+        it('fetchData() should return nothing if no xml data is provided by the CRS', () => {
             let domString = '';
 
             CetsConnection.getXmlRequest.and.returnValue(domString);
 
-            expect(adapter.getData()).toBeUndefined();
+            expect(adapter.fetchData()).toBeUndefined();
         });
 
-        it('getData() should return car model without unsupported services', () => {
+        it('fetchData() should return car model without unsupported services', () => {
             let xml = createRequestXml(
                 '<Avl ServiceType="U">' +
                 '<TOCode>FTI</TOCode>' +
@@ -129,10 +129,10 @@ describe('CetsAdapter', () => {
 
             CetsConnection.getXmlRequest.and.returnValue(xml);
 
-            expect(adapter.getData()).toEqual(expectation);
+            expect(adapter.fetchData()).toEqual(expectation);
         });
 
-        it('getData() should return car model with shopping cart data', () => {
+        it('fetchData() should return car model with shopping cart data', () => {
             let xml = createRequestXml(
                 '<Avl ServiceType="C">' +
                 '<TOCode>FTI</TOCode>' +
@@ -175,9 +175,8 @@ describe('CetsAdapter', () => {
                     {
                         pickUpDate: '04072017',
                         pickUpTime: '0900',
-                        duration: '7',
-                        rentalCode: 'USA95',
-                        vehicleTypeCode: 'C4',
+                        renterCode: 'USA95',
+                        vehicleCode: 'C4',
                         pickUpLocation: 'LAX',
                         dropOffLocation: 'LAX',
                         dropOffDate: '11072017',
@@ -187,7 +186,6 @@ describe('CetsAdapter', () => {
                     {
                         pickUpLocation: 'LAX',
                         pickUpDate: '02072017',
-                        duration: '7',
                         dropOffDate: '09072017',
                         type: 'car',
                         marked: true,
@@ -197,10 +195,10 @@ describe('CetsAdapter', () => {
 
             CetsConnection.getXmlRequest.and.returnValue(xml);
 
-            expect(adapter.getData()).toEqual(expectation);
+            expect(adapter.fetchData()).toEqual(expectation);
         });
 
-        it('getData() should return round trip model', () => {
+        it('fetchData() should return round trip model', () => {
             let xml = createRequestXml(
                 '<Avl ServiceType="R">' +
                 '<TOCode>FTI</TOCode>' +
@@ -247,7 +245,7 @@ describe('CetsAdapter', () => {
 
             CetsConnection.getXmlRequest.and.returnValue(xml);
 
-            expect(adapter.getData()).toEqual(expectation);
+            expect(adapter.fetchData()).toEqual(expectation);
         });
 
         it('getData() should return hotel model', () => {
@@ -299,10 +297,10 @@ describe('CetsAdapter', () => {
             expect(adapter.getData()).toEqual(expectation);
         });
 
-        it('setData() should throw error if connection can not put data', () => {
+        it('sendData() should throw error if connection can not put data', () => {
             CetsConnection.getXmlRequest.and.throwError('error');
 
-            expect(() => adapter.setData({}).bind(adapter)).toThrowError('connection::getXmlRequest: error');
+            expect(() => adapter.sendData({}).bind(adapter)).toThrowError('connection::getXmlRequest: error');
         });
 
         describe('and initial search is triggered -', () => {
@@ -323,28 +321,28 @@ describe('CetsAdapter', () => {
                 CetsConnection.getXmlRequest.and.returnValue(requestXml);
             });
 
-            it('setData() should send car service correct', () => {
+            it('sendData() should send car service correct', () => {
                 let data = {
                     services: [
                         {
-                            vehicleTypeCode: 'vehicle.type.code',
+                            vehicleCode: 'vehicle.code',
                             pickUpLocation: 'pick.up.location',
                             dropOffLocation: 'drop.off.location',
                             pickUpDate: '01052017',
                             pickUpTime: '0820',
-                            duration: 'duration',
-                            rentalCode: 'rental.code',
+                            dropOffDate: '05052017',
+                            renterCode: 'renter.code',
                             type: 'car',
                         },
                     ],
                 };
 
-                let service = '<Fah ServiceType="C" Key="VEHICLE.TYPE.CODE/PICK.UP.LOCATION-DROP.OFF.LOCATION">' +
+                let service = '<Fah ServiceType="C" Key="VEHICLE.CODE/PICK.UP.LOCATION-DROP.OFF.LOCATION">' +
                     '<StartDate>01052017</StartDate>' +
-                    '<Duration>duration</Duration>' +
+                    '<Duration>4</Duration>' +
                     '<Destination>PICK.UP.LOCATION</Destination>' +
-                    '<Product>RENTAL.CODE</Product>' +
-                    '<Room>VEHICLE.TYPE.CODE</Room>' +
+                    '<Product>RENTER.CODE</Product>' +
+                    '<Room>VEHICLE.CODE</Room>' +
                     '<Norm>1</Norm>' +
                     '<MaxAdults>1</MaxAdults>' +
                     '<Meal>MIETW</Meal>' +
@@ -364,59 +362,12 @@ describe('CetsAdapter', () => {
 
                 let expectedXml = createResponseXml(service);
 
-                adapter.setData(data);
+                adapter.sendData(data);
 
                 expect(CetsConnection.returnBooking).toHaveBeenCalledWith(expectedXml);
             });
 
-            it('setData() should calculate duration correct', () => {
-                let data = {
-                    services: [
-                        {
-                            vehicleTypeCode: 'vehicle.type.code',
-                            pickUpLocation: 'pick.up.location',
-                            dropOffLocation: 'drop.off.location',
-                            pickUpDate: '01052017',
-                            pickUpTime: '0820',
-                            dropOffDate: '20052017',
-                            dropOffTime: '0615',
-                            rentalCode: 'rental.code',
-                            type: 'car',
-                        },
-                    ],
-                };
-
-                let service = '<Fah ServiceType="C" Key="VEHICLE.TYPE.CODE/PICK.UP.LOCATION-DROP.OFF.LOCATION">' +
-                    '<StartDate>01052017</StartDate>' +
-                    '<Duration>19</Duration>' +
-                    '<Destination>PICK.UP.LOCATION</Destination>' +
-                    '<Product>RENTAL.CODE</Product>' +
-                    '<Room>VEHICLE.TYPE.CODE</Room>' +
-                    '<Norm>1</Norm>' +
-                    '<MaxAdults>1</MaxAdults>' +
-                    '<Meal>MIETW</Meal>' +
-                    '<Persons>1</Persons>' +
-                    '<CarDetails>' +
-                    '<PickUp Where="Walkin">' +
-                    '<Time>0820</Time>' +
-                    '<CarStation Code="PICK.UP.LOCATION"/>' +
-                    '<Info>WALK IN</Info>' +
-                    '</PickUp>' +
-                    '<DropOff>' +
-                    '<Time>0615</Time>' +
-                    '<CarStation Code="DROP.OFF.LOCATION"/>' +
-                    '</DropOff>' +
-                    '</CarDetails>' +
-                    '</Fah>';
-
-                let expectedXml = createResponseXml(service);
-
-                adapter.setData(data);
-
-                expect(CetsConnection.returnBooking).toHaveBeenCalledWith(expectedXml);
-            });
-
-            it('setData() without supported service', () => {
+            it('sendData() without supported service', () => {
                 let data = {
                     services: [
                         {
@@ -440,29 +391,29 @@ describe('CetsAdapter', () => {
                     '</Fab>' +
                     '</Request>';
 
-                adapter.setData(data);
+                adapter.sendData(data);
 
                 expect(CetsConnection.returnBooking).toHaveBeenCalledWith(expectedXml);
             });
 
-            it('setData() should set nothing if empty data is given', () => {
-                adapter.setData({});
+            it('sendData() should set nothing if empty data is given', () => {
+                adapter.sendData({});
 
                 expect(CetsConnection.returnBooking).toHaveBeenCalledWith(createResponseXml());
             });
 
-            it('setData() should send car service with hotel pick up and drop off', () => {
+            it('sendData() should send car service with hotel pick up and drop off', () => {
                 let data = {
                     services: [
                         {
                             'type': 'car',
-                            'vehicleTypeCode': 'vehicle.type.code',
-                            'rentalCode': 'DEU81',
+                            'vehicleCode': 'vehicle.code',
+                            'renterCode': 'DEU81',
                             'pickUpLocation': 'pick.up.location',
                             'dropOffLocation': 'drop.off.location',
                             'pickUpTime': '0940',
                             'pickUpDate': '08112017',
-                            'duration': '4',
+                            'dropOffDate': '12112017',
                             'pickUpHotelName': 'pick.up.hotel.name',
                             'pickUpHotelAddress': 'pick.up.hotel.address',
                             'pickUpHotelPhoneNumber': '799103116',
@@ -473,12 +424,12 @@ describe('CetsAdapter', () => {
                     ],
                 };
 
-                let service = '<Fah ServiceType="C" Key="VEHICLE.TYPE.CODE/PICK.UP.LOCATION-DROP.OFF.LOCATION">' +
+                let service = '<Fah ServiceType="C" Key="VEHICLE.CODE/PICK.UP.LOCATION-DROP.OFF.LOCATION">' +
                     '<StartDate>08112017</StartDate>' +
                     '<Duration>4</Duration>' +
                     '<Destination>PICK.UP.LOCATION</Destination>' +
                     '<Product>DEU81</Product>' +
-                    '<Room>VEHICLE.TYPE.CODE</Room>' +
+                    '<Room>VEHICLE.CODE</Room>' +
                     '<Norm>1</Norm>' +
                     '<MaxAdults>1</MaxAdults>' +
                     '<Meal>MIETW</Meal>' +
@@ -503,23 +454,23 @@ describe('CetsAdapter', () => {
 
                 let expectedXml = createResponseXml(service);
 
-                adapter.setData(data);
+                adapter.sendData(data);
 
                 expect(CetsConnection.returnBooking).toHaveBeenCalledWith(expectedXml);
             });
 
-            it('setData() should send car service with hotel drop off', () => {
+            it('sendData() should send car service with hotel drop off', () => {
                 let data = {
                     services: [
                         {
                             'type': 'car',
-                            'vehicleTypeCode': 'vehicle.type.code',
-                            'rentalCode': 'DEU81',
+                            'vehicleCode': 'vehicle.code',
+                            'renterCode': 'DEU81',
                             'pickUpLocation': 'pick.up.location',
                             'dropOffLocation': 'drop.off.location',
                             'pickUpTime': '0940',
                             'pickUpDate': '08112017',
-                            'duration': '4',
+                            'dropOffDate': '12112017',
                             'dropOffHotelName': 'drop.off.hotel.name',
                             'dropOffHotelAddress': 'drop.off.hotel.address',
                             'dropOffHotelPhoneNumber': '799103115',
@@ -527,12 +478,12 @@ describe('CetsAdapter', () => {
                     ],
                 };
 
-                let service = '<Fah ServiceType="C" Key="VEHICLE.TYPE.CODE/PICK.UP.LOCATION-DROP.OFF.LOCATION">' +
+                let service = '<Fah ServiceType="C" Key="VEHICLE.CODE/PICK.UP.LOCATION-DROP.OFF.LOCATION">' +
                     '<StartDate>08112017</StartDate>' +
                     '<Duration>4</Duration>' +
                     '<Destination>PICK.UP.LOCATION</Destination>' +
                     '<Product>DEU81</Product>' +
-                    '<Room>VEHICLE.TYPE.CODE</Room>' +
+                    '<Room>VEHICLE.CODE</Room>' +
                     '<Norm>1</Norm>' +
                     '<MaxAdults>1</MaxAdults>' +
                     '<Meal>MIETW</Meal>' +
@@ -558,23 +509,23 @@ describe('CetsAdapter', () => {
 
                 let expectedXml = createResponseXml(service);
 
-                adapter.setData(data);
+                adapter.sendData(data);
 
                 expect(CetsConnection.returnBooking).toHaveBeenCalledWith(expectedXml);
             });
 
-            it('setData() should send car service with hotel pick up', () => {
+            it('sendData() should send car service with hotel pick up', () => {
                 let data = {
                     services: [
                         {
                             'type': 'car',
-                            'vehicleTypeCode': 'vehicle.type.code',
-                            'rentalCode': 'DEU81',
+                            'vehicleCode': 'vehicle.code',
+                            'renterCode': 'DEU81',
                             'pickUpLocation': 'pick.up.location',
                             'dropOffLocation': 'drop.off.location',
                             'pickUpTime': '0940',
                             'pickUpDate': '08112017',
-                            'duration': '4',
+                            'dropOffDate': '12112017',
                             'pickUpHotelName': 'pick.up.hotel.name',
                             'pickUpHotelAddress': 'pick.up.hotel.address',
                             'pickUpHotelPhoneNumber': '799103116',
@@ -582,12 +533,12 @@ describe('CetsAdapter', () => {
                     ],
                 };
 
-                let service = '<Fah ServiceType="C" Key="VEHICLE.TYPE.CODE/PICK.UP.LOCATION-DROP.OFF.LOCATION">' +
+                let service = '<Fah ServiceType="C" Key="VEHICLE.CODE/PICK.UP.LOCATION-DROP.OFF.LOCATION">' +
                     '<StartDate>08112017</StartDate>' +
                     '<Duration>4</Duration>' +
                     '<Destination>PICK.UP.LOCATION</Destination>' +
                     '<Product>DEU81</Product>' +
-                    '<Room>VEHICLE.TYPE.CODE</Room>' +
+                    '<Room>VEHICLE.CODE</Room>' +
                     '<Norm>1</Norm>' +
                     '<MaxAdults>1</MaxAdults>' +
                     '<Meal>MIETW</Meal>' +
@@ -612,12 +563,12 @@ describe('CetsAdapter', () => {
 
                 let expectedXml = createResponseXml(service);
 
-                adapter.setData(data);
+                adapter.sendData(data);
 
                 expect(CetsConnection.returnBooking).toHaveBeenCalledWith(expectedXml);
             });
 
-            it('setData() should send round trip service correct', () => {
+            it('sendData() should send round trip service correct', () => {
                 let data = {
                     services: [
                         {
@@ -674,12 +625,12 @@ describe('CetsAdapter', () => {
 
                 let expectedXml = createCustomResponseXml(service);
 
-                adapter.setData(data);
+                adapter.sendData(data);
 
                 expect(CetsConnection.returnBooking).toHaveBeenCalledWith(expectedXml);
             });
 
-            it('setData() should send minimal round trip service correct', () => {
+            it('sendData() should send minimal round trip service correct', () => {
                 let data = {
                     services: [
                         {
@@ -778,7 +729,7 @@ describe('CetsAdapter', () => {
 
                 let expectedXml = createCustomResponseXml(service);
 
-                adapter.setData(data);
+                adapter.sendData(data);
 
                 expect(CetsConnection.returnBooking).toHaveBeenCalledWith(expectedXml);
             });
@@ -802,7 +753,7 @@ describe('CetsAdapter', () => {
         });
 
         describe('and direct search from shopping cart is triggered -', () => {
-            it('getData() should return crs model without unsupported services', () => {
+            it('fetchData() should return crs model without unsupported services', () => {
                 let xml = createFabRequestXml(
                     '<Catalog>DCH</Catalog>' +
                     '<TOCode>FTI</TOCode>' +
@@ -820,10 +771,10 @@ describe('CetsAdapter', () => {
 
                 CetsConnection.getXmlRequest.and.returnValue(xml);
 
-                expect(adapter.getData()).toEqual(expectation);
+                expect(adapter.fetchData()).toEqual(expectation);
             });
 
-            it('setData() should replace existing car data due catalog restrictions', () => {
+            it('sendData() should replace existing car data due catalog restrictions', () => {
                 let requestXml = createFabRequestXml(
                     '<Catalog>DCH</Catalog>' +
                     '<Fah ServiceType="C" Key="oldKey"/>' +
@@ -834,27 +785,27 @@ describe('CetsAdapter', () => {
 
                 let expectedXml = createCustomResponseXml(
                     '<Catalog>DCH</Catalog>' +
-                    '<Fah ServiceType="C" Key="VEHICLE.TYPE.CODE/PICK.UP.LOCATION-DROP.OFF.LOCATION">' +
-                    '<StartDate>01052017</StartDate>' +
-                    '<Duration>duration</Duration>' +
-                    '<Destination>PICK.UP.LOCATION</Destination>' +
-                    '<Product>RENTAL.CODE</Product>' +
-                    '<Room>VEHICLE.TYPE.CODE</Room>' +
-                    '<Norm>1</Norm>' +
-                    '<MaxAdults>1</MaxAdults>' +
-                    '<Meal>MIETW</Meal>' +
-                    '<Persons>1</Persons>' +
-                    '<CarDetails>' +
-                    '<PickUp Where="Walkin">' +
-                    '<Time>0820</Time>' +
-                    '<CarStation Code="PICK.UP.LOCATION"/>' +
-                    '<Info>WALK IN</Info>' +
-                    '</PickUp>' +
-                    '<DropOff>' +
-                    '<Time/>' +
-                    '<CarStation Code="DROP.OFF.LOCATION"/>' +
-                    '</DropOff>' +
-                    '</CarDetails>' +
+                    '<Fah ServiceType="C" Key="VEHICLE.CODE/PICK.UP.LOCATION-DROP.OFF.LOCATION">' +
+                        '<StartDate>01052017</StartDate>' +
+                        '<Duration>4</Duration>' +
+                        '<Destination>PICK.UP.LOCATION</Destination>' +
+                        '<Product>RENTER.CODE</Product>' +
+                        '<Room>VEHICLE.CODE</Room>' +
+                        '<Norm>1</Norm>' +
+                        '<MaxAdults>1</MaxAdults>' +
+                        '<Meal>MIETW</Meal>' +
+                        '<Persons>1</Persons>' +
+                        '<CarDetails>' +
+                            '<PickUp Where="Walkin">' +
+                                '<Time>0820</Time>' +
+                                '<CarStation Code="PICK.UP.LOCATION"/>' +
+                                '<Info>WALK IN</Info>' +
+                            '</PickUp>' +
+                            '<DropOff>' +
+                                '<Time/>' +
+                                '<CarStation Code="DROP.OFF.LOCATION"/>' +
+                            '</DropOff>' +
+                        '</CarDetails>' +
                     '</Fah>' +
                     createFapXml()
                 );
@@ -862,24 +813,24 @@ describe('CetsAdapter', () => {
                 let data = {
                     services: [
                         {
-                            vehicleTypeCode: 'vehicle.type.code',
+                            vehicleCode: 'vehicle.code',
                             pickUpLocation: 'pick.up.location',
                             dropOffLocation: 'drop.off.location',
                             pickUpDate: '01052017',
                             pickUpTime: '0820',
-                            duration: 'duration',
-                            rentalCode: 'rental.code',
+                            dropOffDate: '05052017',
+                            renterCode: 'renter.code',
                             type: 'car',
                         },
                     ],
                 };
 
-                adapter.setData(data);
+                adapter.sendData(data);
 
                 expect(CetsConnection.returnBooking).toHaveBeenCalledWith(expectedXml);
             });
 
-            it('setData() should append new car data', () => {
+            it('sendData() should append new car data', () => {
                 let requestXml = createFabRequestXml(
                     '<Catalog>UNK</Catalog>' +
                     '<Fah ServiceType="C" Key="oldKey"/>'
@@ -890,12 +841,12 @@ describe('CetsAdapter', () => {
                 let expectedXml = createCustomResponseXml(
                     '<Catalog>UNK</Catalog>' +
                     '<Fah ServiceType="C" Key="oldKey"/>' +
-                    '<Fah ServiceType="C" Key="VEHICLE.TYPE.CODE/PICK.UP.LOCATION-DROP.OFF.LOCATION">' +
+                    '<Fah ServiceType="C" Key="VEHICLE.CODE/PICK.UP.LOCATION-DROP.OFF.LOCATION">' +
                     '<StartDate>01052017</StartDate>' +
-                    '<Duration>duration</Duration>' +
+                    '<Duration>4</Duration>' +
                     '<Destination>PICK.UP.LOCATION</Destination>' +
-                    '<Product>RENTAL.CODE</Product>' +
-                    '<Room>VEHICLE.TYPE.CODE</Room>' +
+                    '<Product>RENTER.CODE</Product>' +
+                    '<Room>VEHICLE.CODE</Room>' +
                     '<Norm>1</Norm>' +
                     '<MaxAdults>1</MaxAdults>' +
                     '<Meal>MIETW</Meal>' +
@@ -918,19 +869,19 @@ describe('CetsAdapter', () => {
                 let data = {
                     services: [
                         {
-                            vehicleTypeCode: 'VEHICLE.TYPE.CODE',
+                            vehicleCode: 'VEHICLE.CODE',
                             pickUpLocation: 'PICK.UP.LOCATION',
                             dropOffLocation: 'DROP.OFF.LOCATION',
                             pickUpDate: '01052017',
                             pickUpTime: '0820',
-                            duration: 'duration',
-                            rentalCode: 'RENTAL.CODE',
+                            dropOffDate: '05052017',
+                            renterCode: 'RENTER.CODE',
                             type: 'car',
                         },
                     ],
                 };
 
-                adapter.setData(data);
+                adapter.sendData(data);
 
                 expect(CetsConnection.returnBooking).toHaveBeenCalledWith(expectedXml);
             });
