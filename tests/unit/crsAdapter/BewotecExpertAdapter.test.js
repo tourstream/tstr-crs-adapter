@@ -2,6 +2,8 @@ import injector from 'inject!../../../src/crsAdapter/BewotecExpertAdapter';
 import {CRS_TYPES, DEFAULT_OPTIONS} from '../../../src/UbpCrsAdapter';
 
 describe('BewotecExpertAdapter', () => {
+    const xmlHead = '<?xml version="1.0" encoding="UTF-8"?>';
+
     let adapter, BewotecExpertAdapter, axios, requestUrl, requestParameter, logService, windowSpy, locationHrefSpy;
 
     beforeEach(() => {
@@ -178,35 +180,11 @@ describe('BewotecExpertAdapter', () => {
         });
 
         it('fetchData() should parse "empty" data correct', (done) => {
-            let xml = '<?xml version="1.0" encoding="UTF-8"?>';
-
             axios.get.and.returnValue(Promise.resolve({
-                data: xml + '<ExpertModel />'
+                data: xmlHead + '<ExpertModel />'
             }));
 
             adapter.fetchData().then((result) => {
-                expect(result.meta).toEqual({
-                    serviceTypes: {
-                        car: 'MW',
-                        carExtra: 'E',
-                        hotel: 'H',
-                        roundTrip: 'R',
-                        camper: 'WM',
-                        camperExtra: 'TA'
-                    },
-                    genderTypes: {
-                        male: 'H',
-                        female: 'D',
-                        child: 'K',
-                        infant: 'B'
-                    },
-                    formats: {
-                        date: 'DDMMYY',
-                        time: 'HHmm'
-                    },
-                    type: BewotecExpertAdapter.type,
-                });
-
                 expect(JSON.parse(JSON.stringify(result.normalized))).toEqual({
                     services: [],
                     travellers: [],
@@ -219,10 +197,8 @@ describe('BewotecExpertAdapter', () => {
         });
 
         it('fetchData() should parse data correct', (done) => {
-            let xml = '<?xml version="1.0" encoding="UTF-8"?>';
-
             axios.get.and.returnValue(Promise.resolve({
-                data: xml +
+                data: xmlHead +
                 '<ExpertModel operator="operator" traveltype="traveltype">' +
                 '<Agency>Agency</Agency>' +
                 '<PersonCount>PersonCount</PersonCount>' +
@@ -320,10 +296,9 @@ describe('BewotecExpertAdapter', () => {
                 normalized: {}
             };
 
-            const crsData = adapter.convert(data);
+            const crsData = JSON.parse(JSON.stringify(adapter.convert(data)));
 
-            expect(crsData.converted).toEqual(crsData.build);
-            expect(JSON.parse(JSON.stringify(crsData)).build).toEqual(build);
+            expect(crsData).toEqual(build);
         });
 
         it('convert() should convert complete data', () => {
@@ -378,10 +353,9 @@ describe('BewotecExpertAdapter', () => {
                 }
             };
 
-            const crsData = adapter.convert(data);
+            const crsData = JSON.parse(JSON.stringify(adapter.convert(data)));
 
-            expect(crsData.converted).toEqual(crsData.build);
-            expect(JSON.parse(JSON.stringify(crsData)).build).toEqual(build);
+            expect(crsData).toEqual(build);
         });
 
         describe('is not in HTTP context', () => {
