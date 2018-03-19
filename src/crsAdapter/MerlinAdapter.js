@@ -2,13 +2,8 @@ import es6shim from 'es6-shim';
 import xml2js from 'xml2js';
 import axios from 'axios';
 import {GENDER_TYPES} from '../UbpCrsAdapter';
-import TravellerHelper from '../helper/TravellerHelper';
 import ObjectHelper from '../helper/ObjectHelper';
 import fastXmlParser from 'fast-xml-parser';
-import CarHelper from '../helper/CarHelper';
-import HotelHelper from '../helper/HotelHelper';
-import CamperHelper from '../helper/CamperHelper';
-import RoundTripHelper from '../helper/RoundTripHelper';
 
 let CONFIG;
 
@@ -75,18 +70,8 @@ class MerlinAdapter {
         this.options = options;
         this.logger = logger;
 
-        const helperOptions = Object.assign({}, options, {
-            crsDateFormat: CONFIG.crs.dateFormat,
-            gender2SalutationMap: CONFIG.crs.gender2SalutationMap,
-        });
-
         this.helper = {
-            traveller: new TravellerHelper(helperOptions),
-            car: new CarHelper(helperOptions),
-            camper: new CamperHelper(helperOptions),
-            hotel: new HotelHelper(helperOptions),
-            roundTrip: new RoundTripHelper(helperOptions),
-            object: new ObjectHelper({attrPrefix: CONFIG.parserOptions.attrPrefix}),
+            object: new ObjectHelper({ attrPrefix: CONFIG.parserOptions.attrPrefix }),
         };
 
         this.xmlParser = {
@@ -177,7 +162,10 @@ class MerlinAdapter {
     }
 
     convert(crsData) {
-        crsData.converted = JSON.parse(JSON.stringify(crsData.parsed));
+        crsData.normalized.services = crsData.normalized.services || [];
+        crsData.normalized.travellers = crsData.normalized.travellers || [];
+
+        crsData.converted = crsData.parsed ? JSON.parse(JSON.stringify(crsData.parsed)) : this.normalizeCrsObject({});
 
         const crsDataObject = crsData.converted.GATE2MX.SendRequest.Import;
 
@@ -231,8 +219,12 @@ class MerlinAdapter {
         });
     }
 
-    sendData(crsData) {
-        return this.getConnection().post(crsData.build);
+    sendData(crsData = {}) {
+        try {
+            return this.getConnection().post(crsData.build);
+        } catch (error) {
+            return Promise.reject(error);
+        }
     }
 
     exit() {
@@ -282,7 +274,7 @@ class MerlinAdapter {
             return this.getConnection().get();
         } catch (error) {
             this.logger.error(error);
-            return Promise.reject(new Error('connection::get: ' + error.message));
+            return Promise.reject(error);
         }
     }
 
@@ -305,6 +297,8 @@ class MerlinAdapter {
         if (!Array.isArray(crsData.TravellerBlock.PersonBlock.PersonRow)) {
             crsData.TravellerBlock.PersonBlock.PersonRow = [crsData.TravellerBlock.PersonBlock.PersonRow].filter(Boolean);
         }
+
+        return crsObject;
     }
 }
 
