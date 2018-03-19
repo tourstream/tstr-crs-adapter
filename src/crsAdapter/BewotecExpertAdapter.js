@@ -2,13 +2,8 @@ import moment from 'moment';
 import axios from 'axios';
 import {CRS_TYPES} from '../UbpCrsAdapter';
 import querystring from 'querystring';
-import TravellerHelper from '../helper/TravellerHelper';
-import RoundTripHelper from '../helper/RoundTripHelper';
 import WindowHelper from '../helper/WindowHelper';
 import fastXmlParser from 'fast-xml-parser';
-import HotelHelper from '../helper/HotelHelper';
-import CarHelper from '../helper/CarHelper';
-import CamperHelper from '../helper/CamperHelper';
 
 const CONFIG = {
     crs: {
@@ -56,17 +51,7 @@ class BewotecExpertAdapter {
         this.options = options;
         this.logger = logger;
 
-        const helperOptions = Object.assign({}, options, {
-            crsDateFormat: CONFIG.crs.dateFormat,
-            gender2SalutationMap: CONFIG.crs.gender2SalutationMap,
-        });
-
         this.helper = {
-            traveller: new TravellerHelper(helperOptions),
-            car: new CarHelper(helperOptions),
-            camper: new CamperHelper(helperOptions),
-            hotel: new HotelHelper(helperOptions),
-            roundTrip: new RoundTripHelper(helperOptions),
             window: new WindowHelper(),
         };
 
@@ -167,7 +152,7 @@ class BewotecExpertAdapter {
             let serviceData = service[CONFIG.parserOptions.attrPrefix];
 
             return {
-                marker: service.marker,
+                marker: serviceData.marker,
                 type: serviceData.requesttype,
                 code: serviceData.servicecode,
                 accommodation: serviceData.accomodation,
@@ -193,10 +178,13 @@ class BewotecExpertAdapter {
     }
 
     convert(crsData) {
+        crsData.normalized.services = crsData.normalized.services || [];
+        crsData.normalized.travellers = crsData.normalized.travellers || [];
+
         crsData.converted = {
             a: CONFIG.crs.defaultValues.action,
             rem: crsData.normalized.remark,
-            r: crsData.normalized.traveltype,
+            r: crsData.normalized.travelType,
             p: crsData.normalized.numberOfTravellers,
             g: crsData.normalized.agencyNumber,
             v: crsData.normalized.operator,
@@ -236,8 +224,12 @@ class BewotecExpertAdapter {
         });
     }
 
-    sendData(crsData) {
-        return this.getConnection().send(crsData.build);
+    sendData(crsData = {}) {
+        try {
+            return this.getConnection().send(crsData.build);
+        } catch (error) {
+            return Promise.reject(error);
+        }
     }
 
     exit() {

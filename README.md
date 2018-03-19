@@ -185,7 +185,6 @@ CosmoNaut  | X     | X     | X         | X
 |           | .endDate            | '16122017'
 |           | .travellers         | [ { gender: _-gender-_, firstName: 'john', lastName: 'doe', age: '32' }, ... ]
 
-_-gender-_ is one of **'female', 'male', 'child', 'infant'**
  
 | type     | fields                 | example
 | :---     | :---                   | :---
@@ -198,6 +197,8 @@ _-gender-_ is one of **'female', 'male', 'child', 'infant'**
 |          | .milesIncludedPerDay   | '300' 
 |          | .milesPackagesIncluded | '3' 
 |          | .extras                | [ { code: 'ECX0001', amount: '2' }, { code: 'USA740', amount: '1' }, ... ]
+
+_-gender-_ is one of **'female', 'male', 'child', 'infant'**
 
 Additionally every service has a `.marked` field which is by default falsy.
 But if this service is either "marked" in the crs or detected as "marked" (depends on the type) it will be true.
