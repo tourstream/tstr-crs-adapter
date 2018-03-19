@@ -173,7 +173,7 @@ class CetsAdapter {
     }
 
     exit() {
-        this.setData();
+        this.sendData();
     }
 
     createConnection() {
@@ -279,7 +279,7 @@ class CetsAdapter {
     /**
      * @private
      * @param xmlService
-     * @returns {{pickUpDate: *, dropOffDate: string, pickUpLocation: *, duration: *, rentalCode: *, vehicleTypeCode: *, type: string}}
+     * @returns {{pickUpDate: *, dropOffDate: string, pickUpLocation: *, duration: *, renterCode: *, vehicleCode: *, type: string}}
      */
     mapCarServiceFromXmlObjectToAdapterObject(xmlService) {
         let pickUpDate = moment(xmlService.StartDate, CONFIG.crs.dateFormat);
