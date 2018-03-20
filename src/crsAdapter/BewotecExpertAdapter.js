@@ -30,11 +30,6 @@ const CONFIG = {
         },
         lineNumberMap: ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'],
     },
-    services: {
-        car: {
-            serviceCodeRegEx: /([A-Z]*[0-9]*)?([A-Z]*[0-9]*)?(\/)?([A-Z]*[0-9]*)?(-)?([A-Z]*[0-9]*)?/,
-        },
-    },
     parserOptions: {
         attrPrefix: '__attributes',
         textNodeName: '__textNode',

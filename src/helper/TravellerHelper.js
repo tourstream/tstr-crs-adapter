@@ -15,21 +15,6 @@ class TravellerHelper {
         }));
     }
 
-    collectTravellers(travellerAssociation = '', getTravellerByLineNumber) {
-        let travellers = [];
-
-        let startLineNumber = parseInt(travellerAssociation.substr(0, 1), 10);
-        let endLineNumber = parseInt(travellerAssociation.substr(-1), 10);
-
-        if (startLineNumber) {
-            do {
-                travellers.push(getTravellerByLineNumber(startLineNumber));
-            } while (++startLineNumber <= endLineNumber);
-        }
-
-        return travellers.filter(Boolean);
-    }
-
     extractLastTravellerAssociation(travellerAssociation = '') {
         return travellerAssociation.split('-').pop();
     }
@@ -38,35 +23,45 @@ class TravellerHelper {
         return travellerAssociation.split('-').shift();
     }
 
-    reduceTravellersIntoCrsData(adapterService, crsService, crsData) {
+    reduceTravellersIntoCrsData(adapterService = {}, crsService = {}, crsData = {}) {
         if (!adapterService.travellers) {
             return;
         }
 
+        crsData.normalized = crsData.normalized || {
+            services: [],
+            travellers: [],
+        };
+
         adapterService.travellers.forEach((adapterTraveller) => {
             const crsTraveller = {};
 
-            crsData.normalized.travellers.push(crsTraveller);
+            (crsData.normalized.travellers || []).push(crsTraveller);
 
             crsTraveller.title = crsData.meta.genderTypes[adapterTraveller.gender];
             crsTraveller.name = adapterTraveller.name;
             crsTraveller.age = adapterTraveller.age;
         });
 
+        // todo: separate from this function
         const startAssociation = this.calculateStartAssociation(crsService, crsData);
         const endAssociation = Math.max(
             +this.extractLastTravellerAssociation(crsService.travellerAssociation),
-            startAssociation + this.calculateServiceTravellersCount(adapterService) -1
-        );
+            startAssociation + this.calculateServiceTravellersCount(adapterService) - 1
+        ) || 1;
 
         crsService.travellerAssociation = [startAssociation, endAssociation].filter(
             (value, index, array) => array.indexOf(value) === index
         ).join('-');
     }
 
-    calculateStartAssociation(crsService, crsData) {
+    calculateStartAssociation(crsService, crsData = {}) {
+        crsData.normalized = crsData.normalized || {
+            services: [],
+        };
+
         const calculateNextEmptyTravellerAssociation = (crsData) => {
-            return crsData.normalized.services.reduce(
+            return (crsData.normalized.services || []).reduce(
                 (reduced, service) => Math.max(
                     reduced,
                     +this.extractLastTravellerAssociation(service.travellerAssociation)
@@ -78,6 +73,9 @@ class TravellerHelper {
             || calculateNextEmptyTravellerAssociation(crsData);
     }
 
+    /**
+     * @private
+     */
     calculateServiceTravellersCount(adapterService) {
         if (adapterService.type === SERVICE_TYPES.hotel) {
             return +adapterService.roomOccupancy * +adapterService.roomQuantity
@@ -86,7 +84,11 @@ class TravellerHelper {
         return adapterService.travellers.length;
     }
 
-    calculateNumberOfTravellers(crsData) {
+    calculateNumberOfTravellers(crsData = {}) {
+        crsData.normalized = crsData.normalized || {
+            services: [],
+        };
+
         return (crsData.normalized.services || []).reduce((lastTravellerAssociation, service) => {
             return Math.max(
                 lastTravellerAssociation,
@@ -95,7 +97,7 @@ class TravellerHelper {
         }, 0);
     }
 
-    mapToAdapterTravellers(crsService, crsData) {
+    mapToAdapterTravellers(crsService, crsData = {}) {
         const travellers = [];
 
         const startTravellerId = +this.extractFirstTravellerAssociation(crsService.travellerAssociation);
@@ -104,6 +106,10 @@ class TravellerHelper {
         if (!startTravellerId) {
             return travellers;
         }
+
+        crsData.normalized = crsData.normalized || {
+            travellers: [],
+        };
 
         const genderMap = {};
 
@@ -114,7 +120,7 @@ class TravellerHelper {
         let counter = 0;
 
         do {
-            const traveller = crsData.normalized.travellers[startTravellerId + counter - 1];
+            const traveller = (crsData.normalized.travellers || [])[startTravellerId + counter - 1];
 
             if (!traveller) {
                 break;

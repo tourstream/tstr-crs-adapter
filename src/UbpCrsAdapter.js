@@ -24,7 +24,6 @@ import CarServiceReducer from './reducer/CarServiceReducer';
 import HotelServiceReducer from './reducer/HotelServiceReducer';
 import RoundTripServiceReducer from './reducer/RoundTripServiceReducer';
 import CamperServiceReducer from './reducer/CamperServiceReducer';
-import AnyCrsAdapter from "../tests/unit/_mocks/AnyCrsAdapter";
 
 const SERVICE_TYPES = {
     car: 'car',

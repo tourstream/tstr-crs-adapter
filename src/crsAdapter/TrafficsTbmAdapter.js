@@ -31,11 +31,6 @@ const CONFIG = {
             test: 'https://cosmo-staging.traffics-switch.de',
         }
     },
-    services: {
-        car: {
-            serviceCodeRegEx: /([A-Z]*[0-9]*)?([A-Z]*[0-9]*)?(\/)?([A-Z]*[0-9]*)?(-)?([A-Z]*[0-9]*)?/,
-        },
-    },
     supportedConnectionOptions: {
         dataSourceUrl: void 0,
         environment: ['live', 'test'],

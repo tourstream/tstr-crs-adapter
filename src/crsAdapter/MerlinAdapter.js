@@ -33,11 +33,6 @@ class MerlinAdapter {
                     [GENDER_TYPES.infant]: 'K',
                 },
             },
-            services: {
-                car: {
-                    serviceCodeRegEx: /([A-Z]*[0-9]*)?([A-Z]*[0-9]*)?(\/)?([A-Z]*[0-9]*)?(-)?([A-Z]*[0-9]*)?/,
-                },
-            },
             parserOptions: {
                 attrPrefix: '__attributes',
                 textNodeName: '__textNode',

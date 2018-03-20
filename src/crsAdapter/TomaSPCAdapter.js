@@ -25,11 +25,6 @@ const CONFIG = {
             infant: 'K',
         },
     },
-    services: {
-        car: {
-            serviceCodeRegEx: /([A-Z]*[0-9]*)?([A-Z]*[0-9]*)?(\/)?([A-Z]*[0-9]*)?(-)?([A-Z]*[0-9]*)?/,
-        },
-    },
 };
 
 class TomaSPCAdapter {
