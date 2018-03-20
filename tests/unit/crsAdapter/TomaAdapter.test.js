@@ -69,6 +69,7 @@ describe('TomaAdapter', () => {
             done.fail('unexpected result');
         }, (error) => {
             expect(error.toString()).toBe('Error: No connection available - please connect to TOMA first.');
+            done();
         });
     });
 
@@ -304,7 +305,7 @@ describe('TomaAdapter', () => {
                 }
             };
 
-            const crsData = JSON.parse(JSON.stringify(adapter.convert(data)));
+            const crsData = adapter.convert(data);
 
             expect(crsData.build).toEqual(build);
         });

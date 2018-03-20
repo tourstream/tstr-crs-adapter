@@ -87,6 +87,7 @@ describe('HotelServiceReducer', () => {
                     type: 'hotelType',
                 },
                 {
+                    type: 'hotelType',
                     marker: 'X',
                     code: 'MUC20XS',
                     accommodation: 'DZ U',

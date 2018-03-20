@@ -88,6 +88,7 @@ describe('RoundTripServiceReducer', () => {
                     type: 'roundTripType',
                 },
                 {
+                    type: 'roundTripType',
                     code: 'NEZbookingId',
                     marker: 'X',
                     accommodation: 'YYZ',

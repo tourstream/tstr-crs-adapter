@@ -364,7 +364,7 @@ describe('TomaSPCAdapter', () => {
                 }
             };
 
-            const crsData = JSON.parse(JSON.stringify(adapter.convert(data)));
+            const crsData = adapter.convert(data);
 
             expect(crsData.build).toEqual(build);
         });
