@@ -1,5 +1,5 @@
 import TomaSPCAdapter from '../../../src/crsAdapter/TomaSPCAdapter';
-import {DEFAULT_OPTIONS, SERVICE_TYPES} from '../../../src/UbpCrsAdapter';
+import {DEFAULT_OPTIONS} from '../../../src/UbpCrsAdapter';
 
 describe('TomaSPCAdapter', () => {
     let adapter, documentHeadAppendChildSpy, TomaSPCConnection;
@@ -141,559 +141,7 @@ describe('TomaSPCAdapter', () => {
             adapter.connect({connectionUrl: 'connectionUrl'});
         });
 
-        it('getData() should parse base data', (done) => {
-            let expected = {
-                agencyNumber: 'agNum',
-                operator: 'op',
-                numberOfTravellers: 'numberOfTravellers',
-                travelType: 'tt',
-                remark: 'rmrk',
-                services: [],
-            };
-
-            crsData = {
-                agencyNumber: 'agNum',
-                operator: 'op',
-                numTravellers: 'numberOfTravellers',
-                traveltype: 'tt',
-                remark: 'rmrk',
-            };
-
-            adapter.getData().then((data) => {
-                expect(data).toEqual(expected);
-                done();
-            }, (error) => {
-                done.fail(error);
-            });
-        });
-
-        it('getData() should parse complete car service data', (done) => {
-            let expected = {
-                services: [
-                    {
-                        type: SERVICE_TYPES.car,
-                        pickUpDate: '09112017',
-                        dropOffDate: '21112017',
-                        pickUpTime: '0915',
-                        duration: 12,
-                        rentalCode: 'USA81',
-                        vehicleTypeCode: 'E4',
-                        pickUpLocation: 'LAX',
-                        dropOffLocation: 'SFO',
-                        marked: false,
-                    }
-                ],
-            };
-
-            crsData = {
-                services: [
-                    {
-                        marker: false,
-                        serviceType: 'MW',
-                        serviceCode: 'USA81E4/LAX-SFO',
-                        accommodation: '0915',
-                        fromDate: '091117',
-                        toDate: '211117',
-                    }
-                ],
-            };
-
-            adapter.getData().then((data) => {
-                expect(data).toEqual(expected);
-                done();
-            }, (error) => {
-                done.fail(error);
-            });
-        });
-
-        it('getData() should parse marked car service data with complete serviceCode', (done) => {
-            let expected = {
-                services: [
-                    {
-                        type: SERVICE_TYPES.car,
-                        rentalCode: 'USA81',
-                        vehicleTypeCode: 'E4',
-                        pickUpLocation: 'LAX',
-                        dropOffLocation: 'SFO',
-                        marked: true,
-                    }
-                ],
-            };
-
-            crsData = {
-                services: [
-                    {
-                        marker: true,
-                        serviceType: 'MW',
-                        serviceCode: 'USA81E4/LAX-SFO',
-                    }
-                ],
-            };
-
-            adapter.getData().then((data) => {
-                expect(data).toEqual(expected);
-                done();
-            }, (error) => {
-                done.fail(error);
-            });
-        });
-
-        it('getData() should parse car service data without serviceCode', (done) => {
-            let expected = {
-                services: [
-                    {
-                        type: SERVICE_TYPES.car,
-                        marked: true,
-                    }
-                ],
-            };
-
-            crsData = {
-                services: [
-                    {
-                        marker: false,
-                        serviceType: 'MW',
-                    }
-                ],
-            };
-
-            adapter.getData().then((data) => {
-                expect(data).toEqual(expected);
-                done();
-            }, (error) => {
-                done.fail(error);
-            });
-        });
-
-        it('getData() should parse car service data with half serviceCode', (done) => {
-            let expected = {
-                services: [
-                    {
-                        type: SERVICE_TYPES.car,
-                        rentalCode: 'USA',
-                        pickUpLocation: 'LAX',
-                        dropOffLocation: 'SFO',
-                        marked: true,
-                    }
-                ],
-            };
-
-            crsData = {
-                services: [
-                    {
-                        marker: false,
-                        serviceType: 'MW',
-                        serviceCode: 'USA/LAX-SFO',
-                    }
-                ],
-            };
-
-            adapter.getData().then((data) => {
-                expect(data).toEqual(expected);
-                done();
-            }, (error) => {
-                done.fail(error);
-            });
-        });
-
-        it('getData() should parse car service data with minimal serviceCode', (done) => {
-            let expected = {
-                services: [
-                    {
-                        type: SERVICE_TYPES.car,
-                        pickUpLocation: 'LAX',
-                        marked: true,
-                    }
-                ],
-            };
-
-            crsData = {
-                services: [
-                    {
-                        marker: false,
-                        serviceType: 'MW',
-                        serviceCode: 'LAX',
-                    }
-                ],
-            };
-
-            adapter.getData().then((data) => {
-                expect(data).toEqual(expected);
-                done();
-            }, (error) => {
-                done.fail(error);
-            });
-        });
-
-        it('getData() should parse hotel service data', (done) => {
-            let expected = {
-                services: [
-                    {
-                        type: SERVICE_TYPES.hotel,
-                        roomCode: 'rc',
-                        mealCode: 'mc',
-                        destination: 'destination',
-                        dateFrom: '11122017',
-                        dateTo: '22122017',
-                        marked: false,
-                        travellers: [
-                            {
-                                gender: 'child',
-                                name: 'john doe',
-                                age: '13'
-                            },
-                            {
-                                gender: 'child',
-                                name: 'jane doe',
-                                age: '9'
-                            },
-                        ],
-                        roomQuantity: 2,
-                        roomOccupancy: 4,
-                    }
-                ],
-            };
-
-            crsData = {
-                services: [
-                    {
-                        marker: false,
-                        serviceType: 'H',
-                        serviceCode: 'destination',
-                        quantity: 2,
-                        occupancy: 4,
-                        accommodation: 'rc mc',
-                        fromDate: '111217',
-                        toDate: '221217',
-                        travellerAssociation: '1-5'
-                    }
-                ],
-                travellers: [
-                    {},
-                    {title: 'K', name: 'john doe', discount: '13'},
-                    {title: 'K', name: 'jane doe', discount: '9'},
-                ],
-            };
-
-            adapter.getData().then((data) => {
-                expect(data).toEqual(expected);
-                done();
-            }, (error) => {
-                done.fail(error);
-            });
-        });
-
-        it('getData() should parse minimal hotel service data', (done) => {
-            let expected = {
-                services: [
-                    {
-                        type: SERVICE_TYPES.hotel,
-                        roomCode: 'rc',
-                        mealCode: 'mc',
-                        destination: 'destination',
-                        dateFrom: '11122017',
-                        dateTo: '22122017',
-                        marked: false,
-                        travellers: [],
-                    }
-                ],
-            };
-
-            crsData = {
-                services: [
-                    {
-                        marker: false,
-                        serviceType: 'H',
-                        serviceCode: 'destination',
-                        accommodation: 'rc mc',
-                        fromDate: '111217',
-                        toDate: '221217',
-                    }
-                ],
-            };
-
-            adapter.getData().then((data) => {
-                expect(data).toEqual(expected);
-                done();
-            }, (error) => {
-                done.fail(error);
-            });
-        });
-
-        it('getData() should parse hotel service data as marked if no destination is set', (done) => {
-            let expected = {
-                services: [
-                    {
-                        type: SERVICE_TYPES.hotel,
-                        roomCode: 'rc',
-                        mealCode: 'mc',
-                        marked: true,
-                        travellers: [],
-                    }
-                ],
-            };
-
-            crsData = {
-                services: [
-                    {
-                        marker: false,
-                        serviceType: 'H',
-                        accommodation: 'rc mc',
-                    }
-                ],
-            };
-
-            adapter.getData().then((data) => {
-                expect(data).toEqual(expected);
-                done();
-            }, (error) => {
-                done.fail(error);
-            });
-        });
-
-        it('getData() should parse hotel service data as marked if no accommodation is set', (done) => {
-            let expected = {
-                services: [
-                    {
-                        type: SERVICE_TYPES.hotel,
-                        destination: 'destination',
-                        marked: true,
-                        travellers: [],
-                    }
-                ],
-            };
-
-            crsData = {
-                services: [
-                    {
-                        marker: false,
-                        serviceType: 'H',
-                        serviceCode: 'destination',
-                    }
-                ],
-            };
-
-            adapter.getData().then((data) => {
-                expect(data).toEqual(expected);
-                done();
-            }, (error) => {
-                done.fail(error);
-            });
-        });
-
-        it('getData() should not parse unknown service', (done) => {
-            let expected = {services: []};
-
-            crsData = {
-                services: [{
-                    serviceType: 'unknown',
-                }]
-            };
-
-            adapter.getData().then((data) => {
-                expect(data).toEqual(expected);
-                done();
-            }, (error) => {
-                done.fail(error);
-            });
-        });
-
-        it('getData() should parse complete camper service data', (done) => {
-            let expected = {
-                services: [{
-                    type: SERVICE_TYPES.camper,
-                    pickUpDate: '09112017',
-                    dropOffDate: '21112017',
-                    pickUpTime: '0915',
-                    duration: 12,
-                    renterCode: 'USA96',
-                    camperCode: 'A4',
-                    pickUpLocation: 'MIA1',
-                    dropOffLocation: 'TPA',
-                    milesIncludedPerDay: '200',
-                    milesPackagesIncluded: '3',
-                    marked: false,
-                }]
-            };
-
-            crsData = {
-                services: [{
-                    serviceType: 'WM',
-                    serviceCode: 'USA96A4/MIA1-TPA',
-                    accommodation: '0915',
-                    fromDate: '091117',
-                    toDate: '211117',
-                    quantity: '200',
-                    occupancy: '3',
-                }]
-            };
-
-            adapter.getData().then((data) => {
-                expect(data).toEqual(expected);
-                done();
-            }, (error) => {
-                done.fail(error);
-            });
-        });
-
-        it('getData() should parse minimal camper service data', (done) => {
-            let expected = {
-                services: [{
-                    type: SERVICE_TYPES.camper,
-                    pickUpLocation: 'MIA1',
-                    marked: true,
-                }]
-            };
-
-            crsData = {
-                services: [{
-                    serviceType: 'WM',
-                    serviceCode: 'MIA1',
-                }]
-            };
-
-            adapter.getData().then((data) => {
-                expect(data).toEqual(expected);
-                done();
-            }, (error) => {
-                done.fail(error);
-            });
-        });
-
-        it('getData() should parse camper service with no service code', (done) => {
-            let expected = {
-                services: [{
-                    type: SERVICE_TYPES.camper,
-                    marked: true,
-                }]
-            };
-
-            crsData = {
-                services: [{
-                    serviceType: 'WM',
-                }]
-            };
-
-            adapter.getData().then((data) => {
-                expect(data).toEqual(expected);
-                done();
-            }, (error) => {
-                done.fail(error);
-            });
-        });
-
-        it('getData() should parse round-trip services', (done) => {
-            let expected = {
-                services: [{
-                    type: 'roundTrip',
-                    bookingId: 'E2784NQXTHEN',
-                    destination: 'YYZ',
-                    startDate: '05122017',
-                    endDate: '16122017',
-                    travellers: [{
-                        gender: 'male',
-                        name: 'DOE/JOHN',
-                        age: '040485',
-                    }],
-                }]
-            };
-
-            crsData = {
-                services: [{
-                    serviceType: 'R',
-                    serviceCode: 'NEZE2784NQXTHEN',
-                    accommodation: 'YYZ',
-                    fromDate: '051217',
-                    toDate: '161217',
-                    travellerAssociation: '2',
-                }],
-                travellers: [
-                    {},
-                    {
-                        title: 'H',
-                        name: 'DOE/JOHN',
-                        discount: '040485',
-                    },
-                ]
-            };
-
-            adapter.getData().then((data) => {
-                expect(data).toEqual(expected);
-                done();
-            }, (error) => {
-                done.fail(error);
-            });
-        });
-
-        it('getData() should parse round-trip services and returns age field instead of birthDate', (done) => {
-            let expected = {
-                services: [{
-                    type: 'roundTrip',
-                    bookingId: 'E2784NQXTHEN',
-                    destination: 'YYZ',
-                    startDate: '05122017',
-                    endDate: '16122017',
-                    travellers: [{
-                        gender: 'male',
-                        name: 'DOE/JOHN',
-                        age: '32',
-                    }],
-                }]
-            };
-
-            crsData = {
-                services: [{
-                    serviceType: 'R',
-                    serviceCode: 'NEZE2784NQXTHEN',
-                    accommodation: 'YYZ',
-                    fromDate: '051217',
-                    toDate: '161217',
-                    travellerAssociation: '1',
-                }],
-                travellers: [
-                    {
-                        title: 'H',
-                        name: 'DOE/JOHN',
-                        discount: '32',
-                    },
-                ]
-            };
-
-            adapter.getData().then((data) => {
-                expect(data).toEqual(expected);
-                done();
-            }, (error) => {
-                done.fail(error);
-            });
-        });
-
-        it('getData() should parse service data without serviceType', (done) => {
-            let expected = {services: []};
-
-            crsData = {services: [{}]};
-
-            adapter.getData().then((data) => {
-                expect(data).toEqual(expected);
-                done();
-            }, (error) => {
-                done.fail(error);
-            });
-        });
-
-        it('getData() should parse no object for no crs data', (done) => {
-            let expected = void 0;
-
-            crsData = void 0;
-
-            adapter.getData().then((data) => {
-                expect(data).toEqual(expected);
-                done();
-            }, (error) => {
-                done.fail(error);
-            });
-        });
-
-        it('getData() should throw error if response has errors', (done) => {
+        it('fetchData() should throw error if response has errors', (done) => {
             responseError = {
                 code: 313,
                 message: 'error message',
@@ -704,559 +152,221 @@ describe('TomaSPCAdapter', () => {
                 message: 'warning message',
             }];
 
-            adapter.getData().then(() => {
+            adapter.fetchData().then(() => {
                 done.fail('expectation error');
             }, (error) => {
-                expect(error.toString()).toBe('Error: [.getData] can not get data - caused by faulty response');
+                expect(error.toString()).toBe('Error: can not get data - caused by faulty response');
                 done();
             });
         });
 
-        it('getData() should throw error if request fails', (done) => {
+        it('fetchData() should throw error if request fails', (done) => {
             TomaSPCConnection.requestService.and.callFake((type, params, callback) => {
                 return callback.fn.onError({
                     error: {code: 414, message: 'error on request'},
                 });
             });
 
-            adapter.getData().then(() => {
+            adapter.fetchData().then(() => {
                 done.fail('expectation error');
             }, (error) => {
-                expect(error.toString()).toBe('Error: [.getData] can not get data - something went wrong with the request');
+                expect(error.toString()).toBe('Error: can not get data - something went wrong with the request');
                 done();
             });
         });
 
-        it('setData() should convert no adapter object to crs object correct', (done) => {
-            let expected = {
-                action: 'BA',
-                numTravellers: 1,
-            };
+        it('fetchData() should parse "empty" data correct', (done) => {
+            crsData = {};
 
-            adapter.setData().then(() => {
-                expect(requestData).toEqual([expected]);
-                done();
-            }, (error) => {
-                done.fail(error);
-            });
-        });
-
-        it('setData() should convert empty adapter object to crs object correct', (done) => {
-            let adapterObject = {};
-            let expected = {
-                action: 'BA',
-                numTravellers: 1,
-            };
-
-            adapter.setData(adapterObject).then(() => {
-                expect(requestData).toEqual([expected]);
+            adapter.fetchData().then((result) => {
+                expect(JSON.parse(JSON.stringify(result.normalized))).toEqual({
+                    services: [],
+                    travellers: [],
+                });
                 done();
             }, (error) => {
-                done.fail(error);
+                console.log(error.message);
+                done.fail('unexpected result');
             });
         });
 
-        it('setData() should convert base data to crs object correct and trigger exit', (done) => {
-            let adapterObject = {
-                numberOfTravellers: 2,
-                travelType: 'tt',
-                remark: 'rmrk',
-                services: [{type: 'unknown'}],
-            };
-
-            let expected = {
-                action: 'BA',
-                numTravellers: 2,
-                traveltype: 'tt',
-                remark: 'rmrk',
-            };
-
-            adapter.setData(adapterObject).then(() => {
-                expect(requestData).toEqual([expected]);
-                done();
-            }, (error) => {
-                done.fail(error);
-            });
-        });
-
-        it('setData() should convert complete car data to crs object correct', (done) => {
-            let adapterObject = {
-                services: [
-                    {
-                        type: SERVICE_TYPES.car,
-                        rentalCode: 'USA81',
-                        vehicleTypeCode: 'E4',
-                        pickUpLocation: 'LAS',
-                        dropOffLocation: 'SFO',
-                        pickUpDate: '04052018',
-                        dropOffDate: '07052018',
-                        duration: 14,
-                        pickUpTime: '1730',
-                        pickUpHotelName: 'puh name',
-                        pickUpHotelAddress: 'puh address',
-                        pickUpHotelPhoneNumber: 'puh number',
-                        dropOffHotelName: 'doh name',
-                        dropOffHotelAddress: 'doh address',
-                        dropOffHotelPhoneNumber: 'doh number',
-                        extras: ['navigationSystem', 'childCareSeat0', 'childCarSeat10', 'roofRack'],
-                    },
-                ],
-            };
-
-            let expected = {
-                action: 'BA',
-                numTravellers: 1,
-                remark: 'GPS;BS;childCarSeat10;roofRack,puh address puh number;doh name;doh address doh number',
-                services: [
-                    {
-                        serviceType: 'MW',
-                        serviceCode: 'USA81E4/LAS-SFO',
-                        fromDate: '040518',
-                        toDate: '070518',
-                        accommodation: '1730',
-                    },
-                    {
-                        serviceType: 'E',
-                        serviceCode: 'puh name',
-                        fromDate: '040518',
-                        toDate: '070518',
-                    },
-                ],
-            };
-
-            adapter.setData(adapterObject).then(() => {
-                expect(requestData).toEqual([expected]);
-                done();
-            }, (error) => {
-                done.fail(error);
-            });
-        });
-
-        it('setData() should convert minimal car data to crs object correct', (done) => {
-            let adapterObject = {
-                services: [
-                    {
-                        type: SERVICE_TYPES.car,
-                        rentalCode: 'USA81',
-                        vehicleTypeCode: 'E4',
-                        pickUpLocation: 'LAS',
-                        dropOffLocation: 'SFO',
-                        pickUpDate: '04052018',
-                        duration: 14,
-                        pickUpTime: '1730',
-                    },
-                ],
-            };
-
-            let expected = {
-                action: 'BA',
-                numTravellers: 1,
-                services: [
-                    {
-                        serviceType: 'MW',
-                        serviceCode: 'USA81E4/LAS-SFO',
-                        fromDate: '040518',
-                        toDate: '180518',
-                        accommodation: '1730',
-                    },
-                ],
-            };
-
-            adapter.setData(adapterObject).then(() => {
-                expect(requestData).toEqual([expected]);
-                done();
-            }, (error) => {
-                done.fail(error);
-            });
-        });
-
-        it('setData() should convert only dropOff hotel car data to crs object correct', (done) => {
-            let adapterObject = {
-                services: [
-                    {
-                        type: SERVICE_TYPES.car,
-                        rentalCode: 'USA81',
-                        vehicleTypeCode: 'E4',
-                        pickUpLocation: 'LAS',
-                        dropOffLocation: 'SFO',
-                        pickUpDate: '04052018',
-                        duration: 14,
-                        pickUpTime: '1730',
-                        dropOffHotelName: 'doh name',
-                        dropOffHotelAddress: 'doh address',
-                        dropOffHotelPhoneNumber: 'doh number',
-                    },
-                ],
-            };
-
-            let expected = {
-                action: 'BA',
-                numTravellers: 1,
-                remark: 'doh address doh number',
-                services: [
-                    {
-                        serviceType: 'MW',
-                        serviceCode: 'USA81E4/LAS-SFO',
-                        fromDate: '040518',
-                        toDate: '180518',
-                        accommodation: '1730',
-                    },
-                    {
-                        serviceType: 'E',
-                        serviceCode: 'doh name',
-                        fromDate: '040518',
-                        toDate: '180518',
-                    },
-                ],
-            };
-
-            adapter.setData(adapterObject).then(() => {
-                expect(requestData).toEqual([expected]);
-                done();
-            }, (error) => {
-                done.fail(error);
-            });
-        });
-
-        it('setData() should convert hotel data to crs object correct', (done) => {
-            let adapterObject = {
-                services: [
-                    {
-                        type: SERVICE_TYPES.hotel,
-                        destination: 'destination',
-                        roomCode: 'rc',
-                        mealCode: 'mc',
-                        roomQuantity: 2,
-                        roomOccupancy: 4,
-                        dateFrom: '01012018',
-                        dateTo: '08012018',
-                        travellers: [
-                            {
-                                name: 'john doe',
-                                age: 8,
-                                gender: 'male'
-                            },
-                            {
-                                name: 'jane doe',
-                                age: 14,
-                                gender: 'female'
-                            },
-                        ],
-                    },
-                ],
-            };
-
-            let expected = {
-                action: 'BA',
-                numTravellers: 8,
-                services: [
-                    {
-                        serviceType: 'H',
-                        serviceCode: 'destination',
-                        accommodation: 'rc mc',
-                        fromDate: '010118',
-                        toDate: '080118',
-                        quantity: 2,
-                        occupancy: 4,
-                        travellerAssociation: '1-8',
-                    },
-                ],
-                travellers: [
-                    {title: 'H', name: 'john doe', discount: 8},
-                    {title: 'D', name: 'jane doe', discount: 14},
-                ],
-            };
-
+        it('fetchData() should parse data correct', (done) => {
             crsData = {
-                travellers: [{}],
-            };
-
-            adapter.setData(adapterObject).then(() => {
-                expect(requestData).toEqual([expected]);
-                done();
-            }, (error) => {
-                done.fail(error);
-            });
-        });
-
-        it('setData() should replace with hotel data', (done) => {
-            let adapterObject = {
-                services: [
-                    {
-                        type: SERVICE_TYPES.hotel,
-                        destination: 'destination',
-                        roomCode: 'rc',
-                        mealCode: 'mc',
-                        dateFrom: '01012018',
-                        dateTo: '08012018',
-                        travellers: [],
-                    },
-                ],
-            };
-
-            let expected = {
-                action: 'BA',
-                numTravellers: 2,
-                services: [
-                    {
-                        serviceType: 'H',
-                        serviceCode: 'destination',
-                        accommodation: 'rc mc',
-                        fromDate: '010118',
-                        toDate: '080118',
-                        marker: true,
-                        travellerAssociation: '2',
-                    },
-                ],
-                travellers: [
-                    {},
-                    {title: 'K', name: 'jane doe', discount: '3'},
-                ],
-            };
-
-            crsData = {
-                services: [
-                    {
-                        marker: true,
-                        serviceType: 'H',
-                        serviceCode: 'destination',
-                        accommodation: 'rc mc',
-                        occupancy: 1,
-                        quantity: 1,
-                        fromDate: '111217',
-                        toDate: '221217',
-                        travellerAssociation: '2',
-                    }
-                ],
-                travellers: [
-                    {},
-                    {title: 'K', name: 'jane doe', discount: '3'},
-                ],
-            };
-
-            adapter.setData(adapterObject).then(() => {
-                expect(requestData).toEqual([expected]);
-                done();
-            }, (error) => {
-                done.fail(error);
-            });
-        });
-
-        it('setData() should convert round-trip data to crs object correct', (done) => {
-            let adapterObject = {
-                numberOfTravellers: 1,
-                services: [
-                    {
-                        type: SERVICE_TYPES.roundTrip,
-                        marked: '',
-                        bookingId: 'E2784NQXTHEN',
-                        destination: 'YYZ',
-                        startDate: '05122017',
-                        endDate: '16122017',
-                        travellers: [{
-                            gender: 'male',
-                            name: 'DOE/JOHN',
-                            age: '32',
-                        }],
-                    },
-                ],
-            };
-
-            let expected = {
-                action: 'BA',
-                numTravellers: 1,
                 services: [{
-                    serviceType: 'R',
-                    serviceCode: 'NEZE2784NQXTHEN',
-                    accommodation: 'YYZ',
-                    fromDate: '051217',
-                    toDate: '161217',
-                    travellerAssociation: '1',
+                    marker: 'marker',
+                    serviceType: 'serviceType',
+                    serviceCode: 'serviceCode',
+                    accommodation: 'accommodation',
+                    fromDate: 'fromDate',
+                    toDate: 'toDate',
+                    occupancy: 'occupancy',
+                    quantity: 'quantity',
+                    travellerAssociation: 'travellerAssociation'
                 }],
                 travellers: [{
-                    title: 'H',
-                    name: 'DOE/JOHN',
-                    discount: '32',
+                    title:'title',
+                    name: 'name',
+                    discount: 'discount'
                 }],
+                agencyNumber: 'agencyNumber',
+                operator: 'operator',
+                numTravellers: 'numTravellers',
+                traveltype: 'traveltype',
+                remark: 'remark',
             };
 
-            adapter.setData(adapterObject).then(() => {
-                expect(requestData).toEqual([expected]);
+            adapter.fetchData().then((result) => {
+                expect(result.meta).toEqual({
+                    serviceTypes: {
+                        car: 'MW',
+                        carExtra: 'E',
+                        hotel: 'H',
+                        roundTrip: 'R',
+                        camper: 'WM',
+                        camperExtra: 'TA'
+                    },
+                    genderTypes: {
+                        male: 'H',
+                        female: 'D',
+                        child: 'K',
+                        infant: 'K'
+                    },
+                    formats: {
+                        date: 'DDMMYY',
+                        time: 'HHmm'
+                    },
+                    type: TomaSPCAdapter.type,
+                });
+
+                expect(result.normalized).toEqual({
+                    agencyNumber: 'agencyNumber',
+                    operator: 'operator',
+                    numberOfTravellers: 'numTravellers',
+                    travelType: 'traveltype',
+                    remark: 'remark',
+                    services: [{
+                        marker: 'marker',
+                        type: 'serviceType',
+                        code: 'serviceCode',
+                        accommodation: 'accommodation',
+                        fromDate: 'fromDate',
+                        toDate: 'toDate',
+                        occupancy: 'occupancy',
+                        quantity: 'quantity',
+                        travellerAssociation: 'travellerAssociation'
+                    }],
+                    travellers: [{
+                        title: 'title',
+                        name: 'name',
+                        age: 'discount'
+                    }],
+                });
+                done();
+            }, (error) => {
+                console.log(error.message);
+                done.fail('unexpected result');
+            });
+        });
+
+        it('sendData() should trigger exit', (done) => {
+            adapter.connectionOptions.popupId = 'popupId';
+
+            adapter.sendData({}).then(() => {
+                expect(TomaSPCConnection.requestService.calls.mostRecent().args[0]).toBe('popups.close');
                 done();
             }, (error) => {
                 done.fail(error);
             });
         });
 
-        it('setData() should convert minimal round-trip data to crs object correct', (done) => {
-            let adapterObject = {
-                numberOfTravellers: 1,
-                services: [
-                    {
-                        type: SERVICE_TYPES.roundTrip,
-                        startDate: 'start',
-                        endDate: 'end',
-                    },
-                ],
-            };
-
-            let expected = {
-                action: 'BA',
-                numTravellers: 1,
-                services: [{
-                    serviceType: 'R',
-                    fromDate: 'start',
-                    toDate: 'end',
-                }],
-            };
-
-            adapter.setData(adapterObject).then(() => {
-                expect(requestData).toEqual([expected]);
-                done();
-            }, (error) => {
-                done.fail(error);
-            });
-        });
-
-        it('setData() should convert camper data to crs object correct', (done) => {
-            let adapterObject = {
-                numberOfTravellers: 2,
-                services: [
-                    {
-                        type: SERVICE_TYPES.camper,
-                        renterCode: 'USA89',
-                        camperCode: 'A4',
-                        pickUpLocation: 'MIA1',
-                        dropOffLocation: 'TPA',
-                        pickUpDate: '04052018',
-                        dropOffDate: '07052018',
-                        duration: 14,
-                        pickUpTime: '1730',
-                        milesIncludedPerDay: '200',
-                        milesPackagesIncluded: '4',
-                        extras: ['extra.3', 'special'],
-                    },
-                ],
-            };
-
-            let expected = {
-                action: 'BA',
-                numTravellers: 3,
-                services: [
-                    {
-                        serviceType: 'WM',
-                        serviceCode: 'USA89A4/MIA1-TPA',
-                        fromDate: '040518',
-                        toDate: '070518',
-                        accommodation: '1730',
-                        quantity: '200',
-                        occupancy: '4',
-                        travellerAssociation: '1',
-                    },
-                    {
-                        serviceType: 'TA',
-                        serviceCode: 'extra',
-                        fromDate: '040518',
-                        toDate: '040518',
-                        travellerAssociation: '1-3'
-                    },
-                    {
-                        serviceType: 'TA',
-                        serviceCode: 'special',
-                        fromDate: '040518',
-                        toDate: '040518',
-                        travellerAssociation: '1'
-                    },
-                ],
-            };
-
-            adapter.setData(adapterObject).then(() => {
-                expect(requestData).toEqual([expected]);
-                done();
-            }, (error) => {
-                done.fail(error);
-            });
-        });
-
-        it('setData() should overwrite selected crs service with adapter data correct', (done) => {
-            crsData = {
-                services: [
-                    {
-                        serviceType: 'MW',
-                    },
-                    {
-                        serviceType: 'H',
-                    },
-                    {
-                        serviceType: 'H',
-                        serviceCode: 'state',
-                        accommodation: 'king size'
-                    },
-                    {
-                        marker: true,
-                        serviceType: 'H',
-                        accommodation: 'all inc',
-                    },
-                ],
-            };
-
-            let adapterObject = {
-                services: [
-                    {
-                        type: SERVICE_TYPES.hotel,
-                        destination: 'destination',
-                        roomCode: 'rc',
-                        mealCode: 'mc',
-                        dateFrom: '01012018',
-                        dateTo: '08012018',
-                    },
-                ],
-            };
-
-            let expected = {
-                action: 'BA',
-                numTravellers: 1,
-                services: [
-                    {
-                        serviceType: 'MW',
-                    },
-                    {
-                        serviceType: 'H',
-                    },
-                    {
-                        serviceType: 'H',
-                        serviceCode: 'state',
-                        accommodation: 'king size'
-                    },
-                    {
-                        marker: true,
-                        serviceType: 'H',
-                        serviceCode: 'destination',
-                        accommodation: 'rc mc',
-                        fromDate: '010118',
-                        toDate: '080118',
-                        travellerAssociation: '1',
-                    },
-                ],
-            };
-
-            adapter.setData(adapterObject).then(() => {
-                expect(requestData).toEqual([expected]);
-                done();
-            }, (error) => {
-                done.fail(error);
-            });
-        });
-
-        it('setData() should throw error if connection is not available', (done) => {
+        it('sendData() should throw error if connection is not available', (done) => {
             TomaSPCConnection.requestService = void 0;
 
-            adapter.setData().then(() => {
+            adapter.sendData().then(() => {
                 done.fail('expectation error');
             }, (error) => {
-                expect(error.toString()).toBe('Error: [.setData] No connection available - please connect to TOMA SPC first.');
+                expect(error.toString()).toBe('Error: No connection available - please connect to TOMA SPC first.');
                 done();
             });
+        });
+
+        it('convert() should convert "empty" data', () => {
+            let build = {
+                services: [],
+                travellers: [],
+            };
+
+            let data = {
+                normalized: {}
+            };
+
+            const crsData = JSON.parse(JSON.stringify(adapter.convert(data)));
+
+            expect(crsData.build).toEqual(build);
+        });
+
+        it('convert() should convert complete data', () => {
+            let build = {
+                services: [{
+                    marker: 'marker',
+                    serviceType: 'type',
+                    serviceCode: 'code',
+                    accommodation: 'accommodation',
+                    fromDate: 'fromDate',
+                    toDate: 'toDate',
+                    occupancy: 'occupancy',
+                    quantity: 'quantity',
+                    travellerAssociation: 'travellerAssociation'
+                }],
+                travellers: [{
+                    title:'title',
+                    name: 'name',
+                    discount: 'age'
+                }],
+                agencyNumber: 'agencyNumber',
+                operator: 'operator',
+                numTravellers: 'numberOfTravellers',
+                traveltype: 'travelType',
+                remark: 'remark',
+            };
+
+            let data = {
+                parsed: {
+                    services: [],
+                    travellers: [],
+                },
+                normalized: {
+                    remark: 'remark',
+                    travelType: 'travelType',
+                    numberOfTravellers: 'numberOfTravellers',
+                    agencyNumber: 'agencyNumber',
+                    operator: 'operator',
+                    services: [
+                        {
+                            marker: 'marker',
+                            type: 'type',
+                            code: 'code',
+                            accommodation: 'accommodation',
+                            occupancy: 'occupancy',
+                            quantity: 'quantity',
+                            fromDate: 'fromDate',
+                            toDate: 'toDate',
+                            travellerAssociation: 'travellerAssociation',
+                        },
+                    ],
+                    travellers: [
+                        {
+                            title: 'title',
+                            name: 'name',
+                            age: 'age',
+                        },
+                    ],
+                }
+            };
+
+            const crsData = JSON.parse(JSON.stringify(adapter.convert(data)));
+
+            expect(crsData.build).toEqual(build);
         });
 
         it('exit() should request to close the popup', (done) => {
@@ -1290,7 +400,7 @@ describe('TomaSPCAdapter', () => {
             });
         });
 
-        it('exitData() should throw error if connection failed', (done) => {
+        it('exit() should throw error if connection failed', (done) => {
             TomaSPCConnection.requestService = void 0;
 
             adapter.connectionOptions.popupId = 'popupId';

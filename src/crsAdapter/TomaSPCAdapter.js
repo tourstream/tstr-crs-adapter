@@ -1,10 +1,5 @@
 import es6shim from 'es6-shim';
 import es7shim from 'es7-shim';
-import TravellerHelper from '../helper/TravellerHelper';
-import RoundTripHelper from '../helper/RoundTripHelper';
-import CarHelper from '../helper/CarHelper';
-import CamperHelper from '../helper/CamperHelper';
-import HotelHelper from '../helper/HotelHelper';
 
 const CONFIG = {
     crs: {
@@ -42,19 +37,6 @@ class TomaSPCAdapter {
         this.options = options;
         this.logger = logger;
         this.connectionOptions = {};
-
-        const helperOptions = Object.assign({}, options, {
-            crsDateFormat: CONFIG.crs.dateFormat,
-            gender2SalutationMap: CONFIG.crs.gender2SalutationMap,
-        });
-
-        this.helper = {
-            traveller: new TravellerHelper(helperOptions),
-            car: new CarHelper(helperOptions),
-            camper: new CamperHelper(helperOptions),
-            hotel: new HotelHelper(helperOptions),
-            roundTrip: new RoundTripHelper(helperOptions),
-        };
     }
 
     /**
@@ -127,7 +109,15 @@ class TomaSPCAdapter {
     }
 
     convert(crsData) {
-        crsData.converted = JSON.parse(JSON.stringify(crsData.parsed));
+        crsData.normalized.services = crsData.normalized.services || [];
+        crsData.normalized.travellers = crsData.normalized.travellers || [];
+
+        crsData.converted = crsData.parsed
+            ? JSON.parse(JSON.stringify(crsData.parsed))
+            : {
+                services: [],
+                travellers: [],
+            };
 
         crsData.converted.agencyNumber = crsData.normalized.agencyNumber;
         crsData.converted.operator = crsData.normalized.operator;
@@ -173,7 +163,7 @@ class TomaSPCAdapter {
         });
     }
 
-    sendData(crsData) {
+    sendData(crsData = {}) {
         return this.sendCrsObject(crsData.build).then(() => {
             this.exit();
         });
