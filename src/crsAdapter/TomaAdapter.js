@@ -30,14 +30,6 @@ const CONFIG = {
             infant: 'K',
         },
     },
-    services: {
-        car: {
-            serviceCodeRegEx: /([A-Z]*[0-9]*)?([A-Z]*[0-9]*)?(\/)?([A-Z]*[0-9]*)?(-)?([A-Z]*[0-9]*)?/,
-        },
-        roundTrip: {
-            ageRegEx: /^\d{2,3}$/g
-        },
-    },
     parserOptions: {
         attrPrefix: '__attributes',
         textNodeName: '__textNode',
