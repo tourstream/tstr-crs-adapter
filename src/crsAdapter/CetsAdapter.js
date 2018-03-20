@@ -538,12 +538,14 @@ class CetsAdapter {
         service.travellers.forEach((serviceTraveller, index) => {
             const traveller = this.helper.traveller.normalizeTraveller(serviceTraveller);
 
+            const travellerName = traveller.name.split(' ');
             xml.Fap.push({
                 [CONFIG.builderOptions.attrkey]: {
                     ID: index + 1,
                 },
                 PersonType: traveller.salutation,
-                Name: traveller.name,
+                Name: travellerName[1],
+                FirstName: travellerName[0],
                 Birth: traveller.age,
             });
 
