@@ -1,7 +1,7 @@
 import injector from 'inject!../../../src/crsAdapter/TrafficsTbmAdapter';
 import {DEFAULT_OPTIONS} from '../../../src/UbpCrsAdapter';
 
-fdescribe('TrafficsTbmAdapter', () => {
+describe('TrafficsTbmAdapter', () => {
     let adapter, TrafficsTbmAdapter, axios, requestUrl, requestParameter, logService, windowSpy;
 
     beforeEach(() => {

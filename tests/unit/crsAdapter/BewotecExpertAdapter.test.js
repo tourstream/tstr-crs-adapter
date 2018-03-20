@@ -298,7 +298,7 @@ describe('BewotecExpertAdapter', () => {
 
             const crsData = JSON.parse(JSON.stringify(adapter.convert(data)));
 
-            expect(crsData).toEqual(build);
+            expect(crsData.build).toEqual(build);
         });
 
         it('convert() should convert complete data', () => {
@@ -353,9 +353,9 @@ describe('BewotecExpertAdapter', () => {
                 }
             };
 
-            const crsData = JSON.parse(JSON.stringify(adapter.convert(data)));
+            const crsData = adapter.convert(data);
 
-            expect(crsData).toEqual(build);
+            expect(crsData.build).toEqual(build);
         });
 
         describe('is not in HTTP context', () => {
