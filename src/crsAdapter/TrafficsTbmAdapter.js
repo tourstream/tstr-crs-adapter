@@ -1,10 +1,6 @@
 import moment from 'moment';
 import axios from 'axios';
 import querystring from 'querystring';
-import TravellerHelper from '../helper/TravellerHelper';
-import CarHelper from '../helper/CarHelper';
-import CamperHelper from '../helper/CamperHelper';
-import HotelHelper from '../helper/HotelHelper';
 import WindowHelper from '../helper/WindowHelper';
 
 const CONFIG = {
@@ -52,16 +48,7 @@ class TrafficsTbmAdapter {
         this.options = options;
         this.logger = logger;
 
-        const helperOptions = Object.assign({}, options, {
-            crsDateFormat: CONFIG.crs.dateFormat,
-            gender2SalutationMap: CONFIG.crs.gender2SalutationMap,
-        });
-
         this.helper = {
-            traveller: new TravellerHelper(helperOptions),
-            car: new CarHelper(helperOptions),
-            camper: new CamperHelper(helperOptions),
-            hotel: new HotelHelper(helperOptions),
             window: new WindowHelper(),
         };
     }
@@ -96,38 +83,55 @@ class TrafficsTbmAdapter {
     }
 
     fetchData() {
-        return this.getConnection().get().then((response) => {
-            const rawData = (response || {}).data || {};
+        try {
+            return this.getConnection().get().then((response) => {
+                const rawData = (response || {}).data || {};
 
-            if (rawData.error) {
-                throw new Error(rawData.error);
-            }
+                if (rawData.error) {
+                    throw new Error(rawData.error);
+                }
 
-            const crsData = rawData.admin;
-
-            return {
-                raw: rawData,
-                parsed: rawData,
-                normalized: {
-                    agencyNumber: crsData.operator['$'].agt,
-                    operator: crsData.operator['$'].toc,
-                    numberOfTravellers: crsData.operator['$'].psn,
-                    travelType: crsData.operator['$'].knd,
-                    remark: crsData.customer['$'].rmk,
-                    services: this.collectServices(crsData),
-                    travellers: this.collectTravellers(crsData),
-                },
-                meta: {
-                    serviceTypes: CONFIG.crs.serviceTypes,
-                    genderTypes: CONFIG.crs.gender2SalutationMap,
-                    formats: {
-                        date: CONFIG.crs.dateFormat,
-                        time: CONFIG.crs.timeFormat,
+                const crsData = rawData.admin || {
+                    operator: {
+                        $: {}
                     },
-                    type: TrafficsTbmAdapter.type,
-                },
-            };
-        });
+                    customer: {
+                        $: {}
+                    },
+                    services: {
+                        service: [],
+                    },
+                    travellers: {
+                        traveller: [],
+                    },
+                };
+
+                return {
+                    raw: rawData,
+                    parsed: rawData,
+                    normalized: {
+                        agencyNumber: crsData.operator['$'].agt,
+                        operator: crsData.operator['$'].toc,
+                        numberOfTravellers: crsData.operator['$'].psn,
+                        travelType: crsData.operator['$'].knd,
+                        remark: crsData.customer['$'].rmk,
+                        services: this.collectServices(crsData),
+                        travellers: this.collectTravellers(crsData),
+                    },
+                    meta: {
+                        serviceTypes: CONFIG.crs.serviceTypes,
+                        genderTypes: CONFIG.crs.gender2SalutationMap,
+                        formats: {
+                            date: CONFIG.crs.dateFormat,
+                            time: CONFIG.crs.timeFormat,
+                        },
+                        type: TrafficsTbmAdapter.type,
+                    },
+                };
+            });
+        } catch (error) {
+            return Promise.reject(error);
+        }
     }
 
     collectServices(crsData) {
@@ -157,10 +161,13 @@ class TrafficsTbmAdapter {
     }
 
     convert(crsData) {
+        crsData.normalized.services = crsData.normalized.services || [];
+        crsData.normalized.travellers = crsData.normalized.travellers || [];
+
         crsData.converted = {
             'TbmXml.admin.operator.$.act': CONFIG.crs.defaultValues.action,
             'TbmXml.admin.customer.$.rmk': crsData.normalized.remark,
-            'TbmXml.admin.operator.$.knd': crsData.normalized.traveltype,
+            'TbmXml.admin.operator.$.knd': crsData.normalized.travelType,
             'TbmXml.admin.operator.$.psn': crsData.normalized.numberOfTravellers,
             'TbmXml.admin.operator.$.agt': crsData.normalized.agencyNumber,
             'TbmXml.admin.operator.$.toc': crsData.normalized.operator,
@@ -197,7 +204,11 @@ class TrafficsTbmAdapter {
     }
 
     sendData(crsData) {
-        return this.getConnection().send(crsData.build);
+        try {
+            return this.getConnection().send(crsData.build);
+        } catch (error) {
+            return Promise.reject(error);
+        }
     }
 
     exit() {
