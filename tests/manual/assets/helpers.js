@@ -8,6 +8,7 @@
     const productSelectionButtons = document.getElementById('product-selection').getElementsByTagName('button');
     const formFieldTemplate = document.getElementById('form-field-template');
     const reportBlock = window.document.getElementById('report');
+    const connectButton = document.getElementById('connect-button');
     const data = {};
 
     init();
@@ -33,6 +34,7 @@
                     return;
                 }
 
+                resetConnectButton();
                 resetForm(connectionOptionsForm);
                 resetForm(productForm);
                 selectTemplate(connectionOptionsForm, event.target.value);
@@ -59,7 +61,10 @@
 
             crsAdapter
                 .connect(connectionOptionsForm.type.value, data)
-                .then(log('connected to ' + connectionOptionsForm.type.value), log);
+                .then(() => {
+                    setConnectionTypeToConnectButton(connectionOptionsForm.type.value);
+                    log('connection successful');
+                }, log);
         } catch (e) {
             log(e);
         }
@@ -98,12 +103,22 @@
         });
     }
 
+    function resetConnectButton() {
+        connectButton.innerHTML = 'connect to CRS';
+        connectButton.classList.add('btn-outline-success');
+    }
+
     function resetForm(form) {
         form.innerHTML = '';
     }
 
     function resetReport() {
         reportBlock.innerHTML = '';
+    }
+
+    function setConnectionTypeToConnectButton(type) {
+        connectButton.innerHTML = 'connected to ' + type;
+        connectButton.classList.remove('btn-outline-success');
     }
 
     function selectTemplate(form, type) {
