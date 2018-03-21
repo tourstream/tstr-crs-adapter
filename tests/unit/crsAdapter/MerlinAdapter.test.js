@@ -210,28 +210,7 @@ describe('MerlinAdapter', () => {
         });
 
         it('convert() should convert "empty" data', () => {
-            const build = {
-                normalized: {
-                    services: [],
-                    travellers: []
-                },
-                converted: {
-                    GATE2MX: {
-                        SendRequest: {
-                            Import: {
-                                ServiceBlock: {
-                                    ServiceRow: []
-                                },
-                                TravellerBlock: {
-                                    PersonBlock: {
-                                        PersonRow: []
-                                    }
-                                }
-                            }
-                        }
-                    }
-                },
-                build: xmlHead +
+            const build = xmlHead +
                 '<GATE2MX>' +
                 '<SendRequest>' +
                 '<Import>' +
@@ -241,8 +220,7 @@ describe('MerlinAdapter', () => {
                 '</TravellerBlock>' +
                 '</Import>' +
                 '</SendRequest>' +
-                '</GATE2MX>',
-            };
+                '</GATE2MX>';
 
             let data = {
                 normalized: {}
@@ -250,7 +228,7 @@ describe('MerlinAdapter', () => {
 
             const crsData = JSON.parse(JSON.stringify(adapter.convert(data)));
 
-            expect(crsData).toEqual(build);
+            expect(crsData.build).toEqual(build);
         });
 
         it('convert() should convert complete data', () => {
@@ -283,6 +261,7 @@ describe('MerlinAdapter', () => {
                     '</PersonBlock>' +
                     '</TravellerBlock>' +
 
+                    '<TransactionCode>action</TransactionCode>' +
                     '<AgencyNoTouroperator>agencyNumber</AgencyNoTouroperator>' +
                     '<TourOperator>operator</TourOperator>' +
                     '<NoOfPersons>numberOfTravellers</NoOfPersons>' +
@@ -310,6 +289,7 @@ describe('MerlinAdapter', () => {
                     },
                 },
                 normalized: {
+                    action: 'action',
                     remark: 'remark',
                     travelType: 'travelType',
                     numberOfTravellers: 'numberOfTravellers',

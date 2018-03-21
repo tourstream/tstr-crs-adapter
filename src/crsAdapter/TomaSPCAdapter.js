@@ -14,10 +14,6 @@ const CONFIG = {
             camperExtra: 'TA',
             roundTrip: 'R',
         },
-        defaultValues: {
-            action: 'BA',
-            numberOfTravellers: 1,
-        },
         gender2SalutationMap: {
             male: 'H',
             female: 'D',
@@ -114,6 +110,7 @@ class TomaSPCAdapter {
                 travellers: [],
             };
 
+        crsData.converted.action = crsData.normalized.action;
         crsData.converted.agencyNumber = crsData.normalized.agencyNumber;
         crsData.converted.operator = crsData.normalized.operator;
         crsData.converted.numTravellers = crsData.normalized.numberOfTravellers;

@@ -22,10 +22,6 @@ class MerlinAdapter {
                     camperExtra: 'TA',
                 },
                 connectionUrl: 'https://localhost:12771/',
-                defaultValues: {
-                    action: 'BA',
-                    numberOfTravellers: '1',
-                },
                 gender2SalutationMap: {
                     [GENDER_TYPES.male]: 'H',
                     [GENDER_TYPES.female]: 'F',
@@ -164,6 +160,7 @@ class MerlinAdapter {
 
         const crsDataObject = crsData.converted.GATE2MX.SendRequest.Import;
 
+        crsDataObject.TransactionCode = crsData.normalized.action;
         crsDataObject.AgencyNoTouroperator = crsData.normalized.agencyNumber;
         crsDataObject.TourOperator = crsData.normalized.operator;
         crsDataObject.NoOfPersons = crsData.normalized.numberOfTravellers;
