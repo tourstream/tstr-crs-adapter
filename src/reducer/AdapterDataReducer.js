@@ -43,6 +43,4 @@ class AdapterDataReducer {
     }
 }
 
-export {
-    AdapterDataReducer as default,
-}
+export default AdapterDataReducer;

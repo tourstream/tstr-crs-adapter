@@ -34,6 +34,4 @@ class HotelServiceMapper {
     }
 }
 
-export {
-    HotelServiceMapper as default,
-}
+export default HotelServiceMapper;

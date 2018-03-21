@@ -177,13 +177,13 @@ CosmoNaut  | X     | X     | X         | X
 |         | .dateTo        | '20092017' 
 |         | .travellers    | [ { gender: _-gender-_, firstName: 'john', lastName: 'doe', age: '32' }, ... ]
 
-| type      | fields              | example
-| :---      | :---                | :---
-| roundTrip | .bookingId          | 'E2784NQXTHEN' 
-|           | .destination        | 'YYZ' 
-|           | .startDate          | '05122017' 
-|           | .endDate            | '16122017'
-|           | .travellers         | [ { gender: _-gender-_, firstName: 'john', lastName: 'doe', age: '32' }, ... ]
+| type      | fields       | example
+| :---      | :---         | :---
+| roundTrip | .bookingId   | 'E2784NQXTHEN' 
+|           | .destination | 'YYZ' 
+|           | .startDate   | '05122017' 
+|           | .endDate     | '16122017'
+|           | .travellers  | [ { gender: _-gender-_, firstName: 'john', lastName: 'doe', age: '32' }, ... ]
 
  
 | type     | fields                 | example

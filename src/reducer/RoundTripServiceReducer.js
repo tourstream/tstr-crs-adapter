@@ -52,6 +52,4 @@ class RoundTripServiceReducer {
     }
 }
 
-export {
-    RoundTripServiceReducer as default,
-}
+export default RoundTripServiceReducer;

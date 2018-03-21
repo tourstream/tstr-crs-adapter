@@ -50,6 +50,4 @@ class HotelServiceReducer {
     }
 }
 
-export {
-    HotelServiceReducer as default,
-}
+export default HotelServiceReducer;

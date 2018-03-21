@@ -12,6 +12,4 @@ class RoundTripHelper {
     }
 }
 
-export {
-    RoundTripHelper as default,
-}
+export default RoundTripHelper;

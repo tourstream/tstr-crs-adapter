@@ -45,6 +45,4 @@ class CrsDataMapper {
     }
 }
 
-export {
-    CrsDataMapper as default,
-}
+export default CrsDataMapper;

@@ -57,6 +57,4 @@ class VehicleHelper {
     }
 }
 
-export {
-    VehicleHelper as default,
-}
+export default VehicleHelper;
