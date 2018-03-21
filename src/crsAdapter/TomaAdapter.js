@@ -19,10 +19,6 @@ const CONFIG = {
             camperExtra: 'TA',
         },
         activeXObjectName: 'Spice.Start',
-        defaultValues: {
-            action: 'BA',
-            numberOfTravellers: 1,
-        },
         gender2SalutationMap: {
             male: 'H',
             female: 'F',
@@ -188,6 +184,7 @@ class TomaAdapter {
 
         const crsDataObject = crsData.converted.Envelope.Body.TOM;
 
+        crsDataObject.Action = crsData.normalized.action;
         crsDataObject.AgencyNumber = crsData.normalized.agencyNumber;
         crsDataObject.Operator = crsData.normalized.operator;
         crsDataObject.NoOfPersons = crsData.normalized.numberOfTravellers;

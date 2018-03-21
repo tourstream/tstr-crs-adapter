@@ -288,9 +288,7 @@ describe('BewotecExpertAdapter', () => {
         });
 
         it('convert() should convert "empty" data', () => {
-            const build = {
-                a: 'BA',
-            };
+            const build = {};
 
             let data = {
                 normalized: {}
@@ -303,7 +301,7 @@ describe('BewotecExpertAdapter', () => {
 
         it('convert() should convert complete data', () => {
             const build = {
-                a: 'BA',
+                a: 'action',
                 rem: 'remark',
                 r: 'travelType',
                 p: 'numberOfTravellers',
@@ -325,6 +323,7 @@ describe('BewotecExpertAdapter', () => {
 
             let data = {
                 normalized: {
+                    action: 'action',
                     remark: 'remark',
                     travelType: 'travelType',
                     numberOfTravellers: 'numberOfTravellers',

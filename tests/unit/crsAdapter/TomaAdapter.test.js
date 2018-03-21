@@ -245,6 +245,7 @@ describe('TomaAdapter', () => {
             let build = xmlHead + '<Envelope>' +
                 '<Body>' +
                 '<TOM>' +
+                '<Action>action</Action>' +
                 '<AgencyNumber>agencyNumber</AgencyNumber>' +
                 '<Operator>operator</Operator>' +
                 '<NoOfPersons>numberOfTravellers</NoOfPersons>' +
@@ -277,6 +278,7 @@ describe('TomaAdapter', () => {
                     },
                 },
                 normalized: {
+                    action: 'action',
                     remark: 'remark',
                     travelType: 'travelType',
                     numberOfTravellers: 'numberOfTravellers',

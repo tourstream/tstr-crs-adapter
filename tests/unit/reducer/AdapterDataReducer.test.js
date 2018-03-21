@@ -28,7 +28,9 @@ describe('AdapterDataReducer', () => {
             normalized: {},
         };
 
-        expect(JSON.parse(JSON.stringify(reducer.reduceIntoCrsData(adapterData, crsData))).normalized).toEqual({});
+        expect(JSON.parse(JSON.stringify(reducer.reduceIntoCrsData(adapterData, crsData))).normalized).toEqual({
+            action: 'BA'
+        });
     });
 
     it('reduceIntoCrsData() returns "empty" reduced data when adapterData contains not reducable services', () => {
@@ -39,7 +41,9 @@ describe('AdapterDataReducer', () => {
             normalized: {},
         };
 
-        expect(JSON.parse(JSON.stringify(reducer.reduceIntoCrsData(adapterData, crsData))).normalized).toEqual({});
+        expect(JSON.parse(JSON.stringify(reducer.reduceIntoCrsData(adapterData, crsData))).normalized).toEqual({
+            action: 'BA'
+        });
     });
 
     it('reduceIntoCrsData() returns reduced data', () => {
@@ -57,7 +61,9 @@ describe('AdapterDataReducer', () => {
 
         reducerList.adapterType = underlyingReducer;
 
-        expect(JSON.parse(JSON.stringify(reducer.reduceIntoCrsData(adapterData, crsData))).normalized).toEqual({});
+        expect(JSON.parse(JSON.stringify(reducer.reduceIntoCrsData(adapterData, crsData))).normalized).toEqual({
+            action: 'BA'
+        });
     });
 });
 

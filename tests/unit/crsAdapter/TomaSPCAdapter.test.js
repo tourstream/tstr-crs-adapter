@@ -321,6 +321,7 @@ describe('TomaSPCAdapter', () => {
                     name: 'name',
                     discount: 'age'
                 }],
+                action: 'action',
                 agencyNumber: 'agencyNumber',
                 operator: 'operator',
                 numTravellers: 'numberOfTravellers',
@@ -334,6 +335,7 @@ describe('TomaSPCAdapter', () => {
                     travellers: [],
                 },
                 normalized: {
+                    action: 'action',
                     remark: 'remark',
                     travelType: 'travelType',
                     numberOfTravellers: 'numberOfTravellers',

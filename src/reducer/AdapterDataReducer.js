@@ -13,6 +13,7 @@ class AdapterDataReducer {
 
         adapterData.services = adapterData.services || [];
 
+        crsData.normalized.action = 'BA';
         crsData.normalized.agencyNumber = adapterData.agencyNumber || crsData.normalized.agencyNumber;
         crsData.normalized.operator = adapterData.operator || crsData.normalized.operator;
         crsData.normalized.numberOfTravellers = adapterData.numberOfTravellers || crsData.normalized.numberOfTravellers;

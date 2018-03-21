@@ -18,10 +18,6 @@ const CONFIG = {
             camperExtra: 'TA',
         },
         connectionUrl: 'http://localhost:7354/airob',
-        defaultValues: {
-            action: 'BA',
-            numberOfTravellers: 1,
-        },
         gender2SalutationMap: {
             male: 'H',
             female: 'D',
@@ -177,7 +173,7 @@ class BewotecExpertAdapter {
         crsData.normalized.travellers = crsData.normalized.travellers || [];
 
         crsData.converted = {
-            a: CONFIG.crs.defaultValues.action,
+            a: crsData.normalized.action,
             rem: crsData.normalized.remark,
             r: crsData.normalized.travelType,
             p: crsData.normalized.numberOfTravellers,

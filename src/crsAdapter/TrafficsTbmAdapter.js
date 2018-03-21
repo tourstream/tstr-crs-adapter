@@ -16,10 +16,6 @@ const CONFIG = {
             camperExtra: 'TA',
         },
         connectionUrl: 'cosmonaut://params/',
-        defaultValues: {
-            action: 'BA',
-            numberOfTravellers: 1,
-        },
         gender2SalutationMap: {
             male: 'H',
             female: 'F',
@@ -160,7 +156,7 @@ class TrafficsTbmAdapter {
         crsData.normalized.travellers = crsData.normalized.travellers || [];
 
         crsData.converted = {
-            'TbmXml.admin.operator.$.act': CONFIG.crs.defaultValues.action,
+            'TbmXml.admin.operator.$.act': crsData.normalized.action,
             'TbmXml.admin.customer.$.rmk': crsData.normalized.remark,
             'TbmXml.admin.operator.$.knd': crsData.normalized.travelType,
             'TbmXml.admin.operator.$.psn': crsData.normalized.numberOfTravellers,

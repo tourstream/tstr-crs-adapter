@@ -317,9 +317,7 @@ describe('TrafficsTbmAdapter', () => {
         });
 
         it('convert() should convert "empty" data', () => {
-            let build = {
-                'TbmXml.admin.operator.$.act': 'BA',
-            };
+            let build = {};
 
             let data = {
                 normalized: {}
@@ -332,7 +330,7 @@ describe('TrafficsTbmAdapter', () => {
 
         it('convert() should convert complete data', () => {
             let build = {
-                'TbmXml.admin.operator.$.act': 'BA',
+                'TbmXml.admin.operator.$.act': 'action',
                 'TbmXml.admin.customer.$.rmk': 'remark',
                 'TbmXml.admin.operator.$.psn': 'numberOfTravellers',
                 'TbmXml.admin.operator.$.agt': 'agencyNumber',
@@ -358,6 +356,7 @@ describe('TrafficsTbmAdapter', () => {
                     travellers: [],
                 },
                 normalized: {
+                    action: 'action',
                     remark: 'remark',
                     travelType: 'travelType',
                     numberOfTravellers: 'numberOfTravellers',
