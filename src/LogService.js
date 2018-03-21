@@ -106,6 +106,12 @@ class LogService {
             '<pre>' + this.syntaxHighlight(stringified) + '</pre>',
             '</div>',
         ].join(' '));
+
+        let height = this.debugWindow.document.body.scrollHeight
+            || this.debugWindow.document.body.offsetHeight
+            || this.debugWindow.document.body.height;
+
+        this.debugWindow.scroll(0, height);
     }
 
     syntaxHighlight(json) {
