@@ -137,6 +137,4 @@ class LogService {
     }
 }
 
-export {
-    LogService as default,
-}
+export default LogService;

@@ -137,6 +137,4 @@ class TravellerHelper {
     }
 }
 
-export {
-    TravellerHelper as default,
-}
+export default TravellerHelper;

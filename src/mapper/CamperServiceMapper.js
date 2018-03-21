@@ -36,6 +36,4 @@ class CamperServiceMapper {
     }
 }
 
-export {
-    CamperServiceMapper as default,
-}
+export default CamperServiceMapper;

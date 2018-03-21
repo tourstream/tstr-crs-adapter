@@ -89,6 +89,4 @@ class CarServiceReducer {
     };
 }
 
-export {
-    CarServiceReducer as default,
-}
+export default CarServiceReducer;

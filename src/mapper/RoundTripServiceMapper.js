@@ -30,6 +30,4 @@ class RoundTripServiceMapper {
     }
 }
 
-export {
-    RoundTripServiceMapper as default,
-}
+export default RoundTripServiceMapper;

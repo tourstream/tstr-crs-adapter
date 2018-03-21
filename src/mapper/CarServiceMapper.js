@@ -36,6 +36,4 @@ class CarServiceMapper {
     }
 }
 
-export {
-    CarServiceMapper as default,
-}
+export default CarServiceMapper;

@@ -12,6 +12,4 @@ class HotelHelper {
     }
 }
 
-export {
-    HotelHelper as default,
-}
+export default HotelHelper;

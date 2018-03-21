@@ -64,6 +64,4 @@ class CamperServiceReducer {
     }
 }
 
-export {
-    CamperServiceReducer as default,
-}
+export default CamperServiceReducer;
