@@ -42,8 +42,6 @@
     }
 
     function connectToCrs() {
-        resetReport();
-
         try {
             if (!connectionOptionsForm.type) {
                 throw new Error('no CRS selected');
@@ -117,8 +115,6 @@
     }
 
     function getData() {
-        resetReport();
-
         try {
             crsAdapter.getData().then(log).catch(log);
         } catch (e) {
@@ -127,8 +123,6 @@
     }
 
     function addData() {
-        resetReport();
-
         const serviceIndex = (data.services || []).length;
 
         Object.keys(productForm).forEach(function(key) {
@@ -143,14 +137,15 @@
     }
 
     function sendData() {
-        resetReport();
-
         crsAdapter.setData(data).then(function() {
-            data.services = []
+            data.services = [];
+            log('[.sendData()] done');
         }).catch(log);
     }
 
     function log(text) {
+        resetReport();
+
         let stringified = JSON.stringify(text, void 0, 4) || '';
 
         if (stringified === '{}') {
@@ -203,10 +198,10 @@
     }
 
     function doExit() {
-        resetReport();
-
         try {
-            crsAdapter.exit().catch(log);
+            crsAdapter.exit().then(() => {
+                log('[.exit()] done');
+            }).catch(log);
         } catch (e) {
             log(e);
         }
