@@ -23,17 +23,7 @@ class CarServiceReducer {
 
         crsService.type = crsData.meta.serviceTypes.car;
         crsService.marker = adapterService.marked ? 'X' : void 0;
-
-        // USA96A4/MIA1-TPA
-        crsService.code = [
-            adapterService.renterCode,
-            adapterService.vehicleCode,
-            '/',
-            adapterService.pickUpLocation,
-            '-',
-            adapterService.dropOffLocation,
-        ].join('').replace('/-', '') || void 0;
-
+        crsService.code = this.helper.vehicle.createServiceCode(adapterService);
         crsService.fromDate = pickUpDate.isValid() ? pickUpDate.format(crsData.meta.formats.date) : adapterService.pickUpDate;
         crsService.toDate = dropOffDate.isValid() ? dropOffDate.format(crsData.meta.formats.date) : adapterService.dropOffDate;
         crsService.accommodation = pickUpTime.isValid() ? pickUpTime.format(crsData.meta.formats.time) : adapterService.pickUpTime;

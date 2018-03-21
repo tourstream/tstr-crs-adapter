@@ -44,6 +44,17 @@ class VehicleHelper {
             dropOffLocation: codeParts[indexDropOffLocation],
         };
     };
+
+    createServiceCode(adapterService = {}) {
+        return [
+            adapterService.renterCode,
+            adapterService.vehicleCode,
+            '/',
+            adapterService.pickUpLocation,
+            '-',
+            adapterService.dropOffLocation,
+        ].join('').replace(/^\/-|\/-$/, '') || void 0;
+    }
 }
 
 export {

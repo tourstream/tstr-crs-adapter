@@ -49,4 +49,39 @@ describe('VehicleHelper', () => {
             vehicleCode: 'A4',
         });
     });
+
+    it('createServiceCode() should return no service code for no service', () => {
+        expect(helper.createServiceCode()).toBeUndefined();
+    });
+
+    it('createServiceCode() should return correct service code', () => {
+        expect(helper.createServiceCode({renterCode: 'rc'})).toBe('rc');
+        expect(helper.createServiceCode({vehicleCode: 'vtc'})).toBe('vtc');
+        expect(helper.createServiceCode({pickUpLocation: 'pul'})).toBe('/pul-');
+        expect(helper.createServiceCode({dropOffLocation: 'dol'})).toBe('dol');
+
+        expect(helper.createServiceCode({renterCode: 'rc', vehicleCode: 'vtc'})).toBe('rcvtc');
+        expect(helper.createServiceCode({renterCode: 'rc', pickUpLocation: 'pul'})).toBe('rc/pul-');
+        expect(helper.createServiceCode({renterCode: 'rc', dropOffLocation: 'dol'})).toBe('rc/-dol');
+
+        expect(helper.createServiceCode({
+            renterCode: 'rc', vehicleCode: 'vtc', pickUpLocation: 'pul',
+        })).toBe('rcvtc/pul-');
+
+        expect(helper.createServiceCode({
+            renterCode: 'rc', vehicleCode: 'vtc', dropOffLocation: 'dol',
+        })).toBe('rcvtc/-dol');
+
+        expect(helper.createServiceCode({
+            renterCode: 'rc', vehicleCode: 'vtc', pickUpLocation: 'pul', dropOffLocation: 'dol',
+        })).toBe('rcvtc/pul-dol');
+
+        expect(helper.createServiceCode({
+            vehicleCode: 'vtc', pickUpLocation: 'pul', dropOffLocation: 'dol',
+        })).toBe('vtc/pul-dol');
+
+        expect(helper.createServiceCode({pickUpLocation: 'pul', dropOffLocation: 'dol'})).toBe('/pul-dol');
+
+        expect(helper.createServiceCode({dropOffLocation: 'dol'})).toBe('dol');
+    });
 });
