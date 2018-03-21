@@ -2,13 +2,14 @@ import CamperServiceReducer from '../../../src/reducer/CamperServiceReducer';
 import {DEFAULT_OPTIONS, SERVICE_TYPES} from '../../../src/UbpCrsAdapter';
 
 describe('CamperServiceReducer', () => {
-    let reducer, config, helper;
+    let reducer, config, helper, vehicleHelper;
 
     beforeEach(() => {
+        vehicleHelper = require('tests/unit/_mocks/VehicleHelper')();
         config = DEFAULT_OPTIONS;
         helper = {
             traveller: require('tests/unit/_mocks/TravellerHelper')(),
-            vehicle: require('tests/unit/_mocks/VehicleHelper')(),
+            vehicle: vehicleHelper,
         };
 
         reducer = new CamperServiceReducer(
@@ -87,6 +88,8 @@ describe('CamperServiceReducer', () => {
             },
         };
 
+        vehicleHelper.createServiceCode.and.returnValue('service.code');
+
         reducer.reduceIntoCrsData(adapterService, crsData);
 
         expect(JSON.parse(JSON.stringify(crsData)).normalized).toEqual({
@@ -100,7 +103,7 @@ describe('CamperServiceReducer', () => {
                 {
                     type: 'camperType',
                     marker: 'X',
-                    code: 'renterCodevehicleCode/pickUpLocation-dropOffLocation',
+                    code: 'service.code',
                     quantity: 'milesIncludedPerDay',
                     occupancy: 'milesPackagesIncluded',
                     fromDate: '2018-03-16',

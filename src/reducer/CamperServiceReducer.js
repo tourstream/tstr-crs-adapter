@@ -22,17 +22,7 @@ class CamperServiceReducer {
 
         crsService.type = crsData.meta.serviceTypes.camper;
         crsService.marker = adapterService.marked ? 'X' : void 0;
-
-        // PRT02FS/LIS1-LIS2
-        crsService.code = [
-            adapterService.renterCode,
-            adapterService.vehicleCode,
-            '/',
-            adapterService.pickUpLocation,
-            '-',
-            adapterService.dropOffLocation,
-        ].join('').replace('/-', '') || void 0;
-
+        crsService.code = this.helper.vehicle.createServiceCode(adapterService);
         crsService.quantity = adapterService.milesIncludedPerDay;
         crsService.occupancy = adapterService.milesPackagesIncluded;
         crsService.fromDate = pickUpDate.isValid() ? pickUpDate.format(crsData.meta.formats.date) : adapterService.pickUpDate;

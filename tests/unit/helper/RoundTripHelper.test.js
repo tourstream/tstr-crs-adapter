@@ -11,6 +11,12 @@ describe('RoundTripHelper', () => {
         expect(helper.isServiceMarked({})).toBeTruthy();
     });
 
+    it('isServiceMarked() returns true for service with .marker', () => {
+        expect(helper.isServiceMarked({
+            marker: 'X'
+        })).toBeTruthy();
+    });
+
     it('isServiceMarked should return false if no bookingId is given', () => {
         expect(helper.isServiceMarked({code: 'NEZcode'})).toBeFalsy();
     });

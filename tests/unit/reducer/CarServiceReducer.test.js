@@ -2,13 +2,14 @@ import CarServiceReducer from '../../../src/reducer/CarServiceReducer';
 import {DEFAULT_OPTIONS, SERVICE_TYPES} from '../../../src/UbpCrsAdapter';
 
 describe('CarServiceReducer', () => {
-    let reducer, config, helper;
+    let reducer, config, helper, vehicleHelper;
 
     beforeEach(() => {
+        vehicleHelper = require('tests/unit/_mocks/VehicleHelper')();
         config = DEFAULT_OPTIONS;
         helper = {
             traveller: require('tests/unit/_mocks/TravellerHelper')(),
-            vehicle: require('tests/unit/_mocks/VehicleHelper')(),
+            vehicle: vehicleHelper,
         };
 
         reducer = new CarServiceReducer(
@@ -73,6 +74,8 @@ describe('CarServiceReducer', () => {
             },
         };
 
+        vehicleHelper.createServiceCode.and.returnValue('service.code');
+
         reducer.reduceIntoCrsData(adapterService, crsData);
 
         expect(JSON.parse(JSON.stringify(crsData)).normalized).toEqual({
@@ -80,7 +83,7 @@ describe('CarServiceReducer', () => {
                 {
                     type: 'carType',
                     marker: 'X',
-                    code: 'renterCodevehicleCode/pickUpLocation-dropOffLocation',
+                    code: 'service.code',
                     fromDate: '2018-03-16',
                     toDate: '2018-03-21',
                     accommodation: '09:15'
@@ -137,6 +140,8 @@ describe('CarServiceReducer', () => {
             },
         };
 
+        vehicleHelper.createServiceCode.and.returnValue('service.code');
+
         reducer.reduceIntoCrsData(adapterService, crsData);
 
         expect(JSON.parse(JSON.stringify(crsData)).normalized).toEqual({
@@ -150,7 +155,7 @@ describe('CarServiceReducer', () => {
                 {
                     type: 'carType',
                     marker: 'X',
-                    code: 'renterCodevehicleCode/pickUpLocation-dropOffLocation',
+                    code: 'service.code',
                     fromDate: '2018-03-16',
                     toDate: '2018-03-21',
                     accommodation: '09:15'
@@ -165,4 +170,3 @@ describe('CarServiceReducer', () => {
         });
     });
 });
-
