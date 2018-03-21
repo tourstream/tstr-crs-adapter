@@ -544,8 +544,8 @@ class CetsAdapter {
                     ID: index + 1,
                 },
                 PersonType: traveller.salutation,
-                Name: travellerName[1],
-                FirstName: travellerName[0],
+                Name: travellerName.pop(),
+                FirstName: travellerName.join(' '),
                 Birth: traveller.age,
             });
 
