@@ -599,11 +599,9 @@ class TrafficsTbmAdapter {
     assignHotelServiceFromAdapterObjectToCrsObject(service, crsObject, lineIndex) {
         let dateFrom = moment(service.dateFrom, this.options.useDateFormat);
         let dateTo = moment(service.dateTo, this.options.useDateFormat);
-        let firstTravellerAssociation = (service.children && service.children.length)
-            ? this.calculateNumberOfTravellers(crsObject) + 1
-            : this.helper.traveller.extractFirstTravellerAssociation(
-                crsObject['TbmXml.admin.services.service.' + lineIndex + '.$.agn']
-            ) || 1;
+        let firstTravellerAssociation = (crsObject['TbmXml.admin.services.service.' + lineIndex + '.$.agn'])
+            ? this.helper.traveller.extractFirstTravellerAssociation(crsObject['TbmXml.admin.services.service.' + lineIndex + '.$.agn'])
+            : this.calculateNumberOfTravellers(crsObject) + 1;
 
         crsObject['TbmXml.admin.services.service.' + lineIndex + '.$.typ'] = CONFIG.crs.serviceTypes.hotel;
         crsObject['TbmXml.admin.services.service.' + lineIndex + '.$.cod'] = service.destination;
