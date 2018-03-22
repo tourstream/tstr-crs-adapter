@@ -416,10 +416,10 @@ class TomaSPCAdapter {
             mealCode: serviceCodes[1] || void 0,
             roomQuantity: crsService.quantity,
             roomOccupancy: crsService.occupancy,
-            children: this.helper.traveller.collectTravellers(
+            travellers: this.helper.traveller.collectTravellers(
                 crsService.travellerAssociation,
                 (lineNumber) => this.getTravellerByLineNumber(crsObject.travellers, lineNumber)
-            ).filter((traveller) => ['child', 'infant'].indexOf(traveller.gender) > -1),
+            ),
             destination: crsService.serviceCode,
             dateFrom: dateFrom.isValid() ? dateFrom.format(this.options.useDateFormat) : crsService.fromDate,
             dateTo: dateTo.isValid() ? dateTo.format(this.options.useDateFormat) : crsService.toDate,
@@ -514,7 +514,7 @@ class TomaSPCAdapter {
     getTravellerByLineNumber(travellers = [], lineNumber) {
         let traveller = travellers[lineNumber - 1];
 
-        if (!traveller) {
+        if (!traveller || !traveller.name) {
             return void 0;
         }
 
@@ -585,7 +585,7 @@ class TomaSPCAdapter {
                 }
                 case SERVICE_TYPES.hotel: {
                     this.assignHotelServiceFromAdapterObjectToCrsObject(adapterService, crsService, crsObject);
-                    this.assignChildrenData(adapterService, crsService, crsObject);
+                    this.assignHotelTravellersData(adapterService, crsService, crsObject);
                     break;
                 }
                 case SERVICE_TYPES.camper: {
@@ -769,18 +769,18 @@ class TomaSPCAdapter {
      * @param crsService object
      * @param crsObject object
      */
-    assignChildrenData(adapterService, crsService, crsObject) {
-        if (!adapterService.children || !adapterService.children.length) {
+    assignHotelTravellersData(adapterService, crsService, crsObject) {
+        if (!adapterService.travellers || !adapterService.travellers.length) {
             return;
         }
 
-        adapterService.children.forEach((child) => {
+        adapterService.travellers.forEach((serviceTraveller) => {
             let travellerIndex = this.getNextEmptyTravellerIndex(crsObject);
             let traveller = crsObject.travellers[travellerIndex];
 
-            traveller.title = CONFIG.crs.gender2SalutationMap.child;
-            traveller.name = child.name;
-            traveller.discount = child.age;
+            traveller.title = CONFIG.crs.gender2SalutationMap[serviceTraveller.gender];
+            traveller.name = serviceTraveller.name;
+            traveller.discount = serviceTraveller.age;
         });
     }
 

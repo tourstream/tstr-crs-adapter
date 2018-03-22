@@ -146,7 +146,7 @@ You can check the currently supported service types with `UbpCrsAdapter.SERVICE_
 
 |          | car   | hotel | roundtrip | camper 
 ---        | :---: | :---: | :---:     | :---:
-CETS       | X     |       | X         | 
+CETS       | X     | X     | X         | 
 TOMA (old) | X     | X     | X         | X 
 TOMA (new) | X     | X     | X         | X
 Merlin     | X     | X     | X         | X
@@ -185,7 +185,9 @@ CosmoNaut  | X     | X     | X         | X
 |         | .destination   | 'LAX20S' 
 |         | .dateFrom      | '20092017' 
 |         | .dateTo        | '20092017' 
-|         | .children      | [ { name: 'john', age: '11' }, ... ] 
+|         | .travellers    | [ { gender: \<gender\>, name: 'john doe', age: '32' }, ... ]
+
+_note: travellers.name needs to have structure 'name lastname' for proper CETS support_
 
 | type      | fields              | example
 | :---      | :---                | :---

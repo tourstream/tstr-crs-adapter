@@ -2,7 +2,7 @@ import es6shim from 'es6-shim';
 import xml2js from 'xml2js';
 import fastXmlParser from 'fast-xml-parser';
 import moment from 'moment';
-import {SERVICE_TYPES} from '../UbpCrsAdapter';
+import {CRS_TYPES, SERVICE_TYPES} from '../UbpCrsAdapter';
 import TravellerHelper from '../helper/TravellerHelper';
 import ObjectHelper from '../helper/ObjectHelper';
 
@@ -15,11 +15,12 @@ const CONFIG = {
     },
     defaults: {
         personCount: 1,
-        serviceCode: { car: 'MIETW' },
+        serviceCode: {car: 'MIETW'},
         serviceType: {
             car: 'C',
             customerRequest: 'Q',
             roundTrip: 'R',
+            hotel: 'H'
         },
         pickUp: {
             walkIn: {
@@ -43,6 +44,17 @@ const CONFIG = {
         '360': 'BAUS',
         '360C': 'BAUS',
         '360E': 'BAUS',
+    },
+    catalogs2serviceType: {
+        DCH: 'C',
+        TCH: 'H',
+        '360C': 'R'
+    },
+    serviceType2catalog: {
+        C: 'DCH',
+        H: 'TCH',
+        R: '360C',
+        M: '360'
     },
     gender2SalutationMap: {
         male: 'M',
@@ -89,7 +101,7 @@ class CetsAdapter {
                 crsDateFormat: CONFIG.crs.dateFormat,
                 gender2SalutationMap: CONFIG.gender2SalutationMap,
             })),
-            object: new ObjectHelper({ attrPrefix: CONFIG.parserOptions.attrPrefix }),
+            object: new ObjectHelper({attrPrefix: CONFIG.parserOptions.attrPrefix}),
         };
 
         this.xmlParser = {
@@ -222,6 +234,10 @@ class CetsAdapter {
                     service = this.mapRoundTripServiceFromXmlObjectToAdapterObject(xmlService);
                     break;
                 }
+                case CONFIG.defaults.serviceType.hotel: {
+                    service = this.mapHotelServiceFromXmlObjectToAdapterObject(xmlService);
+                    break;
+                }
                 default:
                     break;
             }
@@ -252,7 +268,6 @@ class CetsAdapter {
                 dataObject.services.push(service);
             }
         }
-
         return JSON.parse(JSON.stringify(dataObject));
     }
 
@@ -306,6 +321,22 @@ class CetsAdapter {
         };
     }
 
+    mapHotelServiceFromXmlObjectToAdapterObject(xmlService) {
+        let startDate = moment(xmlService.StartDate, CONFIG.crs.dateFormat);
+        let endDate = startDate.clone().add(xmlService.Duration, 'days');
+
+        return {
+            type: SERVICE_TYPES.hotel,
+            roomCode: xmlService.Room,
+            mealCode: xmlService.Meal,
+            roomQuantity: xmlService.MaxAdults,
+            roomOccupancy: xmlService.Norm,
+            destination: xmlService.Destination + xmlService.Product,
+            dateFrom: startDate.isValid() ? startDate.format(this.options.useDateFormat) : xmlService.StartDate,
+            dateTo: endDate.isValid() ? endDate.format(this.options.useDateFormat) : '',
+        };
+    }
+
     /**
      * @private
      *
@@ -315,8 +346,8 @@ class CetsAdapter {
      * @returns {*}
      */
     normalizeXmlObject(xmlObject) {
-        const addFabNode = () =>  {
-            let normalizedObject = { Request: {} };
+        const addFabNode = () => {
+            let normalizedObject = {Request: {}};
 
             normalizedObject.Request[CONFIG.parserOptions.attrPrefix] = xmlObject.Request[CONFIG.parserOptions.attrPrefix];
 
@@ -354,6 +385,19 @@ class CetsAdapter {
         return xmlObject;
     }
 
+    detectCatalogChange(xmlObject) {
+        if (!Array.isArray(xmlObject.Request.Fab.Fah) || xmlObject.Request.Fab.Fah.length === 0) return;
+        if (xmlObject.Request.Fab.Fah.length > 1) {
+            xmlObject.Request.Fab.Fah.reduce((previousService, currentService) => {
+                if (currentService[CONFIG.parserOptions.attrPrefix].ServiceType !== previousService[CONFIG.parserOptions.attrPrefix].ServiceType) {
+                    xmlObject.Request.Fab.Catalog = CONFIG.serviceType2catalog.M
+                }
+            });
+        } else if (xmlObject.Request.Fab.Fah[0][CONFIG.parserOptions.attrPrefix].ServiceType != CONFIG.catalogs2serviceType[xmlObject.Request.Fab.Catalog]) {
+            xmlObject.Request.Fab.Catalog = CONFIG.serviceType2catalog[xmlObject.Request.Fab.Fah[0][CONFIG.builderOptions.attrkey].ServiceType];
+        }
+    }
+
     /**
      * @private
      *
@@ -369,13 +413,15 @@ class CetsAdapter {
                             xmlRequest.Fah = xmlRequest.Fah.filter((compareService) => {
                                 return CONFIG.defaults.serviceType.car !== compareService[CONFIG.builderOptions.attrkey].ServiceType;
                             });
-                        } catch (ignore) {}
+                        } catch (ignore) {
+                        }
 
                         try {
                             xmlRequest.Faq = xmlRequest.Faq.filter((compareService) => {
                                 return CONFIG.defaults.serviceType.customerRequest !== compareService[CONFIG.builderOptions.attrkey].ServiceType;
                             });
-                        } catch (ignore) {}
+                        } catch (ignore) {
+                        }
                     }
 
                     break;
@@ -401,9 +447,17 @@ class CetsAdapter {
 
                     break;
                 }
-                default: this.logger.warn('type ' + service.type + ' is not supported by the CETS adapter');
+                case SERVICE_TYPES.hotel: {
+                    this.assignHotelServiceFromAdapterObjectToXmlObject(service, xmlRequest);
+                    this.assignHotelTravellers(service, xmlRequest);
+
+                    break;
+                }
+                default:
+                    this.logger.warn('type ' + service.type + ' is not supported by the CETS adapter');
             }
         });
+        this.detectCatalogChange(xmlObject);
     }
 
     /**
@@ -545,6 +599,49 @@ class CetsAdapter {
                 PersonType: traveller.salutation,
                 Name: traveller.name,
                 Birth: traveller.age,
+            });
+
+            xml.Fah[xml.Fah.length - 1].Persons = (xml.Fah[xml.Fah.length - 1].Persons || '') + (index + 1);
+        });
+    }
+
+    assignHotelServiceFromAdapterObjectToXmlObject(service, xml) {
+        let startDate = moment(service.startDate, this.options.useDateFormat);
+
+        let xmlService = {
+            [CONFIG.builderOptions.attrkey]: {
+                ServiceType: CONFIG.defaults.serviceType.hotel,
+            },
+            Product: service.destination.substring(3),
+            Program: 'HOTEL',
+            Destination: service.destination.substring(0, 3),
+            Room: service.roomCode,
+            Norm: service.roomOccupancy,
+            MaxAdults: service.roomQuantity,
+            Meal: service.mealCode,
+            StartDate: startDate.isValid() ? startDate.format(CONFIG.crs.dateFormat) : service.dateFrom,
+            Duration: this.calculateDuration(service.dateFrom, service.dateTo),
+        };
+
+        xml.Fah.push(xmlService);
+    }
+
+    assignHotelTravellers(service, xml) {
+        if (!service.travellers) return;
+
+        xml.Fap = [];
+
+        service.travellers.forEach((serviceTraveller, index) => {
+            const traveller = this.helper.traveller.normalizeTraveller(serviceTraveller);
+
+            const travellerName = traveller.name.split(' ');
+            xml.Fap.push({
+                [CONFIG.builderOptions.attrkey]: {
+                    ID: index + 1,
+                },
+                PersonType: traveller.salutation,
+                Name: travellerName[1],
+                FirstName: travellerName[0],
             });
 
             xml.Fah[xml.Fah.length - 1].Persons = (xml.Fah[xml.Fah.length - 1].Persons || '') + (index + 1);

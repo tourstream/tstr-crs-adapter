@@ -2,7 +2,7 @@ import es6shim from 'es6-shim';
 import xml2js from 'xml2js';
 import moment from 'moment';
 import axios from 'axios';
-import { SERVICE_TYPES, GENDER_TYPES } from '../UbpCrsAdapter';
+import {SERVICE_TYPES, GENDER_TYPES} from '../UbpCrsAdapter';
 import TravellerHelper from '../helper/TravellerHelper';
 import ObjectHelper from '../helper/ObjectHelper';
 import fastXmlParser from 'fast-xml-parser';
@@ -87,7 +87,7 @@ class MerlinAdapter {
             camper: new CamperHelper(helperOptions),
             hotel: new HotelHelper(helperOptions),
             roundTrip: new RoundTripHelper(helperOptions),
-            object: new ObjectHelper({ attrPrefix: CONFIG.parserOptions.attrPrefix }),
+            object: new ObjectHelper({attrPrefix: CONFIG.parserOptions.attrPrefix}),
         };
 
         this.xmlParser = {
@@ -155,7 +155,8 @@ class MerlinAdapter {
 
             try {
                 this.options.onSetData && this.options.onSetData(crsObject);
-            } catch (ignore) {}
+            } catch (ignore) {
+            }
 
             return this.getConnection().post(xml).catch((error) => {
                 this.logger.info(error);
@@ -253,7 +254,7 @@ class MerlinAdapter {
 
             let adapterService;
 
-            switch(crsService.KindOfService) {
+            switch (crsService.KindOfService) {
                 case CONFIG.crs.serviceTypes.car: {
                     adapterService = this.mapCarServiceFromCrsObjectToAdapterObject(crsService);
                     break;
@@ -310,7 +311,7 @@ class MerlinAdapter {
      * @private
      * @param crsService object
      * @param crsData object
-     * @returns {{roomCode: *, mealCode: *, roomQuantity: (*|string|string), roomOccupancy: (*|string|string|string), children, destination: *, dateFrom: string, dateTo: string, type: string}}
+     * @returns {{roomCode: *, mealCode: *, roomQuantity: (*|string|string), roomOccupancy: (*|string|string|string), travellers, destination: *, dateFrom: string, dateTo: string, type: string}}
      */
     mapHotelServiceFromCrsObjectToAdapterObject(crsService, crsData) {
         let serviceCodes = (crsService.Accommodation || '').split(' ');
@@ -322,10 +323,10 @@ class MerlinAdapter {
             mealCode: serviceCodes[1] || void 0,
             roomQuantity: crsService.NoOfServices,
             roomOccupancy: crsService.Occupancy,
-            children: this.helper.traveller.collectTravellers(
+            travellers: this.helper.traveller.collectTravellers(
                 crsService.TravellerAllocation,
                 (lineNumber) => this.getTravellerByLineNumber(crsData.TravellerBlock.PersonBlock.PersonRow, lineNumber)
-            ).filter((traveller) => [GENDER_TYPES.child, GENDER_TYPES.infant].indexOf(traveller.gender) > -1),
+            ),
             destination: crsService.Service,
             dateFrom: dateFrom.isValid() ? dateFrom.format(this.options.useDateFormat) : crsService.FromDate,
             dateTo: dateTo.isValid() ? dateTo.format(this.options.useDateFormat) : crsService.EndDate,
@@ -395,7 +396,7 @@ class MerlinAdapter {
             (traveller) => traveller[CONFIG.parserOptions.attrPrefix].travellerNo == lineNumber
         );
 
-        if (!traveller) {
+        if (!traveller || !traveller.Name) {
             return void 0;
         }
 
@@ -425,11 +426,14 @@ class MerlinAdapter {
             bookingId: adapterService.bookingId,
         };
 
-        switch(adapterService.type) {
+        switch (adapterService.type) {
             case SERVICE_TYPES.car:
-            case SERVICE_TYPES.camper: return this.helper.car.isServiceMarked(requirements);
-            case SERVICE_TYPES.hotel: return this.helper.hotel.isServiceMarked(requirements);
-            case SERVICE_TYPES.roundTrip: return this.helper.roundTrip.isServiceMarked(requirements);
+            case SERVICE_TYPES.camper:
+                return this.helper.car.isServiceMarked(requirements);
+            case SERVICE_TYPES.hotel:
+                return this.helper.hotel.isServiceMarked(requirements);
+            case SERVICE_TYPES.roundTrip:
+                return this.helper.roundTrip.isServiceMarked(requirements);
         }
     };
 
@@ -466,7 +470,7 @@ class MerlinAdapter {
                 }
                 case SERVICE_TYPES.hotel: {
                     this.assignHotelServiceFromAdapterObjectToCrsObject(adapterService, crsService, crsData);
-                    this.assignChildrenData(adapterService, crsService, crsData);
+                    this.assignHotelTravellersData(adapterService, crsService, crsData);
                     break;
                 }
                 case SERVICE_TYPES.camper: {
@@ -501,7 +505,8 @@ class MerlinAdapter {
             if (crsData.ServiceBlock.ServiceRow.length === 0) {
                 delete crsData.ServiceBlock;
             }
-        } catch (ignore) {}
+        } catch (ignore) {
+        }
     };
 
     /**
@@ -653,18 +658,18 @@ class MerlinAdapter {
      * @param crsService object
      * @param crsData object
      */
-    assignChildrenData(adapterService, crsService, crsData) {
-        if (!adapterService.children || !adapterService.children.length) {
+    assignHotelTravellersData(adapterService, crsService, crsData) {
+        if (!adapterService.travellers || !adapterService.travellers.length) {
             return;
         }
 
-        adapterService.children.forEach((child) => {
+        adapterService.travellers.forEach((serviceTraveller) => {
             let travellerIndex = this.getNextEmptyTravellerIndex(crsData);
             let traveller = crsData.TravellerBlock.PersonBlock.PersonRow[travellerIndex];
 
-            traveller.Salutation = CONFIG.crs.gender2SalutationMap.child;
-            traveller.Name = child.name;
-            traveller.Age = child.age;
+            traveller.Salutation = CONFIG.crs.gender2SalutationMap[serviceTraveller.gender];
+            traveller.Name = serviceTraveller.name;
+            traveller.Age = serviceTraveller.age;
         });
     }
 
@@ -782,8 +787,8 @@ class MerlinAdapter {
     }
 
     getNextEmptyTravellerIndex(crsData) {
-        crsData.TravellerBlock = crsData.TravellerBlock || { PersonBlock: void 0 };
-        crsData.TravellerBlock.PersonBlock = crsData.TravellerBlock.PersonBlock || { PersonRow: void 0 };
+        crsData.TravellerBlock = crsData.TravellerBlock || {PersonBlock: void 0};
+        crsData.TravellerBlock.PersonBlock = crsData.TravellerBlock.PersonBlock || {PersonRow: void 0};
         crsData.TravellerBlock.PersonBlock.PersonRow = crsData.TravellerBlock.PersonBlock.PersonRow || [];
 
         let personRows = crsData.TravellerBlock.PersonBlock.PersonRow;
