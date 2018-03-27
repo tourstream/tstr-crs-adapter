@@ -225,6 +225,17 @@ describe('TomaAdapter', () => {
             });
         });
 
+        it('sendData() should resolve', (done) => {
+            TomaConnection.FIFramePutData.and.returnValue(Promise.resolve());
+
+            adapter.sendData({}).then(() => {
+                done();
+            }, (error) => {
+                console.log(error.toString());
+                done.fail('unexpected result');
+            });
+        });
+
         it('convert() should convert "empty" data', () => {
             let build = xmlHead + '<Envelope>' +
                 '<Body>' +
