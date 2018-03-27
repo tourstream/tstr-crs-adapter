@@ -61,7 +61,7 @@
 
             crsAdapter
                 .connect(connectionOptionsForm.type.value, data)
-                .then(() => {
+                .then(function() {
                     setConnectionTypeToConnectButton(connectionOptionsForm.type.value);
                     log('connection successful');
                 }, log);
@@ -214,7 +214,7 @@
 
     function doExit() {
         try {
-            crsAdapter.exit().then(() => {
+            crsAdapter.exit().then(function() {
                 log('[.exit()] done');
             }).catch(log);
         } catch (e) {
