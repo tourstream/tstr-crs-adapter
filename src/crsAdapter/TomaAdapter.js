@@ -231,7 +231,8 @@ class TomaAdapter {
 
     sendData(crsData) {
         try {
-            return this.getConnection().FIFramePutData(crsData.build);
+            this.getConnection().FIFramePutData(crsData.build);
+            return Promise.resolve();
         } catch (error) {
             return Promise.reject(error);
         }

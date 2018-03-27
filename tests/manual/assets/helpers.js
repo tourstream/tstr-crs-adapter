@@ -154,7 +154,7 @@
     function sendData() {
         crsAdapter.setData(data).then(function() {
             data.services = [];
-            log('[.sendData()] done');
+            log('data transferred');
         }).catch(log);
     }
 
@@ -215,7 +215,7 @@
     function doExit() {
         try {
             crsAdapter.exit().then(function() {
-                log('[.exit()] done');
+                log('exit done');
             }).catch(log);
         } catch (e) {
             log(e);
