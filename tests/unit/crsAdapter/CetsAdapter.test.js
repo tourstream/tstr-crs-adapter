@@ -644,13 +644,15 @@ describe('CetsAdapter', () => {
 
                 let service = '<Fap ID="1">' +
                     '<PersonType>F</PersonType>' +
-                    '<Name>Jane Doe</Name>' +
+                    '<Name>Doe</Name>' +
+                    '<FirstName>Jane</FirstName>' +
                     '<Birth>32</Birth>' +
                     '</Fap>' +
 
                     '<Fap ID="2">' +
                     '<PersonType>C</PersonType>' +
-                    '<Name>Joe Doe</Name>' +
+                    '<Name>Doe</Name>' +
+                    '<FirstName>Joe</FirstName>' +
                     '<Birth>3</Birth>' +
                     '</Fap>' +
 
