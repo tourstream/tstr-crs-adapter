@@ -248,7 +248,7 @@ describe('CetsAdapter', () => {
             expect(adapter.fetchData()).toEqual(expectation);
         });
 
-        it('getData() should return hotel model', () => {
+        it('fetchData() should return hotel model', () => {
             let xml = createRequestXml(
                 '<Avl ServiceType="H">' +
                 '<TOCode>FTI</TOCode>' +
@@ -294,7 +294,7 @@ describe('CetsAdapter', () => {
 
             CetsConnection.getXmlRequest.and.returnValue(xml);
 
-            expect(adapter.getData()).toEqual(expectation);
+            expect(adapter.fetchData()).toEqual(expectation);
         });
 
         it('sendData() should throw error if connection can not put data', () => {
@@ -653,12 +653,12 @@ describe('CetsAdapter', () => {
 
                 let expectedXml = createResponseXml(service, '360C');
 
-                adapter.setData(data);
+                adapter.sendData(data);
 
                 expect(CetsConnection.returnBooking).toHaveBeenCalledWith(expectedXml);
             });
 
-            it('setData() should send hotel service correct', () => {
+            it('sendData() should send hotel service correct', () => {
                 requestXml = createRequestXml(
                     '<Avl ServiceType="C">' +
                     '<TOCode>FTI</TOCode>' +
