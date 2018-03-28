@@ -47,6 +47,10 @@ Here you can see how the data will look like in the CRS after a transfer.
 
 ![bewotec hotel data](bewotec/bewotec_hotel.png)
 
+##### CETS
+
+![cets hotel data](cets/cets_hotel.png)
+
 
 #### type `'roundtrip'`
 
@@ -71,6 +75,7 @@ Here you can see how the data will look like in the CRS after a transfer.
 ##### CETS
 
 ![cets roundtrip data](cets/cets_roundtrip.png)
+
 
 #### type `'camper'`
 
