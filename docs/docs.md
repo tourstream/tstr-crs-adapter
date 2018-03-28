@@ -68,6 +68,9 @@ Here you can see how the data will look like in the CRS after a transfer.
 
 ![bewotec roundtrip data](bewotec/bewotec_roundtrip.png)
 
+##### CETS
+
+![cets roundtrip data](cets/cets_roundtrip.png)
 
 #### type `'camper'`
 
