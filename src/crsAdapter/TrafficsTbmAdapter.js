@@ -316,10 +316,10 @@ class TrafficsTbmAdapter {
             mealCode: serviceCodes[1] || void 0,
             roomQuantity: crsService.cnt,
             roomOccupancy: crsService.alc,
-            children: this.helper.traveller.collectTravellers(
+            travellers: this.helper.traveller.collectTravellers(
                 crsService.agn,
                 (lineNumber) => this.getTravellerByLineNumber(travellers, lineNumber)
-            ).filter((traveller) => ['child', 'infant'].indexOf(traveller.gender) > -1),
+            ),
             destination: crsService.cod,
             dateFrom: dateFrom.isValid() ? dateFrom.format(this.options.useDateFormat) : crsService.vnd,
             dateTo: dateTo.isValid() ? dateTo.format(this.options.useDateFormat) : crsService.bsd,
@@ -499,7 +499,7 @@ class TrafficsTbmAdapter {
                 }
                 case SERVICE_TYPES.hotel: {
                     this.assignHotelServiceFromAdapterObjectToCrsObject(service, crsObject, lineIndex);
-                    this.assignChildrenData(service, crsObject, lineIndex);
+                    this.assignHotelTravellersData(service, crsObject, lineIndex);
                     break;
                 }
                 case SERVICE_TYPES.camper: {
@@ -620,17 +620,17 @@ class TrafficsTbmAdapter {
      * @param crsObject object
      * @param lineIndex number
      */
-    assignChildrenData(service, crsObject, lineIndex) {
-        if (!service.children || !service.children.length) {
+    assignHotelTravellersData(service, crsObject, lineIndex) {
+        if (!service.travellers || !service.travellers.length) {
             return;
         }
 
-        service.children.forEach((child) => {
+        service.travellers.forEach((traveller) => {
             let travellerIndex = this.getNextEmptyTravellerLineIndex(crsObject);
 
-            crsObject['TbmXml.admin.travellers.traveller.' + travellerIndex + '.$.typ'] = CONFIG.crs.gender2SalutationMap.child;
-            crsObject['TbmXml.admin.travellers.traveller.' + travellerIndex + '.$.sur'] = child.name;
-            crsObject['TbmXml.admin.travellers.traveller.' + travellerIndex + '.$.age'] = child.age;
+            crsObject['TbmXml.admin.travellers.traveller.' + travellerIndex + '.$.typ'] = CONFIG.crs.gender2SalutationMap[traveller.gender];
+            crsObject['TbmXml.admin.travellers.traveller.' + travellerIndex + '.$.sur'] = traveller.name;
+            crsObject['TbmXml.admin.travellers.traveller.' + travellerIndex + '.$.age'] = traveller.age;
         });
     }
 

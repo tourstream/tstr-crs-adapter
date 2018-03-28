@@ -338,10 +338,10 @@ class TomaAdapter {
             mealCode: serviceCodes[1] || void 0,
             roomQuantity: xml['Count.' + lineNumber],
             roomOccupancy: xml['Occupancy.' + lineNumber],
-            children: this.helper.traveller.collectTravellers(
+            travellers: this.helper.traveller.collectTravellers(
                 xml['TravAssociation.' + lineNumber],
                 (travellerLineNumber) => this.getTravellerByLineNumber(xml, travellerLineNumber)
-            ).filter((traveller) => ['child', 'infant'].indexOf(traveller.gender) > -1),
+            ),
             destination: xml['ServiceCode.' + lineNumber],
             dateFrom: dateFrom.isValid() ? dateFrom.format(this.options.useDateFormat) : xml['From.' + lineNumber],
             dateTo: dateTo.isValid() ? dateTo.format(this.options.useDateFormat) : xml['To.' + lineNumber],
@@ -518,7 +518,7 @@ class TomaAdapter {
                 }
                 case SERVICE_TYPES.hotel: {
                     this.assignHotelServiceFromAdapterObjectToXmlObject(service, xmlTom, lineNumber);
-                    this.assignChildrenData(service, xmlTom, lineNumber);
+                    this.assignHotelTravellersData(service, xmlTom, lineNumber);
                     break;
                 }
                 case SERVICE_TYPES.camper: {
@@ -689,19 +689,19 @@ class TomaAdapter {
      * @param xml object
      * @param lineNumber number
      */
-    assignChildrenData(service, xml, lineNumber) {
-        if (!service.children || !service.children.length) {
+    assignHotelTravellersData(service, xml, lineNumber) {
+        if (!service.travellers || !service.travellers.length) {
             return;
         }
 
         let travellerLineNumber = void 0;
 
-        service.children.forEach((child) => {
+        service.travellers.forEach((traveller) => {
             travellerLineNumber = this.getNextEmptyTravellerLineNumber(xml);
 
-            xml['Title.' + travellerLineNumber] = CONFIG.crs.gender2SalutationMap.child;
-            xml['Name.' + travellerLineNumber] = child.name;
-            xml['Reduction.' + travellerLineNumber] = child.age;
+            xml['Title.' + travellerLineNumber] = CONFIG.crs.gender2SalutationMap[traveller.gender];
+            xml['Name.' + travellerLineNumber] = traveller.name;
+            xml['Reduction.' + travellerLineNumber] = traveller.age;
         });
     }
 
