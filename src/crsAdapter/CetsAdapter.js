@@ -2,7 +2,7 @@ import es6shim from 'es6-shim';
 import xml2js from 'xml2js';
 import fastXmlParser from 'fast-xml-parser';
 import moment from 'moment';
-import {CRS_TYPES, SERVICE_TYPES} from '../UbpCrsAdapter';
+import {SERVICE_TYPES} from '../UbpCrsAdapter';
 import TravellerHelper from '../helper/TravellerHelper';
 import ObjectHelper from '../helper/ObjectHelper';
 
