@@ -170,9 +170,7 @@ class MerlinAdapter {
     }
 
     exit() {
-        this.logger.warn('Merlin has no exit mechanism');
-
-        return Promise.resolve();
+        return this.setData({});
     }
 
     /**
