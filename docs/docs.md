@@ -9,6 +9,7 @@ Here you can see how the data will look like in the CRS after a transfer.
 ##### Toma
 
 ![toma car data](toma/toma_car.png)
+(initial state was an empty mask)
 
 ##### Toma2
 
@@ -17,6 +18,7 @@ Here you can see how the data will look like in the CRS after a transfer.
 ##### Merlin
 
 ![merlin car data](merlin/merlin_car.png)
+(initial state was an empty mask)
 
 ##### Bewotec
 
@@ -34,6 +36,7 @@ Here you can see how the data will look like in the CRS after a transfer.
 ##### Toma
 
 ![toma hotel data](toma/toma_hotel.png)
+(initial state was an empty mask)
 
 ##### Toma2
 
@@ -42,6 +45,7 @@ Here you can see how the data will look like in the CRS after a transfer.
 ##### Merlin
 
 ![merlin hotel data](merlin/merlin_hotel.png)
+(initial state was an empty mask)
 
 ##### Bewotec
 
@@ -59,6 +63,7 @@ Here you can see how the data will look like in the CRS after a transfer.
 ##### Toma
 
 ![toma roundtrip data](toma/toma_roundtrip.png)
+(initial state was an empty mask)
 
 ##### Toma2
 
@@ -67,6 +72,7 @@ Here you can see how the data will look like in the CRS after a transfer.
 ##### Merlin
 
 ![merlin roundtrip data](merlin/merlin_roundtrip.png)
+(initial state was an empty mask)
 
 ##### Bewotec
 
@@ -84,6 +90,7 @@ Here you can see how the data will look like in the CRS after a transfer.
 ##### Toma
 
 ![toma camper data](toma/toma_camper.png)
+(initial state was an empty mask)
 
 ##### Toma2
 
@@ -92,6 +99,7 @@ Here you can see how the data will look like in the CRS after a transfer.
 ##### Merlin
 
 ![merlin camper data](merlin/merlin_camper.png)
+(initial state was an empty mask)
 
 ##### Bewotec
 
