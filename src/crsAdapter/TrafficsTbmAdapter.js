@@ -202,8 +202,8 @@ class TrafficsTbmAdapter {
         }
     }
 
-    exit() {
-        this.logger.warn('Traffics TBM has no exit mechanism');
+    cancel() {
+        this.logger.warn('Traffics TBM has no cancel mechanism');
 
         return Promise.resolve();
     }

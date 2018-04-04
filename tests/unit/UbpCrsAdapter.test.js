@@ -166,10 +166,10 @@ describe('UbpCrsAdapter', () => {
                 expect(error.toString()).toBe('Error: [.setData] error: ' + message);
             }),
 
-            adapter.exit().then(() => {
-                done.fail('exit: unexpected result');
+            adapter.cancel().then(() => {
+                done.fail('cancel: unexpected result');
             }).catch((error) => {
-                expect(error.toString()).toBe('Error: [.exit] error: ' + message);
+                expect(error.toString()).toBe('Error: [.cancel] error: ' + message);
             }),
         ]).then(done);
     });
@@ -185,17 +185,17 @@ describe('UbpCrsAdapter', () => {
             expect(AnyCrsAdapter.connect).toHaveBeenCalledTimes(1);
         });
 
-        it('exit() should call underlying adapter', () => {
-            adapter.exit();
+        it('cancel() should call underlying adapter', () => {
+            adapter.cancel();
 
-            expect(AnyCrsAdapter.exit).toHaveBeenCalledTimes(1);
+            expect(AnyCrsAdapter.cancel).toHaveBeenCalledTimes(1);
         });
 
-        it('exit() should resolve promise if underlying adapter resolved it', (done) => {
-            AnyCrsAdapter.exit.and.returnValue(Promise.resolve('exited'));
+        it('cancel() should resolve promise if underlying adapter resolved it', (done) => {
+            AnyCrsAdapter.cancel.and.returnValue(Promise.resolve('canceled'));
 
-            adapter.exit().then((result) => {
-                expect(result).toBe('exited');
+            adapter.cancel().then((result) => {
+                expect(result).toBe('canceled');
                 done();
             }).catch((error) => {
                 console.log(error.message);

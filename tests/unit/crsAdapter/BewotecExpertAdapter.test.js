@@ -401,8 +401,8 @@ describe('BewotecExpertAdapter', () => {
             });
         });
 
-        it('exit() should return nothing', (done) => {
-            adapter.exit().then(done, () => {
+        it('cancel() should return nothing', (done) => {
+            adapter.cancel().then(done, () => {
                 done.fail('unexpected result');
             });
         });

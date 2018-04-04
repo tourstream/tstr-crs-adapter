@@ -323,19 +323,19 @@ describe('MerlinAdapter', () => {
             expect(crsData.build).toEqual(build);
         });
 
-        it('exit() should do the exit', (done) => {
-            adapter.exit().then(done, () => {
+        it('cancel() should do the exit', (done) => {
+            adapter.cancel().then(done, () => {
                 done.fail('unexpected result');
             });
         });
 
-        it('exit() should fail due send error', (done) => {
+        it('cancel() should fail due send error', (done) => {
             axios.post.and.returnValue(Promise.reject(new Error('network.error')));
 
-            adapter.exit().then(() => {
+            adapter.cancel().then(() => {
                 done.fail('unexpected result');
             }, (error) => {
-                expect(error.toString()).toBe('Error: [.exit] network.error');
+                expect(error.toString()).toBe('Error: [.cancel] network.error');
                 done();
             });
         });

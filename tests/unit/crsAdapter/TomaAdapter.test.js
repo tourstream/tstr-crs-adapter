@@ -64,7 +64,7 @@ describe('TomaAdapter', () => {
         Promise.all([
             adapter.fetchData(),
             adapter.sendData({}),
-            adapter.exit(),
+            adapter.cancel(),
         ]).then(() => {
             done.fail('unexpected result');
         }, (error) => {
@@ -323,10 +323,10 @@ describe('TomaAdapter', () => {
             expect(crsData.build).toEqual(build);
         });
 
-        it('exit() should throw error if connection is not able to exit', (done) => {
+        it('cancel() should throw error if connection is not able to cancel', (done) => {
             TomaConnection.FIFrameCancel.and.throwError('FIFrameCancel.error');
 
-            adapter.exit().then(() => {
+            adapter.cancel().then(() => {
                 done.fail('unexpected result');
             }, (error) => {
                 expect(error.toString()).toBe('Error: FIFrameCancel.error');
@@ -334,8 +334,8 @@ describe('TomaAdapter', () => {
             });
         });
 
-        it('exit() should throw nothing', () => {
-            adapter.exit();
+        it('cancel() should throw nothing', () => {
+            adapter.cancel();
         });
     });
 });

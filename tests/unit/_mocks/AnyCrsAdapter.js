@@ -5,6 +5,6 @@ export default (() => jasmine.createSpyObj(
         'fetchData',
         'convert',
         'sendData',
-        'exit',
+        'cancel',
     ]
 ));

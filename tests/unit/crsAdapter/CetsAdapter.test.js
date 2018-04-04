@@ -15,7 +15,7 @@ describe('CetsAdapter', () => {
 
         expect(adapter.fetchData.bind(adapter)).toThrowError(message);
         expect(() => adapter.sendData({}).bind(adapter)).toThrowError(message);
-        expect(adapter.exit.bind(adapter)).toThrowError(message);
+        expect(adapter.cancel.bind(adapter)).toThrowError(message);
     });
 
     it('connect() should throw error if external.Get is not supported', () => {
@@ -730,19 +730,19 @@ describe('CetsAdapter', () => {
                 expect(CetsConnection.returnBooking).toHaveBeenCalledWith(expectedXml);
             });
 
-            it('exit() should throw error if connection is not able to exit', () => {
+            it('cancel() should throw error if connection is not able to cancel', () => {
                 CetsConnection.getXmlRequest.and.throwError('error');
 
-                expect(adapter.exit.bind(adapter)).toThrowError('connection::getXmlRequest: error');
+                expect(adapter.cancel.bind(adapter)).toThrowError('connection::getXmlRequest: error');
 
                 CetsConnection.getXmlRequest.and.returnValue(requestXml);
                 CetsConnection.returnBooking.and.throwError('error');
 
-                expect(adapter.exit.bind(adapter)).toThrowError('connection::returnBooking: error');
+                expect(adapter.cancel.bind(adapter)).toThrowError('connection::returnBooking: error');
             });
 
-            it('exit() should return the same xml than received', () => {
-                adapter.exit();
+            it('cancel() should return the same xml than received', () => {
+                adapter.cancel();
 
                 expect(CetsConnection.returnBooking).toHaveBeenCalledWith(createResponseXml());
             });
