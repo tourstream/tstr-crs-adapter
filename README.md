@@ -61,9 +61,9 @@ ubpCrsAdapter.setData(adapterData);
 
 The `adapterData` is also a `<CrsData>` object and is defined like above.
 
-And also you can close the opened iFrame in the CRS:
+And also you can interrupt the connection and close the opened CRS-iFrame via:
 ```
-ubpCrsAdapter.exit()
+ubpCrsAdapter.cancel()
 ```
 
 
@@ -72,7 +72,7 @@ ubpCrsAdapter.exit()
 * every method returns a promise
 * the `numberOfTravellers` will be auto-calculated related to traveller data in the service lines
 * be aware that some `services` will set values to the remark field
-* `setData` triggers automatically an `exit` which will close the "CRS overlay/popup" (if there is any)
+* `setData` triggers automatically a `cancel` which will close the "CRS overlay/popup" (if there is any)
 * keep in mind that you have to close any separated opened windows by yourself!
 
 

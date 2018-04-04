@@ -154,23 +154,23 @@ class TomaSPCAdapter {
 
     sendData(crsData = {}) {
         return this.sendCrsObject(crsData.build).then(() => {
-            return this.exit();
+            return this.cancel();
         });
     }
 
-    exit() {
+    cancel() {
         return new Promise((resolve) => {
             let popupId = this.getUrlParameter('POPUP_ID') || this.connectionOptions.popupId;
 
             if (!popupId) {
-                throw new Error('can not exit - popupId is missing');
+                throw new Error('can not cancel - popupId is missing');
             }
 
             try {
                 this.getConnection().requestService(
                     'popups.close',
                     { id: popupId },
-                    this.createCallbackObject(resolve, null, 'exit error')
+                    this.createCallbackObject(resolve, null, 'cancel error')
                 );
             } catch (error) {
                 this.logger.error(error);

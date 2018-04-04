@@ -87,8 +87,8 @@
                             sendData();
                             break;
                         }
-                        case 'exit': {
-                            doExit();
+                        case 'cancel': {
+                            doCancel();
                             break;
                         }
                     }
@@ -212,10 +212,10 @@
         setValueToPropertyPath(object[property], parts.join('.'), value);
     }
 
-    function doExit() {
+    function doCancel() {
         try {
-            crsAdapter.exit().then(function() {
-                log('exit done');
+            crsAdapter.cancel().then(function() {
+                log('cancel done');
             }).catch(log);
         } catch (e) {
             log(e);

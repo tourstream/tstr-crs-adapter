@@ -279,14 +279,14 @@ class UbpCrsAdapter {
         });
     }
 
-    exit() {
+    cancel() {
         return new Promise((resolve, reject) => {
-            this.logger.info('Try to exit');
+            this.logger.info('Try to cancel');
 
             try {
-                Promise.resolve(this.getAdapterInstance().exit()).then(resolve, reject);
+                Promise.resolve(this.getAdapterInstance().cancel()).then(resolve, reject);
             } catch (error) {
-                this.logAndReject(reject, '[.exit] error:', error);
+                this.logAndReject(reject, '[.cancel] error:', error);
             }
         });
     }

@@ -238,7 +238,7 @@ class TomaAdapter {
         }
     }
 
-    exit() {
+    cancel() {
         try {
             this.getConnection().FIFrameCancel();
             return Promise.resolve();

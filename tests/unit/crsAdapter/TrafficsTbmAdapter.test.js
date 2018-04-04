@@ -101,8 +101,8 @@ describe('TrafficsTbmAdapter', () => {
         });
     });
 
-    it('exit() should throw nothing', (done) => {
-        adapter.exit().then(() => {
+    it('cancel() should throw nothing', (done) => {
+        adapter.cancel().then(() => {
             done();
         }, () => {
             done.fail('unexpected result');

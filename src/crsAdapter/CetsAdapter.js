@@ -171,7 +171,7 @@ class CetsAdapter {
         }
     }
 
-    exit() {
+    cancel() {
         this.sendData();
     }
 

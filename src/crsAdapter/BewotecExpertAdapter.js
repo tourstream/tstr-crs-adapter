@@ -223,8 +223,8 @@ class BewotecExpertAdapter {
         }
     }
 
-    exit() {
-        this.logger.warn('Bewotec Expert has no exit mechanism');
+    cancel() {
+        this.logger.warn('Bewotec Expert has no cancel mechanism');
 
         return Promise.resolve();
     }

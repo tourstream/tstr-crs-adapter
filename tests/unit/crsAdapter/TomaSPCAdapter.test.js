@@ -268,7 +268,7 @@ describe('TomaSPCAdapter', () => {
             });
         });
 
-        it('sendData() should trigger exit', (done) => {
+        it('sendData() should trigger cancel', (done) => {
             adapter.connectionOptions.popupId = 'popupId';
 
             adapter.sendData({}).then(() => {
@@ -369,10 +369,10 @@ describe('TomaSPCAdapter', () => {
             expect(crsData.build).toEqual(build);
         });
 
-        it('exit() should request to close the popup', (done) => {
+        it('cancel() should request to close the popup', (done) => {
             adapter.connectionOptions.popupId = 'pId';
 
-            adapter.exit().then(() => {
+            adapter.cancel().then(() => {
                 expect(requestData).toEqual({id: 'pId'});
                 done();
             }, (error) => {
@@ -380,10 +380,10 @@ describe('TomaSPCAdapter', () => {
             });
         });
 
-        it('exit() should request to close the popup with popup id from url parameter', (done) => {
+        it('cancel() should request to close the popup with popup id from url parameter', (done) => {
             window.history.replaceState({}, '', '/#/?POPUP_ID=url.pId');
 
-            adapter.exit().then(() => {
+            adapter.cancel().then(() => {
                 expect(requestData).toEqual({id: 'url.pId'});
                 done();
             }, (error) => {
@@ -391,21 +391,21 @@ describe('TomaSPCAdapter', () => {
             });
         });
 
-        it('exit() should throw error if no popup id is available', (done) => {
-            adapter.exit().then(() => {
+        it('cancel() should throw error if no popup id is available', (done) => {
+            adapter.cancel().then(() => {
                 done.fail('expectation error');
             }, (error) => {
-                expect(error.toString()).toBe('Error: can not exit - popupId is missing');
+                expect(error.toString()).toBe('Error: can not cancel - popupId is missing');
                 done();
             });
         });
 
-        it('exit() should throw error if connection failed', (done) => {
+        it('cancel() should throw error if connection failed', (done) => {
             TomaSPCConnection.requestService = void 0;
 
             adapter.connectionOptions.popupId = 'popupId';
 
-            adapter.exit().then(() => {
+            adapter.cancel().then(() => {
                 done.fail('expectation error');
             }, (error) => {
                 expect(error.toString()).toBe('Error: connection::popups.close: No connection available - please connect to TOMA SPC first.');

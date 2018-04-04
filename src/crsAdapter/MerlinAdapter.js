@@ -218,16 +218,16 @@ class MerlinAdapter {
         }
     }
 
-    exit() {
+    cancel() {
         return this.getCrsData().then((response) => {
             return this.getConnection().post((response || {}).data).catch((error) => {
                 this.logger.info(error);
-                this.logger.error('error during exit');
+                this.logger.error('error during cancel');
                 throw error;
             });
         }).then(null, (error) => {
             this.logger.error(error);
-            throw new Error('[.exit] ' + error.message);
+            throw new Error('[.cancel] ' + error.message);
         });
     }
 
