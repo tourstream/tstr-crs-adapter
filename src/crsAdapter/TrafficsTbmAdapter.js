@@ -211,7 +211,6 @@ class TrafficsTbmAdapter {
     /**
      * @private
      * @param options
-     * @returns {{send: function(*=), get: function(): AxiosPromise}}
      */
     createConnection(options) {
         axios.defaults.headers.get['Cache-Control'] = 'no-cache,no-store,must-revalidate,max-age=-1,private';
@@ -219,18 +218,27 @@ class TrafficsTbmAdapter {
         return {
             send: (data = {}) => {
                 try {
-                    this.helper.window.location =
-                        CONFIG.crs.connectionUrl
+                    const dataUrl = CONFIG.crs.connectionUrl
                         + btoa('#tbm&file=' + options.dataSourceUrl + '?' + querystring.stringify(data));
+
+                    this.logger.info('data transfer url: ');
+                    this.logger.info(dataUrl);
+
+                    this.helper.window.location = dataUrl;
 
                     return Promise.resolve();
                 } catch (e) {
                     return Promise.reject(e);
                 }
             },
-            get: () => axios.get(
-                CONFIG.crs.exportUrls[options.environment] + '/tbmExport?id=' + options.exportId
-            ),
+            get: () => {
+                const exportUrl = CONFIG.crs.exportUrls[options.environment] + '/tbmExport?id=' + options.exportId;
+
+                this.logger.info('connection url: ');
+                this.logger.info(exportUrl);
+
+                return axios.get(exportUrl)
+            },
         };
     }
 
