@@ -1057,9 +1057,20 @@ describe('MerlinAdapter', () => {
             });
         });
 
-        it('exit() should return nothing', (done) => {
+        it('exit() should do the exit', (done) => {
             adapter.exit().then(done, () => {
                 done.fail('unexpected result');
+            });
+        });
+
+        it('exit() should fail due send error', (done) => {
+            axios.post.and.returnValue(Promise.reject(new Error('network.error')));
+
+            adapter.exit().then(() => {
+                done.fail('unexpected result');
+            }, (error) => {
+                expect(error.toString()).toBe('Error: [.exit] network.error');
+                done();
             });
         });
     });
