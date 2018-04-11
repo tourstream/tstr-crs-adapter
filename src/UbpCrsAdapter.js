@@ -7,6 +7,7 @@ import CetsAdapter from 'crsAdapter/CetsAdapter';
 import MerlinAdapter from 'crsAdapter/MerlinAdapter';
 import BewotecExpertAdapter from 'crsAdapter/BewotecExpertAdapter';
 import TrafficsTbmAdapter from 'crsAdapter/TrafficsTbmAdapter';
+import TosiAdapter from 'crsAdapter/TosiAdapter';
 
 import VehicleHelper from './helper/VehicleHelper';
 import HotelHelper from './helper/HotelHelper';
@@ -41,6 +42,7 @@ const CRS_TYPES = {
     jackPlus: 'jackplus',
     cosmo: 'cosmo',
     cosmoNaut: 'cosmonaut',
+    tosi: 'tosi',
 };
 
 const CRS_OPTIONS = {
@@ -71,6 +73,9 @@ const CRS_OPTIONS = {
         environment: '',
         exportId: '',
     },
+    [CRS_TYPES.tosi]: {
+        token: '',
+    },
 };
 
 const GENDER_TYPES = {
@@ -89,6 +94,7 @@ const CRS_TYPE_2_ADAPTER_MAP = {
     [CRS_TYPES.jackPlus]: BewotecExpertAdapter,
     [CRS_TYPES.cosmo]: TrafficsTbmAdapter,
     [CRS_TYPES.cosmoNaut]: TrafficsTbmAdapter,
+    [CRS_TYPES.tosi]: TosiAdapter,
 };
 
 const DEFAULT_OPTIONS = {

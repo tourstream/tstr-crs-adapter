@@ -94,23 +94,24 @@ onSetData     | `void 0`      | callback which is invoked with the CrsDataObject
 You can check the currently supported CRSs with `UbpCrsAdapter.CRS_TYPES`.
 Currently this module supports the connection to following CRS masks:
 
-CRS               | connectionType                    | connectionOptions          | example
-:---              | :---                              | :---                       | :---
-CETS              | UbpCrsAdapter.CRS_TYPES.cets      |                            | 
-TOMA (old)        | UbpCrsAdapter.CRS_TYPES.toma      | providerKey                | 'ABC'
-TOMA (new)        | UbpCrsAdapter.CRS_TYPES.toma2     | externalCatalogVersion (*) | 'catalogue.version'
-|                 |                                   | connectionUrl              | 'https://url-to-amadeus-selling.plattform'
-|                 |                                   | popupId                    | 'popup_id0123456789abcdef'
-Merlin            | UbpCrsAdapter.CRS_TYPES.merlin    |                            | 
-MyJack            | UbpCrsAdapter.CRS_TYPES.myjack    | token                      | '0123456789abcdef'
-|                 |                                   | dataBridgeUrl              | 'example://url.where-the-adapter/can-get-the-crs-data/when-not-in-http-context'
-Jack+             | UbpCrsAdapter.CRS_TYPES.jackplus  | token                      | '0123456789abcdef'
-Cosmo             | UbpCrsAdapter.CRS_TYPES.cosmo     | dataSourceUrl              | 'example://url.where-the-crs/can-get-the-adapter-data'
-|                 |                                   | environment                | 'test' or 'live'
-|                 |                                   | exportId                   | '0123-456789-abcdef'
-CosmoNaut         | UbpCrsAdapter.CRS_TYPES.cosmonaut | dataSourceUrl              | 'example://url.where-the-crs/can-get-the-adapter-data'
-|                 |                                   | environment                | 'test' or 'live'
-|                 |                                   | exportId                   | '0123-456789-abcdef'
+CRS        | connectionType                    | connectionOptions          | example
+:---       | :---                              | :---                       | :---
+CETS       | UbpCrsAdapter.CRS_TYPES.cets      |                            | 
+TOMA (old) | UbpCrsAdapter.CRS_TYPES.toma      | providerKey                | 'ABC'
+TOMA (new) | UbpCrsAdapter.CRS_TYPES.toma2     | externalCatalogVersion (*) | 'catalogue.version'
+|          |                                   | connectionUrl              | 'https://url-to-amadeus-selling.plattform'
+|          |                                   | popupId                    | 'popup_id0123456789abcdef'
+Merlin     | UbpCrsAdapter.CRS_TYPES.merlin    |                            | 
+MyJack     | UbpCrsAdapter.CRS_TYPES.myjack    | token                      | '0123456789abcdef'
+|          |                                   | dataBridgeUrl              | 'example://url.where-the-adapter/can-get-the-crs-data/when-not-in-http-context'
+Jack+      | UbpCrsAdapter.CRS_TYPES.jackplus  | token                      | '0123456789abcdef'
+Cosmo      | UbpCrsAdapter.CRS_TYPES.cosmo     | dataSourceUrl              | 'example://url.where-the-crs/can-get-the-adapter-data'
+|          |                                   | environment                | 'test' or 'live'
+|          |                                   | exportId                   | '0123-456789-abcdef'
+CosmoNaut  | UbpCrsAdapter.CRS_TYPES.cosmonaut | dataSourceUrl              | 'example://url.where-the-crs/can-get-the-adapter-data'
+|          |                                   | environment                | 'test' or 'live'
+|          |                                   | exportId                   | '0123-456789-abcdef'
+TOSI       | UbpCrsAdapter.CRS_TYPES.tosi      | token                      | '0123456789abcdef'
 
 (*) optional
 
@@ -144,6 +145,7 @@ MyJack     | X     | X     | X         | X
 JackPlus   | X     | X     | X         | X
 Cosmo      | X     | X     | X         | X
 CosmoNaut  | X     | X     | X         | X
+Tosi       | X     | X     | X         | X
 
 
 ##### `<ServiceData>` structure
@@ -287,6 +289,13 @@ _precondition:_
 * the bewotec data bridge is served somewhere (serve it locally via `npm run serve-bridge`)
 
 Open the test file in parallel to the Expert mask in a browser.
+
+
+###### ... in TOSI
+
+_precondition:_ the TOSI mask is open
+
+Open the test file in parallel to the TOSI mask in a browser.
 
 
 ## You have questions or problems with the implementation?

@@ -350,7 +350,7 @@ class CetsAdapter {
      * @returns {*}
      */
     normalizeParsedData(xmlObject) {
-        const addFabNode = () => {
+        const addFabNode = (xmlObject) => {
             let normalizedObject = {Request: {}};
 
             normalizedObject.Request[CONFIG.parserOptions.attrPrefix] = xmlObject.Request[CONFIG.parserOptions.attrPrefix];
