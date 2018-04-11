@@ -99,7 +99,6 @@ class BewotecExpertAdapter {
             }, (error) => {
                 this.logger.error(error.message);
                 this.logger.info('response is: ' + error.response);
-                this.logger.error('Instantiate connection error - but nevertheless transfer could work');
                 throw error;
             });
         } catch (error) {
@@ -261,10 +260,11 @@ class BewotecExpertAdapter {
                 if (!this.isProtocolSameAs('https')) {
                     // does not work well - when the Expert mask is "empty" we get a 404 back
                     return axios.get(baseUrl, {params: params}).catch((error) => {
-                        this.logger.error(error.message);
-                        this.logger.error(error);
+                        if (error.response && error.response.status === 404) {
+                            return Promise.resolve({});
+                        }
 
-                        return Promise.resolve();
+                        return Promise.reject(error);
                     });
                 }
 
@@ -279,10 +279,12 @@ class BewotecExpertAdapter {
                         this.logger.info('received data from bewotec data bridge: ');
                         this.logger.info(message.data);
 
-                        if (message.data.error) {
-                            this.logger.error('received error from bewotec data bridge');
+                        if (message.data.errorMessage) {
+                            if (((message.data.error || {}).response || {}).status !== 404) {
+                                this.logger.error('received error from bewotec data bridge');
 
-                            return reject(new Error(message.data.error));
+                                return reject(new Error(message.data.errorMessage));
+                            }
                         }
 
                         return resolve(message.data);
