@@ -193,6 +193,7 @@ Tosi       | X     | X     | X         | X
 |          | .vehicleCode           | 'FS' 
 |          | .pickUpLocation        | 'LIS1' 
 |          | .pickUpDate            | '10102017' 
+|          | .pickUpTime            | '0915' 
 |          | .dropOffLocation       | 'LIS2' 
 |          | .dropOffDate           | '17102017' 
 |          | .milesIncludedPerDay   | '300' 
