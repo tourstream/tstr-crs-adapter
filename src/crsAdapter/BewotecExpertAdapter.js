@@ -226,9 +226,11 @@ class BewotecExpertAdapter {
     }
 
     cancel() {
-        this.logger.warn('Bewotec Expert has no cancel mechanism');
-
-        return Promise.resolve();
+        return this.getConnection().send({}).catch((error) => {
+            this.logger.info(error);
+            this.logger.error('error during cancel');
+            throw error;
+        });
     }
 
     /**
