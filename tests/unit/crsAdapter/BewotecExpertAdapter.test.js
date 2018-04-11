@@ -446,9 +446,9 @@ describe('BewotecExpertAdapter', () => {
                         roomQuantity: '1',
                         roomOccupancy: '2',
                         travellers: [
-                            { gender: 'child', name: 'k name', age: 'k age' },
-                            { gender: 'male', name: 'h name', age: 'h age' },
-                            { gender: 'infant', name: 'b name', age: 'b age' },
+                            { gender: 'child', firstName: 'k', lastName: 'name' , age: 'k age' },
+                            { gender: 'male', firstName: 'h', lastName: 'name', age: 'h age' },
+                            { gender: 'infant', firstName: 'b', lastName: 'name', age: 'b age' },
                         ],
                         destination: 'LAX20S',
                         dateFrom: '14072018',
@@ -558,9 +558,9 @@ describe('BewotecExpertAdapter', () => {
                         startDate: '14072018',
                         endDate: '21072018',
                         travellers: [
-                            { gender: 'child', name: 'k name', age: 'k age' },
-                            { gender: 'male', name: 'h name', age: 'h age' },
-                            { gender: 'infant', name: 'b name', age: 'b age' },
+                            { gender: 'child', firstName: 'k', lastName: 'name', age: 'k age' },
+                            { gender: 'male', firstName: 'h', lastName: 'name', age: 'h age' },
+                            { gender: 'infant', firstName: 'b', lastName: 'name', age: 'b age' },
                         ]
                     }],
                 });
@@ -928,8 +928,8 @@ describe('BewotecExpertAdapter', () => {
                         dateFrom: '23122018',
                         dateTo: '04012019',
                         travellers: [
-                            { name: 'john doe', age: '7', gender: 'male'},
-                            { name: 'jane doe', age: '11', gender: 'male' },
+                            { firstName: 'john', lastName: 'doe', age: '7', gender: 'male'},
+                            { firstName: 'jane', lastName: 'doe', age: '11', gender: 'male' },
                         ],
                     },
                 ],
@@ -1008,8 +1008,8 @@ describe('BewotecExpertAdapter', () => {
                         dateFrom: '23122018',
                         dateTo: '04012019',
                         travellers: [
-                            { name: 'john doe', age: '7', gender: 'female' },
-                            { name: 'jane doe', age: '11', gender: 'male' },
+                            { firstName: 'john', lastName: 'doe', age: '7', gender: 'female' },
+                            { firstName: 'jane', lastName: 'doe', age: '11', gender: 'male' },
                         ],
                         marked: true,
                     },
@@ -1045,7 +1045,7 @@ describe('BewotecExpertAdapter', () => {
                 i0: '161217',
                 d0: '1',
                 ta0: 'H',
-                tn0: 'DOE/JOHN',
+                tn0: 'DOE JOHN',
                 te0: '32',
             });
 
@@ -1059,7 +1059,8 @@ describe('BewotecExpertAdapter', () => {
                         endDate: '16122017',
                         travellers: [{
                             gender: 'male',
-                            name: 'DOE/JOHN',
+                            firstName: 'DOE',
+                            lastName: 'JOHN',
                             age: '32',
                         }],
                     },

@@ -539,6 +539,7 @@ class BewotecExpertAdapter {
         if (!traveller || !traveller.name) {
             return void 0;
         }
+        const travellerName = traveller.name.split(' ');
         return {
             gender: Object.entries(CONFIG.crs.gender2SalutationMap).reduce(
                 (reduced, current) => {
@@ -547,7 +548,8 @@ class BewotecExpertAdapter {
                 },
                 {}
             )[traveller.salutation],
-            name: traveller.name,
+            firstName: travellerName[0],
+            lastName: travellerName[1],
             age: traveller.age,
         };
     }

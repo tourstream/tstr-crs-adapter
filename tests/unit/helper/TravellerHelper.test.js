@@ -16,19 +16,19 @@ describe('TravellerHelper', () => {
 
     it('normalizeTraveller should return traveller object', () => {
         expect(helper.normalizeTraveller(
-            {gender: 'Female', name: 'jane', age: 25}
+            {gender: 'Female', firstName: 'jane', age: 25}
         )).toEqual(
             {salutation: 'miss', name: 'jane', age: 25}
         );
 
         expect(helper.normalizeTraveller(
-            {gender: 'inFant', name: 'jake'}
+            {gender: 'inFant', firstName: 'jake'}
         )).toEqual(
             {salutation: 'baby', name: 'jake'}
         );
 
         expect(helper.normalizeTraveller(
-            {gender: 'unknown', name: 'jane', age: 25}
+            {gender: 'unknown', firstName: 'jane', age: 25}
         )).toEqual(
             {name: 'jane', age: 25}
         );

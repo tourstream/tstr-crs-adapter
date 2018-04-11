@@ -9,11 +9,11 @@ describe('MerlinAdapter', () => {
 
         return xml + '<GATE2MX>' +
             '<SendRequest>' +
-                '<Import>' +
-                    data +
-                '</Import>' +
+            '<Import>' +
+            data +
+            '</Import>' +
             '</SendRequest>' +
-        '</GATE2MX>';
+            '</GATE2MX>';
     }
 
     beforeEach(() => {
@@ -21,9 +21,11 @@ describe('MerlinAdapter', () => {
 
         axios = require('tests/unit/_mocks/Axios')();
 
-        axios.defaults = {headers: {
-            post: {},
-        }};
+        axios.defaults = {
+            headers: {
+                post: {},
+            }
+        };
         axios.post.and.callFake((url, parameter) => {
             requestParameter = parameter;
 
@@ -104,17 +106,19 @@ describe('MerlinAdapter', () => {
         });
 
         it('getData() should return base data', (done) => {
-            axios.get.and.returnValue(Promise.resolve({data: createXML(
-                '<TourOperator>FTI</TourOperator>' +
-                '<TransactionCode>BA</TransactionCode>' +
-                '<TravelType>BAUS</TravelType>' +
-                '<NoOfPersons>2</NoOfPersons>' +
-                '<AgencyNoTouroperator>080215</AgencyNoTouroperator>' +
-                '<ServiceBlock>' +
-                '<ServiceRow positionNo="1">' +
-                '</ServiceRow>' +
-                '</ServiceBlock>'
-            )}));
+            axios.get.and.returnValue(Promise.resolve({
+                data: createXML(
+                    '<TourOperator>FTI</TourOperator>' +
+                    '<TransactionCode>BA</TransactionCode>' +
+                    '<TravelType>BAUS</TravelType>' +
+                    '<NoOfPersons>2</NoOfPersons>' +
+                    '<AgencyNoTouroperator>080215</AgencyNoTouroperator>' +
+                    '<ServiceBlock>' +
+                    '<ServiceRow positionNo="1">' +
+                    '</ServiceRow>' +
+                    '</ServiceBlock>'
+                )
+            }));
 
             adapter.getData().then((data) => {
                 expect(data).toEqual({
@@ -132,19 +136,21 @@ describe('MerlinAdapter', () => {
         });
 
         it('getData() should return data with marked service', (done) => {
-            axios.get.and.returnValue(Promise.resolve({data: createXML(
-                '<ServiceBlock>' +
-                '<ServiceRow positionNo="1">' +
-                '<KindOfService>MW</KindOfService>' +
-                '<MarkField>X</MarkField>' +
-                '</ServiceRow>' +
-                '</ServiceBlock>'
-            )}));
+            axios.get.and.returnValue(Promise.resolve({
+                data: createXML(
+                    '<ServiceBlock>' +
+                    '<ServiceRow positionNo="1">' +
+                    '<KindOfService>MW</KindOfService>' +
+                    '<MarkField>X</MarkField>' +
+                    '</ServiceRow>' +
+                    '</ServiceBlock>'
+                )
+            }));
 
             adapter.getData().then((data) => {
                 expect(data).toEqual({
                     services: [
-                        { type: 'car', marked: true }
+                        {type: 'car', marked: true}
                     ],
                 });
                 done();
@@ -155,23 +161,25 @@ describe('MerlinAdapter', () => {
         });
 
         it('getData() should return car object', (done) => {
-            axios.get.and.returnValue(Promise.resolve({data: createXML(
-                '<ServiceBlock>' +
-                '<ServiceRow positionNo="1">' +
-                '<KindOfService>MW</KindOfService>' +
-                '<Service>ITL22B1/BGY-VRN1</Service>' +
-                '<Accommodation>0940</Accommodation>' +
-                '<FromDate>020218</FromDate>' +
-                '<EndDate>060218</EndDate>' +
-                '</ServiceRow>' +
-                '<ServiceRow positionNo="2">' +
-                '<KindOfService>E</KindOfService>' +
-                '<Service>Hotel Name</Service>' +
-                '<FromDate>020218</FromDate>' +
-                '<EndDate>060218</EndDate>' +
-                '</ServiceRow>' +
-                '</ServiceBlock>'
-            )}));
+            axios.get.and.returnValue(Promise.resolve({
+                data: createXML(
+                    '<ServiceBlock>' +
+                    '<ServiceRow positionNo="1">' +
+                    '<KindOfService>MW</KindOfService>' +
+                    '<Service>ITL22B1/BGY-VRN1</Service>' +
+                    '<Accommodation>0940</Accommodation>' +
+                    '<FromDate>020218</FromDate>' +
+                    '<EndDate>060218</EndDate>' +
+                    '</ServiceRow>' +
+                    '<ServiceRow positionNo="2">' +
+                    '<KindOfService>E</KindOfService>' +
+                    '<Service>Hotel Name</Service>' +
+                    '<FromDate>020218</FromDate>' +
+                    '<EndDate>060218</EndDate>' +
+                    '</ServiceRow>' +
+                    '</ServiceBlock>'
+                )
+            }));
 
             adapter.getData().then((data) => {
                 expect(data).toEqual({
@@ -198,7 +206,8 @@ describe('MerlinAdapter', () => {
         });
 
         it('getData() should return car object with strange values', (done) => {
-            axios.get.and.returnValue(Promise.resolve({data: createXML(
+            axios.get.and.returnValue(Promise.resolve({
+                data: createXML(
                     '<ServiceBlock>' +
                     '<ServiceRow positionNo="1">' +
                     '<KindOfService>MW</KindOfService>' +
@@ -209,7 +218,8 @@ describe('MerlinAdapter', () => {
                     '<TravellerAllocation/>' +
                     '</ServiceRow>' +
                     '</ServiceBlock>'
-                )}));
+                )
+            }));
 
             adapter.getData().then((data) => {
                 expect(data).toEqual({
@@ -232,7 +242,8 @@ describe('MerlinAdapter', () => {
         });
 
         it('getData() should return hotel object', (done) => {
-            axios.get.and.returnValue(Promise.resolve({data: createXML(
+            axios.get.and.returnValue(Promise.resolve({
+                data: createXML(
                     '<ServiceBlock>' +
                     '<ServiceRow positionNo="1">' +
                     '<KindOfService>H</KindOfService>' +
@@ -260,7 +271,8 @@ describe('MerlinAdapter', () => {
                     '</PersonRow>' +
                     '</PersonBlock>' +
                     '</TravellerBlock>'
-                )}));
+                )
+            }));
 
             adapter.getData().then((data) => {
                 expect(data).toEqual({
@@ -274,12 +286,13 @@ describe('MerlinAdapter', () => {
                             travellers: [
                                 {
                                     gender: 'child',
-                                    name: 'john doe',
+                                    firstName: 'john',
+                                    lastName: 'doe',
                                     age: '11'
                                 },
                                 {
                                     gender: 'male',
-                                    name: 'john doe',
+                                    firstName: 'john', lastName: 'doe',
                                     age: '30'
                                 },
                             ],
@@ -298,7 +311,8 @@ describe('MerlinAdapter', () => {
         });
 
         it('getData() should return hotel object with strange values', (done) => {
-            axios.get.and.returnValue(Promise.resolve({data: createXML(
+            axios.get.and.returnValue(Promise.resolve({
+                data: createXML(
                     '<ServiceBlock>' +
                     '<ServiceRow positionNo="1">' +
                     '<KindOfService>H</KindOfService>' +
@@ -315,7 +329,8 @@ describe('MerlinAdapter', () => {
                     '</PersonRow>' +
                     '</PersonBlock>' +
                     '</TravellerBlock>'
-                )}));
+                )
+            }));
 
             adapter.getData().then((data) => {
                 expect(data).toEqual({
@@ -337,7 +352,8 @@ describe('MerlinAdapter', () => {
         });
 
         it('getData() should return round trip object', (done) => {
-            axios.get.and.returnValue(Promise.resolve({data: createXML(
+            axios.get.and.returnValue(Promise.resolve({
+                data: createXML(
                     '<ServiceBlock>' +
                     '<ServiceRow positionNo="1">' +
                     '<KindOfService>R</KindOfService>' +
@@ -358,7 +374,8 @@ describe('MerlinAdapter', () => {
                     '</PersonRow>' +
                     '</PersonBlock>' +
                     '</TravellerBlock>'
-                )}));
+                )
+            }));
 
             adapter.getData().then((data) => {
                 expect(data).toEqual({
@@ -370,7 +387,7 @@ describe('MerlinAdapter', () => {
                             startDate: '02022018',
                             endDate: '06022018',
                             travellers: [
-                                { gender: 'female', name: 'JANE DOE', age: '11' },
+                                {gender: 'female', firstName: 'JANE', lastName: 'DOE', age: '11'},
                             ],
                             marked: true,
                         },
@@ -384,7 +401,8 @@ describe('MerlinAdapter', () => {
         });
 
         it('getData() should return round trip object with strange values', (done) => {
-            axios.get.and.returnValue(Promise.resolve({data: createXML(
+            axios.get.and.returnValue(Promise.resolve({
+                data: createXML(
                     '<ServiceBlock>' +
                     '<ServiceRow positionNo="1">' +
                     '<KindOfService>R</KindOfService>' +
@@ -392,7 +410,8 @@ describe('MerlinAdapter', () => {
                     '<EndDate>to</EndDate>' +
                     '</ServiceRow>' +
                     '</ServiceBlock>'
-                )}));
+                )
+            }));
 
             adapter.getData().then((data) => {
                 expect(data).toEqual({
@@ -414,7 +433,8 @@ describe('MerlinAdapter', () => {
         });
 
         it('getData() should return camper object', (done) => {
-            axios.get.and.returnValue(Promise.resolve({data: createXML(
+            axios.get.and.returnValue(Promise.resolve({
+                data: createXML(
                     '<ServiceBlock>' +
                     '<ServiceRow positionNo="1">' +
                     '<KindOfService>WM</KindOfService>' +
@@ -426,7 +446,8 @@ describe('MerlinAdapter', () => {
                     '<EndDate>060218</EndDate>' +
                     '</ServiceRow>' +
                     '</ServiceBlock>'
-                )}));
+                )
+            }));
 
             adapter.getData().then((data) => {
                 expect(data).toEqual({
@@ -455,17 +476,19 @@ describe('MerlinAdapter', () => {
         });
 
         it('getData() should return camper object with strange values', (done) => {
-            axios.get.and.returnValue(Promise.resolve({data: createXML(
-                '<ServiceBlock>' +
-                '<ServiceRow positionNo="1">' +
-                '<KindOfService>WM</KindOfService>' +
-                '<Service>BGY</Service>' +
-                '<Accommodation>time</Accommodation>' +
-                '<FromDate>from</FromDate>' +
-                '<EndDate>to</EndDate>' +
-                '</ServiceRow>' +
-                '</ServiceBlock>'
-            )}));
+            axios.get.and.returnValue(Promise.resolve({
+                data: createXML(
+                    '<ServiceBlock>' +
+                    '<ServiceRow positionNo="1">' +
+                    '<KindOfService>WM</KindOfService>' +
+                    '<Service>BGY</Service>' +
+                    '<Accommodation>time</Accommodation>' +
+                    '<FromDate>from</FromDate>' +
+                    '<EndDate>to</EndDate>' +
+                    '</ServiceRow>' +
+                    '</ServiceBlock>'
+                )
+            }));
 
             adapter.getData().then((data) => {
                 expect(data).toEqual({
@@ -543,7 +566,7 @@ describe('MerlinAdapter', () => {
                 numberOfTravellers: 2,
                 remark: 'my.remark',
                 travelType: 'travel.type',
-                services: [{ type: 'unknown' }],
+                services: [{type: 'unknown'}],
             };
 
             adapter.setData(data).then(() => {
@@ -558,19 +581,19 @@ describe('MerlinAdapter', () => {
         it('setData() should send complete car data', (done) => {
             let expectation = createXML(
                 '<ServiceBlock>' +
-                    '<ServiceRow positionNo="1">' +
-                        '<KindOfService>MW</KindOfService>' +
-                        '<Service>rent.codevehicle.type.code/from.loc-to.loc</Service>' +
-                        '<FromDate>231218</FromDate>' +
-                        '<EndDate>040119</EndDate>' +
-                        '<Accommodation>from.time</Accommodation>' +
-                    '</ServiceRow>' +
-                    '<ServiceRow positionNo="2">' +
-                        '<KindOfService>E</KindOfService>' +
-                        '<Service>pu h.name</Service>' +
-                        '<FromDate>231218</FromDate>' +
-                        '<EndDate>040119</EndDate>' +
-                    '</ServiceRow>' +
+                '<ServiceRow positionNo="1">' +
+                '<KindOfService>MW</KindOfService>' +
+                '<Service>rent.codevehicle.type.code/from.loc-to.loc</Service>' +
+                '<FromDate>231218</FromDate>' +
+                '<EndDate>040119</EndDate>' +
+                '<Accommodation>from.time</Accommodation>' +
+                '</ServiceRow>' +
+                '<ServiceRow positionNo="2">' +
+                '<KindOfService>E</KindOfService>' +
+                '<Service>pu h.name</Service>' +
+                '<FromDate>231218</FromDate>' +
+                '<EndDate>040119</EndDate>' +
+                '</ServiceRow>' +
                 '</ServiceBlock>' +
                 '<TravellerBlock>' +
                 '<PersonBlock/>' +
@@ -616,13 +639,13 @@ describe('MerlinAdapter', () => {
         it('setData() should send minimal car data', (done) => {
             let expectation = createXML(
                 '<ServiceBlock>' +
-                    '<ServiceRow positionNo="1">' +
-                        '<KindOfService>MW</KindOfService>' +
-                        '<Service>rent.codevehicle.type.code/from.loc-to.loc</Service>' +
-                        '<FromDate>231218</FromDate>' +
-                        '<EndDate>020119</EndDate>' +
-                        '<Accommodation>from.time</Accommodation>' +
-                    '</ServiceRow>' +
+                '<ServiceRow positionNo="1">' +
+                '<KindOfService>MW</KindOfService>' +
+                '<Service>rent.codevehicle.type.code/from.loc-to.loc</Service>' +
+                '<FromDate>231218</FromDate>' +
+                '<EndDate>020119</EndDate>' +
+                '<Accommodation>from.time</Accommodation>' +
+                '</ServiceRow>' +
                 '</ServiceBlock>' +
                 '<TravellerBlock>' +
                 '<PersonBlock/>' +
@@ -658,19 +681,19 @@ describe('MerlinAdapter', () => {
         it('setData() should send car data with pickup hotel', (done) => {
             let expectation = createXML(
                 '<ServiceBlock>' +
-                    '<ServiceRow positionNo="1">' +
-                        '<KindOfService>MW</KindOfService>' +
-                        '<Service>rent.codevehicle.type.code/from.loc-to.loc</Service>' +
-                        '<FromDate>231218</FromDate>' +
-                        '<EndDate>040119</EndDate>' +
-                        '<Accommodation>from.time</Accommodation>' +
-                    '</ServiceRow>' +
-                    '<ServiceRow positionNo="2">' +
-                        '<KindOfService>E</KindOfService>' +
-                        '<Service>pu h.name</Service>' +
-                        '<FromDate>231218</FromDate>' +
-                        '<EndDate>040119</EndDate>' +
-                    '</ServiceRow>' +
+                '<ServiceRow positionNo="1">' +
+                '<KindOfService>MW</KindOfService>' +
+                '<Service>rent.codevehicle.type.code/from.loc-to.loc</Service>' +
+                '<FromDate>231218</FromDate>' +
+                '<EndDate>040119</EndDate>' +
+                '<Accommodation>from.time</Accommodation>' +
+                '</ServiceRow>' +
+                '<ServiceRow positionNo="2">' +
+                '<KindOfService>E</KindOfService>' +
+                '<Service>pu h.name</Service>' +
+                '<FromDate>231218</FromDate>' +
+                '<EndDate>040119</EndDate>' +
+                '</ServiceRow>' +
                 '</ServiceBlock>' +
                 '<TravellerBlock>' +
                 '<PersonBlock/>' +
@@ -710,19 +733,19 @@ describe('MerlinAdapter', () => {
         it('setData() should send car data with dropOff hotel', (done) => {
             let expectation = createXML(
                 '<ServiceBlock>' +
-                    '<ServiceRow positionNo="1">' +
-                        '<KindOfService>MW</KindOfService>' +
-                        '<Service>rent.codevehicle.type.code/from.loc-to.loc</Service>' +
-                        '<FromDate>231218</FromDate>' +
-                        '<EndDate>040119</EndDate>' +
-                        '<Accommodation>from.time</Accommodation>' +
-                    '</ServiceRow>' +
-                    '<ServiceRow positionNo="2">' +
-                        '<KindOfService>E</KindOfService>' +
-                        '<Service>do h.name</Service>' +
-                        '<FromDate>231218</FromDate>' +
-                        '<EndDate>040119</EndDate>' +
-                    '</ServiceRow>' +
+                '<ServiceRow positionNo="1">' +
+                '<KindOfService>MW</KindOfService>' +
+                '<Service>rent.codevehicle.type.code/from.loc-to.loc</Service>' +
+                '<FromDate>231218</FromDate>' +
+                '<EndDate>040119</EndDate>' +
+                '<Accommodation>from.time</Accommodation>' +
+                '</ServiceRow>' +
+                '<ServiceRow positionNo="2">' +
+                '<KindOfService>E</KindOfService>' +
+                '<Service>do h.name</Service>' +
+                '<FromDate>231218</FromDate>' +
+                '<EndDate>040119</EndDate>' +
+                '</ServiceRow>' +
                 '</ServiceBlock>' +
                 '<TravellerBlock>' +
                 '<PersonBlock/>' +
@@ -762,30 +785,30 @@ describe('MerlinAdapter', () => {
         it('setData() should send hotel data', (done) => {
             let expectation = createXML(
                 '<ServiceBlock>' +
-                    '<ServiceRow positionNo="1">' +
-                        '<KindOfService>H</KindOfService>' +
-                        '<Service>dest</Service>' +
-                        '<Accommodation>rc mc</Accommodation>' +
-                        '<Occupancy>4</Occupancy>' +
-                        '<NoOfServices>2</NoOfServices>' +
-                        '<FromDate>231218</FromDate>' +
-                        '<EndDate>040119</EndDate>' +
-                        '<TravellerAllocation>1-8</TravellerAllocation>' +
-                    '</ServiceRow>' +
+                '<ServiceRow positionNo="1">' +
+                '<KindOfService>H</KindOfService>' +
+                '<Service>dest</Service>' +
+                '<Accommodation>rc mc</Accommodation>' +
+                '<Occupancy>4</Occupancy>' +
+                '<NoOfServices>2</NoOfServices>' +
+                '<FromDate>231218</FromDate>' +
+                '<EndDate>040119</EndDate>' +
+                '<TravellerAllocation>1-8</TravellerAllocation>' +
+                '</ServiceRow>' +
                 '</ServiceBlock>' +
                 '<TravellerBlock>' +
-                    '<PersonBlock>' +
-                        '<PersonRow travellerNo="1">' +
-                            '<Salutation>K</Salutation>' +
-                            '<Name>john doe</Name>' +
-                            '<Age>8</Age>' +
-                        '</PersonRow>' +
-                        '<PersonRow travellerNo="2">' +
-                            '<Salutation>K</Salutation>' +
-                            '<Name>jane doe</Name>' +
-                            '<Age>14</Age>' +
-                        '</PersonRow>' +
-                    '</PersonBlock>' +
+                '<PersonBlock>' +
+                '<PersonRow travellerNo="1">' +
+                '<Salutation>K</Salutation>' +
+                '<Name>john doe</Name>' +
+                '<Age>8</Age>' +
+                '</PersonRow>' +
+                '<PersonRow travellerNo="2">' +
+                '<Salutation>K</Salutation>' +
+                '<Name>jane doe</Name>' +
+                '<Age>14</Age>' +
+                '</PersonRow>' +
+                '</PersonBlock>' +
                 '</TravellerBlock>' +
                 '<TransactionCode>BA</TransactionCode>' +
                 '<NoOfPersons>8</NoOfPersons>'
@@ -803,8 +826,8 @@ describe('MerlinAdapter', () => {
                         dateFrom: '23122018',
                         dateTo: '04012019',
                         travellers: [
-                            { name: 'john doe', age: 8, gender: 'child' },
-                            { name: 'jane doe', age: 14, gender: 'child' },
+                            {name: 'john doe', age: 8, gender: 'child'},
+                            {name: 'jane doe', age: 14, gender: 'child'},
                         ],
                     },
                 ],
@@ -868,7 +891,7 @@ describe('MerlinAdapter', () => {
                         dateFrom: '23122018',
                         dateTo: '04012019',
                         travellers: [
-                            { name: 'john doe', age: 11, gender: 'female' },
+                            {name: 'john doe', age: 11, gender: 'female'},
                         ],
                     },
                 ],
@@ -899,7 +922,7 @@ describe('MerlinAdapter', () => {
                 '<PersonBlock>' +
                 '<PersonRow travellerNo="1">' +
                 '<Salutation>H</Salutation>' +
-                '<Name>DOE/JOHN</Name>' +
+                '<Name>JOHN DOE</Name>' +
                 '<Age>32</Age>' +
                 '</PersonRow>' +
                 '</PersonBlock>' +
@@ -921,7 +944,8 @@ describe('MerlinAdapter', () => {
                         endDate: '16122017',
                         travellers: [{
                             gender: 'male',
-                            name: 'DOE/JOHN',
+                            firstName: 'JOHN',
+                            lastName: 'DOE',
                             age: '32',
                         }],
                     },
@@ -1006,29 +1030,29 @@ describe('MerlinAdapter', () => {
         it('setData() should overwrite not complete data row', (done) => {
             let expectation = createXML(
                 '<ServiceBlock>' +
-                    '<ServiceRow positionNo="1">' +
-                        '<KindOfService>R</KindOfService>' +
-                        '<Service/>' +
-                    '</ServiceRow>' +
-                    '<ServiceRow positionNo="2">' +
-                        '<KindOfService>MW</KindOfService>' +
-                        '<Service>/-</Service>' +
-                    '</ServiceRow>' +
-                    '<ServiceRow positionNo="3">' +
-                        '<KindOfService>H</KindOfService>' +
-                        '<Service>dest.5</Service>' +
-                        '<Accommodation>rc.5 mc.5</Accommodation>' +
-                        '<TravellerAllocation>1</TravellerAllocation>' +
-                    '</ServiceRow>' +
-                    '<ServiceRow positionNo="4">' +
-                        '<KindOfService>H</KindOfService>' +
-                        '<Service>dest.6</Service>' +
-                        '<Accommodation>rc.6 mc.6</Accommodation>' +
-                        '<TravellerAllocation>2</TravellerAllocation>' +
-                    '</ServiceRow>' +
+                '<ServiceRow positionNo="1">' +
+                '<KindOfService>R</KindOfService>' +
+                '<Service/>' +
+                '</ServiceRow>' +
+                '<ServiceRow positionNo="2">' +
+                '<KindOfService>MW</KindOfService>' +
+                '<Service>/-</Service>' +
+                '</ServiceRow>' +
+                '<ServiceRow positionNo="3">' +
+                '<KindOfService>H</KindOfService>' +
+                '<Service>dest.5</Service>' +
+                '<Accommodation>rc.5 mc.5</Accommodation>' +
+                '<TravellerAllocation>1</TravellerAllocation>' +
+                '</ServiceRow>' +
+                '<ServiceRow positionNo="4">' +
+                '<KindOfService>H</KindOfService>' +
+                '<Service>dest.6</Service>' +
+                '<Accommodation>rc.6 mc.6</Accommodation>' +
+                '<TravellerAllocation>2</TravellerAllocation>' +
+                '</ServiceRow>' +
                 '</ServiceBlock>' +
                 '<TravellerBlock>' +
-                    '<PersonBlock/>' +
+                '<PersonBlock/>' +
                 '</TravellerBlock>' +
                 '<TransactionCode>BA</TransactionCode>' +
                 '<NoOfPersons>2</NoOfPersons>'
@@ -1036,15 +1060,21 @@ describe('MerlinAdapter', () => {
 
             let data = {
                 services: [
-                    { type: SERVICE_TYPES.roundTrip },
-                    { type: SERVICE_TYPES.car, rentalCode: 'USA81' },
-                    { type: SERVICE_TYPES.car },
-                    { type: SERVICE_TYPES.hotel, destination: 'dest.1' },
-                    { type: SERVICE_TYPES.hotel, roomCode: 'rc.2' },
-                    { type: SERVICE_TYPES.hotel, mealCode: 'mc.3' },
-                    { type: SERVICE_TYPES.hotel, destination: 'dest.4', roomCode: 'rc.4', marked: true },
-                    { type: SERVICE_TYPES.hotel, destination: 'dest.5', roomCode: 'rc.5', mealCode: 'mc.5', marked: false },
-                    { type: SERVICE_TYPES.hotel, destination: 'dest.6', roomCode: 'rc.6', mealCode: 'mc.6' },
+                    {type: SERVICE_TYPES.roundTrip},
+                    {type: SERVICE_TYPES.car, rentalCode: 'USA81'},
+                    {type: SERVICE_TYPES.car},
+                    {type: SERVICE_TYPES.hotel, destination: 'dest.1'},
+                    {type: SERVICE_TYPES.hotel, roomCode: 'rc.2'},
+                    {type: SERVICE_TYPES.hotel, mealCode: 'mc.3'},
+                    {type: SERVICE_TYPES.hotel, destination: 'dest.4', roomCode: 'rc.4', marked: true},
+                    {
+                        type: SERVICE_TYPES.hotel,
+                        destination: 'dest.5',
+                        roomCode: 'rc.5',
+                        mealCode: 'mc.5',
+                        marked: false
+                    },
+                    {type: SERVICE_TYPES.hotel, destination: 'dest.6', roomCode: 'rc.6', mealCode: 'mc.6'},
                 ],
             };
 

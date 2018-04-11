@@ -2,7 +2,7 @@ import es6shim from 'es6-shim';
 import moment from 'moment';
 import axios from 'axios';
 import querystring from 'querystring';
-import { SERVICE_TYPES } from '../UbpCrsAdapter';
+import {SERVICE_TYPES} from '../UbpCrsAdapter';
 import TravellerHelper from '../helper/TravellerHelper';
 import CarHelper from '../helper/CarHelper';
 import CamperHelper from '../helper/CamperHelper';
@@ -128,7 +128,8 @@ class TrafficsTbmAdapter {
 
             try {
                 this.options.onSetData && this.options.onSetData(crsObject);
-            } catch (ignore) {}
+            } catch (ignore) {
+            }
 
             return this.getConnection().send(crsObject).catch((error) => {
                 this.logger.error(error.message);
@@ -420,6 +421,7 @@ class TrafficsTbmAdapter {
             return void 0;
         }
 
+        const travellerName = traveller['$'].sur.split(' ');
         return {
             gender: Object.entries(CONFIG.crs.gender2SalutationMap).reduce(
                 (reduced, current) => {
@@ -428,7 +430,8 @@ class TrafficsTbmAdapter {
                 },
                 {}
             )[traveller['$'].typ],
-            name: traveller['$'].sur,
+            firstName: travellerName[0],
+            lastName: travellerName[1],
             age: traveller['$'].age,
         };
     }
@@ -488,7 +491,7 @@ class TrafficsTbmAdapter {
         this.assignBasicData(crsObject, dataObject);
 
         (dataObject.services || []).forEach((service) => {
-            let markedLineIndex= this.getMarkedLineIndexForService(crsObject, service);
+            let markedLineIndex = this.getMarkedLineIndexForService(crsObject, service);
             let lineIndex = markedLineIndex === void 0 ? this.getNextEmptyServiceLineIndex(crsObject) : markedLineIndex;
 
             switch (service.type) {

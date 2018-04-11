@@ -185,9 +185,7 @@ CosmoNaut  | X     | X     | X         | X
 |         | .destination   | 'LAX20S' 
 |         | .dateFrom      | '20092017' 
 |         | .dateTo        | '20092017' 
-|         | .travellers    | [ { gender: \<gender\>, name: 'john doe', age: '32' }, ... ]
-
-_note: travellers.name needs to have structure 'name lastname' for proper CETS support_
+|         | .travellers    | [ { gender: \<gender\>, firstName: 'john', lastName: 'doe', age: '32' }, ... ]
 
 | type      | fields              | example
 | :---      | :---                | :---
@@ -195,7 +193,7 @@ _note: travellers.name needs to have structure 'name lastname' for proper CETS s
 |           | .destination        | 'YYZ' 
 |           | .startDate          | '05122017' 
 |           | .endDate            | '16122017'
-|           | .travellers         | [ { gender: \<gender\>, name: 'john doe', age: '32' }, ... ]
+|           | .travellers         | [ { gender: \<gender\>, firstName: 'john', lastName: 'doe', age: '32' }, ... ]
 
 _\<gender\>_ is one of **'female', 'male', 'child', 'infant'**
  

@@ -339,12 +339,14 @@ describe('TomaSPCAdapter', () => {
                         travellers: [
                             {
                                 gender: 'child',
-                                name: 'john doe',
+                                firstName: 'john',
+                                lastName: 'doe',
                                 age: '13'
                             },
                             {
                                 gender: 'child',
-                                name: 'jane doe',
+                                firstName: 'jane',
+                                lastName: 'doe',
                                 age: '9'
                             },
                         ],
@@ -592,7 +594,8 @@ describe('TomaSPCAdapter', () => {
                     endDate: '16122017',
                     travellers: [{
                         gender: 'male',
-                        name: 'DOE/JOHN',
+                        firstName: 'JOHN',
+                        lastName: 'DOE',
                         age: '040485',
                     }],
                 }]
@@ -611,7 +614,7 @@ describe('TomaSPCAdapter', () => {
                     {},
                     {
                         title: 'H',
-                        name: 'DOE/JOHN',
+                        name: 'JOHN DOE',
                         discount: '040485',
                     },
                 ]
@@ -635,7 +638,8 @@ describe('TomaSPCAdapter', () => {
                     endDate: '16122017',
                     travellers: [{
                         gender: 'male',
-                        name: 'DOE/JOHN',
+                        firstName: 'JOHN',
+                        lastName: 'DOE',
                         age: '32',
                     }],
                 }]
@@ -653,7 +657,7 @@ describe('TomaSPCAdapter', () => {
                 travellers: [
                     {
                         title: 'H',
-                        name: 'DOE/JOHN',
+                        name: 'JOHN DOE',
                         discount: '32',
                     },
                 ]
@@ -1055,7 +1059,8 @@ describe('TomaSPCAdapter', () => {
                         endDate: '16122017',
                         travellers: [{
                             gender: 'male',
-                            name: 'DOE/JOHN',
+                            firstName: 'JOHN',
+                            lastName: 'DOE',
                             age: '32',
                         }],
                     },
@@ -1075,7 +1080,7 @@ describe('TomaSPCAdapter', () => {
                 }],
                 travellers: [{
                     title: 'H',
-                    name: 'DOE/JOHN',
+                    name: 'JOHN DOE',
                     discount: '32',
                 }],
             };

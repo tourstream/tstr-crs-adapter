@@ -518,11 +518,13 @@ class TomaSPCAdapter {
             return void 0;
         }
 
+        const travellerName = traveller.name.split(' ');
         return {
             gender: (Object.entries(CONFIG.crs.gender2SalutationMap).find(
                 (row) => row[1] === traveller.title
             ) || [])[0],
-            name: traveller.name,
+            firstName: travellerName[0],
+            lastName: travellerName[1],
             age: traveller.discount,
         };
     }

@@ -406,12 +406,13 @@ class MerlinAdapter {
         if (!traveller || !traveller.Name) {
             return void 0;
         }
-
+        const travellerName = traveller.Name.split(' ');
         return {
             gender: (Object.entries(CONFIG.crs.gender2SalutationMap).find(
                 (row) => row[1] === traveller.Salutation
             ) || [])[0],
-            name: traveller.Name,
+            firstName: travellerName[0],
+            lastName: travellerName[1],
             age: traveller.Age,
         };
     }
@@ -801,7 +802,7 @@ class MerlinAdapter {
         let personRows = crsData.TravellerBlock.PersonBlock.PersonRow;
         let travellerIndex = void 0;
 
-        personRows.some((traveller, index) =>{
+        personRows.some((traveller, index) => {
             if (!traveller.Name && !traveller.Age) {
                 travellerIndex = index;
 
