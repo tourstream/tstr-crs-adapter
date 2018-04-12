@@ -178,7 +178,7 @@ class UbpCrsAdapter {
                     return;
                 }
 
-                return adapterInstance.fetchData().then((crsData) => {
+                adapterInstance.fetchData().then((crsData) => {
                     this.logger.info('RAW CRS DATA:');
                     this.logger.info(crsData.raw);
 

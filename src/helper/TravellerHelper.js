@@ -109,10 +109,6 @@ class TravellerHelper {
             return travellers;
         }
 
-        crsData.normalized = crsData.normalized || {
-            travellers: [],
-        };
-
         const genderMap = {};
 
         Object.entries(crsData.meta.genderTypes).forEach((entry) => {

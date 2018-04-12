@@ -26,7 +26,7 @@ class CrsDataMapper {
         adapterData.remark = crsData.normalized.remark;
         adapterData.services = [];
 
-        crsData.normalized.services.forEach((crsService) => {
+        (crsData.normalized.services || []).forEach((crsService) => {
             const mapper = this.mapper[findAdapterServiceType(crsService.type)];
 
             if (!mapper) {

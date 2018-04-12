@@ -21,7 +21,7 @@ class TosiAdapter {
                     camper: 'WM',
                     camperExtra: 'TA',
                 },
-                connectionUrl: 'https://xmlrpc.fti.de/xmlrpc',
+                connectionUrl: '//xmlrpc.fti.de/xmlrpc',
                 gender2SalutationMap: {
                     [GENDER_TYPES.male]: 'H',
                     [GENDER_TYPES.female]: 'F',
@@ -82,8 +82,12 @@ class TosiAdapter {
         };
     }
 
-    connect(options) {
-        this.connectionOptions = options;
+    connect(connectionOptions) {
+        if (!connectionOptions || !connectionOptions.token) {
+            throw new Error('No token found in connectionOptions.');
+        }
+
+        this.connectionOptions = connectionOptions;
         this.connection = this.createConnection();
         this.logger.log('TOSI connection available');
     }
@@ -113,12 +117,12 @@ class TosiAdapter {
         crsData.converted = this.normalizeCrsObject({});
         crsData.converted.methodCall.methodName = 'Toma.setData';
 
-        crsData.converted.methodCall.params.para.value.struct.member.push({
+        crsData.converted.methodCall.params.param.value.struct.member.push({
             name: 'TOSI_Key',
             value: { string: this.connectionOptions.token }
         });
 
-        crsData.converted.methodCall.params.para.value.struct.member.push({
+        crsData.converted.methodCall.params.param.value.struct.member.push({
             name: 'Bemerkung',
             value: { string: crsData.normalized.remark }
         });
@@ -134,37 +138,37 @@ class TosiAdapter {
         crsData.normalized.services.forEach((service, index) => {
             const indexString = ('0' + index).substring(-2);
 
-            crsData.converted.methodCall.params.para.value.struct.member.push({
+            crsData.converted.methodCall.params.param.value.struct.member.push({
                 name: 'Anf_' + indexString,
                 value: { string: service.type }
             });
 
-            crsData.converted.methodCall.params.para.value.struct.member.push({
+            crsData.converted.methodCall.params.param.value.struct.member.push({
                 name: 'Lstg_' + indexString,
                 value: { string: service.code }
             });
 
-            crsData.converted.methodCall.params.para.value.struct.member.push({
+            crsData.converted.methodCall.params.param.value.struct.member.push({
                 name: 'Unterbr_' + indexString,
                 value: { string: service.accommodation }
             });
 
-            crsData.converted.methodCall.params.para.value.struct.member.push({
+            crsData.converted.methodCall.params.param.value.struct.member.push({
                 name: 'Belegung_' + indexString,
                 value: { string: service.occupancy }
             });
 
-            crsData.converted.methodCall.params.para.value.struct.member.push({
+            crsData.converted.methodCall.params.param.value.struct.member.push({
                 name: 'Anzahl_' + indexString,
                 value: { string: service.quantity }
             });
 
-            crsData.converted.methodCall.params.para.value.struct.member.push({
+            crsData.converted.methodCall.params.param.value.struct.member.push({
                 name: 'von_' + indexString,
                 value: { string: service.fromDate }
             });
 
-            crsData.converted.methodCall.params.para.value.struct.member.push({
+            crsData.converted.methodCall.params.param.value.struct.member.push({
                 name: 'bis_' + indexString,
                 value: { string: service.toDate }
             });
@@ -209,23 +213,17 @@ class TosiAdapter {
         throw new Error('No connection available - please connect to TOSI first.');
     }
 
-    /**
-     * @private
-     * @returns {Promise}
-     */
-    getCrsData() {
-        return Promise.resolve();
-    }
-
     normalizeCrsObject(crsObject = {}) {
         crsObject.methodCall = crsObject.methodCall || {};
-        crsObject.methodCall.params = crsObject.params || {};
-        crsObject.methodCall.params.param = crsObject.params.param || {};
-        crsObject.methodCall.params.param.value = crsObject.params.param.value || {};
-        crsObject.methodCall.params.param.value.struct = crsObject.params.param.value.struct || {};
+        crsObject.methodCall.params = crsObject.methodCall.params || {};
+        crsObject.methodCall.params.param = crsObject.methodCall.params.param || {};
+        crsObject.methodCall.params.param.value = crsObject.methodCall.params.param.value || {};
+        crsObject.methodCall.params.param.value.struct = crsObject.methodCall.params.param.value.struct || {};
 
         if (!Array.isArray(crsObject.methodCall.params.param.value.struct.member)) {
-            crsObject.params.param.value.struct.member = [crsObject.params.param.value.struct.member].filter(Boolean);
+            crsObject.methodCall.params.param.value.struct.member = [
+                crsObject.methodCall.params.param.value.struct.member
+            ].filter(Boolean);
         }
 
         return crsObject;
