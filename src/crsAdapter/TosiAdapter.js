@@ -213,6 +213,7 @@ class TosiAdapter {
      */
     normalizeCrsObject(crsObject = {}) {
         crsObject.methodCall = crsObject.methodCall || {};
+        crsObject.methodCall.methodName = void 0;
         crsObject.methodCall.params = crsObject.methodCall.params || {};
         crsObject.methodCall.params.param = crsObject.methodCall.params.param || {};
         crsObject.methodCall.params.param.value = crsObject.methodCall.params.param.value || {};

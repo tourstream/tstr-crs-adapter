@@ -119,6 +119,7 @@ describe('TosiAdapter', () => {
         it('convert() should convert "empty" data', () => {
             const build = xmlHead +
                 '<methodCall>' +
+                    '<methodName>Toma.setData</methodName>' +
                     '<params>' +
                         '<param>' +
                             '<value>' +
@@ -131,7 +132,6 @@ describe('TosiAdapter', () => {
                             '</value>' +
                         '</param>' +
                     '</params>' +
-                    '<methodName>Toma.setData</methodName>' +
                 '</methodCall>';
 
             let data = {
@@ -146,6 +146,7 @@ describe('TosiAdapter', () => {
         it('convert() should convert complete data', () => {
             let build = xmlHead +
                 '<methodCall>' +
+                    '<methodName>Toma.setData</methodName>' +
                     '<params>' +
                         '<param>' +
                             '<value>' +
@@ -190,7 +191,6 @@ describe('TosiAdapter', () => {
                             '</value>' +
                         '</param>' +
                     '</params>' +
-                    '<methodName>Toma.setData</methodName>' +
                 '</methodCall>';
 
             let data = {
