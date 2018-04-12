@@ -10,9 +10,11 @@ describe('TosiAdapter', () => {
         logService = require('tests/unit/_mocks/LogService')();
         axios = require('tests/unit/_mocks/Axios')();
 
-        axios.defaults = {headers: {
-            post: {},
-        }};
+        axios.defaults = {
+            headers: {
+                post: {},
+            }
+        };
 
         axios.post.and.callFake((url, parameter) => {
             requestParameter = parameter;
@@ -63,7 +65,7 @@ describe('TosiAdapter', () => {
         });
 
         it ('connection shall set the correct communication headers', () => {
-            expect(axios.defaults.headers.post['Content-Type']).toBe('text/xml');
+            expect(axios.defaults.headers.post['Content-Type']).toBe('text/plain');
         });
 
         it('fetchData() should at least return correct data structure', (done) => {

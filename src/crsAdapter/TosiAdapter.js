@@ -188,7 +188,7 @@ class TosiAdapter {
      * @returns {{post: function(*=): AxiosPromise}}
      */
     createConnection() {
-        axios.defaults.headers.post['Content-Type'] = 'text/xml';
+        axios.defaults.headers.post['Content-Type'] = 'text/plain';
 
         return {
             post: (data = '') => axios.post(CONFIG.crs.connectionUrl, data),

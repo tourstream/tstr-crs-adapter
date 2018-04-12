@@ -391,13 +391,14 @@ class CetsAdapter {
 
     detectCatalogChange(xmlObject) {
         if (!Array.isArray(xmlObject.Request.Fab.Fah) || xmlObject.Request.Fab.Fah.length === 0) return;
+
         if (xmlObject.Request.Fab.Fah.length > 1) {
             xmlObject.Request.Fab.Fah.reduce((previousService, currentService) => {
                 if (currentService[CONFIG.parserOptions.attrPrefix].ServiceType !== previousService[CONFIG.parserOptions.attrPrefix].ServiceType) {
-                    xmlObject.Request.Fab.Catalog = CONFIG.serviceType2catalog.M
+                    xmlObject.Request.Fab.Catalog = CONFIG.serviceType2catalog.M;
                 }
             });
-        } else if (xmlObject.Request.Fab.Fah[0][CONFIG.parserOptions.attrPrefix].ServiceType != CONFIG.catalogs2serviceType[xmlObject.Request.Fab.Catalog]) {
+        } else if (xmlObject.Request.Fab.Fah[0][CONFIG.parserOptions.attrPrefix].ServiceType !== CONFIG.catalogs2serviceType[xmlObject.Request.Fab.Catalog]) {
             xmlObject.Request.Fab.Catalog = CONFIG.serviceType2catalog[xmlObject.Request.Fab.Fah[0][CONFIG.builderOptions.attrkey].ServiceType];
         }
     }
