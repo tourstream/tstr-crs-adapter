@@ -422,6 +422,7 @@ class TrafficsTbmAdapter {
         }
 
         const travellerName = traveller['$'].sur.split(' ');
+        const lastName = travellerName.length > 1 ? travellerName.pop() : void 0;
         return {
             gender: Object.entries(CONFIG.crs.gender2SalutationMap).reduce(
                 (reduced, current) => {
@@ -430,8 +431,8 @@ class TrafficsTbmAdapter {
                 },
                 {}
             )[traveller['$'].typ],
-            firstName: travellerName[0],
-            lastName: travellerName[1],
+            firstName: travellerName.filter(Boolean).join(' '),
+            lastName: lastName,
             age: traveller['$'].age,
         };
     }
