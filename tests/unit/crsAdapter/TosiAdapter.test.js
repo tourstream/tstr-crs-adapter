@@ -1,7 +1,7 @@
 import injector from 'inject!../../../src/crsAdapter/TosiAdapter';
 import {DEFAULT_OPTIONS} from '../../../src/UbpCrsAdapter';
 
-xdescribe('TosiAdapter', () => {
+describe('TosiAdapter', () => {
     const xmlHead = '<?xml version="1.0" encoding="UTF-8"?>';
 
     let adapter, TosiAdapter, axios, requestParameter, logService;
@@ -13,6 +13,7 @@ xdescribe('TosiAdapter', () => {
         axios.defaults = {headers: {
             post: {},
         }};
+
         axios.post.and.callFake((url, parameter) => {
             requestParameter = parameter;
 
@@ -26,21 +27,17 @@ xdescribe('TosiAdapter', () => {
         adapter = new TosiAdapter(logService, DEFAULT_OPTIONS);
     });
 
-    it('connect() should create connection on error', (done) => {
-        axios.get.and.returnValue(Promise.reject(new Error('network.error')));
-
+    it('connect() should result in error when no token is detected', (done) => {
         adapter.connect().then(() => {
             done.fail('unexpected result');
-        }, () => {
-            expect(adapter.connection).toBeTruthy();
+        }, (error) => {
+            expect(error.toString()).toBe('Error: No token found in connectionOptions.');
             done();
         });
     });
 
     it('connect() should create connection on success', (done) => {
-        axios.get.and.returnValue(Promise.resolve());
-
-        adapter.connect().then(() => {
+        adapter.connect({token: 'token'}).then(() => {
             expect(adapter.connection).toBeTruthy();
             done();
         }, (error) => {
@@ -49,23 +46,12 @@ xdescribe('TosiAdapter', () => {
         });
     });
 
-    it('fetchData() should throw error if no connection is available', (done) => {
-        adapter.fetchData().then(() => {
-            done.fail('unexpected result');
-        }, (error) => {
-            expect(error.toString()).toEqual(
-                'Error: No connection available - please connect to Merlin first.'
-            );
-            done();
-        });
-    });
-
     it('sendData() should throw error if no connection is available', (done) => {
         adapter.sendData().then(() => {
             done.fail('unexpected result');
         }, (error) => {
             expect(error.toString()).toEqual(
-                'Error: No connection available - please connect to Merlin first.'
+                'Error: No connection available - please connect to TOSI first.'
             );
             done();
         });
@@ -73,79 +59,19 @@ xdescribe('TosiAdapter', () => {
 
     describe('is connected', () => {
         beforeEach(() => {
-            axios.get.and.returnValue(Promise.resolve());
-
-            adapter.connect();
-
-            expect(axios.defaults.headers.post['Content-Type']).toBe('application/xml');
+            adapter.connect({token: 'token'});
         });
 
-        it('fetchData() should parse "empty" data correct', (done) => {
-            axios.get.and.returnValue(Promise.resolve({
-                data: xmlHead + '<GATE2MX>' +
-                '<SendRequest>' +
-                '<Import>' +
-                '<ServiceBlock/>' +
-                '<TravellerBlock/>' +
-                '</Import>' +
-                '</SendRequest>' +
-                '</GATE2MX>',
-            }));
-
-            adapter.fetchData().then((result) => {
-                expect(JSON.parse(JSON.stringify(result.normalized))).toEqual({
-                    services: [],
-                    travellers: [],
-                });
-                done();
-            }, (error) => {
-                console.log(error.message);
-                done.fail('unexpected result');
-            });
+        it ('connection shall set the correct communication headers', () => {
+            expect(axios.defaults.headers.post['Content-Type']).toBe('text/xml');
         });
 
-        it('fetchData() should parse data correct', (done) => {
-            axios.get.and.returnValue(Promise.resolve({
-                data: xmlHead + '<GATE2MX>' +
-                '<SendRequest>' +
-                '<Import>' +
-
-                '<ServiceBlock>' +
-                '<ServiceRow positionNo="1">' +
-                '<MarkField>MarkField</MarkField>' +
-                '<KindOfService>KindOfService</KindOfService>' +
-                '<Service>Service</Service>' +
-                '<Accommodation>Accommodation</Accommodation>' +
-                '<FromDate>FromDate</FromDate>' +
-                '<EndDate>EndDate</EndDate>' +
-                '<Occupancy>Occupancy</Occupancy>' +
-                '<NoOfServices>NoOfServices</NoOfServices>' +
-                '<TravellerAllocation>TravellerAllocation</TravellerAllocation>' +
-                '</ServiceRow>' +
-                '</ServiceBlock>' +
-
-                '<TravellerBlock>' +
-                '<PersonBlock>' +
-                '<PersonRow travellerNo="1">' +
-                '<Salutation>Salutation</Salutation>' +
-                '<Name>Name</Name>' +
-                '<Age>Age</Age>' +
-                '</PersonRow>' +
-                '</PersonBlock>' +
-                '</TravellerBlock>' +
-
-                '<AgencyNoTouroperator>AgencyNoTouroperator</AgencyNoTouroperator>' +
-                '<TourOperator>TourOperator</TourOperator>' +
-                '<NoOfPersons>NoOfPersons</NoOfPersons>' +
-                '<TravelType>TravelType</TravelType>' +
-                '<Remarks>Remarks</Remarks>' +
-                '</Import>' +
-                '</SendRequest>' +
-                '</GATE2MX>',
-            }));
-
-            adapter.fetchData().then((result) => {
-                expect(result.meta).toEqual({
+        it('fetchData() should at least return correct data structure', (done) => {
+            const expected = {
+                raw: {},
+                parsed: {},
+                normalized: {},
+                meta: {
                     serviceTypes: {
                         car: 'MW',
                         carExtra: 'E',
@@ -164,35 +90,15 @@ xdescribe('TosiAdapter', () => {
                         date: 'DDMMYY',
                         time: 'HHmm'
                     },
-                    type: TosiAdapter.type,
-                });
+                    type: 'tosi',
+                }
+            };
 
-                expect(result.normalized).toEqual({
-                    agencyNumber: 'AgencyNoTouroperator',
-                    operator: 'TourOperator',
-                    numberOfTravellers: 'NoOfPersons',
-                    travelType: 'TravelType',
-                    remark: 'Remarks',
-                    services: [{
-                        marker: 'MarkField',
-                        type: 'KindOfService',
-                        code: 'Service',
-                        accommodation: 'Accommodation',
-                        fromDate: 'FromDate',
-                        toDate: 'EndDate',
-                        occupancy: 'Occupancy',
-                        quantity: 'NoOfServices',
-                        travellerAssociation: 'TravellerAllocation'
-                    }],
-                    travellers: [{
-                        title: 'Salutation',
-                        name: 'Name',
-                        age: 'Age'
-                    }],
-                });
+            adapter.fetchData().then((data) => {
+                expect(data).toEqual(expected);
                 done();
             }, (error) => {
-                console.log(error.message);
+                console.log(error.toString());
                 done.fail('unexpected result');
             });
         });
@@ -210,16 +116,21 @@ xdescribe('TosiAdapter', () => {
 
         it('convert() should convert "empty" data', () => {
             const build = xmlHead +
-                '<GATE2MX>' +
-                '<SendRequest>' +
-                '<Import>' +
-                '<ServiceBlock/>' +
-                '<TravellerBlock>' +
-                '<PersonBlock/>' +
-                '</TravellerBlock>' +
-                '</Import>' +
-                '</SendRequest>' +
-                '</GATE2MX>';
+                '<methodCall>' +
+                    '<params>' +
+                        '<param>' +
+                            '<value>' +
+                                '<struct>' +
+                                    '<member>' +
+                                        '<name>TOSI_Key</name>' +
+                                        '<value><string>token</string></value>' +
+                                    '</member>' +
+                                '</struct>' +
+                            '</value>' +
+                        '</param>' +
+                    '</params>' +
+                    '<methodName>Toma.setData</methodName>' +
+                '</methodCall>';
 
             let data = {
                 normalized: {}
@@ -232,61 +143,55 @@ xdescribe('TosiAdapter', () => {
 
         it('convert() should convert complete data', () => {
             let build = xmlHead +
-                '<GATE2MX>' +
-                    '<SendRequest>' +
-                    '<Import>' +
-
-                    '<ServiceBlock>' +
-                    '<ServiceRow positionNo="1">' +
-                    '<MarkField>marker</MarkField>' +
-                    '<KindOfService>type</KindOfService>' +
-                    '<Service>code</Service>' +
-                    '<Accommodation>accommodation</Accommodation>' +
-                    '<FromDate>fromDate</FromDate>' +
-                    '<EndDate>toDate</EndDate>' +
-                    '<Occupancy>occupancy</Occupancy>' +
-                    '<NoOfServices>quantity</NoOfServices>' +
-                    '<TravellerAllocation>travellerAssociation</TravellerAllocation>' +
-                    '</ServiceRow>' +
-                    '</ServiceBlock>' +
-
-                    '<TravellerBlock>' +
-                    '<PersonBlock>' +
-                    '<PersonRow travellerNo="1">' +
-                    '<Salutation>title</Salutation>' +
-                    '<Name>name</Name>' +
-                    '<Age>age</Age>' +
-                    '</PersonRow>' +
-                    '</PersonBlock>' +
-                    '</TravellerBlock>' +
-
-                    '<TransactionCode>action</TransactionCode>' +
-                    '<AgencyNoTouroperator>agencyNumber</AgencyNoTouroperator>' +
-                    '<TourOperator>operator</TourOperator>' +
-                    '<NoOfPersons>numberOfTravellers</NoOfPersons>' +
-                    '<TravelType>travelType</TravelType>' +
-                    '<Remarks>remark</Remarks>' +
-                    '</Import>' +
-                    '</SendRequest>' +
-                '</GATE2MX>';
+                '<methodCall>' +
+                    '<params>' +
+                        '<param>' +
+                            '<value>' +
+                                '<struct>' +
+                                    '<member>' +
+                                        '<name>TOSI_Key</name>' +
+                                        '<value><string>token</string></value>' +
+                                    '</member>' +
+                                    '<member>' +
+                                        '<name>Bemerkung</name>' +
+                                        '<value><string>remark</string></value>' +
+                                    '</member>' +
+                                    '<member>' +
+                                        '<name>Anf_01</name>' +
+                                        '<value><string>type</string></value>' +
+                                    '</member>' +
+                                    '<member>' +
+                                        '<name>Lstg_01</name>' +
+                                        '<value><string>code</string></value>' +
+                                    '</member>' +
+                                    '<member>' +
+                                        '<name>Unterbr_01</name>' +
+                                        '<value><string>accommodation</string></value>' +
+                                    '</member>' +
+                                    '<member>' +
+                                        '<name>Belegung_01</name>' +
+                                        '<value><string>occupancy</string></value>' +
+                                    '</member>' +
+                                    '<member>' +
+                                        '<name>Anzahl_01</name>' +
+                                        '<value><string>quantity</string></value>' +
+                                    '</member>' +
+                                    '<member>' +
+                                        '<name>von_01</name>' +
+                                        '<value><string>fromDate</string></value>' +
+                                    '</member>' +
+                                    '<member>' +
+                                        '<name>bis_01</name>' +
+                                        '<value><string>toDate</string></value>' +
+                                    '</member>' +
+                                '</struct>' +
+                            '</value>' +
+                        '</param>' +
+                    '</params>' +
+                    '<methodName>Toma.setData</methodName>' +
+                '</methodCall>';
 
             let data = {
-                parsed: {
-                    GATE2MX: {
-                        SendRequest: {
-                            Import: {
-                                ServiceBlock: {
-                                    ServiceRow: [],
-                                },
-                                TravellerBlock: {
-                                    PersonBlock: {
-                                        PersonRow: [],
-                                    },
-                                },
-                            },
-                        },
-                    },
-                },
                 normalized: {
                     action: 'action',
                     remark: 'remark',
@@ -325,17 +230,6 @@ xdescribe('TosiAdapter', () => {
         it('cancel() should do the exit', (done) => {
             adapter.cancel().then(done, () => {
                 done.fail('unexpected result');
-            });
-        });
-
-        it('cancel() should fail due send error', (done) => {
-            axios.post.and.returnValue(Promise.reject(new Error('network.error')));
-
-            adapter.cancel().then(() => {
-                done.fail('unexpected result');
-            }, (error) => {
-                expect(error.toString()).toBe('Error: [.cancel] network.error');
-                done();
             });
         });
     });

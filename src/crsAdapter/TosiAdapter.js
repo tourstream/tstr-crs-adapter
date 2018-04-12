@@ -66,17 +66,6 @@ class TosiAdapter {
             object: new ObjectHelper({ attrPrefix: CONFIG.parserOptions.attrPrefix }),
         };
 
-        this.xmlParser = {
-            parse: (xmlString = '') => {
-                const crsObject = fastXmlParser.parse(xmlString, CONFIG.parserOptions);
-
-                this.helper.object.groupAttributes(crsObject);
-                this.normalizeCrsObject(crsObject);
-
-                return crsObject;
-            }
-        };
-
         this.xmlBuilder = {
             build: (xmlObject) => (new xml2js.Builder(CONFIG.builderOptions)).buildObject(JSON.parse(JSON.stringify(xmlObject)))
         };
@@ -84,12 +73,14 @@ class TosiAdapter {
 
     connect(connectionOptions) {
         if (!connectionOptions || !connectionOptions.token) {
-            throw new Error('No token found in connectionOptions.');
+            return Promise.reject(new Error('No token found in connectionOptions.'));
         }
 
         this.connectionOptions = connectionOptions;
         this.connection = this.createConnection();
         this.logger.log('TOSI connection available');
+
+        return Promise.resolve();
     }
 
     fetchData() {
@@ -117,17 +108,20 @@ class TosiAdapter {
         crsData.converted = this.normalizeCrsObject({});
         crsData.converted.methodCall.methodName = 'Toma.setData';
 
-        crsData.converted.methodCall.params.param.value.struct.member.push({
-            name: 'TOSI_Key',
-            value: { string: this.connectionOptions.token }
-        });
+        crsData.converted.methodCall.params.param.value.struct.member.push(this.createMember(
+            'TOSI_Key',
+            this.connectionOptions.token
+        ));
 
-        crsData.converted.methodCall.params.param.value.struct.member.push({
-            name: 'Bemerkung',
-            value: { string: crsData.normalized.remark }
-        });
+        crsData.converted.methodCall.params.param.value.struct.member.push(this.createMember(
+            'Bemerkung',
+            crsData.normalized.remark
+        ));
 
         this.assignServices(crsData);
+
+        crsData.converted.methodCall.params.param.value.struct.member =
+            crsData.converted.methodCall.params.param.value.struct.member.filter(Boolean);
 
         crsData.build = this.xmlBuilder.build(crsData.converted);
 
@@ -136,42 +130,42 @@ class TosiAdapter {
 
     assignServices(crsData) {
         crsData.normalized.services.forEach((service, index) => {
-            const indexString = ('0' + index).substring(-2);
+            const indexString = ('0' + (index + 1)).substring(-2);
 
-            crsData.converted.methodCall.params.param.value.struct.member.push({
-                name: 'Anf_' + indexString,
-                value: { string: service.type }
-            });
+            crsData.converted.methodCall.params.param.value.struct.member.push(this.createMember(
+                'Anf_' + indexString,
+                service.type
+            ));
 
-            crsData.converted.methodCall.params.param.value.struct.member.push({
-                name: 'Lstg_' + indexString,
-                value: { string: service.code }
-            });
+            crsData.converted.methodCall.params.param.value.struct.member.push(this.createMember(
+                'Lstg_' + indexString,
+                service.code
+            ));
 
-            crsData.converted.methodCall.params.param.value.struct.member.push({
-                name: 'Unterbr_' + indexString,
-                value: { string: service.accommodation }
-            });
+            crsData.converted.methodCall.params.param.value.struct.member.push(this.createMember(
+                'Unterbr_' + indexString,
+                service.accommodation
+            ));
 
-            crsData.converted.methodCall.params.param.value.struct.member.push({
-                name: 'Belegung_' + indexString,
-                value: { string: service.occupancy }
-            });
+            crsData.converted.methodCall.params.param.value.struct.member.push(this.createMember(
+                'Belegung_' + indexString,
+                service.occupancy
+            ));
 
-            crsData.converted.methodCall.params.param.value.struct.member.push({
-                name: 'Anzahl_' + indexString,
-                value: { string: service.quantity }
-            });
+            crsData.converted.methodCall.params.param.value.struct.member.push(this.createMember(
+                'Anzahl_' + indexString,
+                service.quantity
+            ));
 
-            crsData.converted.methodCall.params.param.value.struct.member.push({
-                name: 'von_' + indexString,
-                value: { string: service.fromDate }
-            });
+            crsData.converted.methodCall.params.param.value.struct.member.push(this.createMember(
+                'von_' + indexString,
+                service.fromDate
+            ));
 
-            crsData.converted.methodCall.params.param.value.struct.member.push({
-                name: 'bis_' + indexString,
-                value: { string: service.toDate }
-            });
+            crsData.converted.methodCall.params.param.value.struct.member.push(this.createMember(
+                'bis_' + indexString,
+                service.toDate
+            ));
         });
     }
 
@@ -213,6 +207,10 @@ class TosiAdapter {
         throw new Error('No connection available - please connect to TOSI first.');
     }
 
+    /**
+     * @private
+     * @param crsObject
+     */
     normalizeCrsObject(crsObject = {}) {
         crsObject.methodCall = crsObject.methodCall || {};
         crsObject.methodCall.params = crsObject.methodCall.params || {};
@@ -220,6 +218,7 @@ class TosiAdapter {
         crsObject.methodCall.params.param.value = crsObject.methodCall.params.param.value || {};
         crsObject.methodCall.params.param.value.struct = crsObject.methodCall.params.param.value.struct || {};
 
+        /* istanbul ignore else */
         if (!Array.isArray(crsObject.methodCall.params.param.value.struct.member)) {
             crsObject.methodCall.params.param.value.struct.member = [
                 crsObject.methodCall.params.param.value.struct.member
@@ -227,6 +226,18 @@ class TosiAdapter {
         }
 
         return crsObject;
+    }
+
+    /**
+     * @param name string
+     * @param value string
+     * @returns {*|{name: *, value: {string: *}}}
+     */
+    createMember(name, value) {
+        return value && {
+            name: name,
+            value: { string: value }
+        };
     }
 }
 
