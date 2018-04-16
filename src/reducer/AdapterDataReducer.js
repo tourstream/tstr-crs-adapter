@@ -16,7 +16,6 @@ class AdapterDataReducer {
         crsData.normalized.action = 'BA';
         crsData.normalized.agencyNumber = adapterData.agencyNumber || crsData.normalized.agencyNumber;
         crsData.normalized.operator = adapterData.operator || crsData.normalized.operator;
-        crsData.normalized.numberOfTravellers = adapterData.numberOfTravellers || crsData.normalized.numberOfTravellers;
         crsData.normalized.travelType = adapterData.travelType || crsData.normalized.travelType;
         crsData.normalized.remark = [crsData.normalized.remark, adapterData.remark].filter(Boolean).join(';') || void 0;
 

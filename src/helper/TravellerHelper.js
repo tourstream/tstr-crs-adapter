@@ -36,7 +36,7 @@ class TravellerHelper {
         adapterService.travellers.forEach((adapterTraveller) => {
             const crsTraveller = {};
 
-            (crsData.normalized.travellers || []).push(crsTraveller);
+            crsData.normalized.travellers.push(crsTraveller);
 
             crsTraveller.title = crsData.meta.genderTypes[adapterTraveller.gender];
             crsTraveller.name = adapterTraveller.name;
@@ -49,6 +49,8 @@ class TravellerHelper {
             +this.extractLastTravellerAssociation(crsService.travellerAssociation),
             startAssociation + this.calculateServiceTravellersCount(adapterService) - 1
         ) || 1;
+
+        crsData.normalized.travellers.length = Math.max(crsData.normalized.travellers.length, endAssociation);
 
         crsService.travellerAssociation = [startAssociation, endAssociation].filter(
             (value, index, array) => array.indexOf(value) === index
@@ -124,6 +126,10 @@ class TravellerHelper {
 
             if (!traveller) {
                 break;
+            }
+
+            if (!traveller.name) {
+                continue;
             }
 
             travellers.push({
