@@ -35,7 +35,7 @@ class RoundTripServiceReducer {
                 return false;
             }
 
-            if ((crsService.code || '').indexOf(adapterService.bookingId) > -1) {
+            if ((crsService.code || '').replace(/^NEZ/, '') === adapterService.bookingId) {
                 return true
             }
 

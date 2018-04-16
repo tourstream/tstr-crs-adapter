@@ -240,6 +240,8 @@ class UbpCrsAdapter {
                     this.logger.info('FETCHED CRS DATA:');
                     this.logger.info(crsData.parsed);
 
+                    this.defragTravellers(crsData);
+
                     const helper = {
                         vehicle: new VehicleHelper(this.options),
                         roundTrip: new RoundTripHelper(this.options),
@@ -332,6 +334,20 @@ class UbpCrsAdapter {
         }
 
         reject(new Error([message, error.message].filter(Boolean).join(' ')));
+    }
+
+    /**
+     * @private
+     * @param crsData object
+     */
+    defragTravellers(crsData) {
+        if (!crsData.normalized || !crsData.normalized.travellers) {
+            return;
+        }
+
+        crsData.normalized.travellers = crsData.normalized.travellers.filter(
+            (traveller) => traveller && !!traveller.name
+        );
     }
 }
 
