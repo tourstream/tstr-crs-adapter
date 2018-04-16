@@ -61,7 +61,7 @@ describe('TravellerHelper', () => {
         helper.reduceTravellersIntoCrsData(adapterService, crsService, crsData);
 
         expect(crsService.travellerAssociation).toBe('1');
-        expect(crsData.normalized.travellers).toEqual([]);
+        expect(crsData.normalized.travellers).toEqual([void 0]);
     });
 
     it('reduceTravellersIntoCrsData() should reduce for adapterService.travellers', () => {
