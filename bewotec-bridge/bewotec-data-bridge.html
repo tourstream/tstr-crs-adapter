@@ -55,7 +55,9 @@
                 var doHandover = function(transferObject) {
                     transferObject.name = 'bewotecDataTransfer';
 
-                    console.log('will transfer data to the adapter: ', transferObject);
+                    if (debug) {
+                        console.log('will transfer data to the adapter: ', transferObject);
+                    }
 
                     if (window.opener) {
                         window.opener.postMessage(transferObject, '*');
@@ -67,12 +69,20 @@
                 };
 
                 axios.get('http://localhost:7354/airob/expert', { params: { token: token } }).then(function(response) {
-                    console.log(response);
+                    if (debug) {
+                        console.log(response);
+                    }
+
                     doHandover({ data: response.data });
                 }, function(error) {
-                    // we can not use the plain error object because it can not be cloned for the parent window
-                    console.log(error);
-                    doHandover({ error: error.message });
+                    if (debug) {
+                        console.log(error);
+                    }
+
+                    doHandover({
+                        error: JSON.parse(JSON.stringify(error)),
+                        errorMessage: error.message
+                    });
                 });
             })()
         </script>
