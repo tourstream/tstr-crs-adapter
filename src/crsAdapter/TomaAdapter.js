@@ -450,7 +450,7 @@ class TomaAdapter {
                 },
                 {}
             )[xml['Title.' + lineNumber]],
-            firstName: travellerName.filter(Boolean).join(' '),
+            firstName: travellerName.join(' '),
             lastName: lastName,
             age: xml['Reduction.' + lineNumber],
         };

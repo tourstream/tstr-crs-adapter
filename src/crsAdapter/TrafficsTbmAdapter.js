@@ -431,7 +431,7 @@ class TrafficsTbmAdapter {
                 },
                 {}
             )[traveller['$'].typ],
-            firstName: travellerName.filter(Boolean).join(' '),
+            firstName: travellerName.join(' '),
             lastName: lastName,
             age: traveller['$'].age,
         };

@@ -412,7 +412,7 @@ class MerlinAdapter {
             gender: (Object.entries(CONFIG.crs.gender2SalutationMap).find(
                 (row) => row[1] === traveller.Salutation
             ) || [])[0],
-            firstName: travellerName.filter(Boolean).join(' '),
+            firstName: travellerName.join(' '),
             lastName: lastName,
             age: traveller.Age,
         };

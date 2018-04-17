@@ -600,7 +600,7 @@ class CetsAdapter {
                 },
                 PersonType: traveller.salutation,
                 Name: lastName,
-                FirstName: travellerName.filter(Boolean).join(' '),
+                FirstName: travellerName.join(' '),
                 Birth: traveller.age,
             });
 
@@ -645,7 +645,7 @@ class CetsAdapter {
                 },
                 PersonType: traveller.salutation,
                 Name: lastName,
-                FirstName: travellerName.filter(Boolean).join(' '),
+                FirstName: travellerName.join(' '),
             });
 
             xml.Fah[xml.Fah.length - 1].Persons = (xml.Fah[xml.Fah.length - 1].Persons || '') + (index + 1);
