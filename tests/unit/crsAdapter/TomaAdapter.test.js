@@ -615,7 +615,8 @@ describe('TomaAdapter', () => {
                             dateFrom: '10022018',
                             dateTo: '15022018',
                             travellers: [{
-                                name: 'child 1',
+                                firstName: 'child',
+                                lastName: '1',
                                 gender: 'child',
                                 age: 13,
                             }],

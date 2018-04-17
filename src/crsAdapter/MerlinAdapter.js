@@ -673,11 +673,12 @@ class MerlinAdapter {
         }
 
         adapterService.travellers.forEach((serviceTraveller) => {
+            const normalizedTraveller = this.helper.traveller.normalizeTraveller(serviceTraveller);
             let travellerIndex = this.getNextEmptyTravellerIndex(crsData);
             let traveller = crsData.TravellerBlock.PersonBlock.PersonRow[travellerIndex];
 
             traveller.Salutation = CONFIG.crs.gender2SalutationMap[serviceTraveller.gender];
-            traveller.Name = serviceTraveller.name;
+            traveller.Name = normalizedTraveller.name;
             traveller.Age = serviceTraveller.age;
         });
     }

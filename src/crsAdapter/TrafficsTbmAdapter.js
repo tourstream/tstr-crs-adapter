@@ -629,10 +629,11 @@ class TrafficsTbmAdapter {
             return;
         }
 
-        service.travellers.forEach((traveller) => {
+        service.travellers.forEach((serviceTraveller) => {
+            const traveller = this.helper.traveller.normalizeTraveller(serviceTraveller);
             let travellerIndex = this.getNextEmptyTravellerLineIndex(crsObject);
 
-            crsObject['TbmXml.admin.travellers.traveller.' + travellerIndex + '.$.typ'] = CONFIG.crs.gender2SalutationMap[traveller.gender];
+            crsObject['TbmXml.admin.travellers.traveller.' + travellerIndex + '.$.typ'] = CONFIG.crs.gender2SalutationMap[serviceTraveller.gender];
             crsObject['TbmXml.admin.travellers.traveller.' + travellerIndex + '.$.sur'] = traveller.name;
             crsObject['TbmXml.admin.travellers.traveller.' + travellerIndex + '.$.age'] = traveller.age;
         });

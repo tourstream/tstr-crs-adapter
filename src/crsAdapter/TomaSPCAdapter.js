@@ -778,12 +778,13 @@ class TomaSPCAdapter {
         }
 
         adapterService.travellers.forEach((serviceTraveller) => {
+            const normalizedTraveller = this.helper.traveller.normalizeTraveller(serviceTraveller);
             let travellerIndex = this.getNextEmptyTravellerIndex(crsObject);
             let traveller = crsObject.travellers[travellerIndex];
 
             traveller.title = CONFIG.crs.gender2SalutationMap[serviceTraveller.gender];
-            traveller.name = serviceTraveller.name;
-            traveller.discount = serviceTraveller.age;
+            traveller.name = normalizedTraveller.name;
+            traveller.discount = normalizedTraveller.age;
         });
     }
 

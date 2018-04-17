@@ -936,12 +936,14 @@ describe('TomaSPCAdapter', () => {
                         dateTo: '08012018',
                         travellers: [
                             {
-                                name: 'john doe',
+                                firstName: 'john',
+                                lastName: 'doe',
                                 age: 8,
                                 gender: 'male'
                             },
                             {
-                                name: 'jane doe',
+                                firstName: 'jane',
+                                lastName: 'doe',
                                 age: 14,
                                 gender: 'female'
                             },

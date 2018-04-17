@@ -292,7 +292,8 @@ describe('MerlinAdapter', () => {
                                 },
                                 {
                                     gender: 'male',
-                                    firstName: 'john', lastName: 'doe',
+                                    firstName: 'john',
+                                    lastName: 'doe',
                                     age: '30'
                                 },
                             ],
@@ -387,7 +388,12 @@ describe('MerlinAdapter', () => {
                             startDate: '02022018',
                             endDate: '06022018',
                             travellers: [
-                                {gender: 'female', firstName: 'JANE', lastName: 'DOE', age: '11'},
+                                {
+                                    gender: 'female',
+                                    firstName: 'JANE',
+                                    lastName: 'DOE',
+                                    age: '11'
+                                },
                             ],
                             marked: true,
                         },
@@ -826,8 +832,8 @@ describe('MerlinAdapter', () => {
                         dateFrom: '23122018',
                         dateTo: '04012019',
                         travellers: [
-                            {name: 'john doe', age: 8, gender: 'child'},
-                            {name: 'jane doe', age: 14, gender: 'child'},
+                            {firstName: 'john', lastName: 'doe', age: 8, gender: 'child'},
+                            {firstName: 'jane', lastName: 'doe', age: 14, gender: 'child'},
                         ],
                     },
                 ],
@@ -891,7 +897,12 @@ describe('MerlinAdapter', () => {
                         dateFrom: '23122018',
                         dateTo: '04012019',
                         travellers: [
-                            {name: 'john doe', age: 11, gender: 'female'},
+                            {
+                                firstName: 'john',
+                                lastName: 'doe',
+                                age: 11,
+                                gender: 'female'
+                            },
                         ],
                     },
                 ],

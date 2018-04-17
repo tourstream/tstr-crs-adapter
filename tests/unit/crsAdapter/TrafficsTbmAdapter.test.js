@@ -850,7 +850,8 @@ describe('TrafficsTbmAdapter', () => {
                         roomOccupancy: 1,
                         travellers: [
                             {
-                                name: 'jake doe',
+                                firstName: 'jake',
+                                lastName: 'doe',
                                 gender: 'female',
                                 age: 7
                             },
@@ -868,12 +869,14 @@ describe('TrafficsTbmAdapter', () => {
                         dateTo: '08012018',
                         travellers: [
                             {
-                                name: 'john doe',
+                                firstName: 'john',
+                                lastName: 'doe',
                                 gender: 'female',
                                 age: 8
                             },
                             {
-                                name: 'jane doe',
+                                firstName: 'jane',
+                                lastName: 'doe',
                                 gender: 'male',
                                 age: 14
                             },
