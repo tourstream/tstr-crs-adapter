@@ -379,26 +379,6 @@ describe('BewotecExpertAdapter', () => {
                     done.fail('unexpected result');
                 });
             });
-
-            it('sendData() should send data via window.open', (done) => {
-                const sendWindowSpy = jasmine.createSpyObj('sendWindow', ['close']);
-
-                sendWindowSpy.document = true;
-                windowSpy.open.and.returnValue(sendWindowSpy);
-
-                let data = { services: [] };
-
-                adapter.sendData(data).then(() => {
-                    expect(windowSpy.open.calls.mostRecent().args[0]).toBe(
-                        'http://localhost:7354/airob/fill?token=token&merge=true'
-                    );
-                    expect(sendWindowSpy.close).toHaveBeenCalled();
-                    done();
-                }, (error) => {
-                    console.log(error.message);
-                    done.fail('unexpected result');
-                });
-            });
         });
 
         it('cancel() should return nothing', (done) => {

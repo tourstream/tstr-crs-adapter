@@ -308,9 +308,11 @@ class BewotecExpertAdapter {
                     return axios.get(baseUrl, {params: params});
                 }
 
-                // todo: use data bridge to fill mask ... ???
+                // will window.open be a better solution? but when shall we then close the window?
 
-                // this could create a mixed content warning but will still work
+                this.logger.warn('HTTPS detected - will use img.src for data transfer');
+
+                // will create a mixed content warning
                 (new Image()).src = baseUrl + '?' + querystring.stringify(params);
 
                 return Promise.resolve();
