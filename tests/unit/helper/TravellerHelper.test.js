@@ -32,6 +32,36 @@ describe('TravellerHelper', () => {
         )).toEqual(
             {name: 'jane', age: 25}
         );
+
+        expect(helper.normalizeTraveller(
+            {gender: 'unknown', lastName: 'doe', age: 25}
+        )).toEqual(
+            {name: 'doe', age: 25}
+        );
+
+        expect(helper.normalizeTraveller(
+            {gender: 'unknown', firstName: 'jane', lastName: 'doe', age: 25}
+        )).toEqual(
+            {name: 'jane doe', age: 25}
+        );
+
+        expect(helper.normalizeTraveller(
+            {gender: 'unknown', firstName: 'jane', lastName: 'doe dean', age: 25}
+        )).toEqual(
+            {name: 'jane doe dean', age: 25}
+        );
+
+        expect(helper.normalizeTraveller(
+            {gender: 'unknown', firstName: 'jane janice', lastName: 'dean', age: 25}
+        )).toEqual(
+            {name: 'jane janice dean', age: 25}
+        );
+
+        expect(helper.normalizeTraveller(
+            {gender: 'unknown', firstName: 'jane janice', lastName: 'doe dean', age: 25}
+        )).toEqual(
+            {name: 'jane janice doe dean', age: 25}
+        );
     });
 
     it('collectTravellers should return no travellers for empty association', () => {

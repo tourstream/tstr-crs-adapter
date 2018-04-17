@@ -630,7 +630,7 @@ describe('CetsAdapter', () => {
                                 {
                                     gender: 'female',
                                     firstName: 'Jane',
-                                    lastName: 'Doe',
+                                    lastName: 'Doe Dean',
                                     age: '32',
                                 },
                                 {
@@ -646,7 +646,7 @@ describe('CetsAdapter', () => {
 
                 let service = '<Fap ID="1">' +
                     '<PersonType>F</PersonType>' +
-                    '<Name>Doe</Name>' +
+                    '<Name>Doe Dean</Name>' +
                     '<FirstName>Jane</FirstName>' +
                     '<Birth>32</Birth>' +
                     '</Fap>' +
