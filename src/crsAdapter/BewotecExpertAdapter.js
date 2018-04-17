@@ -302,19 +302,20 @@ class BewotecExpertAdapter {
                     return axios.get(baseUrl, {params: params});
                 }
 
-                this.logger.warn('HTTPS detected - will use dataBridge for data transfer');
-
                 const url = baseUrl + '?' + querystring.stringify(params);
-                const sendWindow = this.helper.window.open(url, '_blank', 'height=200,width=200');
 
-                if (sendWindow) {
-                    while (!sendWindow.document) {
-                    }
-
-                    sendWindow.close();
-
-                    return Promise.resolve();
-                }
+                // this.logger.warn('HTTPS detected - will use dataBridge for data transfer');
+                //
+                // const sendWindow = this.helper.window.open(url, '_blank', 'height=200,width=200');
+                //
+                // if (sendWindow) {
+                //     while (!sendWindow.document) {
+                //     }
+                //
+                //     sendWindow.close();
+                //
+                //     return Promise.resolve();
+                // }
 
                 // fallback if window open does not work
                 // but this could create a mixed content warning
