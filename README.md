@@ -120,8 +120,7 @@ which you can set in the `connectionOptions`.
 **[TOMA 2]** _connectionUrl_ is needed, when the adapter is not directly used in the first child window of the TOMA application
 
 **[MyJack]** _dataBridgeUrl_ is needed, if the adapter is used in a non HTTP context. 
-This has to be a site which serves the CRS data per postMessage with the payload 
-`{ name: 'bewotecDataTransfer', error: 'in case of error ...', data: 'CRS data' }`
+The example code for this page is provided [here](/bewotec-bridge).
 
 **[Cosmo / CosmoNaut]** _dataSourceUrl_ is an url from where the CRS can get the IBE data from
 
@@ -229,7 +228,10 @@ It depends on the CRS how to use the test file.
 
 ###### ... in (old) TOMA
 
-_precondition:_ the Amadeus application is started and the TOMA mask is visible
+_precondition:_ 
+
+* the (old) Amadeus application is started 
+* the TOMA mask is visible
 
 If you already have an "browser view" open (basically after an external search), 
 you can drag'n'drop the test file directly into that view.
@@ -238,7 +240,11 @@ Alternatively you can open the test file in parallel to the TOMA mask in an IE a
 
 ###### ... in (new) TOMA SPC
 
-_precondition:_ the Amadeus portal is open, the TOMA mask is visible and the test file is served under a whitelisted domain
+_precondition:_ 
+
+* the Amadeus portal is open
+* the TOMA mask is visible 
+* the test file is served under a whitelisted domain
 
 For serving the test file locally we provide a command for it: `npm run serve`
 The file is than available via https://localhost:1337 and already whitelisted by Amadeus for their test system. 
@@ -251,22 +257,32 @@ This is because Amadeus whitelist the domains which have access to the CRS.
 
 ###### ... in CETS
 
-_precondition:_ the CETS application is started
+_precondition:_ 
 
-You have to open the "browser view" (basically via an external search) -
+* the CETS application is started
+
+You have to open the "browser view" in CETS (basically via an external search) -
 than you can drag'n'drop the test file directly into that view.
 
 
 ###### ... in Merlin
 
-_precondition:_ the Sabre portal "ShopHolidays" is open, the Merlin mask is visible and the import is enabled
+_precondition:_ 
+
+* the Sabre portal "ShopHolidays" is open
+* the Merlin mask is visible 
+* the import is enabled
 
 Open the test file in parallel to the Merlin mask in another Tab.
 
 
 ###### ... in myJack / Jack+
 
-_precondition:_ the Bewotec application (myJack/Jack+) is open, the Expert mask is visible
+_precondition:_ 
+
+* the Bewotec application (myJack/Jack+) is open
+* the Expert mask is visible
+* the bewotec data bridge is served somewhere
 
 Open the test file in parallel to the Expert mask in a browser.
 
