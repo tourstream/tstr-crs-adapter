@@ -633,7 +633,7 @@ class TrafficsTbmAdapter {
             const traveller = this.helper.traveller.normalizeTraveller(serviceTraveller);
             let travellerIndex = this.getNextEmptyTravellerLineIndex(crsObject);
 
-            crsObject['TbmXml.admin.travellers.traveller.' + travellerIndex + '.$.typ'] = CONFIG.crs.gender2SalutationMap[serviceTraveller.gender];
+            crsObject['TbmXml.admin.travellers.traveller.' + travellerIndex + '.$.typ'] = traveller.salutation;
             crsObject['TbmXml.admin.travellers.traveller.' + travellerIndex + '.$.sur'] = traveller.name;
             crsObject['TbmXml.admin.travellers.traveller.' + travellerIndex + '.$.age'] = traveller.age;
         });

@@ -782,7 +782,7 @@ class TomaSPCAdapter {
             let travellerIndex = this.getNextEmptyTravellerIndex(crsObject);
             let traveller = crsObject.travellers[travellerIndex];
 
-            traveller.title = CONFIG.crs.gender2SalutationMap[serviceTraveller.gender];
+            traveller.title = normalizedTraveller.salutation;
             traveller.name = normalizedTraveller.name;
             traveller.discount = normalizedTraveller.age;
         });

@@ -705,7 +705,7 @@ class TomaAdapter {
             const traveller = this.helper.traveller.normalizeTraveller(serviceTraveller);
             travellerLineNumber = this.getNextEmptyTravellerLineNumber(xml);
 
-            xml['Title.' + travellerLineNumber] = CONFIG.crs.gender2SalutationMap[serviceTraveller.gender];
+            xml['Title.' + travellerLineNumber] = traveller.salutation;
             xml['Name.' + travellerLineNumber] = traveller.name;
             xml['Reduction.' + travellerLineNumber] = traveller.age;
         });
