@@ -677,9 +677,9 @@ class MerlinAdapter {
             let travellerIndex = this.getNextEmptyTravellerIndex(crsData);
             let traveller = crsData.TravellerBlock.PersonBlock.PersonRow[travellerIndex];
 
-            traveller.Salutation = CONFIG.crs.gender2SalutationMap[serviceTraveller.gender];
+            traveller.Salutation = normalizedTraveller.salutation;
             traveller.Name = normalizedTraveller.name;
-            traveller.Age = serviceTraveller.age;
+            traveller.Age = normalizedTraveller.age;
         });
     }
 

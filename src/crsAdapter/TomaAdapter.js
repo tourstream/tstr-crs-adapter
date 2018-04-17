@@ -701,11 +701,11 @@ class TomaAdapter {
 
         let travellerLineNumber = void 0;
 
-        service.travellers.forEach((ServiceTraveller) => {
-            const traveller = this.helper.traveller.normalizeTraveller(ServiceTraveller);
+        service.travellers.forEach((serviceTraveller) => {
+            const traveller = this.helper.traveller.normalizeTraveller(serviceTraveller);
             travellerLineNumber = this.getNextEmptyTravellerLineNumber(xml);
 
-            xml['Title.' + travellerLineNumber] = CONFIG.crs.gender2SalutationMap[ServiceTraveller.gender];
+            xml['Title.' + travellerLineNumber] = CONFIG.crs.gender2SalutationMap[serviceTraveller.gender];
             xml['Name.' + travellerLineNumber] = traveller.name;
             xml['Reduction.' + travellerLineNumber] = traveller.age;
         });

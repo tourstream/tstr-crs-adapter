@@ -772,8 +772,8 @@ class BewotecExpertAdapter {
             return;
         }
 
-        service.travellers.forEach((ServiceTraveller) => {
-            const traveller = this.helper.traveller.normalizeTraveller(ServiceTraveller);
+        service.travellers.forEach((serviceTraveller) => {
+            const traveller = this.helper.traveller.normalizeTraveller(serviceTraveller);
             let travellerIndex = this.getNextEmptyTravellerLineIndex(crsObject);
             let travellerNumber = CONFIG.crs.lineNumberMap[travellerIndex];
 
