@@ -118,6 +118,21 @@ class TosiAdapter {
             crsData.normalized.remark
         ));
 
+        crsData.converted.methodCall.params.param.value.struct.member.push(this.createMember(
+            'Reiseart',
+            crsData.normalized.travelType
+        ));
+
+        crsData.converted.methodCall.params.param.value.struct.member.push(this.createMember(
+            'Aktion',
+            crsData.normalized.action
+        ));
+
+        crsData.converted.methodCall.params.param.value.struct.member.push(this.createMember(
+            'Pers',
+            crsData.normalized.numberOfTravellers
+        ));
+
         this.assignServices(crsData);
 
         crsData.converted.methodCall.params.param.value.struct.member =
@@ -130,42 +145,56 @@ class TosiAdapter {
 
     assignServices(crsData) {
         crsData.normalized.services.forEach((service, index) => {
-            const indexString = ('0' + (index + 1)).substring(-2);
+            const convertedService = {
+                name: 'Data_' + index + 1,
+                value: {
+                    struct: {
+                        member: [],
+                    },
+                },
+            };
 
-            crsData.converted.methodCall.params.param.value.struct.member.push(this.createMember(
-                'Anf_' + indexString,
+            convertedService.value.struct.member.push(this.createMember(
+                'M',
+                service.marker
+            ));
+
+            convertedService.value.struct.member.push(this.createMember(
+                'Anf',
                 service.type
             ));
 
-            crsData.converted.methodCall.params.param.value.struct.member.push(this.createMember(
-                'Lstg_' + indexString,
+            convertedService.value.struct.member.push(this.createMember(
+                'Lstg',
                 service.code
             ));
 
-            crsData.converted.methodCall.params.param.value.struct.member.push(this.createMember(
-                'Unterbr_' + indexString,
+            convertedService.value.struct.member.push(this.createMember(
+                'Unterbr',
                 service.accommodation
             ));
 
-            crsData.converted.methodCall.params.param.value.struct.member.push(this.createMember(
-                'Belegung_' + indexString,
+            convertedService.value.struct.member.push(this.createMember(
+                'Belegung',
                 service.occupancy
             ));
 
-            crsData.converted.methodCall.params.param.value.struct.member.push(this.createMember(
-                'Anzahl_' + indexString,
+            convertedService.value.struct.member.push(this.createMember(
+                'Anzahl',
                 service.quantity
             ));
 
-            crsData.converted.methodCall.params.param.value.struct.member.push(this.createMember(
-                'von_' + indexString,
+            convertedService.value.struct.member.push(this.createMember(
+                'von',
                 service.fromDate
             ));
 
-            crsData.converted.methodCall.params.param.value.struct.member.push(this.createMember(
-                'bis_' + indexString,
+            convertedService.value.struct.member.push(this.createMember(
+                'bis',
                 service.toDate
             ));
+
+            crsData.converted.methodCall.params.param.value.struct.member.push(convertedService);
         });
     }
 

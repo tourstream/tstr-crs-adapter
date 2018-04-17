@@ -160,32 +160,55 @@ describe('TosiAdapter', () => {
                                         '<value><string>remark</string></value>' +
                                     '</member>' +
                                     '<member>' +
-                                        '<name>Anf_01</name>' +
-                                        '<value><string>type</string></value>' +
+                                        '<name>Reiseart</name>' +
+                                        '<value><string>travelType</string></value>' +
                                     '</member>' +
                                     '<member>' +
-                                        '<name>Lstg_01</name>' +
-                                        '<value><string>code</string></value>' +
+                                        '<name>Aktion</name>' +
+                                        '<value><string>action</string></value>' +
                                     '</member>' +
                                     '<member>' +
-                                        '<name>Unterbr_01</name>' +
-                                        '<value><string>accommodation</string></value>' +
+                                        '<name>Pers</name>' +
+                                        '<value><string>numberOfTravellers</string></value>' +
                                     '</member>' +
                                     '<member>' +
-                                        '<name>Belegung_01</name>' +
-                                        '<value><string>occupancy</string></value>' +
-                                    '</member>' +
-                                    '<member>' +
-                                        '<name>Anzahl_01</name>' +
-                                        '<value><string>quantity</string></value>' +
-                                    '</member>' +
-                                    '<member>' +
-                                        '<name>von_01</name>' +
-                                        '<value><string>fromDate</string></value>' +
-                                    '</member>' +
-                                    '<member>' +
-                                        '<name>bis_01</name>' +
-                                        '<value><string>toDate</string></value>' +
+                                        '<name>Data_01</name>' +
+                                        '<value>' +
+                                            '<struct>' +
+                                                '<member>' +
+                                                    '<name>M</name>' +
+                                                    '<value><string>marker</string></value>' +
+                                                '</member>' +
+                                                '<member>' +
+                                                    '<name>Anf</name>' +
+                                                    '<value><string>type</string></value>' +
+                                                '</member>' +
+                                                '<member>' +
+                                                    '<name>Lstg</name>' +
+                                                    '<value><string>code</string></value>' +
+                                                '</member>' +
+                                                '<member>' +
+                                                    '<name>Unterbr</name>' +
+                                                    '<value><string>accommodation</string></value>' +
+                                                '</member>' +
+                                                '<member>' +
+                                                    '<name>Belegung</name>' +
+                                                    '<value><string>occupancy</string></value>' +
+                                                '</member>' +
+                                                '<member>' +
+                                                    '<name>Anzahl</name>' +
+                                                    '<value><string>quantity</string></value>' +
+                                                '</member>' +
+                                                '<member>' +
+                                                    '<name>von</name>' +
+                                                    '<value><string>fromDate</string></value>' +
+                                                '</member>' +
+                                                '<member>' +
+                                                    '<name>bis</name>' +
+                                                    '<value><string>toDate</string></value>' +
+                                                '</member>' +
+                                            '</struct>' +
+                                        '</value>' +
                                     '</member>' +
                                 '</struct>' +
                             '</value>' +
