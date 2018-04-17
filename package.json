@@ -16,7 +16,8 @@
     "serve": "npm run build:dev && ws --https --hostname localhost --port 1337 --directory ./tests/manual --static.index crsTest.html"
   },
   "files": [
-    "/dist/"
+    "/dist/",
+    "/tests/manual/"
   ],
   "repository": {
     "type": "git",
