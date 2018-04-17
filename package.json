@@ -13,7 +13,8 @@
     "test": "karma start karma.config.js --single-run",
     "preversion": "npm test",
     "postversion": "git push && git push --tags",
-    "serve": "npm run build:dev && ws --https --hostname localhost --port 1337 --directory ./tests/manual --static.index crsTest.html"
+    "serve": "npm run build:dev && ws --https --hostname localhost --port 1337 --directory ./tests/manual --static.index crsTest.html",
+    "serve-bridge": "ws --hostname localhost --port 1338 --directory ./bewotec-bridge --static.index bewotec-data-bridge.html"
   },
   "files": [
     "/dist/",

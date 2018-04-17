@@ -41,6 +41,7 @@ class BewotecExpertAdapter {
     constructor(logger, options = {}) {
         this.options = options;
         this.logger = logger;
+        this.bridgeWindow = void 0;
 
         this.helper = {
             window: new WindowHelper(),
@@ -266,7 +267,7 @@ class BewotecExpertAdapter {
                     });
                 }
 
-                this.logger.warn('HTTPS detected - will use dataBridge for data transfer');
+                this.logger.warn('HTTPS detected - will use dataBridge for getting data');
 
                 return new Promise((resolve, reject) => {
                     this.helper.window.addEventListener('message', (message) => {
@@ -287,9 +288,14 @@ class BewotecExpertAdapter {
                     }, false);
 
                     const url = options.dataBridgeUrl + '?token=' + options.token + (this.options.debug ? '&debug' : '');
-                    const getWindow = this.helper.window.open(url, '_blank', 'height=300,width=400');
 
-                    if (!getWindow) {
+                    if (this.bridgeWindow && !this.bridgeWindow.closed) {
+                        this.bridgeWindow.close();
+                    }
+
+                    this.bridgeWindow = this.helper.window.open(url, '_blank', 'height=300,width=400');
+
+                    if (!this.bridgeWindow) {
                         return reject(new Error('can not establish connection to bewotec data bridge'));
                     }
                 });
@@ -302,24 +308,10 @@ class BewotecExpertAdapter {
                     return axios.get(baseUrl, {params: params});
                 }
 
-                const url = baseUrl + '?' + querystring.stringify(params);
+                // todo: use data bridge to fill mask ... ???
 
-                // this.logger.warn('HTTPS detected - will use dataBridge for data transfer');
-                //
-                // const sendWindow = this.helper.window.open(url, '_blank', 'height=200,width=200');
-                //
-                // if (sendWindow) {
-                //     while (!sendWindow.document) {
-                //     }
-                //
-                //     sendWindow.close();
-                //
-                //     return Promise.resolve();
-                // }
-
-                // fallback if window open does not work
-                // but this could create a mixed content warning
-                (new Image()).src = url;
+                // this could create a mixed content warning but will still work
+                (new Image()).src = baseUrl + '?' + querystring.stringify(params);
 
                 return Promise.resolve();
             },
