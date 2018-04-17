@@ -222,6 +222,7 @@ Personal goal: Try to increase the test coverage to ~100%.
 
 We prepared a test file, which can be opened directly in the CRS systems.
 The file is located in __test/manual__: *[crsTest.html](tests/manual/crsTest.html)*
+For serving the test file locally we provide a command for it: `npm run serve`
 
 It depends on the CRS how to use the test file.
 
@@ -246,7 +247,6 @@ _precondition:_
 * the TOMA mask is visible 
 * the test file is served under a whitelisted domain
 
-For serving the test file locally we provide a command for it: `npm run serve`
 The file is than available via https://localhost:1337 and already whitelisted by Amadeus for their test system. 
 But you should open this URL in your browser first to accept any unknown certificates!
 
@@ -282,7 +282,7 @@ _precondition:_
 
 * the Bewotec application (myJack/Jack+) is open
 * the Expert mask is visible
-* the bewotec data bridge is served somewhere
+* the bewotec data bridge is served somewhere (serve it locally via `npm run serve-bridge`)
 
 Open the test file in parallel to the Expert mask in a browser.
 
