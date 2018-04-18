@@ -1,5 +1,5 @@
 import TravellerHelper from '../../../src/helper/TravellerHelper';
-import {SERVICE_TYPES} from "../../../src/UbpCrsAdapter";
+import {SERVICE_TYPES} from '../../../src/UbpCrsAdapter';
 
 describe('TravellerHelper', () => {
     let helper;
@@ -192,6 +192,7 @@ describe('TravellerHelper', () => {
     it('mapToAdapterTravellers() should return correct value for "empty" .travellers', () => {
         const crsService = { travellerAssociation: '1' };
         const crsData = {
+            normalized: {},
             meta: {
                 genderTypes: {
                     gender: 'mappedGenderType'
