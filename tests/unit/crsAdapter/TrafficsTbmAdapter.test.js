@@ -685,6 +685,8 @@ describe('TrafficsTbmAdapter', () => {
         });
 
         it('setData() should send base data if nothing is defined', () => {
+            sendSpy.and.callThrough();
+
             let expected = {
                 'TbmXml.admin.operator.$.act': 'BA',
                 'TbmXml.admin.operator.$.toc': 'FTI',
@@ -703,6 +705,8 @@ describe('TrafficsTbmAdapter', () => {
         });
 
         it('setData() should send complete car data', () => {
+            sendSpy.and.callThrough();
+
             let expected = {
                 'TbmXml.admin.operator.$.act': 'BA',
                 'TbmXml.admin.operator.$.toc': 'FTI',
@@ -748,6 +752,8 @@ describe('TrafficsTbmAdapter', () => {
         });
 
         it('setData() should send drop off hotel car data', () => {
+            sendSpy.and.callThrough();
+
             let expected = {
                 'TbmXml.admin.operator.$.act': 'BA',
                 'TbmXml.admin.operator.$.toc': 'FTI',
@@ -785,6 +791,8 @@ describe('TrafficsTbmAdapter', () => {
         });
 
         it('setData() should send minimal car data', () => {
+            sendSpy.and.callThrough();
+
             let expected = {
                 'TbmXml.admin.operator.$.act': 'BA',
                 'TbmXml.admin.operator.$.toc': 'FTI',
@@ -816,6 +824,8 @@ describe('TrafficsTbmAdapter', () => {
         });
 
         it('setData() should send complete hotel data', () => {
+            sendSpy.and.callThrough();
+
             let expected = {
                 'TbmXml.admin.operator.$.act': 'BA',
                 'TbmXml.admin.operator.$.toc': 'FTI',
@@ -886,6 +896,8 @@ describe('TrafficsTbmAdapter', () => {
         });
 
         it('setData() should send minimal hotel data', () => {
+            sendSpy.and.callThrough();
+
             let expected = {
                 'TbmXml.admin.operator.$.act': 'BA',
                 'TbmXml.admin.operator.$.toc': 'FTI',
@@ -921,6 +933,8 @@ describe('TrafficsTbmAdapter', () => {
         });
 
         it('setData() should send complete round trip data', () => {
+            sendSpy.and.callThrough();
+
             let expected = {
                 'TbmXml.admin.operator.$.act': 'BA',
                 'TbmXml.admin.operator.$.toc': 'FTI',
@@ -966,6 +980,8 @@ describe('TrafficsTbmAdapter', () => {
         });
 
         it('setData() should send minimal round trip data', () => {
+            sendSpy.and.callThrough();
+
             let expected = {
                 'TbmXml.admin.operator.$.act': 'BA',
                 'TbmXml.admin.operator.$.toc': 'FTI',
@@ -992,6 +1008,8 @@ describe('TrafficsTbmAdapter', () => {
         });
 
         it('setData() should send complete camper data', () => {
+            sendSpy.and.callThrough();
+
             let expected = {
                 'TbmXml.admin.operator.$.act': 'BA',
                 'TbmXml.admin.operator.$.toc': 'FTI',
@@ -1042,6 +1060,8 @@ describe('TrafficsTbmAdapter', () => {
         });
 
         it('setData() should send minimal camper data', () => {
+            sendSpy.and.callThrough();
+
             let expected = {
                 'TbmXml.admin.operator.$.act': 'BA',
                 'TbmXml.admin.operator.$.toc': 'FTI',
@@ -1075,6 +1095,8 @@ describe('TrafficsTbmAdapter', () => {
         });
 
         it('setData() should send base data for unknown type', () => {
+            sendSpy.and.callThrough();
+
             let expected = {
                 'TbmXml.admin.operator.$.act': 'BA',
                 'TbmXml.admin.operator.$.toc': 'FTI',

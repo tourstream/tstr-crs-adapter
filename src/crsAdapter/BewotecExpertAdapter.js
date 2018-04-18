@@ -1,4 +1,3 @@
-import es6shim from 'es6-shim';
 import moment from 'moment';
 import axios from 'axios';
 import {SERVICE_TYPES, CRS_TYPES} from '../UbpCrsAdapter';

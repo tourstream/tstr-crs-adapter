@@ -1,4 +1,5 @@
-import es6shim from 'es6-shim';
+import 'polyfills';
+
 import TomaAdapter from 'crsAdapter/TomaAdapter';
 import TomaSPCAdapter from 'crsAdapter/TomaSPCAdapter';
 import CetsAdapter from 'crsAdapter/CetsAdapter';

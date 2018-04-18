@@ -734,10 +734,10 @@ describe('TomaSPCAdapter', () => {
             };
 
             adapter.setData().then(() => {
+                done.fail('unexpected result');
+            }, () => {
                 expect(requestData).toEqual([expected]);
                 done();
-            }, (error) => {
-                done.fail(error);
             });
         });
 
@@ -749,10 +749,10 @@ describe('TomaSPCAdapter', () => {
             };
 
             adapter.setData(adapterObject).then(() => {
+                done.fail('unexpected result');
+            }, () => {
                 expect(requestData).toEqual([expected]);
                 done();
-            }, (error) => {
-                done.fail(error);
             });
         });
 
@@ -772,10 +772,10 @@ describe('TomaSPCAdapter', () => {
             };
 
             adapter.setData(adapterObject).then(() => {
+                done.fail('unexpected result');
+            }, () => {
                 expect(requestData).toEqual([expected]);
                 done();
-            }, (error) => {
-                done.fail(error);
             });
         });
 
@@ -825,10 +825,10 @@ describe('TomaSPCAdapter', () => {
             };
 
             adapter.setData(adapterObject).then(() => {
+                done.fail('unexpected result');
+            }, () => {
                 expect(requestData).toEqual([expected]);
                 done();
-            }, (error) => {
-                done.fail(error);
             });
         });
 
@@ -863,10 +863,10 @@ describe('TomaSPCAdapter', () => {
             };
 
             adapter.setData(adapterObject).then(() => {
+                done.fail('unexpected result');
+            }, () => {
                 expect(requestData).toEqual([expected]);
                 done();
-            }, (error) => {
-                done.fail(error);
             });
         });
 
@@ -911,10 +911,10 @@ describe('TomaSPCAdapter', () => {
             };
 
             adapter.setData(adapterObject).then(() => {
+                done.fail('unexpected result');
+            }, () => {
                 expect(requestData).toEqual([expected]);
                 done();
-            }, (error) => {
-                done.fail(error);
             });
         });
 
@@ -972,10 +972,10 @@ describe('TomaSPCAdapter', () => {
             };
 
             adapter.setData(adapterObject).then(() => {
+                done.fail('unexpected result');
+            }, () => {
                 expect(requestData).toEqual([expected]);
                 done();
-            }, (error) => {
-                done.fail(error);
             });
         });
 
@@ -1035,10 +1035,10 @@ describe('TomaSPCAdapter', () => {
             };
 
             adapter.setData(adapterObject).then(() => {
+                done.fail('unexpected result');
+            }, () => {
                 expect(requestData).toEqual([expected]);
                 done();
-            }, (error) => {
-                done.fail(error);
             });
         });
 
@@ -1081,10 +1081,10 @@ describe('TomaSPCAdapter', () => {
             };
 
             adapter.setData(adapterObject).then(() => {
+                done.fail('unexpected result');
+            }, () => {
                 expect(requestData).toEqual([expected]);
                 done();
-            }, (error) => {
-                done.fail(error);
             });
         });
 
@@ -1111,10 +1111,10 @@ describe('TomaSPCAdapter', () => {
             };
 
             adapter.setData(adapterObject).then(() => {
+                done.fail('unexpected result');
+            }, () => {
                 expect(requestData).toEqual([expected]);
                 done();
-            }, (error) => {
-                done.fail(error);
             });
         });
 
@@ -1171,10 +1171,10 @@ describe('TomaSPCAdapter', () => {
             };
 
             adapter.setData(adapterObject).then(() => {
+                done.fail('unexpected result');
+            }, () => {
                 expect(requestData).toEqual([expected]);
                 done();
-            }, (error) => {
-                done.fail(error);
             });
         });
 
@@ -1241,10 +1241,10 @@ describe('TomaSPCAdapter', () => {
             };
 
             adapter.setData(adapterObject).then(() => {
+                done.fail('unexpected result');
+            }, () => {
                 expect(requestData).toEqual([expected]);
                 done();
-            }, (error) => {
-                done.fail(error);
             });
         });
 
