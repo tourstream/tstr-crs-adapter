@@ -286,6 +286,8 @@ _precondition:_
 
 Open the test file in parallel to the Expert mask in a browser.
 
+Be aware that the data transfer to the Bewotec application needs up to 10 seconds.
+
 
 ## You have questions or problems with the implementation?
 
