@@ -33,7 +33,7 @@ describe('BewotecExpertAdapter', () => {
         adapter = new BewotecExpertAdapter(logService, DEFAULT_OPTIONS);
     });
 
-    it('connect() should reject when no token is given', () => {
+    it('connect() should reject when no token is given', (done) => {
         adapter.connect().then(() => {
             done.fail('unexpected result');
         }, (error) => {

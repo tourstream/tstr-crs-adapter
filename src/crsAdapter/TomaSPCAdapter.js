@@ -1,5 +1,3 @@
-import es6shim from 'es6-shim';
-import es7shim from 'es7-shim';
 import moment from 'moment';
 import { SERVICE_TYPES } from '../UbpCrsAdapter';
 import TravellerHelper from '../helper/TravellerHelper';
@@ -93,7 +91,7 @@ class TomaSPCAdapter {
             } catch (ignore) {}
 
             return this.sendData(crsObject).then(() => {
-                this.exit();
+                return this.exit();
             });
         }).then(null, (error) => {
             this.logger.error(error);

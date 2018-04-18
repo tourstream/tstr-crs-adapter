@@ -1,4 +1,3 @@
-import es6shim from 'es6-shim';
 import xml2js from 'xml2js';
 import moment from 'moment';
 import axios from 'axios';
