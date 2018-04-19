@@ -1,4 +1,3 @@
-import moment from 'moment';
 import axios from 'axios';
 import querystring from 'querystring';
 import WindowHelper from '../helper/WindowHelper';
@@ -143,9 +142,12 @@ class TrafficsTbmAdapter {
 
     collectTravellers(crsData) {
         return crsData.travellers.traveller.map((traveller) => {
+            const travellerNames = (traveller['$'].sur || '').split(' ');
+
             return {
                 title: traveller['$'].typ,
-                name: traveller['$'].sur,
+                lastName: travellerNames.pop(),
+                firstName: travellerNames.join (' '),
                 age: traveller['$'].age,
             }
         });

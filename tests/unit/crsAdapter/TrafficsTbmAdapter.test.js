@@ -217,7 +217,7 @@ describe('TrafficsTbmAdapter', () => {
                         traveller: [{
                             $: {
                                 typ: 'typ',
-                                sur: 'sur',
+                                sur: 'very long sur',
                                 age: 'age',
                             },
                         }],
@@ -267,7 +267,8 @@ describe('TrafficsTbmAdapter', () => {
                     }],
                     travellers: [{
                         title: 'typ',
-                        name: 'sur',
+                        firstName: 'very long',
+                        lastName: 'sur',
                         age: 'age'
                     }],
                 });

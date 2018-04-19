@@ -88,9 +88,12 @@ class TomaSPCAdapter {
 
     collectTravellers(crsData) {
         return crsData.travellers.map((traveller) => {
+            const travellerNames = (traveller.name || '').split(' ');
+
             return {
                 title: traveller.title,
-                name: traveller.name,
+                lastName: travellerNames.pop(),
+                firstName: travellerNames.join (' '),
                 age: traveller.discount,
             }
         });

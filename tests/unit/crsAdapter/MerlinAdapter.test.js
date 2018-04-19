@@ -131,7 +131,7 @@ describe('MerlinAdapter', () => {
                 '<PersonBlock>' +
                 '<PersonRow travellerNo="1">' +
                 '<Salutation>Salutation</Salutation>' +
-                '<Name>Name</Name>' +
+                '<Name>My Long Name</Name>' +
                 '<Age>Age</Age>' +
                 '</PersonRow>' +
                 '</PersonBlock>' +
@@ -189,7 +189,8 @@ describe('MerlinAdapter', () => {
                     }],
                     travellers: [{
                         title: 'Salutation',
-                        name: 'Name',
+                        firstName: 'My Long',
+                        lastName: 'Name',
                         age: 'Age'
                     }],
                 });

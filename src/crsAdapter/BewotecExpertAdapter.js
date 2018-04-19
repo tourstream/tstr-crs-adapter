@@ -159,10 +159,12 @@ class BewotecExpertAdapter {
     collectTravellers(crsData) {
         return crsData.Travellers.Traveller.map((traveller) => {
             const travellerData = traveller[CONFIG.parserOptions.attrPrefix];
+            const travellerNames = (travellerData.name || '').split(' ');
 
             return {
                 title: travellerData.salutation,
-                name: travellerData.name,
+                lastName: travellerNames.pop(),
+                firstName: travellerNames.join (' '),
                 age: travellerData.age,
             }
         });

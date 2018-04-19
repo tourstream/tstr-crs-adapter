@@ -143,9 +143,12 @@ class MerlinAdapter {
 
     collectTravellers(crsData) {
         return crsData.TravellerBlock.PersonBlock.PersonRow.map((traveller) => {
+            const travellerNames = (traveller.Name || '').split(' ');
+
             return {
                 title: traveller.Salutation,
-                name: traveller.Name,
+                lastName: travellerNames.pop(),
+                firstName: travellerNames.join (' '),
                 age: traveller.Age,
             }
         });

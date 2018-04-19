@@ -158,9 +158,12 @@ class TomaAdapter {
         do {
             if (!crsData['Title.' + lineNumber] && !crsData['Name.' + lineNumber]) break;
 
+            const travellerNames = (crsData['Name.' + lineNumber] || '').split(' ');
+
             travellers.push({
                 title: crsData['Title.' + lineNumber],
-                name: crsData['Name.' + lineNumber],
+                lastName: travellerNames.pop(),
+                firstName: travellerNames.join (' '),
                 age: crsData['Reduction.' + lineNumber],
             });
         } while (lineNumber++);

@@ -78,42 +78,5 @@ describe('CrsDataMapper', () => {
         expect(adapterData.services[0]).toBe(mappedService);
         expect(adapterData.services[0].travellers).toBe(mappedTravellers);
     });
-
-    it('mapToAdapterData() returns mapped travellers', () => {
-        const mappedTravellers = [];
-        const mappedService = {};
-        const underlyingMapper = require('tests/unit/_mocks/AnyDataMapper')();
-        const crsData = {
-            meta: {
-                serviceTypes: {
-                    mapperType: 'serviceType'
-                },
-            },
-            normalized: {
-                services: [{
-                    type: 'serviceType'
-                }],
-                travellers: [
-                    {
-                        name: 'my really long name'
-                    }
-                ],
-            },
-        };
-
-        mapperList.mapperType = underlyingMapper;
-
-        underlyingMapper.mapToAdapterService.and.returnValue(mappedService);
-        travellerHelper.mapToAdapterTravellers.and.returnValue(mappedTravellers);
-
-        mapper.mapToAdapterData(crsData);
-
-        expect(travellerHelper.mapToAdapterTravellers.calls.mostRecent().args[1].normalized.travellers).toEqual([{
-            title: void 0,
-            lastName: 'name',
-            firstName: 'my really long',
-            age: void 0,
-        }]);
-    });
 });
 

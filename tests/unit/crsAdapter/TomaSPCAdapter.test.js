@@ -205,7 +205,7 @@ describe('TomaSPCAdapter', () => {
                 }],
                 travellers: [{
                     title:'title',
-                    name: 'name',
+                    name: 'my long name',
                     discount: 'discount'
                 }],
                 agencyNumber: 'agencyNumber',
@@ -257,7 +257,8 @@ describe('TomaSPCAdapter', () => {
                     }],
                     travellers: [{
                         title: 'title',
-                        name: 'name',
+                        firstName: 'my long',
+                        lastName: 'name',
                         age: 'discount'
                     }],
                 });

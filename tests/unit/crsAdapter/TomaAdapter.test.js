@@ -153,7 +153,7 @@ describe('TomaAdapter', () => {
                 '<TravAssociation.1>TravAssociation</TravAssociation.1>' +
 
                 '<Title.1>Title</Title.1>' +
-                '<Name.1>Name</Name.1>' +
+                '<Name.1>My Long Name</Name.1>' +
                 '<Reduction.1>Reduction</Reduction.1>' +
                 '</TOM>' +
                 '</Body>' +
@@ -203,7 +203,8 @@ describe('TomaAdapter', () => {
                     }],
                     travellers: [{
                         title: 'Title',
-                        name: 'Name',
+                        firstName: 'My Long',
+                        lastName: 'Name',
                         age: 'Reduction'
                     }],
                 });
