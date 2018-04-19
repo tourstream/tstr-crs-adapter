@@ -405,12 +405,14 @@ class MerlinAdapter {
         if (!traveller || !traveller.Name) {
             return void 0;
         }
-
+        const travellerName = traveller.Name.split(' ');
+        const lastName = travellerName.length > 1 ? travellerName.pop() : void 0;
         return {
             gender: (Object.entries(CONFIG.crs.gender2SalutationMap).find(
                 (row) => row[1] === traveller.Salutation
             ) || [])[0],
-            name: traveller.Name,
+            firstName: travellerName.join(' '),
+            lastName: lastName,
             age: traveller.Age,
         };
     }
@@ -670,12 +672,13 @@ class MerlinAdapter {
         }
 
         adapterService.travellers.forEach((serviceTraveller) => {
+            const normalizedTraveller = this.helper.traveller.normalizeTraveller(serviceTraveller);
             let travellerIndex = this.getNextEmptyTravellerIndex(crsData);
             let traveller = crsData.TravellerBlock.PersonBlock.PersonRow[travellerIndex];
 
-            traveller.Salutation = CONFIG.crs.gender2SalutationMap[serviceTraveller.gender];
-            traveller.Name = serviceTraveller.name;
-            traveller.Age = serviceTraveller.age;
+            traveller.Salutation = normalizedTraveller.salutation;
+            traveller.Name = normalizedTraveller.name;
+            traveller.Age = normalizedTraveller.age;
         });
     }
 
@@ -800,7 +803,7 @@ class MerlinAdapter {
         let personRows = crsData.TravellerBlock.PersonBlock.PersonRow;
         let travellerIndex = void 0;
 
-        personRows.some((traveller, index) =>{
+        personRows.some((traveller, index) => {
             if (!traveller.Name && !traveller.Age) {
                 travellerIndex = index;
 

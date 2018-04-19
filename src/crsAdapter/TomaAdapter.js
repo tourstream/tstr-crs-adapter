@@ -154,7 +154,8 @@ class TomaAdapter {
 
         try {
             this.options.onSetData && this.options.onSetData(xmlObject);
-        } catch (ignore) {}
+        } catch (ignore) {
+        }
 
         try {
             this.getConnection().FIFramePutData(xml);
@@ -438,6 +439,8 @@ class TomaAdapter {
             return void 0;
         }
 
+        const travellerName = xml['Name.' + lineNumber].split(' ');
+        const lastName = travellerName.length > 1 ? travellerName.pop() : void 0;
         return {
             gender: Object.entries(CONFIG.crs.gender2SalutationMap).reduce(
                 (reduced, current) => {
@@ -446,7 +449,8 @@ class TomaAdapter {
                 },
                 {}
             )[xml['Title.' + lineNumber]],
-            name: xml['Name.' + lineNumber],
+            firstName: travellerName.join(' '),
+            lastName: lastName,
             age: xml['Reduction.' + lineNumber],
         };
     }
@@ -531,7 +535,8 @@ class TomaAdapter {
                     this.assignRoundTripTravellers(service, xmlTom, lineNumber);
                     break;
                 }
-                default: this.logger.warn('type ' + service.type + ' is not supported by the TOMA adapter');
+                default:
+                    this.logger.warn('type ' + service.type + ' is not supported by the TOMA adapter');
             }
         });
 
@@ -695,10 +700,11 @@ class TomaAdapter {
 
         let travellerLineNumber = void 0;
 
-        service.travellers.forEach((traveller) => {
+        service.travellers.forEach((serviceTraveller) => {
+            const traveller = this.helper.traveller.normalizeTraveller(serviceTraveller);
             travellerLineNumber = this.getNextEmptyTravellerLineNumber(xml);
 
-            xml['Title.' + travellerLineNumber] = CONFIG.crs.gender2SalutationMap[traveller.gender];
+            xml['Title.' + travellerLineNumber] = traveller.salutation;
             xml['Name.' + travellerLineNumber] = traveller.name;
             xml['Reduction.' + travellerLineNumber] = traveller.age;
         });

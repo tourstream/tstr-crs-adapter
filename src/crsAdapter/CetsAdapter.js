@@ -591,14 +591,13 @@ class CetsAdapter {
         service.travellers.forEach((serviceTraveller, index) => {
             const traveller = this.helper.traveller.normalizeTraveller(serviceTraveller);
 
-            const travellerName = traveller.name.split(' ');
             xml.Fap.push({
                 [CONFIG.builderOptions.attrkey]: {
                     ID: index + 1,
                 },
                 PersonType: traveller.salutation,
-                Name: travellerName.pop(),
-                FirstName: travellerName.join(' '),
+                Name: serviceTraveller.lastName,
+                FirstName: serviceTraveller.firstName,
                 Birth: traveller.age,
             });
 
@@ -635,14 +634,13 @@ class CetsAdapter {
         service.travellers.forEach((serviceTraveller, index) => {
             const traveller = this.helper.traveller.normalizeTraveller(serviceTraveller);
 
-            const travellerName = traveller.name.split(' ');
             xml.Fap.push({
                 [CONFIG.builderOptions.attrkey]: {
                     ID: index + 1,
                 },
                 PersonType: traveller.salutation,
-                Name: travellerName[1],
-                FirstName: travellerName[0],
+                Name: serviceTraveller.lastName,
+                FirstName: serviceTraveller.firstName,
             });
 
             xml.Fah[xml.Fah.length - 1].Persons = (xml.Fah[xml.Fah.length - 1].Persons || '') + (index + 1);

@@ -16,21 +16,51 @@ describe('TravellerHelper', () => {
 
     it('normalizeTraveller should return traveller object', () => {
         expect(helper.normalizeTraveller(
-            {gender: 'Female', name: 'jane', age: 25}
+            {gender: 'Female', firstName: 'jane', age: 25}
         )).toEqual(
             {salutation: 'miss', name: 'jane', age: 25}
         );
 
         expect(helper.normalizeTraveller(
-            {gender: 'inFant', name: 'jake'}
+            {gender: 'inFant', firstName: 'jake'}
         )).toEqual(
             {salutation: 'baby', name: 'jake'}
         );
 
         expect(helper.normalizeTraveller(
-            {gender: 'unknown', name: 'jane', age: 25}
+            {gender: 'unknown', firstName: 'jane', age: 25}
         )).toEqual(
             {name: 'jane', age: 25}
+        );
+
+        expect(helper.normalizeTraveller(
+            {gender: 'unknown', lastName: 'doe', age: 25}
+        )).toEqual(
+            {name: 'doe', age: 25}
+        );
+
+        expect(helper.normalizeTraveller(
+            {gender: 'unknown', firstName: 'jane', lastName: 'doe', age: 25}
+        )).toEqual(
+            {name: 'jane doe', age: 25}
+        );
+
+        expect(helper.normalizeTraveller(
+            {gender: 'unknown', firstName: 'jane', lastName: 'doe dean', age: 25}
+        )).toEqual(
+            {name: 'jane doe dean', age: 25}
+        );
+
+        expect(helper.normalizeTraveller(
+            {gender: 'unknown', firstName: 'jane janice', lastName: 'dean', age: 25}
+        )).toEqual(
+            {name: 'jane janice dean', age: 25}
+        );
+
+        expect(helper.normalizeTraveller(
+            {gender: 'unknown', firstName: 'jane janice', lastName: 'doe dean', age: 25}
+        )).toEqual(
+            {name: 'jane janice doe dean', age: 25}
         );
     });
 

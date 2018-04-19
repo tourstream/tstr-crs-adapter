@@ -347,7 +347,7 @@ describe('TrafficsTbmAdapter', () => {
                     roomOccupancy: 3,
                     travellers: [{
                         gender: 'child',
-                        name: 'jake',
+                        firstName: 'jake',
                         age: '4'
                     }],
                     destination: 'dest',
@@ -399,7 +399,7 @@ describe('TrafficsTbmAdapter', () => {
                     travellers: [
                         {
                             gender: 'male',
-                            name: 'john',
+                            firstName: 'john',
                             age: '44'
                         }],
                     type: SERVICE_TYPES.hotel,
@@ -470,7 +470,7 @@ describe('TrafficsTbmAdapter', () => {
                     marked: true,
                     travellers: [{
                         gender: 'child',
-                        name: 'jake',
+                        firstName: 'jake',
                         age: '4'
                     }],
                 }]);
@@ -860,7 +860,8 @@ describe('TrafficsTbmAdapter', () => {
                         roomOccupancy: 1,
                         travellers: [
                             {
-                                name: 'jake doe',
+                                firstName: 'jake',
+                                lastName: 'doe',
                                 gender: 'female',
                                 age: 7
                             },
@@ -878,12 +879,14 @@ describe('TrafficsTbmAdapter', () => {
                         dateTo: '08012018',
                         travellers: [
                             {
-                                name: 'john doe',
+                                firstName: 'john',
+                                lastName: 'doe',
                                 gender: 'female',
                                 age: 8
                             },
                             {
-                                name: 'jane doe',
+                                firstName: 'jane',
+                                lastName: 'doe',
                                 gender: 'male',
                                 age: 14
                             },
@@ -948,7 +951,7 @@ describe('TrafficsTbmAdapter', () => {
                 'TbmXml.admin.services.service.0.$.agn': '1-2',
 
                 'TbmXml.admin.travellers.traveller.0.$.typ': 'H',
-                'TbmXml.admin.travellers.traveller.0.$.sur': 'DOE/JOHN',
+                'TbmXml.admin.travellers.traveller.0.$.sur': 'JOHN DOE',
                 'TbmXml.admin.travellers.traveller.0.$.age': '32',
             };
 
@@ -963,12 +966,14 @@ describe('TrafficsTbmAdapter', () => {
                         travellers: [
                             {
                                 gender: 'female',
-                                name: 'DOE/JANE',
+                                firstName: 'JANE',
+                                lastName: 'DOE',
                                 age: '28',
                             },
                             {
                                 gender: 'male',
-                                name: 'DOE/JOHN',
+                                firstName: 'JOHN',
+                                lastName: 'DOE',
                                 age: '32',
                             }
                         ],

@@ -1,7 +1,7 @@
 import moment from 'moment';
 import axios from 'axios';
 import querystring from 'querystring';
-import { SERVICE_TYPES } from '../UbpCrsAdapter';
+import {SERVICE_TYPES} from '../UbpCrsAdapter';
 import TravellerHelper from '../helper/TravellerHelper';
 import CarHelper from '../helper/CarHelper';
 import CamperHelper from '../helper/CamperHelper';
@@ -127,7 +127,8 @@ class TrafficsTbmAdapter {
 
             try {
                 this.options.onSetData && this.options.onSetData(crsObject);
-            } catch (ignore) {}
+            } catch (ignore) {
+            }
 
             return this.getConnection().send(crsObject).catch((error) => {
                 this.logger.error(error.message);
@@ -419,6 +420,8 @@ class TrafficsTbmAdapter {
             return void 0;
         }
 
+        const travellerName = traveller['$'].sur.split(' ');
+        const lastName = travellerName.length > 1 ? travellerName.pop() : void 0;
         return {
             gender: Object.entries(CONFIG.crs.gender2SalutationMap).reduce(
                 (reduced, current) => {
@@ -427,7 +430,8 @@ class TrafficsTbmAdapter {
                 },
                 {}
             )[traveller['$'].typ],
-            name: traveller['$'].sur,
+            firstName: travellerName.join(' '),
+            lastName: lastName,
             age: traveller['$'].age,
         };
     }
@@ -487,7 +491,7 @@ class TrafficsTbmAdapter {
         this.assignBasicData(crsObject, dataObject);
 
         (dataObject.services || []).forEach((service) => {
-            let markedLineIndex= this.getMarkedLineIndexForService(crsObject, service);
+            let markedLineIndex = this.getMarkedLineIndexForService(crsObject, service);
             let lineIndex = markedLineIndex === void 0 ? this.getNextEmptyServiceLineIndex(crsObject) : markedLineIndex;
 
             switch (service.type) {
@@ -624,10 +628,11 @@ class TrafficsTbmAdapter {
             return;
         }
 
-        service.travellers.forEach((traveller) => {
+        service.travellers.forEach((serviceTraveller) => {
+            const traveller = this.helper.traveller.normalizeTraveller(serviceTraveller);
             let travellerIndex = this.getNextEmptyTravellerLineIndex(crsObject);
 
-            crsObject['TbmXml.admin.travellers.traveller.' + travellerIndex + '.$.typ'] = CONFIG.crs.gender2SalutationMap[traveller.gender];
+            crsObject['TbmXml.admin.travellers.traveller.' + travellerIndex + '.$.typ'] = traveller.salutation;
             crsObject['TbmXml.admin.travellers.traveller.' + travellerIndex + '.$.sur'] = traveller.name;
             crsObject['TbmXml.admin.travellers.traveller.' + travellerIndex + '.$.age'] = traveller.age;
         });

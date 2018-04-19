@@ -516,11 +516,14 @@ class TomaSPCAdapter {
             return void 0;
         }
 
+        const travellerName = traveller.name.split(' ');
+        const lastName = travellerName.length > 1 ? travellerName.pop() : void 0;
         return {
             gender: (Object.entries(CONFIG.crs.gender2SalutationMap).find(
                 (row) => row[1] === traveller.title
             ) || [])[0],
-            name: traveller.name,
+            firstName: travellerName.join(' '),
+            lastName: lastName,
             age: traveller.discount,
         };
     }
@@ -773,12 +776,13 @@ class TomaSPCAdapter {
         }
 
         adapterService.travellers.forEach((serviceTraveller) => {
+            const normalizedTraveller = this.helper.traveller.normalizeTraveller(serviceTraveller);
             let travellerIndex = this.getNextEmptyTravellerIndex(crsObject);
             let traveller = crsObject.travellers[travellerIndex];
 
-            traveller.title = CONFIG.crs.gender2SalutationMap[serviceTraveller.gender];
-            traveller.name = serviceTraveller.name;
-            traveller.discount = serviceTraveller.age;
+            traveller.title = normalizedTraveller.salutation;
+            traveller.name = normalizedTraveller.name;
+            traveller.discount = normalizedTraveller.age;
         });
     }
 

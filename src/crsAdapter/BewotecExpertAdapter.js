@@ -538,6 +538,8 @@ class BewotecExpertAdapter {
         if (!traveller || !traveller.name) {
             return void 0;
         }
+        const travellerName = traveller.name.split(' ');
+        const lastName = travellerName.length > 1 ? travellerName.pop() : void 0;
         return {
             gender: Object.entries(CONFIG.crs.gender2SalutationMap).reduce(
                 (reduced, current) => {
@@ -546,7 +548,8 @@ class BewotecExpertAdapter {
                 },
                 {}
             )[traveller.salutation],
-            name: traveller.name,
+            firstName: travellerName.join(' '),
+            lastName: lastName,
             age: traveller.age,
         };
     }
@@ -768,8 +771,8 @@ class BewotecExpertAdapter {
             return;
         }
 
-        service.travellers.forEach((ServiceTraveller) => {
-            const traveller = this.helper.traveller.normalizeTraveller(ServiceTraveller);
+        service.travellers.forEach((serviceTraveller) => {
+            const traveller = this.helper.traveller.normalizeTraveller(serviceTraveller);
             let travellerIndex = this.getNextEmptyTravellerLineIndex(crsObject);
             let travellerNumber = CONFIG.crs.lineNumberMap[travellerIndex];
 

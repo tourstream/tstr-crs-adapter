@@ -65,7 +65,7 @@ describe('CetsAdapter', () => {
             return xml + '<Request Version="2.5" From="FTI" To="cets" TermId="CC1937" Window="A" Date="11052017" Time="081635" Type="AVL" SubType="S" Confirm="NO" Agent="549870" Lang="DE" LayoutLang="EN" UserCode="tourCH" UserType="M" UserName="Pan" UserFirstName="Peter" UserMail="peter.pan@tourstream.eu" Source="DPL" Mode="Test" DeepLinkURL="YES">' +
                 '<Fab>' +
                 createFapXml() +
-                '<Catalog>'+ catalog +'</Catalog>' +
+                '<Catalog>' + catalog + '</Catalog>' +
                 '<TOCode>FTI</TOCode>' +
                 '<Adults>1</Adults>' +
                 data +
@@ -629,12 +629,14 @@ describe('CetsAdapter', () => {
                             travellers: [
                                 {
                                     gender: 'female',
-                                    name: 'Jane Doe',
+                                    firstName: 'Jane',
+                                    lastName: 'Doe Dean',
                                     age: '32',
                                 },
                                 {
                                     gender: 'child',
-                                    name: 'Joe Doe',
+                                    firstName: 'Joe',
+                                    lastName: 'Doe',
                                     age: '3',
                                 }
                             ],
@@ -644,7 +646,7 @@ describe('CetsAdapter', () => {
 
                 let service = '<Fap ID="1">' +
                     '<PersonType>F</PersonType>' +
-                    '<Name>Doe</Name>' +
+                    '<Name>Doe Dean</Name>' +
                     '<FirstName>Jane</FirstName>' +
                     '<Birth>32</Birth>' +
                     '</Fap>' +
@@ -732,11 +734,13 @@ describe('CetsAdapter', () => {
                             travellers: [
                                 {
                                     gender: 'female',
-                                    name: 'Jane Doe',
+                                    firstName: 'Jane',
+                                    lastName: 'Doe',
                                 },
                                 {
                                     gender: 'child',
-                                    name: 'Joe Doe',
+                                    firstName: 'Joe',
+                                    lastName: 'Doe',
                                 }
                             ],
                         },
@@ -831,26 +835,26 @@ describe('CetsAdapter', () => {
                 let expectedXml = createCustomResponseXml(
                     '<Catalog>DCH</Catalog>' +
                     '<Fah ServiceType="C" Key="VEHICLE.TYPE.CODE/PICK.UP.LOCATION-DROP.OFF.LOCATION">' +
-                        '<StartDate>01052017</StartDate>' +
-                        '<Duration>duration</Duration>' +
-                        '<Destination>PICK.UP.LOCATION</Destination>' +
-                        '<Product>RENTAL.CODE</Product>' +
-                        '<Room>VEHICLE.TYPE.CODE</Room>' +
-                        '<Norm>1</Norm>' +
-                        '<MaxAdults>1</MaxAdults>' +
-                        '<Meal>MIETW</Meal>' +
-                        '<Persons>1</Persons>' +
-                        '<CarDetails>' +
-                            '<PickUp Where="Walkin">' +
-                                '<Time>0820</Time>' +
-                                '<CarStation Code="PICK.UP.LOCATION"/>' +
-                                '<Info>WALK IN</Info>' +
-                            '</PickUp>' +
-                            '<DropOff>' +
-                                '<Time/>' +
-                                '<CarStation Code="DROP.OFF.LOCATION"/>' +
-                            '</DropOff>' +
-                        '</CarDetails>' +
+                    '<StartDate>01052017</StartDate>' +
+                    '<Duration>duration</Duration>' +
+                    '<Destination>PICK.UP.LOCATION</Destination>' +
+                    '<Product>RENTAL.CODE</Product>' +
+                    '<Room>VEHICLE.TYPE.CODE</Room>' +
+                    '<Norm>1</Norm>' +
+                    '<MaxAdults>1</MaxAdults>' +
+                    '<Meal>MIETW</Meal>' +
+                    '<Persons>1</Persons>' +
+                    '<CarDetails>' +
+                    '<PickUp Where="Walkin">' +
+                    '<Time>0820</Time>' +
+                    '<CarStation Code="PICK.UP.LOCATION"/>' +
+                    '<Info>WALK IN</Info>' +
+                    '</PickUp>' +
+                    '<DropOff>' +
+                    '<Time/>' +
+                    '<CarStation Code="DROP.OFF.LOCATION"/>' +
+                    '</DropOff>' +
+                    '</CarDetails>' +
                     '</Fah>' +
                     createFapXml()
                 );

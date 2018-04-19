@@ -227,12 +227,13 @@ describe('TomaAdapter', () => {
                 travellers: [
                     {
                         gender: 'child',
-                        name: 'child 1',
+                        firstName: 'child',
+                        lastName: '1',
                         age: '13',
                     },
                     {
                         gender: 'male',
-                        name: 'John',
+                        firstName: 'John',
                         age: '42',
                     }
                 ],
@@ -359,7 +360,7 @@ describe('TomaAdapter', () => {
                 '<To.1>161217</To.1>' +
                 '<TravAssociation.1>2</TravAssociation.1>' +
                 '<Title.2>H</Title.2>' +
-                '<Name.2>DOE/JOHN</Name.2>' +
+                '<Name.2>JOHN DOE</Name.2>' +
                 '<Reduction.2>040485</Reduction.2>'
             );
 
@@ -371,7 +372,8 @@ describe('TomaAdapter', () => {
                 endDate: '16122017',
                 travellers: [{
                     gender: 'male',
-                    name: 'DOE/JOHN',
+                    firstName: 'JOHN',
+                    lastName: 'DOE',
                     age: '040485'
                 }],
                 marked: true,
@@ -394,7 +396,7 @@ describe('TomaAdapter', () => {
                 '<To.1>161217</To.1>' +
                 '<TravAssociation.1>1</TravAssociation.1>' +
                 '<Title.1>H</Title.1>' +
-                '<Name.1>DOE/JOHN</Name.1>' +
+                '<Name.1>JOHN DOE</Name.1>' +
                 '<Reduction.1>32</Reduction.1>'
             );
 
@@ -405,7 +407,8 @@ describe('TomaAdapter', () => {
                 endDate: '16122017',
                 travellers: [{
                     gender: 'male',
-                    name: 'DOE/JOHN',
+                    firstName: 'JOHN',
+                    lastName: 'DOE',
                     age: '32'
                 }],
                 marked: false,
@@ -612,7 +615,8 @@ describe('TomaAdapter', () => {
                             dateFrom: '10022018',
                             dateTo: '15022018',
                             travellers: [{
-                                name: 'child 1',
+                                firstName: 'child',
+                                lastName: '1',
                                 gender: 'child',
                                 age: 13,
                             }],
@@ -692,7 +696,7 @@ describe('TomaAdapter', () => {
                     '<From.1>051217</From.1>' +
                     '<To.1>161217</To.1>' +
                     '<Title.1>H</Title.1>' +
-                    '<Name.1>DOE/JOHN</Name.1>' +
+                    '<Name.1>JOHN DOE</Name.1>' +
                     '<Reduction.1>32</Reduction.1>' +
                     '<TravAssociation.1>1</TravAssociation.1>' +
                     '<NoOfPersons>1</NoOfPersons>'
@@ -710,7 +714,8 @@ describe('TomaAdapter', () => {
                             endDate: '16122017',
                             travellers: [{
                                 gender: 'male',
-                                name: 'DOE/JOHN',
+                                firstName: 'JOHN',
+                                lastName: 'DOE',
                                 age: '32',
                             }],
                         },
