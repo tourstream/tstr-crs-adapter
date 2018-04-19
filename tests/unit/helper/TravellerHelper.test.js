@@ -98,7 +98,8 @@ describe('TravellerHelper', () => {
         const adapterService = {
             travellers: [{
                 gender: 'gender',
-                name: 'name',
+                firstName: 'name1 name2',
+                lastName: 'name',
                 age: 'age',
             }],
         };
@@ -115,7 +116,12 @@ describe('TravellerHelper', () => {
 
         expect(crsService.travellerAssociation).toBe('1');
         expect(crsData.normalized.travellers).toEqual([
-            { title: 'mappedGenderType', name: 'name', age: 'age' }
+            {
+                title: 'mappedGenderType',
+                firstName: 'name1 name2',
+                lastName: 'name',
+                age: 'age'
+            }
         ]);
     });
 
@@ -203,6 +209,27 @@ describe('TravellerHelper', () => {
         expect(helper.mapToAdapterTravellers(crsService, crsData)).toEqual([]);
     });
 
+    it('mapToAdapterTravellers() should return correct value for traveller with no name', () => {
+        const crsService = { travellerAssociation: '1' };
+        const crsData = {
+            meta: {
+                genderTypes: {
+                    gender: 'mappedGenderType'
+                }
+            },
+            normalized: {
+                travellers: [
+                    {
+                        title: 'title',
+                        age: 'age',
+                    }
+                ],
+            },
+        };
+
+        expect(helper.mapToAdapterTravellers(crsService, crsData)).toEqual([]);
+    });
+
     it('mapToAdapterTravellers() should return correct value', () => {
         const crsService = { travellerAssociation: '1' };
         const crsData = {
@@ -215,7 +242,8 @@ describe('TravellerHelper', () => {
                 travellers: [
                     {
                         title: 'title',
-                        name: 'name',
+                        firstName: 'name1 name2',
+                        lastName: 'name',
                         age: 'age',
                     }
                 ],
@@ -223,7 +251,12 @@ describe('TravellerHelper', () => {
         };
 
         expect(helper.mapToAdapterTravellers(crsService, crsData)).toEqual([
-            { gender: 'gender', name: 'name', age: 'age' }
+            {
+                gender: 'gender',
+                firstName: 'name1 name2',
+                lastName: 'name',
+                age: 'age'
+            }
         ]);
     });
 });

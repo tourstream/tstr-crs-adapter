@@ -11,6 +11,10 @@ class AdapterDataReducer {
             return;
         }
 
+        return this.reduceIntoGermanCrs(adapterData, crsData);
+    }
+
+    reduceIntoGermanCrs(adapterData, crsData) {
         adapterData.services = adapterData.services || [];
 
         crsData.normalized.action = 'BA';
@@ -38,7 +42,19 @@ class AdapterDataReducer {
             1
         ) || void 0;
 
+        this.reduceTravellerNames(crsData);
+
         return crsData;
+    }
+
+    reduceTravellerNames(crsData) {
+        crsData.normalized.travellers = (crsData.normalized.travellers || []).map((traveller) => {
+            return {
+                title: traveller.salutation,
+                name: [traveller.firstName, traveller.lastName].filter(Boolean).join(' '),
+                age: traveller.age,
+            }
+        });
     }
 }
 

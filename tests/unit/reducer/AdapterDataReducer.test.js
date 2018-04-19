@@ -29,7 +29,8 @@ describe('AdapterDataReducer', () => {
         };
 
         expect(JSON.parse(JSON.stringify(reducer.reduceIntoCrsData(adapterData, crsData))).normalized).toEqual({
-            action: 'BA'
+            action: 'BA',
+            travellers: [],
         });
     });
 
@@ -42,7 +43,8 @@ describe('AdapterDataReducer', () => {
         };
 
         expect(JSON.parse(JSON.stringify(reducer.reduceIntoCrsData(adapterData, crsData))).normalized).toEqual({
-            action: 'BA'
+            action: 'BA',
+            travellers: [],
         });
     });
 
@@ -62,7 +64,40 @@ describe('AdapterDataReducer', () => {
         reducerList.adapterType = underlyingReducer;
 
         expect(JSON.parse(JSON.stringify(reducer.reduceIntoCrsData(adapterData, crsData))).normalized).toEqual({
-            action: 'BA'
+            action: 'BA',
+            travellers: [],
+        });
+    });
+
+    it('reduceIntoCrsData() should reduce travellers', () => {
+        const underlyingReducer = require('tests/unit/_mocks/AnyDataReducer')();
+        const adapterData = {
+            services: [
+                {
+                    type: 'adapterType'
+                }
+            ],
+        };
+        const crsData = {
+            normalized: {
+                travellers: [
+                    {
+                        firstName: 'fn',
+                        lastName: 'ln',
+                    }
+                ]
+            },
+        };
+
+        reducerList.adapterType = underlyingReducer;
+
+        expect(JSON.parse(JSON.stringify(reducer.reduceIntoCrsData(adapterData, crsData))).normalized).toEqual({
+            action: 'BA',
+            travellers: [
+                {
+                    name: 'fn ln',
+                }
+            ]
         });
     });
 });

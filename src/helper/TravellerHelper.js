@@ -39,7 +39,8 @@ class TravellerHelper {
             crsData.normalized.travellers.push(crsTraveller);
 
             crsTraveller.title = crsData.meta.genderTypes[adapterTraveller.gender];
-            crsTraveller.name = adapterTraveller.name;
+            crsTraveller.firstName = adapterTraveller.firstName;
+            crsTraveller.lastName = adapterTraveller.lastName;
             crsTraveller.age = adapterTraveller.age;
         });
 
@@ -124,13 +125,14 @@ class TravellerHelper {
                 break;
             }
 
-            if (!traveller.name) {
+            if (!traveller.firstName || !traveller.lastName) {
                 continue;
             }
 
             travellers.push({
                 gender: genderMap[traveller.title],
-                name: traveller.name,
+                firstName: traveller.firstName,
+                lastName: traveller.lastName,
                 age: traveller.age,
             });
         } while (++counter + startTravellerId <= endTravellerId);

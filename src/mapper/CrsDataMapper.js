@@ -11,6 +11,8 @@ class CrsDataMapper {
     }
 
     mapFromGermanCrs(crsData) {
+        this.splitTravellerNames(crsData);
+
         const findAdapterServiceType = (crsServiceType) => {
             return Object.keys(crsData.meta.serviceTypes).find(
                 (key) => crsData.meta.serviceTypes[key] === crsServiceType
@@ -42,6 +44,19 @@ class CrsDataMapper {
         });
 
         return adapterData;
+    }
+
+    splitTravellerNames(crsData) {
+        crsData.normalized.travellers = (crsData.normalized.travellers || []).map((traveller) => {
+            const travellerNames = (traveller.name || '').split(' ');
+
+            return {
+                title: traveller.salutation,
+                lastName: travellerNames.pop(),
+                firstName: travellerNames.join (' '),
+                age: traveller.age,
+            }
+        });
     }
 }
 

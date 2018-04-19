@@ -1,9 +1,7 @@
-import es6shim from 'es6-shim';
 import xml2js from 'xml2js';
 import axios from 'axios';
 import {GENDER_TYPES} from '../UbpCrsAdapter';
 import ObjectHelper from '../helper/ObjectHelper';
-import fastXmlParser from 'fast-xml-parser';
 
 let CONFIG;
 

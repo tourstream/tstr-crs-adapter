@@ -1,4 +1,3 @@
-import moment from 'moment';
 import axios from 'axios';
 import {CRS_TYPES} from '../UbpCrsAdapter';
 import querystring from 'querystring';
