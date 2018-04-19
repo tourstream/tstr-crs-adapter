@@ -11,8 +11,4 @@ let instance = jasmine.createSpyObj(
     ]
 );
 
-let Logger = () => instance;
-
-export {
-    Logger as default,
-};
+export default () => instance;

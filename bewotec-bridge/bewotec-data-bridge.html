@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <script src="es6-promise-auto.min.js"></script>
+        <script src="axios.min.js"></script>
+        <title>Bewotec-Data-Bridge</title>
+        <style>
+            #debug-info {
+                color: red;
+                display: none;
+                font-weight: bold;
+            }
+        </style>
+    </head>
+
+    <body>
+        <h1>Bewotec Data Handover</h1>
+        <h4>in progress ...</h4>
+
+        <p>
+            Wenn dieses Fenster länger als 10 Sekunden offen bleibt, ist wahrscheinlich ein Fehler bei der Übertragung
+            zum CRS aufgetreten. Bitte schließen Sie dieses Fenster und versuchen sie es noch einmal.
+        </p>
+
+        <p id="debug-info">
+            window is in debug mode and will stay open
+        </p>
+
+        <script>
+            (function() {
+                function getUrlParams() {
+                    var vars = {};
+
+                    decodeURIComponent(window.location.search).replace(
+                        /[?&]+([^=&]+)=([^&]*)/gi,
+                        function(m,key,value) {
+                            vars[key] = value;
+                        }
+                    );
+
+                    return vars;
+                }
+
+                var token = getUrlParams().token;
+                var debug = window.location && (
+                    (window.location.search && window.location.search.indexOf('debug') !== -1) ||
+                    (window.location.hash && window.location.hash.indexOf('debug') !== -1)
+                );
+
+                if (debug) {
+                    document.getElementById('debug-info').style.display = 'block';
+                }
+
+                var doHandover = function(transferObject) {
+                    transferObject.name = 'bewotecDataTransfer';
+
+                    if (debug) {
+                        console.log('will transfer data to the adapter: ', transferObject);
+                    }
+
+                    if (window.opener) {
+                        window.opener.postMessage(transferObject, '*');
+                    }
+
+                    if (!debug) {
+                        window.close();
+                    }
+                };
+
+                axios.get('http://localhost:7354/airob/expert', { params: { token: token } }).then(function(response) {
+                    if (debug) {
+                        console.log(response);
+                    }
+
+                    doHandover({ data: response.data });
+                }, function(error) {
+                    if (debug) {
+                        console.log(error);
+                    }
+
+                    doHandover({
+                        error: JSON.parse(JSON.stringify(error)),
+                        errorMessage: error.message
+                    });
+                });
+            })()
+        </script>
+    </body>
+</html>

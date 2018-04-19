@@ -42,14 +42,14 @@ When you are connected you can get the data from the CRS via:
 ubpCrsAdapter.getData().then((crsData) => {});
 ```
 
-The `crsData` you get will look like that:
+The `crsData` you get is an `<CrsData>` object and will look like that:
 ```
 {
     agencyNumber: string,
     operator: string,
     numberOfTravellers: string,
     travelType: string,
-    services: Array<ServiceObject>,
+    services: Array<ServiceData>,
     remark: string,
 }
 ```
@@ -59,19 +59,11 @@ Or you can set data to the CRS via:
 ubpCrsAdapter.setData(adapterData);
 ```
 
-The `adapterData` object is defined like followed:
-```
-{
-    travelType: string,
-    numberOfTravellers: string,
-    services: Array<ServiceObject>,
-    remark: string,
-}
-```
+The `adapterData` is also a `<CrsData>` object and is defined like above.
 
-And also you can close the opened iFrame in the CRS:
+And also you can interrupt the connection and close the opened CRS-iFrame via:
 ```
-ubpCrsAdapter.exit()
+ubpCrsAdapter.cancel()
 ```
 
 
@@ -80,8 +72,7 @@ ubpCrsAdapter.exit()
 * every method returns a promise
 * the `numberOfTravellers` will be auto-calculated related to traveller data in the service lines
 * be aware that some `services` will set values to the remark field
-* `setData` triggers automatically an `exit` 
-which will close the "CRS overlay/popup" (if there is any)
+* `setData` triggers automatically a `cancel` which will close the "CRS overlay/popup" (if there is any)
 * keep in mind that you have to close any separated opened windows by yourself!
 
 
@@ -95,7 +86,7 @@ name          | default value | description
 debug         | `false`       | whether or not showing the debug output
 useDateFormat | `'DDMMYYYY'`  | date format which you want to use on the `setData` object (according to [momentjs date format](https://momentjs.com/docs/#/displaying/))
 useTimeFormat | `'HHmm'`      | time format which you want to use on the `setData` object (according to [momentjs date format](https://momentjs.com/docs/#/displaying/))
-onSetData     | `void 0`      | callback which is invoked with the data object, which will be sent to the CRS
+onSetData     | `void 0`      | callback which is invoked with the CrsDataObject, which will be sent to the CRS
 
 
 ### Supported CRS
@@ -103,23 +94,24 @@ onSetData     | `void 0`      | callback which is invoked with the data object, 
 You can check the currently supported CRSs with `UbpCrsAdapter.CRS_TYPES`.
 Currently this module supports the connection to following CRS masks:
 
-CRS               | connectionType                    | connectionOptions          | example
-:---              | :---                              | :---                       | :---
-CETS              | UbpCrsAdapter.CRS_TYPES.cets      |                            | 
-TOMA (old)        | UbpCrsAdapter.CRS_TYPES.toma      | providerKey                | 'ABC'
-TOMA (new)        | UbpCrsAdapter.CRS_TYPES.toma2     | externalCatalogVersion (*) | 'catalogue.version'
-|                 |                                   | connectionUrl              | 'https://url-to-amadeus-selling.plattform'
-|                 |                                   | popupId                    | 'popup_id0123456789abcdef'
-Merlin            | UbpCrsAdapter.CRS_TYPES.merlin    |                            | 
-MyJack            | UbpCrsAdapter.CRS_TYPES.myjack    | token                      | '0123456789abcdef'
-|                 |                                   | dataBridgeUrl              | 'example://url.where-the-adapter/can-get-the-crs-data/when-not-in-http-context'
-Jack+             | UbpCrsAdapter.CRS_TYPES.jackplus  | token                      | '0123456789abcdef'
-Cosmo             | UbpCrsAdapter.CRS_TYPES.cosmo     | dataSourceUrl              | 'example://url.where-the-crs/can-get-the-adapter-data'
-|                 |                                   | environment                | 'test' or 'live'
-|                 |                                   | exportId                   | '0123-456789-abcdef'
-CosmoNaut         | UbpCrsAdapter.CRS_TYPES.cosmonaut | dataSourceUrl              | 'example://url.where-the-crs/can-get-the-adapter-data'
-|                 |                                   | environment                | 'test' or 'live'
-|                 |                                   | exportId                   | '0123-456789-abcdef'
+CRS        | connectionType                    | connectionOptions          | example
+:---       | :---                              | :---                       | :---
+CETS       | UbpCrsAdapter.CRS_TYPES.cets      |                            | 
+TOMA (old) | UbpCrsAdapter.CRS_TYPES.toma      | providerKey                | 'ABC'
+TOMA (new) | UbpCrsAdapter.CRS_TYPES.toma2     | externalCatalogVersion (*) | 'catalogue.version'
+|          |                                   | connectionUrl              | 'https://url-to-amadeus-selling.plattform'
+|          |                                   | popupId                    | 'popup_id0123456789abcdef'
+Merlin     | UbpCrsAdapter.CRS_TYPES.merlin    |                            | 
+MyJack     | UbpCrsAdapter.CRS_TYPES.myjack    | token                      | '0123456789abcdef'
+|          |                                   | dataBridgeUrl              | 'example://url.where-the-adapter/can-get-the-crs-data/when-not-in-http-context'
+Jack+      | UbpCrsAdapter.CRS_TYPES.jackplus  | token                      | '0123456789abcdef'
+Cosmo      | UbpCrsAdapter.CRS_TYPES.cosmo     | dataSourceUrl              | 'example://url.where-the-crs/can-get-the-adapter-data'
+|          |                                   | environment                | 'test' or 'live'
+|          |                                   | exportId                   | '0123-456789-abcdef'
+CosmoNaut  | UbpCrsAdapter.CRS_TYPES.cosmonaut | dataSourceUrl              | 'example://url.where-the-crs/can-get-the-adapter-data'
+|          |                                   | environment                | 'test' or 'live'
+|          |                                   | exportId                   | '0123-456789-abcdef'
+TOSI       | UbpCrsAdapter.CRS_TYPES.tosi      | token                      | '0123456789abcdef'
 
 (*) optional
 
@@ -129,18 +121,17 @@ which you can set in the `connectionOptions`.
 **[TOMA 2]** _connectionUrl_ is needed, when the adapter is not directly used in the first child window of the TOMA application
 
 **[MyJack]** _dataBridgeUrl_ is needed, if the adapter is used in a non HTTP context. 
-This has to be a site which serves the CRS data per postMessage with the payload 
-`{ name: 'bewotecDataTransfer', error: 'in case of error ...', data: 'CRS data' }`
+The example code for this page is provided [here](/bewotec-bridge).
 
 **[Cosmo / CosmoNaut]** _dataSourceUrl_ is an url from where the CRS can get the IBE data from
 
 
-### `.services` object structure
+### `<ServiceData>` object structure
 
-Depending on the `.services[*].type` the structure of a `<ServiceObject>` differs.
+Depending on the `<ServiceData>.type` the structure of a `<ServiceData>` object differs.
 
 
-#### Supported service types
+#### Supported `<ServiceData>.type`
 
 You can check the currently supported service types with `UbpCrsAdapter.SERVICE_TYPES`.
 
@@ -154,27 +145,27 @@ MyJack     | X     | X     | X         | X
 JackPlus   | X     | X     | X         | X
 Cosmo      | X     | X     | X         | X
 CosmoNaut  | X     | X     | X         | X
+Tosi       | X     | X     | X         | X
 
 
-| type  | fields                   | example
+##### `<ServiceData>` structure
+
+| type | fields                   | example
 | :---  | :---                     | :---
-| car   | .vehicleTypeCode         | 'E4' 
-|       | .rentalCode              | 'DEU85' 
+| car   | .vehicleCode             | 'E4' 
+|       | .renterCode              | 'DEU85' 
 |       | .pickUpLocation          | 'BER3' 
 |       | .pickUpDate              | '28122017' 
 |       | .pickUpTime              | '0915' 
-|       | .dropOffLocation         | 'MUC' 
-|       | .dropOffDate             | '04012018'   
-|       | .dropOffTime             | '1720'       (**deprecated**)
-|       | .duration                | '9' (in days)
-|       | .durationInMinutes       | '12960'
 |       | .pickUpHotelName         | 'Best Hotel' 
 |       | .pickUpHotelAddress      | 'hotel street 1, 12345 hotel city' 
 |       | .pickUpHotelPhoneNumber  | '+49 172 678 0832 09' 
+|       | .dropOffLocation         | 'MUC' 
+|       | .dropOffDate             | '04012018'   
 |       | .dropOffHotelName        | 'Very Best Hotel' 
 |       | .dropOffHotelAddress     | 'hotel drive 34a, famous place' 
 |       | .dropOffHotelPhoneNumber | '04031989213' 
-|       | .extras                  | ['\<extraName\>\<count\>', 'navigationSystem', 'childCareSeat0', 'childCareSeat3'] 
+|       | .extras                  | ['GPS', 'CS3YRS', 'BS', '...'] 
 
 | type    | fields         | example
 | :---    | :---           | :---
@@ -185,32 +176,30 @@ CosmoNaut  | X     | X     | X         | X
 |         | .destination   | 'LAX20S' 
 |         | .dateFrom      | '20092017' 
 |         | .dateTo        | '20092017' 
-|         | .travellers    | [ { gender: \<gender\>, firstName: 'john', lastName: 'doe', age: '32' }, ... ]
+|         | .travellers    | [ { gender: _-gender-_, firstName: 'john', lastName: 'doe', age: '32' }, ... ]
 
-| type      | fields              | example
-| :---      | :---                | :---
-| roundTrip | .bookingId          | 'E2784NQXTHEN' 
-|           | .destination        | 'YYZ' 
-|           | .startDate          | '05122017' 
-|           | .endDate            | '16122017'
-|           | .travellers         | [ { gender: \<gender\>, firstName: 'john', lastName: 'doe', age: '32' }, ... ]
+| type      | fields       | example
+| :---      | :---         | :---
+| roundTrip | .bookingId   | 'E2784NQXTHEN' 
+|           | .destination | 'YYZ' 
+|           | .startDate   | '05122017' 
+|           | .endDate     | '16122017'
+|           | .travellers  | [ { gender: _-gender-_, firstName: 'john', lastName: 'doe', age: '32' }, ... ]
 
-_\<gender\>_ is one of **'female', 'male', 'child', 'infant'**
  
 | type     | fields                 | example
 | :---     | :---                   | :---
 | camper   | .renterCode            | 'PRT02' 
-|          | .camperCode            | 'FS' 
+|          | .vehicleCode           | 'FS' 
 |          | .pickUpLocation        | 'LIS1' 
 |          | .pickUpDate            | '10102017' 
 |          | .dropOffLocation       | 'LIS2' 
 |          | .dropOffDate           | '17102017' 
-|          | .duration              | '7' 
 |          | .milesIncludedPerDay   | '300' 
 |          | .milesPackagesIncluded | '3' 
-|          | .extras                | ['\<extraName\>.\<count\>', 'extra.2', 'special']
+|          | .extras                | [ { code: 'ECX0001', amount: '2' }, { code: 'USA740', amount: '1' }, ... ]
 
-_note: if .dropOffDate is not set, it will be calculated with .pickUpDate + .duration_
+_-gender-_ is one of **'female', 'male', 'child', 'infant'**
 
 Additionally every service has a `.marked` field which is by default falsy.
 But if this service is either "marked" in the crs or detected as "marked" (depends on the type) it will be true.
@@ -235,13 +224,17 @@ Personal goal: Try to increase the test coverage to ~100%.
 
 We prepared a test file, which can be opened directly in the CRS systems.
 The file is located in __test/manual__: *[crsTest.html](tests/manual/crsTest.html)*
+For serving the test file locally we provide a command for it: `npm run serve`
 
 It depends on the CRS how to use the test file.
 
 
 ###### ... in (old) TOMA
 
-_precondition:_ the Amadeus application is started and the TOMA mask is visible
+_precondition:_ 
+
+* the (old) Amadeus application is started 
+* the TOMA mask is visible
 
 If you already have an "browser view" open (basically after an external search), 
 you can drag'n'drop the test file directly into that view.
@@ -250,9 +243,12 @@ Alternatively you can open the test file in parallel to the TOMA mask in an IE a
 
 ###### ... in (new) TOMA SPC
 
-_precondition:_ the Amadeus portal is open, the TOMA mask is visible and the test file is served under a whitelisted domain
+_precondition:_ 
 
-For serving the test file locally we provide a command for it: `npm run serve`
+* the Amadeus portal is open
+* the TOMA mask is visible 
+* the test file is served under a whitelisted domain
+
 The file is than available via https://localhost:1337 and already whitelisted by Amadeus for their test system. 
 But you should open this URL in your browser first to accept any unknown certificates!
 
@@ -263,24 +259,43 @@ This is because Amadeus whitelist the domains which have access to the CRS.
 
 ###### ... in CETS
 
-_precondition:_ the CETS application is started
+_precondition:_ 
 
-You have to open the "browser view" (basically via an external search) -
+* the CETS application is started
+
+You have to open the "browser view" in CETS (basically via an external search) -
 than you can drag'n'drop the test file directly into that view.
 
 
 ###### ... in Merlin
 
-_precondition:_ the Sabre portal "ShopHolidays" is open, the Merlin mask is visible and the import is enabled
+_precondition:_ 
+
+* the Sabre portal "ShopHolidays" is open
+* the Merlin mask is visible 
+* the import is enabled
 
 Open the test file in parallel to the Merlin mask in another Tab.
 
 
 ###### ... in myJack / Jack+
 
-_precondition:_ the Bewotec application (myJack/Jack+) is open, the Expert mask is visible
+_precondition:_ 
+
+* the Bewotec application (myJack/Jack+) is open
+* the Expert mask is visible
+* the bewotec data bridge is served somewhere (serve it locally via `npm run serve-bridge`)
 
 Open the test file in parallel to the Expert mask in a browser.
+
+Be aware that the data transfer to the Bewotec application needs up to 10 seconds.
+
+
+###### ... in TOSI
+
+_precondition:_ the TOSI mask is open
+
+Open the test file in parallel to the TOSI mask in a browser.
 
 
 ## You have questions or problems with the implementation?

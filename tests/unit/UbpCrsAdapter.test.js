@@ -1,20 +1,49 @@
 import injector from 'inject!../../src/UbpCrsAdapter';
+import CetsAdapter from '../../src/crsAdapter/CetsAdapter';
+import TomaAdapter from '../../src/crsAdapter/TomaAdapter';
+import TomaSPCAdapter from '../../src/crsAdapter/TomaSPCAdapter';
+import BewotecExpertAdapter from '../../src/crsAdapter/BewotecExpertAdapter';
+import MerlinAdapter from '../../src/crsAdapter/MerlinAdapter';
+import TrafficsTbmAdapter from '../../src/crsAdapter/TrafficsTbmAdapter';
+import TosiAdapter from '../../src/crsAdapter/TosiAdapter';
 
 describe('UbpCrsAdapter', () => {
-    let adapter, UbpCrsAdapter, AnyCrsAdapter, LogService;
+    let UbpCrsAdapter, AnyCrsAdapter, LogService, CrsDataMapper, AdapterDataReducer;
+    let adapter, germanCrsList, onSetDataSpy;
 
     beforeEach(() => {
+        const createCrsAdapterImport = (type) => {
+            const adapterImport = () => AnyCrsAdapter;
+
+            adapterImport.type = type;
+
+            return adapterImport;
+        };
+
         AnyCrsAdapter = require('tests/unit/_mocks/AnyCrsAdapter')();
+        CrsDataMapper = require('tests/unit/_mocks/CrsDataMapper')();
+        AdapterDataReducer = require('tests/unit/_mocks/AdapterDataReducer')();
         LogService = require('tests/unit/_mocks/LogService');
         UbpCrsAdapter = injector({
-            'crsAdapter/TomaAdapter': () => AnyCrsAdapter,
-            'crsAdapter/CetsAdapter': () => AnyCrsAdapter,
-            'crsAdapter/TomaSPCAdapter': () => AnyCrsAdapter,
-            'crsAdapter/BewotecExpertAdapter': () => AnyCrsAdapter,
             'LogService': LogService,
+            'crsAdapter/TomaAdapter': createCrsAdapterImport(TomaAdapter.type),
+            'crsAdapter/TomaSPCAdapter': createCrsAdapterImport(TomaSPCAdapter.type),
+            'crsAdapter/CetsAdapter': createCrsAdapterImport(CetsAdapter.type),
+            'crsAdapter/BewotecExpertAdapter': createCrsAdapterImport(BewotecExpertAdapter.type),
+            'crsAdapter/MerlinAdapter': createCrsAdapterImport(MerlinAdapter.type),
+            'crsAdapter/TrafficsTbmAdapter': createCrsAdapterImport(TrafficsTbmAdapter.type),
+            'crsAdapter/TosiAdapter': createCrsAdapterImport(TosiAdapter.type),
+            './mapper/CrsDataMapper': jasmine.createSpy('CrsDataMapperSpy').and.returnValue(CrsDataMapper),
+            './reducer/AdapterDataReducer': jasmine.createSpy('AdapterDataReducerSpy').and.returnValue(AdapterDataReducer),
         });
 
-        adapter = new UbpCrsAdapter.default();
+        germanCrsList = Object.values(UbpCrsAdapter.CRS_TYPES).filter(
+            (crsType) => crsType !== UbpCrsAdapter.CRS_TYPES.cets
+        );
+
+        onSetDataSpy = jasmine.createSpy('onSetDataSpy');
+
+        adapter = new UbpCrsAdapter.default({onSetData: onSetDataSpy});
     });
 
     afterEach(() => {
@@ -62,6 +91,7 @@ describe('UbpCrsAdapter', () => {
             jackPlus: jasmine.anything(),
             cosmo: jasmine.anything(),
             cosmoNaut: jasmine.anything(),
+            tosi: jasmine.anything(),
         });
     });
 
@@ -76,7 +106,7 @@ describe('UbpCrsAdapter', () => {
 
     it('connect() should throw exception if crsType not given', (done) => {
         adapter.connect().then(() => {
-            done.fail('expectation error');
+            done.fail('unexpected result');
         }).catch((error) => {
             expect(error.toString()).toBe('Error: No CRS type given.');
             done();
@@ -85,7 +115,7 @@ describe('UbpCrsAdapter', () => {
 
     it('connect() should throw exception if crsType not valid', (done) => {
         adapter.connect('invalid.crsType').then(() => {
-            done.fail('expectation error');
+            done.fail('unexpected result');
         }).catch((error) => {
             expect(error.toString()).toBe('Error: load error: The CRS "invalid.crstype" is currently not supported.');
             done();
@@ -95,11 +125,23 @@ describe('UbpCrsAdapter', () => {
     it('connect() should throw exception if CRS connection failed', (done) => {
         AnyCrsAdapter.connect.and.throwError('adapter.error');
 
-        adapter.connect(UbpCrsAdapter.CRS_TYPES.cets).then(() => {
-            done.fail('expectation error');
+        const connectPromises = Object.values(UbpCrsAdapter.CRS_TYPES).map((crsType) => {
+            return adapter.connect(crsType);
+        });
+
+        Promise.all(connectPromises).then(() => {
+            done.fail('unexpected result');
         }).catch((error) => {
             expect(error.toString()).toBe('Error: connect error: adapter.error');
             done();
+        });
+    });
+
+    it('setData() should throw error if no parameters are set', () => {
+        adapter.setData().then(() => {
+            done.fail('unexpected result');
+        }).catch((error) => {
+            expect(error.toString()).toBe('Error: No data given.');
         });
     });
 
@@ -108,79 +150,173 @@ describe('UbpCrsAdapter', () => {
 
         Promise.all([
             adapter.getData().then(() => {
-                done.fail('get data: expectation error');
+                done.fail('get data: unexpected result');
             }).catch((error) => {
-                expect(error.toString()).toBe('Error: get data error: ' + message);
+                expect(error.toString()).toBe('Error: [.getData] error: ' + message);
             }),
 
             adapter.setData({}).then(() => {
-                done.fail('set data: expectation error');
+                done.fail('set data: unexpected result');
             }).catch((error) => {
-                expect(error.toString()).toBe('Error: set data error: ' + message);
+                expect(error.toString()).toBe('Error: [.setData] error: ' + message);
             }),
 
-            adapter.exit().then(() => {
-                done.fail('exit: expectation error');
+            adapter.cancel().then(() => {
+                done.fail('cancel: unexpected result');
             }).catch((error) => {
-                expect(error.toString()).toBe('Error: exit error: ' + message);
+                expect(error.toString()).toBe('Error: [.cancel] error: ' + message);
             }),
         ]).then(done);
     });
 
-    describe('is connected with CRS', () => {
+    describe('is connected with any CRS', () => {
         beforeEach(() => {
-            adapter.connect(UbpCrsAdapter.CRS_TYPES.cets);
+            const allCrsTypes = Object.values(UbpCrsAdapter.CRS_TYPES);
+
+            adapter.connect(allCrsTypes[+new Date() % allCrsTypes.length]);
         });
 
         it('connect() should call underlying adapter', () => {
             expect(AnyCrsAdapter.connect).toHaveBeenCalledTimes(1);
         });
 
-        it('getData() should call underlying adapter', (done) => {
-            let data = { some: 'kind', of: 'data' };
+        it('cancel() should call underlying adapter', () => {
+            adapter.cancel();
 
-            AnyCrsAdapter.getData.and.returnValue(data);
+            expect(AnyCrsAdapter.cancel).toHaveBeenCalledTimes(1);
+        });
 
-            adapter.getData().then(function(adapterData) {
-                expect(adapterData).toBe(data);
+        it('cancel() should resolve promise if underlying adapter resolved it', (done) => {
+            AnyCrsAdapter.cancel.and.returnValue(Promise.resolve('canceled'));
+
+            adapter.cancel().then((result) => {
+                expect(result).toBe('canceled');
                 done();
             }).catch((error) => {
-                done.fail('expectation error');
+                console.log(error.message);
+                done.fail('unexpected result');
             });
         });
+    });
 
-        it('setData() should throw error if no data is given', (done) => {
-            adapter.setData().then(() => {
-                done.fail('expectation error');
-            }).catch((error) => {
-                expect(error.toString()).toBe('Error: No data given.');
-                done();
-            });
+    describe('is connected with CETS', () => {
+        beforeEach(() => {
+            adapter.connect(UbpCrsAdapter.CRS_TYPES.cets);
         });
 
-        it('setData() should call underlying adapter', () => {
-            adapter.setData({ my: 'data' });
+        it('getData() should return data', (done) => {
+            const response = {};
 
-            expect(AnyCrsAdapter.setData).toHaveBeenCalledWith({
-                my: 'data',
-            });
-        });
+            AnyCrsAdapter.fetchData.and.returnValue(response);
 
-        it('exit() should call underlying adapter', () => {
-            adapter.exit();
-
-            expect(AnyCrsAdapter.exit).toHaveBeenCalledTimes(1);
-        });
-
-        it('exit() should resolve promise if underlying adapter resolved it', (done) => {
-            AnyCrsAdapter.exit.and.returnValue(Promise.resolve('exited'));
-
-            adapter.exit().then((result) => {
-                expect(result).toBe('exited');
+            adapter.getData().then((data) => {
+                expect(data).toEqual(response);
                 done();
             }).catch((error) => {
-                done.fail('expectation error')
-            });
+                console.log(error.message);
+                done.fail('unexpected result');
+            })
+        });
+
+        it('getData() should reject', (done) => {
+            AnyCrsAdapter.fetchData.and.throwError('fetchData.error');
+
+            adapter.getData().then(() => {
+                done.fail('unexpected result');
+            }).catch((error) => {
+                expect(error.toString()).toEqual('Error: [.fetchData] error: fetchData.error');
+                done();
+            })
+        });
+
+        it('setData() should throw no error', (done) => {
+            adapter.setData({}).then(() => {
+                done();
+            }).catch((error) => {
+                console.log(error.message);
+                done.fail('unexpected result');
+            })
+        });
+
+        it('setData() should throw error', (done) => {
+            AnyCrsAdapter.sendData.and.throwError('sendData.error');
+
+            adapter.setData({}).then(() => {
+                done.fail('unexpected result');
+            }).catch((error) => {
+                expect(error.toString()).toEqual('Error: [.sendData] error: sendData.error');
+                done();
+            })
+        });
+    });
+
+    describe('is connected with german CRS', () => {
+        beforeEach(() => {
+            adapter.connect(germanCrsList[+new Date() % germanCrsList.length]);
+        });
+
+        it('getData() should reject if fetch of underlying adapter fails', (done) => {
+            AnyCrsAdapter.fetchData.and.returnValue(Promise.reject(new Error('fetchData.error')));
+
+            adapter.getData().then(() => {
+                done.fail('unexpected result');
+            }).catch((error) => {
+                expect(error.toString()).toBe('Error: [.fetchData] error: fetchData.error');
+                done();
+            })
+        });
+
+        it('getData() should return data', (done) => {
+            AnyCrsAdapter.fetchData.and.returnValue(Promise.resolve({}));
+            CrsDataMapper.mapToAdapterData.and.returnValue({});
+
+            adapter.getData().then((data) => {
+                expect(data).toEqual({});
+                done();
+            }).catch((error) => {
+                console.log(error.message);
+                done.fail('unexpected result');
+            })
+        });
+
+        it('setData() should reject if fetch of underlying adapter fails', (done) => {
+            AnyCrsAdapter.fetchData.and.returnValue(Promise.reject(new Error('fetchData.error')));
+
+            adapter.setData({}).then(() => {
+                done.fail('unexpected result');
+            }).catch((error) => {
+                expect(error.toString()).toBe('Error: [.fetchData] error: fetchData.error');
+                done();
+            })
+        });
+
+        it('setData() should reject if send of underlying adapter fails', (done) => {
+            AnyCrsAdapter.fetchData.and.returnValue(Promise.resolve({}));
+            AdapterDataReducer.reduceIntoCrsData.and.returnValue({});
+            AnyCrsAdapter.convert.and.returnValue({});
+            AnyCrsAdapter.sendData.and.returnValue(Promise.reject(new Error('sendData.error')));
+
+            adapter.setData({}).then(() => {
+                done.fail('unexpected result');
+            }).catch((error) => {
+                expect(error.toString()).toEqual('Error: [.sendData] error: sendData.error');
+                done();
+            })
+        });
+
+        it('setData() should send data with underlying adapter', (done) => {
+            AnyCrsAdapter.fetchData.and.returnValue(Promise.resolve({}));
+            AdapterDataReducer.reduceIntoCrsData.and.returnValue({});
+            AnyCrsAdapter.convert.and.returnValue({});
+            AnyCrsAdapter.sendData.and.returnValue(Promise.resolve());
+
+            adapter.setData({}).then(() => {
+                expect(onSetDataSpy).toHaveBeenCalled();
+                done();
+            }).catch((error) => {
+                console.log(error.message);
+                done.fail('unexpected result');
+            })
         });
     });
 });

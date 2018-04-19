@@ -1,59 +1,106 @@
-### Field mapping
+### Test Examples
 
-#### Amadeus Toma (old) & Amadeus Toma SPC (new)
+Here you can see how the data will look like in the CRS after a transfer.
 
-![toma mask](toma/tomaMask.png)
+#### type `'car'`
 
-CRS field | example            | adapter field               | example
----       | ---                | ---                         | ---
-2         | 'BA'               | action                      | 'BA'
-3         | 'FTI'              | operator                    | 'FTI'
-4         | 'BAUS'             | travelType                  | 'BAUS'
-5         | '1'                | numberOfTravellers          | '1'
-13        | 'X'                | services[*].marked          | true
-30        | 'remark'           | remark                      | 'remark'
+![car data](data_car.png)
 
-##### for car service
-CRS field | example            | adapter field               | example
----       | ---                | ---                         | ---
-14        | 'MW'               | services[*].type            | 'car'
-15        | 'USA85E4/LAX-SFO1' | services[*].rentalCode      | 'USA85'
-|         |                    | services[*].vehicleTypeCode | 'E4'
-|         |                    | services[*].pickUpLocation  | 'LAX'
-|         |                    | services[*].dropOffLocation | 'SFO1'
-16        | '0915'             | services[*].pickUpTime      | '0915'
-20        | '281217'           | services[*].pickUpDate      | '28122017'
-21        | '040118'           | services[*].dropOffDate     | '04012018'
-21        | '040118'           | services[*].duration        | '8'
+##### Toma
 
-If car service includes hotel drop off or hotel pick up an extra line is added and the remark field is extended.
+![toma car data](toma/toma_car.png)
+(initial state was an empty mask)
 
-CRS field | example            | adapter field                       | example
----       | ---                | ---                                 | ---
-14        | 'E'                | |
-15        | 'pick up name'     | services[*].hotelPickUpName         | 'pick up name'
-15        | 'drop off name'    | services[*].hotelDropOffName        | 'drop off name'
-20        | '281217'           | services[*].pickUpDate              | '28122017'
-21        | '040118'           | services[*].dropOffDate             | '04012018'
-21        | '040118'           | services[*].duration                | '8'
-30        | other hotel infos  | services[*].hotelPickUpAddress      | 'hotel street 1, 12345 hotel city'
-|         |                    | services[*].hotelPickUpPhoneNumber  | '+49 172 678 0832 09'
-|         |                    | services[*].hotelDropOffName        | 'Very Best Hotel'
-|         |                    | services[*].hotelDropOffAddress     | 'hotel drive 34a, famous place'
-|         |                    | services[*].hotelDropOffPhoneNumber | '04031989213'
+##### Toma2
 
-- `.hotelPickUpName` overwrites `.hotelDropOffName`
-- the hotel infos in field 30 are structured like that: 
-`.hotelPickUpAddress .hotelPickUpPhoneNumber;.hotelDropOffName .hotelDropOffAddress .hotelDropOffPhoneNumber` 
-  - fields which are not provided, will be ommited here
-  - if `.hotelDropOffName` is already used, it will be ommitted here
+![toma2 car data](toma2/toma2_car.png)
 
-##### for hotel service
-CRS field | example  | adapter field           | example
----       | ---      | ---                     | ---
-14        | 'H'      | services[*].type        | 'car'
-15        | 'LAX20S' | services[*].destination | 'USA85'
-16        | 'DZ U'   | services[*].roomCode    | '0915'
-|         |          | services[*].mealCode    | 'E4'
-20        | '200917' | services[*].dateFrom    | '20092017'
-21        | '200917' | services[*].dateTo      | '20092017'
+##### Merlin
+
+![merlin car data](merlin/merlin_car.png)
+(initial state was an empty mask)
+
+##### Bewotec
+
+![bewotec car data](bewotec/bewotec_car.png)
+
+##### CETS
+
+![cets car data](cets/cets_car.png)
+
+
+#### type `'hotel'`
+
+![hotel data](data_hotel.png)
+
+##### Toma
+
+![toma hotel data](toma/toma_hotel.png)
+(initial state was an empty mask)
+
+##### Toma2
+
+![toma2 hotel data](toma2/toma2_hotel.png)
+
+##### Merlin
+
+![merlin hotel data](merlin/merlin_hotel.png)
+(initial state was an empty mask)
+
+##### Bewotec
+
+![bewotec hotel data](bewotec/bewotec_hotel.png)
+
+##### CETS
+
+![cets hotel data](cets/cets_hotel.png)
+
+
+#### type `'roundtrip'`
+
+![roundtrip data](data_roundtrip.png)
+
+##### Toma
+
+![toma roundtrip data](toma/toma_roundtrip.png)
+(initial state was an empty mask)
+
+##### Toma2
+
+![toma2 roundtrip data](toma2/toma2_roundtrip.png)
+
+##### Merlin
+
+![merlin roundtrip data](merlin/merlin_roundtrip.png)
+(initial state was an empty mask)
+
+##### Bewotec
+
+![bewotec roundtrip data](bewotec/bewotec_roundtrip.png)
+
+##### CETS
+
+![cets roundtrip data](cets/cets_roundtrip.png)
+
+
+#### type `'camper'`
+
+![camper data](data_camper.png)
+
+##### Toma
+
+![toma camper data](toma/toma_camper.png)
+(initial state was an empty mask)
+
+##### Toma2
+
+![toma2 camper data](toma2/toma2_camper.png)
+
+##### Merlin
+
+![merlin camper data](merlin/merlin_camper.png)
+(initial state was an empty mask)
+
+##### Bewotec
+
+![bewotec camper data](bewotec/bewotec_camper.png)

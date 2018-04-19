@@ -8,6 +8,7 @@
     const productSelectionButtons = document.getElementById('product-selection').getElementsByTagName('button');
     const formFieldTemplate = document.getElementById('form-field-template');
     const reportBlock = window.document.getElementById('report');
+    const connectButton = document.getElementById('connect-button');
     const data = {};
 
     init();
@@ -33,6 +34,7 @@
                     return;
                 }
 
+                resetConnectButton();
                 resetForm(connectionOptionsForm);
                 resetForm(productForm);
                 selectTemplate(connectionOptionsForm, event.target.value);
@@ -42,8 +44,6 @@
     }
 
     function connectToCrs() {
-        resetReport();
-
         try {
             if (!connectionOptionsForm.type) {
                 throw new Error('no CRS selected');
@@ -61,7 +61,10 @@
 
             crsAdapter
                 .connect(connectionOptionsForm.type.value, data)
-                .then(log('connected to ' + connectionOptionsForm.type.value), log);
+                .then(function() {
+                    setConnectionTypeToConnectButton(connectionOptionsForm.type.value);
+                    log('connection successful');
+                }, log);
         } catch (e) {
             log(e);
         }
@@ -84,8 +87,8 @@
                             sendData();
                             break;
                         }
-                        case 'exit': {
-                            doExit();
+                        case 'cancel': {
+                            doCancel();
                             break;
                         }
                     }
@@ -100,12 +103,22 @@
         });
     }
 
+    function resetConnectButton() {
+        connectButton.innerHTML = 'connect to CRS';
+        connectButton.classList.add('btn-outline-success');
+    }
+
     function resetForm(form) {
         form.innerHTML = '';
     }
 
     function resetReport() {
         reportBlock.innerHTML = '';
+    }
+
+    function setConnectionTypeToConnectButton(type) {
+        connectButton.innerHTML = 'connected to ' + type;
+        connectButton.classList.remove('btn-outline-success');
     }
 
     function selectTemplate(form, type) {
@@ -117,8 +130,6 @@
     }
 
     function getData() {
-        resetReport();
-
         try {
             crsAdapter.getData().then(log).catch(log);
         } catch (e) {
@@ -127,8 +138,6 @@
     }
 
     function addData() {
-        resetReport();
-
         const serviceIndex = (data.services || []).length;
 
         Object.keys(productForm).forEach(function(key) {
@@ -143,14 +152,15 @@
     }
 
     function sendData() {
-        resetReport();
-
         crsAdapter.setData(data).then(function() {
-            data.services = []
+            data.services = [];
+            log('data transferred');
         }).catch(log);
     }
 
     function log(text) {
+        resetReport();
+
         let stringified = JSON.stringify(text, void 0, 4) || '';
 
         if (stringified === '{}') {
@@ -202,11 +212,11 @@
         setValueToPropertyPath(object[property], parts.join('.'), value);
     }
 
-    function doExit() {
-        resetReport();
-
+    function doCancel() {
         try {
-            crsAdapter.exit().catch(log);
+            crsAdapter.cancel().then(function() {
+                log('cancel done');
+            }).catch(log);
         } catch (e) {
             log(e);
         }

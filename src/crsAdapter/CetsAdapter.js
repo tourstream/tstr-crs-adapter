@@ -1,7 +1,7 @@
 import xml2js from 'xml2js';
 import fastXmlParser from 'fast-xml-parser';
 import moment from 'moment';
-import {CRS_TYPES, SERVICE_TYPES} from '../UbpCrsAdapter';
+import {SERVICE_TYPES} from '../UbpCrsAdapter';
 import TravellerHelper from '../helper/TravellerHelper';
 import ObjectHelper from '../helper/ObjectHelper';
 
@@ -129,7 +129,7 @@ class CetsAdapter {
         this.createConnection();
     }
 
-    getData() {
+    fetchData() {
         let xml = this.getCrsXml();
 
         this.logger.info('RAW XML:');
@@ -140,12 +140,12 @@ class CetsAdapter {
         this.logger.info('PARSED XML:');
         this.logger.info(xmlObject);
 
-        return this.mapXmlObjectToAdapterObject(this.normalizeXmlObject(xmlObject));
+        return this.mapXmlObjectToAdapterObject(this.normalizeParsedData(xmlObject));
     }
 
-    setData(dataObject) {
+    sendData(dataObject) {
         let xmlObject = this.xmlParser.parse(this.getCrsXml());
-        let normalizedXmlObject = this.normalizeXmlObject(xmlObject);
+        let normalizedXmlObject = this.normalizeParsedData(xmlObject);
 
         if (normalizedXmlObject.Request.Avl) {
             delete normalizedXmlObject.Request.Avl;
@@ -171,8 +171,8 @@ class CetsAdapter {
         }
     }
 
-    exit() {
-        this.setData();
+    cancel() {
+        this.sendData();
     }
 
     createConnection() {
@@ -238,6 +238,11 @@ class CetsAdapter {
                     break;
                 }
                 default:
+                    this.logger.warn(
+                        '[.mapXmlObjectToAdapterObject] service type "'
+                        + xmlService[CONFIG.parserOptions.attrPrefix].ServiceType
+                        + '" is not supported'
+                    );
                     break;
             }
 
@@ -273,7 +278,7 @@ class CetsAdapter {
     /**
      * @private
      * @param xmlService
-     * @returns {{pickUpDate: *, dropOffDate: string, pickUpLocation: *, duration: *, rentalCode: *, vehicleTypeCode: *, type: string}}
+     * @returns {{pickUpDate: *, dropOffDate: string, pickUpLocation: *, duration: *, renterCode: *, vehicleCode: *, type: string}}
      */
     mapCarServiceFromXmlObjectToAdapterObject(xmlService) {
         let pickUpDate = moment(xmlService.StartDate, CONFIG.crs.dateFormat);
@@ -283,9 +288,8 @@ class CetsAdapter {
             pickUpDate: pickUpDate.isValid() ? pickUpDate.format(this.options.useDateFormat) : xmlService.StartDate,
             dropOffDate: dropOffDate.isValid() ? dropOffDate.format(this.options.useDateFormat) : '',
             pickUpLocation: xmlService.Destination,
-            duration: xmlService.Duration,
-            rentalCode: xmlService.Product,
-            vehicleTypeCode: xmlService.Room,
+            renterCode: xmlService.Product,
+            vehicleCode: xmlService.Room,
             type: SERVICE_TYPES.car,
         };
 
@@ -344,8 +348,8 @@ class CetsAdapter {
      * @param xmlObject object
      * @returns {*}
      */
-    normalizeXmlObject(xmlObject) {
-        const addFabNode = () => {
+    normalizeParsedData(xmlObject) {
+        const addFabNode = (xmlObject) => {
             let normalizedObject = {Request: {}};
 
             normalizedObject.Request[CONFIG.parserOptions.attrPrefix] = xmlObject.Request[CONFIG.parserOptions.attrPrefix];
@@ -386,13 +390,14 @@ class CetsAdapter {
 
     detectCatalogChange(xmlObject) {
         if (!Array.isArray(xmlObject.Request.Fab.Fah) || xmlObject.Request.Fab.Fah.length === 0) return;
+
         if (xmlObject.Request.Fab.Fah.length > 1) {
             xmlObject.Request.Fab.Fah.reduce((previousService, currentService) => {
                 if (currentService[CONFIG.parserOptions.attrPrefix].ServiceType !== previousService[CONFIG.parserOptions.attrPrefix].ServiceType) {
-                    xmlObject.Request.Fab.Catalog = CONFIG.serviceType2catalog.M
+                    xmlObject.Request.Fab.Catalog = CONFIG.serviceType2catalog.M;
                 }
             });
-        } else if (xmlObject.Request.Fab.Fah[0][CONFIG.parserOptions.attrPrefix].ServiceType != CONFIG.catalogs2serviceType[xmlObject.Request.Fab.Catalog]) {
+        } else if (xmlObject.Request.Fab.Fah[0][CONFIG.parserOptions.attrPrefix].ServiceType !== CONFIG.catalogs2serviceType[xmlObject.Request.Fab.Catalog]) {
             xmlObject.Request.Fab.Catalog = CONFIG.serviceType2catalog[xmlObject.Request.Fab.Fah[0][CONFIG.builderOptions.attrkey].ServiceType];
         }
     }
@@ -453,7 +458,7 @@ class CetsAdapter {
                     break;
                 }
                 default:
-                    this.logger.warn('type ' + service.type + ' is not supported by the CETS adapter');
+                    this.logger.warn('type "' + service.type + '" is not supported by the CETS adapter');
             }
         });
         this.detectCatalogChange(xmlObject);
@@ -467,10 +472,10 @@ class CetsAdapter {
      */
     assignCarServiceFromAdapterObjectToXmlObject(service, xml) {
         const normalizeService = (service) => {
-            service.vehicleTypeCode = service.vehicleTypeCode.toUpperCase();
-            service.rentalCode = service.rentalCode.toUpperCase();
-            service.pickUpLocation = service.pickUpLocation.toUpperCase();
-            service.dropOffLocation = service.dropOffLocation.toUpperCase();
+            service.vehicleCode = (service.vehicleCode || '').toUpperCase();
+            service.renterCode = (service.renterCode || '').toUpperCase();
+            service.pickUpLocation = (service.pickUpLocation || '').toUpperCase();
+            service.dropOffLocation = (service.dropOffLocation || '').toUpperCase();
         };
 
         normalizeService(service);
@@ -482,13 +487,13 @@ class CetsAdapter {
         let xmlService = {
             [CONFIG.builderOptions.attrkey]: {
                 ServiceType: CONFIG.defaults.serviceType.car,
-                Key: service.vehicleTypeCode + '/' + service.pickUpLocation + '-' + service.dropOffLocation,
+                Key: service.vehicleCode + '/' + service.pickUpLocation + '-' + service.dropOffLocation,
             },
             StartDate: pickUpDate.isValid() ? pickUpDate.format(CONFIG.crs.dateFormat) : service.pickUpDate,
-            Duration: service.duration || this.calculateDuration(service.pickUpDate, service.dropOffDate),
+            Duration: this.calculateDuration(service.pickUpDate, service.dropOffDate),
             Destination: service.pickUpLocation,
-            Product: service.rentalCode,
-            Room: service.vehicleTypeCode,
+            Product: service.renterCode,
+            Room: service.vehicleCode,
             Norm: CONFIG.defaults.personCount,
             MaxAdults: CONFIG.defaults.personCount,
             Meal: CONFIG.defaults.serviceCode.car,
@@ -577,7 +582,7 @@ class CetsAdapter {
             Destination: 'NEZ',
             Room: service.destination,
             StartDate: startDate.isValid() ? startDate.format(CONFIG.crs.dateFormat) : service.startDate,
-            Duration: service.duration || this.calculateDuration(service.startDate, service.endDate),
+            Duration: this.calculateDuration(service.startDate, service.endDate),
         };
 
         xml.Fah.push(xmlService);
@@ -666,5 +671,7 @@ class CetsAdapter {
         }
     };
 }
+
+CetsAdapter.type = 'cets';
 
 export default CetsAdapter;

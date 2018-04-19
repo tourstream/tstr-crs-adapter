@@ -8,6 +8,8 @@
     <title>CRS Adapter Test</title>
 
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.0.9/css/solid.css" integrity="sha384-29Ax2Ao1SMo9Pz5CxU1KMYy+aRLHmOu6hJKgWiViCYpz3f9egAJNwjnKGgr+BXDN" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.0.9/css/fontawesome.css" integrity="sha384-Lyz+8VfV0lv38W729WFAmn77iH5OSroyONnUva4+gYaQTic3iI2fnUKtDSpbVf0J" crossorigin="anonymous">
     <link rel="stylesheet" type="text/css" href="assets/styles.css">
 </head>
 
@@ -26,18 +28,20 @@
                 <button type="button" class="btn btn-outline-primary" value="merlin">Merlin</button>
                 <button type="button" class="btn btn-outline-primary" value="myjack">MyJack</button>
                 <button type="button" class="btn btn-outline-primary" value="jackplus">Jack+</button>
-                <button type="button" class="btn btn-outline-primary" value="cosmo">Cosmo</button>
-                <button type="button" class="btn btn-outline-primary" value="cosmonaut">CosmoNaut</button>
+                <button type="button" class="btn btn-outline-primary" value="traffics">Cosmo</button>
+                <button type="button" class="btn btn-outline-primary" value="traffics">CosmoNaut</button>
+                <button type="button" class="btn btn-outline-primary" value="tosi">TOSI</button>
 
                 <span class="mx-4">
-                            <button name="connect" class="btn btn-outline-success">connect to CRS</button>
-                        </span>
+                    <button name="connect" class="btn btn-success btn-outline-success" id="connect-button">
+                        connect to CRS
+                    </button>
+                </span>
             </div>
         </div>
     </div>
 
-    <form id="connect-options" class="form my-2">
-    </form>
+    <form id="connect-options" class="form my-2"></form>
 
     <div class="row">
         <div class="col">
@@ -50,17 +54,28 @@
                 <button type="button" class="btn btn-outline-primary" value="camper">camper</button>
 
                 <span class="mx-4">
-                    <button name="get" class="btn btn-outline-warning">get data from CRS</button>
-                    <button name="add" class="btn btn-outline-warning">collect data</button>
-                    <button name="send" class="btn btn-outline-warning">send collected data to CRS</button>
-                    <button name="exit" class="btn btn-outline-warning">exit</button>
+                    <button name="get" class="btn btn-outline-warning">
+                        <i class="fas fa-sign-out-alt"></i>
+                        get data from CRS
+                    </button>
+                    <button name="add" class="btn btn-outline-warning">
+                        <i class="fas fa-plus-square"></i>
+                        add data to transfer list
+                    </button>
+                    <button name="send" class="btn btn-outline-warning">
+                        <i class="fas fa-sign-in-alt"></i>
+                        send transfer list to CRS
+                    </button>
+                    <button name="cancel" class="btn btn-outline-warning">
+                        <i class="fas fa-ban"></i>
+                        cancel
+                    </button>
                 </span>
             </div>
         </div>
     </div>
 
-    <form id="product" class="form my-2">
-    </form>
+    <form id="product" class="form my-2"></form>
 
     <div id="templates" hidden>
         <div id="form-field-template" class="input-group">
@@ -98,7 +113,7 @@
 
             <div class="form-row">
                 <div data-form-field data-label="token" data-name="token"></div>
-                <div data-form-field data-label="dataBridgeUrl" data-name="dataBridgeUrl" data-value="http://storage.googleapis.com/staging.fti360-bm.appspot.com/bewotec-bridge/bewotec-data-bridge.html"></div>
+                <div data-form-field data-label="dataBridgeUrl" data-name="dataBridgeUrl" data-value="http://localhost:1338"></div>
             </div>
         </div>
 
@@ -111,12 +126,20 @@
         </div>
 
         <div id="traffics-form-fields">
-            <input type="hidden" name="type" value="traffics"/>
+            <input type="hidden" name="type" value="cosmonaut"/>
 
             <div class="form-row">
                 <div data-form-field data-label="environment" data-name="environment" data-value="test" data-title="'test' or 'live'"></div>
                 <div data-form-field data-label="dataSourceUrl" data-name="dataSourceUrl" data-value="https://us-central1-fti360-bm-staging.cloudfunctions.net/query2Json"></div>
                 <div data-form-field data-label="exportId" data-name="exportId" data-value="fake_id"></div>
+            </div>
+        </div>
+
+        <div id="tosi-form-fields">
+            <input type="hidden" name="type" value="tosi"/>
+
+            <div class="form-row">
+                <div data-form-field data-label="token" data-name="token"></div>
             </div>
         </div>
 
@@ -135,8 +158,8 @@
 
             <div class="form-row">
                 <fieldset class="col my-1">
-                    <div data-form-field data-label="vehicleTypeCode" data-name="services.$.vehicleTypeCode" data-value="B1"></div>
-                    <div data-form-field data-label="rentalCode" data-name="services.$.rentalCode" data-value="ITL22"></div>
+                    <div data-form-field data-label="vehicleCode" data-name="services.$.vehicleCode" data-value="B1"></div>
+                    <div data-form-field data-label="renterCode" data-name="services.$.renterCode" data-value="ITL22"></div>
                 </fieldset>
 
                 <fieldset class="col my-1">
@@ -147,8 +170,7 @@
 
                 <fieldset class="col my-1">
                     <div data-form-field data-label="dropOffLocation" data-name="services.$.dropOffLocation" data-value="ROMH"></div>
-                    <div data-form-field data-label="duration" data-name="services.$.duration" data-value="4"></div>
-                    <div data-form-field data-label="durationInMinutes" data-name="services.$.durationInMinutes" data-value="5800"></div>
+                    <div data-form-field data-label="dropOffDate" data-name="services.$.dropOffDate" data-dynamic-date="21"></div>
                 </fieldset>
             </div>
 
@@ -168,10 +190,10 @@
 
             <div class="form-row">
                 <fieldset class="col my-1">
-                    <div data-form-field data-label="extra 1" data-name="services.$.extras.0" data-value="childCareSeat0"></div>
-                    <div data-form-field data-label="extra 2" data-name="services.$.extras.1" data-value="navigationSystem"></div>
-                    <div data-form-field data-label="extra 3" data-name="services.$.extras.2" data-value="additionalDriver.2"></div>
-                    <div data-form-field data-label="extra 4" data-name="services.$.extras.3" data-value="childCareSeat3"></div>
+                    <div data-form-field data-label="extra 1" data-name="services.$.extras.0" data-value="BS"></div>
+                    <div data-form-field data-label="extra 2" data-name="services.$.extras.1" data-value="GPS"></div>
+                    <div data-form-field data-label="extra 3" data-name="services.$.extras.2" data-value="CS3YS"></div>
+                    <div data-form-field data-label="extra 4" data-name="services.$.extras.3"></div>
                 </fieldset>
             </div>
         </div>
@@ -197,16 +219,23 @@
             <div class="form-row">
                 <fieldset class="col my-1">
                     <div data-form-field data-label="traveller 1 gender" data-name="services.$.travellers.0.gender" data-value="female"></div>
-                    <div data-form-field data-label="traveller 1 firstName" data-name="services.$.travellers.0.firstName" data-value="jane"></div>
+                    <div data-form-field data-label="traveller 1 firstName" data-name="services.$.travellers.0.firstName" data-value="jane mary"></div>
                     <div data-form-field data-label="traveller 1 lastName" data-name="services.$.travellers.0.lastName" data-value="doe"></div>
-                    <div data-form-field data-label="traveller 1 age" data-name="services.$.travellers.0.age" data-value="11"></div>
+                    <div data-form-field data-label="traveller 1 age" data-name="services.$.travellers.0.age" data-value="28"></div>
                 </fieldset>
 
                 <fieldset class="col my-1">
                     <div data-form-field data-label="traveller 2 gender" data-name="services.$.travellers.1.gender" data-value="male"></div>
-                    <div data-form-field data-label="traveller 2 firstName" data-name="services.$.travellers.1.firstName" data-value="jane"></div>
+                    <div data-form-field data-label="traveller 2 firstName" data-name="services.$.travellers.1.firstName" data-value="john"></div>
                     <div data-form-field data-label="traveller 2 lastName" data-name="services.$.travellers.1.lastName" data-value="doe"></div>
                     <div data-form-field data-label="traveller 2 age" data-name="services.$.travellers.1.age" data-value="32"></div>
+                </fieldset>
+
+                <fieldset class="col my-1">
+                    <div data-form-field data-label="traveller 3 gender" data-name="services.$.travellers.2.gender" data-value="child"></div>
+                    <div data-form-field data-label="traveller 3 firstName" data-name="services.$.travellers.2.firstName" data-value="judy"></div>
+                    <div data-form-field data-label="traveller 3 lastName" data-name="services.$.travellers.2.lastName" data-value="doe"></div>
+                    <div data-form-field data-label="traveller 3 age" data-name="services.$.travellers.2.age" data-value="11"></div>
                 </fieldset>
             </div>
         </div>
@@ -248,7 +277,7 @@
 
             <div class="form-row">
                 <fieldset class="col my-1">
-                    <div data-form-field data-label="camperCode" data-name="services.$.camperCode" data-value="FS"></div>
+                    <div data-form-field data-label="vehicleCode" data-name="services.$.vehicleCode" data-value="FS"></div>
                     <div data-form-field data-label="renterCode" data-name="services.$.renterCode" data-value="PRT02"></div>
                 </fieldset>
 
@@ -261,7 +290,7 @@
             <div class="form-row">
                 <fieldset class="col my-1">
                     <div data-form-field data-label="pickUpDate" data-name="services.$.pickUpDate" data-dynamic-date="14"></div>
-                    <div data-form-field data-label="duration" data-name="services.$.duration" data-value="4"></div>
+                    <div data-form-field data-label="dropOffDate" data-name="services.$.dropOffDate" data-dynamic-date="21"></div>
                 </fieldset>
 
                 <fieldset class="col my-1">
@@ -272,9 +301,18 @@
 
             <div class="form-row">
                 <fieldset class="col my-1">
-                    <div data-form-field data-label="extra 1" data-name="services.$.extras.0" data-value="extra.2"></div>
-                    <div data-form-field data-label="extra 2" data-name="services.$.extras.1" data-value="special"></div>
-                    <div data-form-field data-label="extra 3" data-name="services.$.extras.2" data-value="extra.4"></div>
+                    <div data-form-field data-label="extra 1 code" data-name="services.$.extras.0.code" data-value="ECX0001"></div>
+                    <div data-form-field data-label="extra 1 amount" data-name="services.$.extras.0.amount" data-value="3"></div>
+                </fieldset>
+
+                <fieldset class="col my-1">
+                    <div data-form-field data-label="extra 2 code" data-name="services.$.extras.1.code" data-value="USA740"></div>
+                    <div data-form-field data-label="extra 2 amount" data-name="services.$.extras.1.amount" data-value="1"></div>
+                </fieldset>
+
+                <fieldset class="col my-1">
+                    <div data-form-field data-label="extra 3 code" data-name="services.$.extras.2.code"></div>
+                    <div data-form-field data-label="extra 3 amount" data-name="services.$.extras.2.amount"></div>
                 </fieldset>
             </div>
         </div>

@@ -23,6 +23,4 @@ class ObjectHelper {
     };
 }
 
-export {
-    ObjectHelper as default,
-}
+export default ObjectHelper;

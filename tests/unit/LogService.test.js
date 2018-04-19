@@ -12,7 +12,7 @@ describe('LogService', () => {
         debugDocument = jasmine.createSpyObj('debugDocument', ['writeln']);
         debugDocument.body = {};
 
-        debugWindow = jasmine.createSpyObj('debugWindow', ['focus']);
+        debugWindow = jasmine.createSpyObj('debugWindow', ['focus', 'scroll']);
         debugWindow.document = debugDocument;
 
         windowOpenSpy = spyOn(window, 'open');

@@ -4,6 +4,4 @@ class WindowHelper {
     }
 }
 
-export {
-    WindowHelper as default,
-}
+export default WindowHelper;

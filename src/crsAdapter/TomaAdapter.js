@@ -1,12 +1,5 @@
 import xml2js from 'xml2js';
 import fastXmlParser from 'fast-xml-parser';
-import moment from 'moment';
-import {SERVICE_TYPES} from '../UbpCrsAdapter';
-import TravellerHelper from '../helper/TravellerHelper';
-import RoundTripHelper from '../helper/RoundTripHelper';
-import CarHelper from '../helper/CarHelper';
-import CamperHelper from '../helper/CamperHelper';
-import HotelHelper from '../helper/HotelHelper';
 
 /**
  * need to be true:
@@ -26,23 +19,11 @@ const CONFIG = {
             camperExtra: 'TA',
         },
         activeXObjectName: 'Spice.Start',
-        defaultValues: {
-            action: 'BA',
-            numberOfTravellers: 1,
-        },
         gender2SalutationMap: {
             male: 'H',
             female: 'F',
             child: 'K',
             infant: 'K',
-        },
-    },
-    services: {
-        car: {
-            serviceCodeRegEx: /([A-Z]*[0-9]*)?([A-Z]*[0-9]*)?(\/)?([A-Z]*[0-9]*)?(-)?([A-Z]*[0-9]*)?/,
-        },
-        roundTrip: {
-            ageRegEx: /^\d{2,3}$/g
         },
     },
     parserOptions: {
@@ -79,19 +60,6 @@ class TomaAdapter {
         this.options = options;
         this.logger = logger;
 
-        const helperOptions = Object.assign({}, options, {
-            crsDateFormat: CONFIG.crs.dateFormat,
-            gender2SalutationMap: CONFIG.crs.gender2SalutationMap,
-        });
-
-        this.helper = {
-            traveller: new TravellerHelper(helperOptions),
-            car: new CarHelper(helperOptions),
-            camper: new CamperHelper(helperOptions),
-            hotel: new HotelHelper(helperOptions),
-            roundTrip: new RoundTripHelper(helperOptions),
-        };
-
         this.xmlParser = {
             parse: xmlString => fastXmlParser.parse(xmlString, CONFIG.parserOptions)
         };
@@ -125,52 +93,161 @@ class TomaAdapter {
         }
     }
 
-    getData() {
-        let xml = this.getCrsXml();
+    fetchData() {
+        try {
+            const rawData = this.getCrsXml() || '';
+            const parsedData = this.xmlParser.parse(rawData);
+            const crsData = parsedData.Envelope.Body.TOM;
 
-        this.logger.info('RAW XML:');
-        this.logger.info(xml);
-
-        let xmlObject = this.xmlParser.parse(xml);
-
-        this.logger.info('PARSED XML:');
-        this.logger.info(xmlObject);
-
-        return this.mapXmlObjectToAdapterObject(xmlObject);
+            return Promise.resolve({
+                raw: rawData,
+                parsed: parsedData,
+                normalized: {
+                    agencyNumber: crsData.AgencyNumber,
+                    operator: crsData.Operator,
+                    numberOfTravellers: crsData.NoOfPersons ? crsData.NoOfPersons[CONFIG.parserOptions.textNodeName] : void 0,
+                    travelType: crsData.Traveltype,
+                    remark: crsData.Remark,
+                    services: this.collectServices(crsData),
+                    travellers: this.collectTravellers(crsData),
+                },
+                meta: {
+                    serviceTypes: CONFIG.crs.serviceTypes,
+                    genderTypes: CONFIG.crs.gender2SalutationMap,
+                    formats: {
+                        date: CONFIG.crs.dateFormat,
+                        time: CONFIG.crs.timeFormat,
+                    },
+                    type: TomaAdapter.type,
+                },
+            });
+        } catch(error) {
+            return Promise.reject(error);
+        }
     }
 
-    setData(dataObject) {
-        let xmlObject = this.xmlParser.parse(this.getCrsXml());
+    collectServices(crsData) {
+        const services = [];
+        let lineNumber = 1;
 
-        this.assignAdapterObjectToXmlObject(xmlObject, dataObject);
+        do {
+            let serviceType = crsData['KindOfService.' + lineNumber];
 
-        this.logger.info('XML OBJECT:');
-        this.logger.info(xmlObject);
+            if (!serviceType) break;
 
-        let xml = this.xmlBuilder.build(xmlObject);
+            services.push({
+                marker: crsData['MarkerField.' + lineNumber],
+                type: serviceType,
+                code: crsData['ServiceCode.' + lineNumber],
+                accommodation: crsData['Accommodation.' + lineNumber],
+                fromDate: crsData['From.' + lineNumber],
+                toDate: crsData['To.' + lineNumber],
+                occupancy: crsData['Occupancy.' + lineNumber],
+                quantity: crsData['Count.' + lineNumber],
+                travellerAssociation: crsData['TravAssociation.' + lineNumber],
+            });
+        } while (lineNumber++);
 
-        this.logger.info('XML:');
-        this.logger.info(xml);
+        return services;
+    }
 
+    collectTravellers(crsData) {
+        const travellers = [];
+        let lineNumber = 1;
+
+        do {
+            if (!crsData['Title.' + lineNumber] && !crsData['Name.' + lineNumber]) break;
+
+            const travellerNames = (crsData['Name.' + lineNumber] || '').split(' ');
+
+            travellers.push({
+                title: crsData['Title.' + lineNumber],
+                lastName: travellerNames.pop(),
+                firstName: travellerNames.join (' '),
+                age: crsData['Reduction.' + lineNumber],
+            });
+        } while (lineNumber++);
+
+        return travellers;
+    }
+
+    convert(crsData) {
+        crsData.normalized.services = crsData.normalized.services || [];
+        crsData.normalized.travellers = crsData.normalized.travellers || [];
+
+        crsData.converted = crsData.parsed
+            ? JSON.parse(JSON.stringify(crsData.parsed))
+            : {
+                Envelope: {
+                    Body: {
+                        TOM: {},
+                    },
+                },
+            };
+
+        const crsDataObject = crsData.converted.Envelope.Body.TOM;
+
+        crsDataObject.Action = crsData.normalized.action;
+        crsDataObject.AgencyNumber = crsData.normalized.agencyNumber;
+        crsDataObject.Operator = crsData.normalized.operator;
+        crsDataObject.NoOfPersons = crsData.normalized.numberOfTravellers;
+        crsDataObject.Traveltype = crsData.normalized.travelType;
+        crsDataObject.Remark = crsData.normalized.remark;
+
+        this.assignServices(crsData);
+        this.assignTravellers(crsData);
+
+        crsData.build = this.xmlBuilder.build(crsData.converted);
+
+        return crsData;
+    }
+
+    assignServices(crsData) {
+        const crsDataObject = crsData.converted.Envelope.Body.TOM;
+
+        crsData.normalized.services.forEach((service, index) => {
+            const lineNumber = index + 1;
+
+            crsDataObject['MarkerField.' + lineNumber] = service.marker;
+            crsDataObject['KindOfService.' + lineNumber] = service.type;
+            crsDataObject['ServiceCode.' + lineNumber] = service.code;
+            crsDataObject['Accommodation.' + lineNumber] = service.accommodation;
+            crsDataObject['Occupancy.' + lineNumber] = service.occupancy;
+            crsDataObject['Count.' + lineNumber] = service.quantity;
+            crsDataObject['From.' + lineNumber] = service.fromDate;
+            crsDataObject['To.' + lineNumber] = service.toDate;
+            crsDataObject['TravAssociation.' + lineNumber] = service.travellerAssociation;
+        });
+    }
+
+    assignTravellers(crsData) {
+        const crsDataObject = crsData.converted.Envelope.Body.TOM;
+
+        crsData.normalized.travellers.forEach((traveller, index) => {
+            const lineNumber = index + 1;
+
+            crsDataObject['Title.' + lineNumber] = traveller.title;
+            crsDataObject['Name.' + lineNumber] = traveller.name;
+            crsDataObject['Reduction.' + lineNumber] = traveller.age;
+        });
+    }
+
+    sendData(crsData) {
         try {
-            this.options.onSetData && this.options.onSetData(xmlObject);
-        } catch (ignore) {
-        }
-
-        try {
-            this.getConnection().FIFramePutData(xml);
+            this.getConnection().FIFramePutData(crsData.build);
+            return Promise.resolve();
         } catch (error) {
-            this.logger.error(error);
-            throw new Error('connection::FIFramePutData: ' + error.message);
+            return Promise.reject(error);
         }
     }
 
-    exit() {
+    cancel() {
         try {
             this.getConnection().FIFrameCancel();
+            return Promise.resolve();
         } catch (error) {
             this.logger.error(error);
-            throw new Error('connection::FIFrameCancel: ' + error.message);
+            return Promise.reject(error);
         }
     }
 
@@ -211,654 +288,11 @@ class TomaAdapter {
             return this.getConnection().GetXmlData();
         } catch (error) {
             this.logger.error(error);
-            throw new Error('connection::GetXmlData: ' + error.message);
+            throw error;
         }
-    }
-
-    /**
-     * @private
-     * @param xmlObject object
-     */
-    mapXmlObjectToAdapterObject(xmlObject) {
-        if (!xmlObject || !xmlObject.Envelope) return;
-
-        let xmlTom = xmlObject.Envelope.Body.TOM;
-        let dataObject = {
-            agencyNumber: xmlTom.AgencyNumber,
-            operator: xmlTom.Operator,
-            numberOfTravellers: xmlTom.NoOfPersons ? xmlTom.NoOfPersons[CONFIG.parserOptions.textNodeName] : void 0,
-            travelType: xmlTom.Traveltype,
-            remark: xmlTom.Remark,
-            services: [],
-        };
-
-        let lineNumber = 1;
-
-        do {
-            let serviceType = xmlTom['KindOfService.' + lineNumber];
-
-            if (!serviceType) break;
-
-            let service;
-
-            switch (serviceType) {
-                case CONFIG.crs.serviceTypes.car: {
-                    service = this.mapCarServiceFromXmlObjectToAdapterObject(xmlTom, lineNumber);
-                    break;
-                }
-                case CONFIG.crs.serviceTypes.hotel: {
-                    service = this.mapHotelServiceFromXmlObjectToAdapterObject(xmlTom, lineNumber);
-                    break;
-                }
-                case CONFIG.crs.serviceTypes.roundTrip: {
-                    service = this.mapRoundTripServiceFromXmlObjectToAdapterObject(xmlTom, lineNumber);
-                    break;
-                }
-                case CONFIG.crs.serviceTypes.camper: {
-                    service = this.mapCamperServiceFromXmlObjectToAdapterObject(xmlTom, lineNumber);
-                    break;
-                }
-            }
-
-            if (service) {
-                service.marked = this.isMarked(xmlTom, lineNumber, service);
-
-                dataObject.services.push(service);
-            }
-        } while (lineNumber++);
-
-        return JSON.parse(JSON.stringify(dataObject));
-    }
-
-    /**
-     * @private
-     * @param xml object
-     * @param lineNumber number
-     * @returns {object}
-     */
-    mapCarServiceFromXmlObjectToAdapterObject(xml, lineNumber) {
-        const mapServiceCodeToService = (code, service) => {
-            if (!code) return;
-
-            const keyRentalCode = 1;
-            const keyVehicleTypeCode = 2;
-            const keySeparator = 3;
-            const keyPickUpLoc = 4;
-            const keyLocDash = 5;
-            const keyDropOffLoc = 6;
-
-            let codeParts = code.match(CONFIG.services.car.serviceCodeRegEx);
-
-            // i.e. MIA or MIA1 or MIA1-TPA
-            if (!codeParts[keySeparator]) {
-                service.pickUpLocation = codeParts[keyRentalCode];
-                service.dropOffLocation = codeParts[keyDropOffLoc];
-
-                return;
-            }
-
-            // i.e USA96/MIA1 or USA96A4/MIA1-TPA"
-            service.rentalCode = codeParts[keyRentalCode];
-            service.vehicleTypeCode = codeParts[keyVehicleTypeCode];
-            service.pickUpLocation = codeParts[keyPickUpLoc];
-            service.dropOffLocation = codeParts[keyDropOffLoc];
-        };
-
-        let pickUpDate = moment(xml['From.' + lineNumber], CONFIG.crs.dateFormat);
-        let dropOffDate = moment(xml['To.' + lineNumber], CONFIG.crs.dateFormat);
-        let pickUpTime = moment(xml['Accommodation.' + lineNumber], CONFIG.crs.timeFormat);
-        let service = {
-            pickUpDate: pickUpDate.isValid() ? pickUpDate.format(this.options.useDateFormat) : xml['From.' + lineNumber],
-            dropOffDate: dropOffDate.isValid() ? dropOffDate.format(this.options.useDateFormat) : xml['To.' + lineNumber],
-            pickUpTime: pickUpTime.isValid() ? pickUpTime.format(this.options.useTimeFormat) : xml['Accommodation.' + lineNumber],
-            duration: pickUpDate.isValid() && dropOffDate.isValid()
-                ? Math.ceil(dropOffDate.diff(pickUpDate, 'days', true))
-                : void 0,
-            type: SERVICE_TYPES.car,
-        };
-
-        mapServiceCodeToService(xml['ServiceCode.' + lineNumber], service);
-
-        return service;
-    }
-
-    /**
-     * @private
-     * @param xml object
-     * @param lineNumber number
-     * @returns {object}
-     */
-    mapHotelServiceFromXmlObjectToAdapterObject(xml, lineNumber) {
-        let serviceCodes = (xml['Accommodation.' + lineNumber] || '').split(' ');
-        let dateFrom = moment(xml['From.' + lineNumber], CONFIG.crs.dateFormat);
-        let dateTo = moment(xml['To.' + lineNumber], CONFIG.crs.dateFormat);
-
-        return {
-            roomCode: serviceCodes[0] || void 0,
-            mealCode: serviceCodes[1] || void 0,
-            roomQuantity: xml['Count.' + lineNumber],
-            roomOccupancy: xml['Occupancy.' + lineNumber],
-            travellers: this.helper.traveller.collectTravellers(
-                xml['TravAssociation.' + lineNumber],
-                (travellerLineNumber) => this.getTravellerByLineNumber(xml, travellerLineNumber)
-            ),
-            destination: xml['ServiceCode.' + lineNumber],
-            dateFrom: dateFrom.isValid() ? dateFrom.format(this.options.useDateFormat) : xml['From.' + lineNumber],
-            dateTo: dateTo.isValid() ? dateTo.format(this.options.useDateFormat) : xml['To.' + lineNumber],
-            type: SERVICE_TYPES.hotel,
-        };
-    }
-
-    /**
-     * @private
-     * @param xml object
-     * @param lineNumber number
-     * @returns {object}
-     */
-    mapRoundTripServiceFromXmlObjectToAdapterObject(xml, lineNumber) {
-        let startDate = moment(xml['From.' + lineNumber], CONFIG.crs.dateFormat);
-        let endDate = moment(xml['To.' + lineNumber], CONFIG.crs.dateFormat);
-
-        const hasBookingId = xml['ServiceCode.' + lineNumber].indexOf('NEZ') === 0;
-
-        return {
-            type: SERVICE_TYPES.roundTrip,
-            bookingId: hasBookingId ? xml['ServiceCode.' + lineNumber].substring(3) : void 0,
-            destination: hasBookingId ? xml['Accommodation.' + lineNumber] : xml['ServiceCode.' + lineNumber],
-            startDate: startDate.isValid() ? startDate.format(this.options.useDateFormat) : xml['From.' + lineNumber],
-            endDate: endDate.isValid() ? endDate.format(this.options.useDateFormat) : xml['To.' + lineNumber],
-            travellers: this.helper.traveller.collectTravellers(
-                xml['TravAssociation.' + lineNumber],
-                (travellerLineNumber) => this.getTravellerByLineNumber(xml, travellerLineNumber)
-            ),
-        };
-    }
-
-    /**
-     * @private
-     * @param xml object
-     * @param lineNumber number
-     * @returns {object}
-     */
-    mapCamperServiceFromXmlObjectToAdapterObject(xml, lineNumber) {
-        const mapServiceCodeToService = (code, service) => {
-            if (!code) return;
-
-            const keyRentalCode = 1;
-            const keyVehicleTypeCode = 2;
-            const keySeparator = 3;
-            const keyPickUpLoc = 4;
-            const keyLocDash = 5;
-            const keyDropOffLoc = 6;
-
-            let codeParts = code.match(CONFIG.services.car.serviceCodeRegEx);
-
-            // i.e. MIA or MIA1 or MIA1-TPA
-            if (!codeParts[keySeparator]) {
-                service.pickUpLocation = codeParts[keyRentalCode];
-                service.dropOffLocation = codeParts[keyDropOffLoc];
-
-                return;
-            }
-
-            // i.e USA96/MIA1 or USA96A4/MIA1-TPA
-            service.renterCode = codeParts[keyRentalCode];
-            service.camperCode = codeParts[keyVehicleTypeCode];
-            service.pickUpLocation = codeParts[keyPickUpLoc];
-            service.dropOffLocation = codeParts[keyDropOffLoc];
-        };
-
-        let pickUpDate = moment(xml['From.' + lineNumber], CONFIG.crs.dateFormat);
-        let dropOffDate = moment(xml['To.' + lineNumber], CONFIG.crs.dateFormat);
-        let pickUpTime = moment(xml['Accommodation.' + lineNumber], CONFIG.crs.timeFormat);
-        let service = {
-            pickUpDate: pickUpDate.isValid() ? pickUpDate.format(this.options.useDateFormat) : xml['From.' + lineNumber],
-            dropOffDate: dropOffDate.isValid() ? dropOffDate.format(this.options.useDateFormat) : xml['To.' + lineNumber],
-            pickUpTime: pickUpTime.isValid() ? pickUpTime.format(this.options.useTimeFormat) : xml['Accommodation.' + lineNumber],
-            duration: pickUpDate.isValid() && dropOffDate.isValid()
-                ? Math.ceil(dropOffDate.diff(pickUpDate, 'days', true))
-                : void 0,
-            milesIncludedPerDay: xml['Count.' + lineNumber],
-            milesPackagesIncluded: xml['Occupancy.' + lineNumber],
-            type: SERVICE_TYPES.camper,
-        };
-
-        mapServiceCodeToService(xml['ServiceCode.' + lineNumber], service);
-
-        return service;
-    }
-
-    /**
-     * @private
-     * @param xml
-     * @param lineNumber
-     * @returns {*}
-     */
-    getTravellerByLineNumber(xml = {}, lineNumber) {
-        if (!xml['Title.' + lineNumber]) {
-            return void 0;
-        }
-
-        const travellerName = xml['Name.' + lineNumber].split(' ');
-        const lastName = travellerName.length > 1 ? travellerName.pop() : void 0;
-        return {
-            gender: Object.entries(CONFIG.crs.gender2SalutationMap).reduce(
-                (reduced, current) => {
-                    reduced[current[1]] = reduced[current[1]] || current[0];
-                    return reduced;
-                },
-                {}
-            )[xml['Title.' + lineNumber]],
-            firstName: travellerName.join(' '),
-            lastName: lastName,
-            age: xml['Reduction.' + lineNumber],
-        };
-    }
-
-    /**
-     * @private
-     * @param xml object
-     * @param lineNumber number
-     * @param service object
-     * @returns {boolean}
-     */
-    isMarked(xml, lineNumber, service) {
-        if (xml['MarkerField.' + lineNumber]) {
-            return true;
-        }
-
-        switch (service.type) {
-            case SERVICE_TYPES.car: {
-                let serviceCode = xml['ServiceCode.' + lineNumber];
-
-                // gaps in the regEx result array will result in lined up "." after the join
-                return !serviceCode || serviceCode.match(CONFIG.services.car.serviceCodeRegEx).join('.').indexOf('..') !== -1;
-            }
-            case SERVICE_TYPES.hotel: {
-                let serviceCode = xml['ServiceCode.' + lineNumber];
-                let accommodation = xml['Accommodation.' + lineNumber];
-
-                return !serviceCode || !accommodation;
-            }
-            case SERVICE_TYPES.camper: {
-                let serviceCode = xml['ServiceCode.' + lineNumber];
-
-                // gaps in the regEx result array will result in lined up "." after the join
-                return !serviceCode || serviceCode.match(CONFIG.services.car.serviceCodeRegEx).join('.').indexOf('..') !== -1;
-            }
-            case SERVICE_TYPES.roundTrip: {
-                let bookingId = xml['ServiceCode.' + lineNumber];
-
-                return !bookingId || bookingId.indexOf(service.bookingId) > -1;
-            }
-        }
-    };
-
-    /**
-     * @private
-     * @param xmlObject object
-     * @param dataObject object
-     */
-    assignAdapterObjectToXmlObject(xmlObject, dataObject = {}) {
-        let xmlTom = xmlObject.Envelope.Body.TOM;
-
-        if (!xmlTom) {
-            xmlTom = {};
-            xmlObject.Envelope.Body.TOM = xmlTom;
-        }
-
-        this.assignBasicData(xmlTom, dataObject);
-
-        (dataObject.services || []).forEach((service) => {
-            let lineNumber = this.getMarkedLineNumberForService(xmlTom, service) || this.getNextEmptyServiceLineNumber(xmlTom);
-
-            switch (service.type) {
-                case SERVICE_TYPES.car: {
-                    this.assignCarServiceFromAdapterObjectToXmlObject(service, xmlTom, lineNumber);
-                    this.assignHotelData(service, xmlTom);
-
-                    break;
-                }
-                case SERVICE_TYPES.hotel: {
-                    this.assignHotelServiceFromAdapterObjectToXmlObject(service, xmlTom, lineNumber);
-                    this.assignHotelTravellersData(service, xmlTom, lineNumber);
-                    break;
-                }
-                case SERVICE_TYPES.camper: {
-                    this.assignCamperServiceFromAdapterObjectToXmlObject(service, xmlTom, lineNumber);
-                    this.assignCamperExtras(service, xmlTom);
-
-                    break;
-                }
-                case SERVICE_TYPES.roundTrip: {
-                    this.assignRoundTripServiceFromAdapterObjectToXmlObject(service, xmlTom, lineNumber);
-                    this.assignRoundTripTravellers(service, xmlTom, lineNumber);
-                    break;
-                }
-                default:
-                    this.logger.warn('type ' + service.type + ' is not supported by the TOMA adapter');
-            }
-        });
-
-        xmlTom.NoOfPersons = Math.max(
-            (xmlTom.NoOfPersons && xmlTom.NoOfPersons[CONFIG.parserOptions.textNodeName]) || 0,
-            this.calculateNumberOfTravellers(xmlTom),
-            dataObject.numberOfTravellers || 0,
-            CONFIG.crs.defaultValues.numberOfTravellers
-        );
-    };
-
-    /**
-     * @private
-     * @param xmlTom object
-     * @param dataObject object
-     */
-    assignBasicData(xmlTom, dataObject) {
-        xmlTom.Action = CONFIG.crs.defaultValues.action;
-        xmlTom.Traveltype = dataObject.travelType || xmlTom.Traveltype || void 0;
-        xmlTom.Remark = [xmlTom.Remark, dataObject.remark].filter(Boolean).join(',') || void 0;
-    }
-
-    /**
-     * @private
-     * @param xml object
-     * @param service object
-     * @returns {number}
-     */
-    getMarkedLineNumberForService(xml, service) {
-        let lineNumber = 1;
-        let markedLineNumber = void 0;
-
-        do {
-            let kindOfService = xml['KindOfService.' + lineNumber];
-
-            if (!kindOfService) return markedLineNumber;
-            if (kindOfService !== CONFIG.crs.serviceTypes[service.type]) continue;
-            if (xml['MarkerField.' + lineNumber]) return lineNumber;
-
-            if (!markedLineNumber && this.isMarked(xml, lineNumber, service)) {
-                markedLineNumber = lineNumber;
-            }
-        } while (lineNumber++);
-    }
-
-    /**
-     * @private
-     * @param service object
-     * @param xml object
-     * @param lineNumber number
-     */
-    assignCarServiceFromAdapterObjectToXmlObject(service, xml, lineNumber) {
-        const reduceExtrasList = (extras) => {
-            return (extras || []).join(';')
-                .replace(/navigationSystem/g, 'GPS')
-                .replace(/childCareSeat0/g, 'BS')
-                .replace(/childCareSeat((\d){1,2})/g, 'CS$1YRS');
-        };
-
-        let pickUpDate = moment(service.pickUpDate, this.options.useDateFormat);
-        let dropOffDate = (service.dropOffDate)
-            ? moment(service.dropOffDate, this.options.useDateFormat)
-            : moment(service.pickUpDate, this.options.useDateFormat).add(service.duration, 'days');
-        let pickUpTime = moment(service.pickUpTime, this.options.useTimeFormat);
-
-        xml['KindOfService.' + lineNumber] = CONFIG.crs.serviceTypes.car;
-
-        // USA96A4/MIA1-TPA
-        xml['ServiceCode.' + lineNumber] = [
-            service.rentalCode,
-            service.vehicleTypeCode,
-            '/',
-            service.pickUpLocation,
-            '-',
-            service.dropOffLocation,
-        ].join('');
-
-        xml['Accommodation.' + lineNumber] = pickUpTime.isValid() ? pickUpTime.format(CONFIG.crs.timeFormat) : service.pickUpTime;
-        xml['From.' + lineNumber] = pickUpDate.isValid ? pickUpDate.format(CONFIG.crs.dateFormat) : service.pickUpDate;
-        xml['To.' + lineNumber] = dropOffDate.isValid() ? dropOffDate.format(CONFIG.crs.dateFormat) : service.dropOffDate;
-
-        xml.Remark = [xml.Remark, reduceExtrasList(service.extras)].filter(Boolean).join(',') || void 0;
-    };
-
-    /**
-     * @private
-     * @param service object
-     * @param xml object
-     */
-    assignHotelData(service, xml) {
-        const reduceHotelDataToRemarkString = (service) => {
-            let hotelData = [];
-
-            if (service.pickUpHotelName) {
-                hotelData.push([service.pickUpHotelAddress, service.pickUpHotelPhoneNumber].filter(Boolean).join(' '));
-            }
-
-            if (service.dropOffHotelName) {
-                if (service.pickUpHotelName) {
-                    hotelData.push(service.dropOffHotelName);
-                }
-
-                hotelData.push([service.dropOffHotelAddress, service.dropOffHotelPhoneNumber].filter(Boolean).join(' '));
-            }
-
-            return hotelData.filter(Boolean).join(';');
-        };
-
-        let hotelName = service.pickUpHotelName || service.dropOffHotelName;
-
-        if (hotelName) {
-            let pickUpDate = moment(service.pickUpDate, this.options.useDateFormat);
-            let dropOffDate = (service.dropOffDate)
-                ? moment(service.dropOffDate, this.options.useDateFormat)
-                : moment(service.pickUpDate, this.options.useDateFormat).add(service.duration, 'days');
-            let lineNumber = this.getNextEmptyServiceLineNumber(xml);
-
-            xml['KindOfService.' + lineNumber] = CONFIG.crs.serviceTypes.carExtra;
-            xml['ServiceCode.' + lineNumber] = hotelName;
-            xml['From.' + lineNumber] = pickUpDate.isValid() ? pickUpDate.format(CONFIG.crs.dateFormat) : service.pickUpDate;
-            xml['To.' + lineNumber] = dropOffDate.isValid() ? dropOffDate.format(CONFIG.crs.dateFormat) : service.dropOffDate;
-        }
-
-        xml.Remark = [xml.Remark, reduceHotelDataToRemarkString(service)].filter(Boolean).join(',') || void 0;
-    }
-
-    /**
-     * @private
-     * @param service object
-     * @param xml object
-     * @param lineNumber number
-     */
-    assignHotelServiceFromAdapterObjectToXmlObject(service, xml, lineNumber) {
-        let dateFrom = moment(service.dateFrom, this.options.useDateFormat);
-        let dateTo = moment(service.dateTo, this.options.useDateFormat);
-        let firstTravellerAssociation = (xml['TravAssociation.' + lineNumber])
-            ? this.helper.traveller.extractFirstTravellerAssociation(xml['TravAssociation.' + lineNumber])
-            : this.calculateNumberOfTravellers(xml) + 1;
-
-        xml['KindOfService.' + lineNumber] = CONFIG.crs.serviceTypes.hotel;
-        xml['ServiceCode.' + lineNumber] = service.destination;
-        xml['Accommodation.' + lineNumber] = [service.roomCode, service.mealCode].join(' ');
-        xml['Occupancy.' + lineNumber] = service.roomOccupancy;
-        xml['Count.' + lineNumber] = service.roomQuantity;
-        xml['From.' + lineNumber] = dateFrom.isValid() ? dateFrom.format(CONFIG.crs.dateFormat) : service.dateFrom;
-        xml['To.' + lineNumber] = dateTo.isValid() ? dateTo.format(CONFIG.crs.dateFormat) : service.dateTo;
-        xml['TravAssociation.' + lineNumber] =
-            this.helper.hotel.calculateTravellerAllocation(service, firstTravellerAssociation);
-    }
-
-    /**
-     * @private
-     * @param service object
-     * @param xml object
-     * @param lineNumber number
-     */
-    assignHotelTravellersData(service, xml, lineNumber) {
-        if (!service.travellers || !service.travellers.length) {
-            return;
-        }
-
-        let travellerLineNumber = void 0;
-
-        service.travellers.forEach((serviceTraveller) => {
-            const traveller = this.helper.traveller.normalizeTraveller(serviceTraveller);
-            travellerLineNumber = this.getNextEmptyTravellerLineNumber(xml);
-
-            xml['Title.' + travellerLineNumber] = traveller.salutation;
-            xml['Name.' + travellerLineNumber] = traveller.name;
-            xml['Reduction.' + travellerLineNumber] = traveller.age;
-        });
-    }
-
-    /**
-     * @private
-     * @param service object
-     * @param xml object
-     * @param lineNumber number
-     */
-    assignRoundTripServiceFromAdapterObjectToXmlObject(service, xml, lineNumber) {
-        let startDate = moment(service.startDate, this.options.useDateFormat);
-        let endDate = moment(service.endDate, this.options.useDateFormat);
-
-        xml['KindOfService.' + lineNumber] = CONFIG.crs.serviceTypes.roundTrip;
-        xml['ServiceCode.' + lineNumber] = service.bookingId ? 'NEZ' + service.bookingId : void 0;
-        xml['Accommodation.' + lineNumber] = service.destination;
-        xml['From.' + lineNumber] = startDate.isValid() ? startDate.format(CONFIG.crs.dateFormat) : service.startDate;
-        xml['To.' + lineNumber] = endDate.isValid() ? endDate.format(CONFIG.crs.dateFormat) : service.endDate;
-    }
-
-    /**
-     * @private
-     * @param service object
-     * @param xml object
-     * @param lineNumber number
-     */
-    assignRoundTripTravellers(service, xml, lineNumber) {
-        if (!service.travellers) return;
-
-        let firstLineNumber = '';
-        let lastLineNumber = '';
-
-        service.travellers.forEach((serviceTraveller) => {
-            const travellerLineNumber = this.getNextEmptyTravellerLineNumber(xml);
-            const traveller = this.helper.traveller.normalizeTraveller(serviceTraveller);
-
-            firstLineNumber = firstLineNumber || travellerLineNumber;
-            lastLineNumber = travellerLineNumber;
-
-            xml['Title.' + travellerLineNumber] = traveller.salutation;
-            xml['Name.' + travellerLineNumber] = traveller.name;
-            xml['Reduction.' + travellerLineNumber] = traveller.age;
-        });
-
-        xml['TravAssociation.' + lineNumber] = firstLineNumber + (firstLineNumber !== lastLineNumber ? '-' + lastLineNumber : '');
-    }
-
-    /**
-     * @private
-     * @param service object
-     * @param xml object
-     * @param lineNumber number
-     */
-    assignCamperServiceFromAdapterObjectToXmlObject(service, xml, lineNumber) {
-        let pickUpDate = moment(service.pickUpDate, this.options.useDateFormat);
-        let dropOffDate = (service.dropOffDate)
-            ? moment(service.dropOffDate, this.options.useDateFormat)
-            : moment(service.pickUpDate, this.options.useDateFormat).add(service.duration, 'days');
-        let pickUpTime = moment(service.pickUpTime, this.options.useTimeFormat);
-
-        xml['KindOfService.' + lineNumber] = CONFIG.crs.serviceTypes.camper;
-
-        // PRT02FS/LIS1-LIS2
-        xml['ServiceCode.' + lineNumber] = [
-            service.renterCode,
-            service.camperCode,
-            '/',
-            service.pickUpLocation,
-            '-',
-            service.dropOffLocation,
-        ].join('');
-
-        xml['Accommodation' + lineNumber] = pickUpTime.isValid() ? pickUpTime.format(CONFIG.crs.timeFormat) : service.pickUpTime;
-        xml['Count.' + lineNumber] = service.milesIncludedPerDay;
-        xml['Occupancy.' + lineNumber] = service.milesPackagesIncluded;
-        xml['From.' + lineNumber] = pickUpDate.isValid() ? pickUpDate.format(CONFIG.crs.dateFormat) : service.pickUpDate;
-        xml['To.' + lineNumber] = dropOffDate.isValid() ? dropOffDate.format(CONFIG.crs.dateFormat) : service.dropOffDate;
-        xml['TravAssociation.' + lineNumber] = '1' + ((xml.NoOfPersons > 1) ? '-' + xml.NoOfPersons : '');
-    }
-
-    /**
-     * @private
-     * @param service object
-     * @param xml object
-     */
-    assignCamperExtras(service, xml) {
-        let pickUpDate = moment(service.pickUpDate, this.options.useDateFormat);
-
-        (service.extras || []).forEach((extra) => {
-            let lineNumber = this.getNextEmptyServiceLineNumber(xml);
-            let extraParts = extra.split('.');
-
-            xml['KindOfService.' + lineNumber] = CONFIG.crs.serviceTypes.camperExtra;
-            xml['ServiceCode.' + lineNumber] = extraParts[0];
-            xml['From.' + lineNumber] = pickUpDate.isValid() ? pickUpDate.format(CONFIG.crs.dateFormat) : service.pickUpDate;
-            xml['To.' + lineNumber] = xml['From.' + lineNumber];
-            xml['TravAssociation.' + lineNumber] = '1' + ((extraParts[1] > 1) ? '-' + extraParts[1] : '');
-        });
-    }
-
-    /**
-     * @private
-     * @param xml object
-     * @returns {number}
-     */
-    getNextEmptyServiceLineNumber(xml) {
-        let lineNumber = 1;
-
-        do {
-            let markerField = xml['MarkerField.' + lineNumber];
-            let xmlServiceType = xml['KindOfService.' + lineNumber];
-            let serviceCode = xml['ServiceCode.' + lineNumber];
-
-            if (!markerField && !xmlServiceType && !serviceCode) {
-                return lineNumber;
-            }
-        } while (lineNumber++);
-    }
-
-    getNextEmptyTravellerLineNumber(xml) {
-        let lineNumber = 1;
-
-        do {
-            let title = xml['Title.' + lineNumber];
-            let name = xml['Name.' + lineNumber];
-            let reduction = xml['Reduction.' + lineNumber];
-
-            if (!title && !name && !reduction) {
-                return lineNumber;
-            }
-        } while (lineNumber++);
-    };
-
-    /**
-     * @private
-     * @param xml object
-     * @returns {number}
-     */
-    calculateNumberOfTravellers(xml) {
-        let lineNumber = 1;
-        let lastTravellerAssociation = 0;
-
-        do {
-            if (!xml['KindOfService.' + lineNumber]) {
-                return lastTravellerAssociation;
-            }
-
-            lastTravellerAssociation = +this.helper.traveller.extractLastTravellerAssociation(
-                xml['TravAssociation.' + lineNumber]
-            );
-        } while (++lineNumber);
     }
 }
+
+TomaAdapter.type = 'toma';
 
 export default TomaAdapter;
