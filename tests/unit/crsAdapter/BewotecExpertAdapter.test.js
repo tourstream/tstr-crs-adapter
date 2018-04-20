@@ -36,18 +36,22 @@ describe('BewotecExpertAdapter', () => {
     });
 
     it('connect() should reject when no token is given', (done) => {
-        adapter.connect().then(() => {
+        adapter.connect().then((data) => {
+            console.log(data);
             done.fail('unexpected result');
         }, (error) => {
+            expect(adapter.connection).toBeFalsy();
             expect(error.message).toBe('Connection option "token" missing.');
             done();
         });
     });
 
     it('connect() should reject if no dataBridgeUrl is given', (done) => {
-        adapter.connect({ token: 'token' }).then(() => {
+        adapter.connect({ token: 'token' }).then((data) => {
+            console.log(data);
             done.fail('unexpected result');
         }, (error) => {
+            expect(adapter.connection).toBeFalsy();
             expect(error.message).toBe('Connection option "dataBridgeUrl" missing.');
             done();
         });
@@ -56,7 +60,8 @@ describe('BewotecExpertAdapter', () => {
     it('connect() should reject when the connection to expert mask is not possible', (done) => {
         axios.get.and.throwError('expert mask not available');
 
-        adapter.connect({ token: 'token', dataBridgeUrl: 'dataBridgeUrl' }).then(() => {
+        adapter.connect({ token: 'token', dataBridgeUrl: 'dataBridgeUrl' }).then((data) => {
+            console.log(data);
             done.fail('unexpected result');
         }, (error) => {
             expect(error.message).toBe('expert mask not available');
@@ -65,7 +70,11 @@ describe('BewotecExpertAdapter', () => {
     });
 
     it('connect() should create connection on error because the expert mask returns a 404 in case of an empty mask', (done) => {
-        axios.get.and.returnValue(Promise.reject(new Error('empty expert mask')));
+        axios.get.and.returnValue(Promise.reject({
+            response: {
+                status: 404
+            }
+        }));
 
         adapter.connect({ token: 'token', dataBridgeUrl: 'dataBridgeUrl' }).then(() => {
             expect(adapter.connection).toBeTruthy();
@@ -73,6 +82,23 @@ describe('BewotecExpertAdapter', () => {
         }, (error) => {
             console.log(error.message);
             done.fail('unexpected result');
+        });
+    });
+
+    it('connect() should reject on error', (done) => {
+        axios.get.and.returnValue(Promise.reject({
+            response: {
+                status: 500
+            },
+            message: 'Not Found'
+        }));
+
+        adapter.connect({ token: 'token', dataBridgeUrl: 'dataBridgeUrl' }).then((data) => {
+            console.log(data);
+            done.fail('unexpected result');
+        }, (error) => {
+            expect(error.message).toBe('Not Found');
+            done();
         });
     });
 
@@ -92,7 +118,8 @@ describe('BewotecExpertAdapter', () => {
         });
 
         it('connect() should reject if no connection to data bridge is possible', (done) => {
-            adapter.connect({ token: 'token', dataBridgeUrl: 'dataBridgeUrl' }).then(() => {
+            adapter.connect({ token: 'token', dataBridgeUrl: 'dataBridgeUrl' }).then((data) => {
+                console.log(data);
                 done.fail('unexpected result');
             }, (error) => {
                 expect(error.message).toBe('can not establish connection to bewotec data bridge');
@@ -106,16 +133,41 @@ describe('BewotecExpertAdapter', () => {
                 callback({ data: { name: 'unknown' } });
                 callback({ data: {
                     name: 'bewotecDataTransfer',
-                    error: 'transfer error',
+                    errorMessage: 'transfer error',
                 } });
             });
 
-            adapter.connect({ token: 'token', dataBridgeUrl: 'dataBridgeUrl' }).then(() => {
+            adapter.connect({ token: 'token', dataBridgeUrl: 'dataBridgeUrl' }).then((data) => {
+                console.log(data);
                 done.fail('unexpected result');
             }, (error) => {
                 expect(windowSpy.open.calls.mostRecent().args[0]).toBe('dataBridgeUrl?token=token');
                 expect(error.message).toBe('transfer error');
                 done();
+            });
+        });
+
+        it('connect() should create connection on error if data bridge returns a 404', (done) => {
+            windowSpy.open.and.returnValue('newWindowRef');
+            windowSpy.addEventListener.and.callFake((eventName, callback) => {
+                callback({ data: { name: 'unknown' } });
+                callback({ data: {
+                    name: 'bewotecDataTransfer',
+                    errorMessage: 'transfer error',
+                    error: {
+                        response: {
+                            status: 404
+                        },
+                    },
+                } });
+            });
+
+            adapter.connect({ token: 'token', dataBridgeUrl: 'dataBridgeUrl' }).then((data) => {
+                expect(adapter.connection).toBeTruthy();
+                done();
+            }, (error) => {
+                console.log(error);
+                done.fail('unexpected result');
             });
         });
 
@@ -129,6 +181,7 @@ describe('BewotecExpertAdapter', () => {
             });
 
             adapter.connect({ token: 'token', dataBridgeUrl: 'dataBridgeUrl' }).then(() => {
+                expect(adapter.connection).toBeTruthy();
                 done();
             }, (error) => {
                 console.log(error.message);
@@ -141,6 +194,7 @@ describe('BewotecExpertAdapter', () => {
         adapter.sendData().then(() => {
             done.fail('unexpected result');
         }, (error) => {
+            expect(adapter.connection).toBeFalsy();
             expect(error.toString()).toEqual(
                 'Error: No connection available - please connect to Bewotec application first.'
             );
