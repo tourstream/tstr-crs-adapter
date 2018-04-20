@@ -15,9 +15,11 @@ class CamperServiceMapper {
 
         const pickUpDate = crsService.fromDate ? moment(crsService.fromDate, dataDefinition.formats.date) : void 0;
         const dropOffDate = crsService.toDate ? moment(crsService.toDate, dataDefinition.formats.date) : void 0;
+        const pickUpTime = crsService.accommodation ? moment(crsService.accommodation, dataDefinition.formats.time) : void 0;
         const adapterService = {
             pickUpDate: pickUpDate && pickUpDate.isValid() ? pickUpDate.format(this.config.useDateFormat) : crsService.fromDate,
             dropOffDate: dropOffDate && dropOffDate.isValid() ? dropOffDate.format(this.config.useDateFormat) : crsService.toDate,
+            pickUpTime: pickUpTime && pickUpTime.isValid() ? pickUpTime.format(this.config.useTimeFormat) : crsService.accommodation,
             milesIncludedPerDay: crsService.quantity,
             milesPackagesIncluded: crsService.occupancy,
         };

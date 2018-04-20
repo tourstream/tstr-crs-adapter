@@ -34,6 +34,7 @@ describe('CamperServiceMapper', () => {
             code: 'code',
             occupancy: '5',
             quantity: '100',
+            accommodation: '0940',
             fromDate: '2018-03-16',
             toDate: '2018-03-21',
         };
@@ -55,6 +56,7 @@ describe('CamperServiceMapper', () => {
         expect(mapper.mapToAdapterService(crsService, metaData)).toEqual({
             pickUpDate: '16032018',
             dropOffDate: '21032018',
+            pickUpTime: '0940',
             milesIncludedPerDay: '100',
             milesPackagesIncluded: '5',
             renterCode: 'renterCode',
