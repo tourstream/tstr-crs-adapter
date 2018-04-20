@@ -19,6 +19,7 @@ class CamperServiceReducer {
         const crsService = this.findCrsService(adapterService, crsData) || this.createEmptyService(crsData);
         const pickUpDate = moment(adapterService.pickUpDate, this.config.useDateFormat);
         const dropOffDate = moment(adapterService.dropOffDate, this.config.useDateFormat);
+        const pickUpTime = moment(adapterService.pickUpTime, this.config.useTimeFormat);
 
         crsService.type = crsData.meta.serviceTypes.camper;
         crsService.marker = adapterService.marked ? 'X' : void 0;
@@ -27,6 +28,7 @@ class CamperServiceReducer {
         crsService.occupancy = adapterService.milesPackagesIncluded;
         crsService.fromDate = pickUpDate.isValid() ? pickUpDate.format(crsData.meta.formats.date) : adapterService.pickUpDate;
         crsService.toDate = dropOffDate.isValid() ? dropOffDate.format(crsData.meta.formats.date) : adapterService.dropOffDate;
+        crsService.accommodation = pickUpTime.isValid() ? pickUpTime.format(crsData.meta.formats.time) : adapterService.pickUpTime;
 
         const startAssociation = this.helper.traveller.calculateStartAssociation({}, crsData) || 1;
 
