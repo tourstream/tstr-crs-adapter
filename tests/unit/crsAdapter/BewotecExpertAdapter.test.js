@@ -436,9 +436,21 @@ describe('BewotecExpertAdapter', () => {
             });
         });
 
-        it('cancel() should return nothing', (done) => {
+        it('cancel() should not fail', (done) => {
             adapter.cancel().then(done, () => {
                 done.fail('unexpected result');
+            });
+        });
+
+        it('exit() should fail due send error', (done) => {
+            axios.get.and.returnValue(Promise.reject(new Error('network.error')));
+
+            adapter.cancel().then((data) => {
+                console.log(data);
+                done.fail('unexpected result');
+            }, (error) => {
+                expect(error.toString()).toBe('Error: network.error');
+                done();
             });
         });
     });
