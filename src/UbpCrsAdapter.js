@@ -26,6 +26,7 @@ import CarServiceReducer from './reducer/CarServiceReducer';
 import HotelServiceReducer from './reducer/HotelServiceReducer';
 import RoundTripServiceReducer from './reducer/RoundTripServiceReducer';
 import CamperServiceReducer from './reducer/CamperServiceReducer';
+import DefaultServiceReducer from './reducer/DefaultServiceReducer';
 
 const SERVICE_TYPES = {
     car: 'car',
@@ -258,6 +259,7 @@ class UbpCrsAdapter {
                         [SERVICE_TYPES.hotel]: new HotelServiceReducer(this.logger, this.options, helper),
                         [SERVICE_TYPES.roundTrip]: new RoundTripServiceReducer(this.logger, this.options, helper),
                         [SERVICE_TYPES.camper]: new CamperServiceReducer(this.logger, this.options, helper),
+                        ['default']: new DefaultServiceReducer(this.logger, this.options, helper),
                     };
                     const dataReducer = new AdapterDataReducer(this.logger, this.options, reducer, helper);
                     const reducedData = dataReducer.reduceIntoCrsData(adapterData, crsData);

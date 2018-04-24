@@ -24,7 +24,9 @@ class AdapterDataReducer {
         crsData.normalized.remark = [crsData.normalized.remark, adapterData.remark].filter(Boolean).join(';') || void 0;
 
         adapterData.services.forEach((adapterService) => {
-            const reducer = this.reducer[adapterService.type];
+            const reducer = adapterService.type
+                ? this.reducer[adapterService.type]
+                : this.reducer.default;
 
             if (!reducer) {
                 this.logger.warn('[.reduceIntoCrsData] service type "' + adapterService.type + '" is not supported');
