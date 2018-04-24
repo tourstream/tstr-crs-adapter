@@ -270,6 +270,22 @@ Tosi       | X     | X     | X         | X
 `.pickUpTime` format is changeable by setting `adapterOptions.useTimeFormat`.
 
 
+###### unknown `.type`
+
+```
+{
+  ...,
+  type: 'TY',
+  code: 'CODE',
+  accommodation: '42',
+  occupancy: '300', 
+  quantity: '3',
+  fromDate: '10102017',
+  toDate: '20102017',
+}
+```
+
+
 ## Debugging
 
 Sadly the debugging in some CRS is not possible but the adapter nevertheless provides some debugging output - 
