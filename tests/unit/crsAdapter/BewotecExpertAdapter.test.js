@@ -12,13 +12,12 @@ describe('BewotecExpertAdapter', () => {
         locationHrefSpy = jasmine.createSpyObj('locationHrefSpy', ['indexOf']);
         locationHrefSpy.indexOf.and.returnValue(-1);
 
-        windowSpy = jasmine.createSpyObj('WindowSpy', ['addEventListener', 'open']);
+        windowSpy = require('tests/unit/_mocks/Window')();
         windowSpy.location = {
             href: locationHrefSpy,
         };
 
         axios = require('tests/unit/_mocks/Axios')();
-
         axios.get.and.callFake((url, parameter) => {
             requestUrl = url;
             requestParameter = parameter;
@@ -121,7 +120,7 @@ describe('BewotecExpertAdapter', () => {
                 console.log(data);
                 done.fail('unexpected result');
             }, (error) => {
-                expect(error.message).toBe('can not establish connection to bewotec data bridge');
+                expect(error.message).toBe('bewotec data bridge window can not be opened');
                 done();
             });
         });
@@ -187,6 +186,31 @@ describe('BewotecExpertAdapter', () => {
                 done.fail('unexpected result');
             });
         });
+
+        it('connect() should close known bridge window before opening a new one', (done) => {
+            windowSpy.open.and.returnValue('newWindowRef');
+            windowSpy.addEventListener.and.callFake((eventName, callback) => {
+                callback({ data: {
+                        name: 'bewotecDataTransfer',
+                        some: 'data',
+                    } });
+            });
+
+            const closeSpy = jasmine.createSpy('closeSpy');
+
+            adapter.bridgeWindow = {
+                closed: false,
+                close: closeSpy,
+            };
+
+            adapter.connect({ token: 'token', dataBridgeUrl: 'dataBridgeUrl' }).then(() => {
+                expect(closeSpy).toHaveBeenCalled();
+                done();
+            }, (error) => {
+                console.log(error.message);
+                done.fail('unexpected result');
+            });
+        });
     });
 
     it('sendData() should throw error if no connection is available', (done) => {
@@ -212,7 +236,7 @@ describe('BewotecExpertAdapter', () => {
             adapter.fetchData().then(() => {
                 done.fail('unexpected result');
             }, (error) => {
-                expect(error.message).toBe('can not establish connection to bewotec data bridge');
+                expect(error.message).toBe('bewotec data bridge window can not be opened');
                 done();
             });
         });
