@@ -19,7 +19,6 @@ describe('BewotecExpertAdapter', () => {
 
         axios = require('tests/unit/_mocks/Axios')();
 
-        axios.defaults = {headers: {get: {}}};
         axios.get.and.callFake((url, parameter) => {
             requestUrl = url;
             requestParameter = parameter;

@@ -246,8 +246,6 @@ class BewotecExpertAdapter {
             return data;
         };
 
-        axios.defaults.headers.get['Cache-Control'] = 'no-cache,no-store,must-revalidate,max-age=-1,private';
-
         return {
             get: () => {
                 if (this.options.crsType === CRS_TYPES.jackPlus) {
