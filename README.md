@@ -45,12 +45,12 @@ ubpCrsAdapter.getData().then((crsData) => {});
 The `crsData` you get is an `<CrsData>` object and will look like that:
 ```
 {
-    agencyNumber: string,
-    operator: string,
-    numberOfTravellers: string,
-    travelType: string,
-    services: Array<ServiceData>,
-    remark: string,
+    agencyNumber: '123456',
+    operator: 'TOUR',
+    numberOfTravellers: 3,
+    travelType: 'TYPE',
+    services: [ServiceData],
+    remark: 'what i remark',
 }
 ```
 
@@ -126,12 +126,35 @@ The example code for this page is provided [here](/bewotec-bridge).
 **[Cosmo / CosmoNaut]** _dataSourceUrl_ is an url from where the CRS can get the IBE data from
 
 
-### `<ServiceData>` object structure
+### `ServiceData` object structure
 
-Depending on the `<ServiceData>.type` the structure of a `<ServiceData>` object differs.
+Every service has following base fields:
+
+```
+{
+  marked: true / false,
+  travellers: [ 
+    { 
+      gender: TravellerGender, 
+      firstName: 'john', 
+      lastName: 'doe', 
+      age: '32' 
+    }, 
+    ...,
+  ],
+  ...,
+}
+```
+
+Where `travellers[*].gender / TravellerGender` is one of **'female', 'male', 'child', 'infant'**.
+
+`.marked` is by default falsy. But if this service is either "marked" 
+or detected as "marked" (depends on the type) it will be `true`.
+
+Depending on the `ServiceData.type` the structure of a `ServiceData` object differs.
 
 
-#### Supported `<ServiceData>.type`
+#### Supported `ServiceData.type`
 
 You can check the currently supported service types with `UbpCrsAdapter.SERVICE_TYPES`.
 
@@ -148,62 +171,103 @@ CosmoNaut  | X     | X     | X         | X
 Tosi       | X     | X     | X         | X
 
 
-##### `<ServiceData>` structure
+##### `ServiceData` structure
 
-| type | fields                   | example
-| :---  | :---                     | :---
-| car   | .vehicleCode             | 'E4' 
-|       | .renterCode              | 'DEU85' 
-|       | .pickUpLocation          | 'BER3' 
-|       | .pickUpDate              | '28122017' 
-|       | .pickUpTime              | '0915' 
-|       | .pickUpHotelName         | 'Best Hotel' 
-|       | .pickUpHotelAddress      | 'hotel street 1, 12345 hotel city' 
-|       | .pickUpHotelPhoneNumber  | '+49 172 678 0832 09' 
-|       | .dropOffLocation         | 'MUC' 
-|       | .dropOffDate             | '04012018'   
-|       | .dropOffHotelName        | 'Very Best Hotel' 
-|       | .dropOffHotelAddress     | 'hotel drive 34a, famous place' 
-|       | .dropOffHotelPhoneNumber | '04031989213' 
-|       | .extras                  | ['GPS', 'CS3YRS', 'BS', '...'] 
+###### Type Car
 
-| type    | fields         | example
-| :---    | :---           | :---
-| hotel   | .roomCode      | 'DZ' 
-|         | .mealCode      | 'U' 
-|         | .roomQuantity  | '2'
-|         | .roomOccupancy | '4'
-|         | .destination   | 'LAX20S' 
-|         | .dateFrom      | '20092017' 
-|         | .dateTo        | '20092017' 
-|         | .travellers    | [ { gender: _-gender-_, firstName: 'john', lastName: 'doe', age: '32' }, ... ]
+```
+{
+  ...,
+  type: 'car',
+  vehicleCode: 'E4',
+  renterCode: 'DEU85',
+  pickUpLocation: 'BER3',
+  pickUpDate: '28122017',
+  pickUpTime: '0915',
+  pickUpHotelName: 'Best Hotel',
+  pickUpHotelAddress: 'hotel street 1, 12345 hotel city', 
+  pickUpHotelPhoneNumber: '+49 172 678 0832 09', 
+  dropOffLocation: 'MUC',
+  dropOffDate: '04012018',
+  dropOffHotelName: 'Very Best Hotel',
+  dropOffHotelAddress: 'hotel drive 34a, famous place', 
+  dropOffHotelPhoneNumber: '04031989213',
+  extras: ['GPS', 'CS3YRS', 'BS', '...'],
+}
+```
 
-| type      | fields       | example
-| :---      | :---         | :---
-| roundTrip | .bookingId   | 'E2784NQXTHEN' 
-|           | .destination | 'YYZ' 
-|           | .startDate   | '05122017' 
-|           | .endDate     | '16122017'
-|           | .travellers  | [ { gender: _-gender-_, firstName: 'john', lastName: 'doe', age: '32' }, ... ]
+`.pickUpDate, .dropOffDate` format is changeable by setting `adapterOptions.useDateFormat`.
 
- 
-| type     | fields                 | example
-| :---     | :---                   | :---
-| camper   | .renterCode            | 'PRT02' 
-|          | .vehicleCode           | 'FS' 
-|          | .pickUpLocation        | 'LIS1' 
-|          | .pickUpDate            | '10102017' 
-|          | .pickUpTime            | '0915' 
-|          | .dropOffLocation       | 'LIS2' 
-|          | .dropOffDate           | '17102017' 
-|          | .milesIncludedPerDay   | '300' 
-|          | .milesPackagesIncluded | '3' 
-|          | .extras                | [ { code: 'ECX0001', amount: '2' }, { code: 'USA740', amount: '1' }, ... ]
+`.pickUpTime` format is changeable by setting `adapterOptions.useTimeFormat`.
 
-_-gender-_ is one of **'female', 'male', 'child', 'infant'**
 
-Additionally every service has a `.marked` field which is by default falsy.
-But if this service is either "marked" in the crs or detected as "marked" (depends on the type) it will be true.
+###### Type Hotel
+
+```
+{
+  ...,
+  type: 'hotel',
+  roomCode: 'DZ', 
+  mealCode: 'U',
+  roomQuantity: '2',
+  roomOccupancy: '4',
+  destination: 'LAX20S', 
+  dateFrom: '20092017', 
+  dateTo: '20092017',
+}
+```
+
+`.dateFrom, .dateTo` format is changeable by setting `adapterOptions.useDateFormat`.
+
+
+###### Type RoundTrip
+
+```
+{
+  ...,
+  type: 'roundTrip',
+  bookingId: 'E2784NQXTHEN', 
+  destination: 'YYZ', 
+  startDate: '05122017', 
+  endDate: '16122017',
+}
+```
+
+`.startDate, .endDate` format is changeable by setting `adapterOptions.useDateFormat`.
+
+
+###### Type Camper
+
+```
+{
+  ...,
+  type: 'camper',
+  vehicleCode: 'FS',
+  renterCode: 'PRT02',
+  pickUpLocation: 'LIS1',
+  pickUpDate: '10102017',
+  pickUpTime: '0915',
+  dropOffLocation: 'LIS2',
+  dropOffDate: '17102017',
+  milesIncludedPerDay: '300', 
+  milesPackagesIncluded: '3',
+  extras: [ 
+    { 
+      code: 'ECX0001', 
+      amount: '2' 
+    }, 
+    { 
+      code: 'USA740', 
+      amount: '1' 
+    }, 
+    ..., 
+  ],
+}
+```
+
+`.pickUpDate, .dropOffDate` format is changeable by setting `adapterOptions.useDateFormat`.
+
+`.pickUpTime` format is changeable by setting `adapterOptions.useTimeFormat`.
 
 
 ## Debugging
