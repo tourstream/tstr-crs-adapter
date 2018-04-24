@@ -22,15 +22,15 @@
             <h2>Select the CRS to which you want to transfer data:</h2>
 
             <div id="crs-selection">
-                <button type="button" class="btn btn-outline-primary" value="toma">TOMA (old)</button>
-                <button type="button" class="btn btn-outline-primary" value="toma2">TOMA (new)</button>
-                <button type="button" class="btn btn-outline-primary" value="cets">CETS</button>
-                <button type="button" class="btn btn-outline-primary" value="merlin">Merlin</button>
-                <button type="button" class="btn btn-outline-primary" value="myjack">MyJack</button>
-                <button type="button" class="btn btn-outline-primary" value="jackplus">Jack+</button>
-                <button type="button" class="btn btn-outline-primary" value="traffics">Cosmo</button>
-                <button type="button" class="btn btn-outline-primary" value="traffics">CosmoNaut</button>
-                <button type="button" class="btn btn-outline-primary" value="tosi">TOSI</button>
+                <button type="button" data-toggle="button" class="btn btn-outline-primary" value="toma">TOMA (old)</button>
+                <button type="button" data-toggle="button" class="btn btn-outline-primary" value="toma2">TOMA (new)</button>
+                <button type="button" data-toggle="button" class="btn btn-outline-primary" value="cets">CETS</button>
+                <button type="button" data-toggle="button" class="btn btn-outline-primary" value="merlin">Merlin</button>
+                <button type="button" data-toggle="button" class="btn btn-outline-primary" value="myjack">MyJack</button>
+                <button type="button" data-toggle="button" class="btn btn-outline-primary" value="jackplus">Jack+</button>
+                <button type="button" data-toggle="button" class="btn btn-outline-primary" value="traffics">Cosmo</button>
+                <button type="button" data-toggle="button" class="btn btn-outline-primary" value="traffics">CosmoNaut</button>
+                <button type="button" data-toggle="button" class="btn btn-outline-primary" value="tosi">TOSI</button>
 
                 <span class="mx-4">
                     <button name="connect" class="btn btn-success btn-outline-success" id="connect-button">
@@ -48,10 +48,10 @@
             <h2>Select the product type you want to transfer:</h2>
 
             <div id="product-selection">
-                <button type="button" class="btn btn-outline-primary" value="car">car</button>
-                <button type="button" class="btn btn-outline-primary" value="hotel">hotel</button>
-                <button type="button" class="btn btn-outline-primary" value="roundTrip">round trip</button>
-                <button type="button" class="btn btn-outline-primary" value="camper">camper</button>
+                <button type="button" data-toggle="button" class="btn btn-outline-primary" value="car">car</button>
+                <button type="button" data-toggle="button" class="btn btn-outline-primary" value="hotel">hotel</button>
+                <button type="button" data-toggle="button" class="btn btn-outline-primary" value="roundTrip">round trip</button>
+                <button type="button" data-toggle="button" class="btn btn-outline-primary" value="camper">camper</button>
 
                 <span class="mx-4">
                     <button name="get" class="btn btn-outline-warning">
@@ -75,7 +75,10 @@
         </div>
     </div>
 
-    <form id="product" class="form my-2"></form>
+    <form id="product" class="form my-2">
+        <span id="product-base"></span>
+        <span id="product-service"></span>
+    </form>
 
     <div id="templates" hidden>
         <div id="form-field-template" class="input-group">
@@ -327,6 +330,6 @@
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js" integrity="sha384-alpBpkh1PFOepccYVYDB4do5UnbKysX5WZXm3XxPqe5iKTfUKjNkCk9SaVuEZflJ" crossorigin="anonymous"></script>
 
 <script type="application/javascript" src="assets/ubpCrsAdapter.js"></script>
-<script type="application/javascript" src="assets/helpers.js"></script>
+<script type="application/javascript" src="assets/scripts.js"></script>
 </body>
 </html>
