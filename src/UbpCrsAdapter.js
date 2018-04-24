@@ -2,13 +2,13 @@ import 'polyfills';
 
 import LogService from 'LogService';
 
-import TomaAdapter from 'crsAdapter/TomaAdapter';
-import TomaSPCAdapter from 'crsAdapter/TomaSPCAdapter';
-import CetsAdapter from 'crsAdapter/CetsAdapter';
-import MerlinAdapter from 'crsAdapter/MerlinAdapter';
+import AmadeusTomaAdapter from 'crsAdapter/AmadeusTomaAdapter';
+import AmadeusSPCTomaAdapter from 'crsAdapter/AmadeusSPCTomaAdapter';
+import TravelportCetsAdapter from 'crsAdapter/TravelportCetsAdapter';
+import SabreMerlinAdapter from 'crsAdapter/SabreMerlinAdapter';
 import BewotecExpertAdapter from 'crsAdapter/BewotecExpertAdapter';
 import TrafficsTbmAdapter from 'crsAdapter/TrafficsTbmAdapter';
-import TosiAdapter from 'crsAdapter/TosiAdapter';
+import FtiTosiAdapter from 'crsAdapter/FtiTosiAdapter';
 
 import VehicleHelper from './helper/VehicleHelper';
 import HotelHelper from './helper/HotelHelper';
@@ -87,15 +87,15 @@ const GENDER_TYPES = {
 };
 
 const CRS_TYPE_2_ADAPTER_MAP = {
-    [CRS_TYPES.toma]: TomaAdapter,
-    [CRS_TYPES.toma2]: TomaSPCAdapter,
-    [CRS_TYPES.cets]: CetsAdapter,
-    [CRS_TYPES.merlin]: MerlinAdapter,
+    [CRS_TYPES.toma]: AmadeusTomaAdapter,
+    [CRS_TYPES.toma2]: AmadeusSPCTomaAdapter,
+    [CRS_TYPES.cets]: TravelportCetsAdapter,
+    [CRS_TYPES.merlin]: SabreMerlinAdapter,
     [CRS_TYPES.myJack]: BewotecExpertAdapter,
     [CRS_TYPES.jackPlus]: BewotecExpertAdapter,
     [CRS_TYPES.cosmo]: TrafficsTbmAdapter,
     [CRS_TYPES.cosmoNaut]: TrafficsTbmAdapter,
-    [CRS_TYPES.tosi]: TosiAdapter,
+    [CRS_TYPES.tosi]: FtiTosiAdapter,
 };
 
 const DEFAULT_OPTIONS = {
@@ -169,7 +169,7 @@ class UbpCrsAdapter {
             try {
                 const adapterInstance = this.getAdapterInstance();
 
-                if (this.options.crsType === CetsAdapter.type) {
+                if (this.options.crsType === TravelportCetsAdapter.type) {
                     try {
                         resolve(adapterInstance.fetchData());
                     } catch (error) {
@@ -230,7 +230,7 @@ class UbpCrsAdapter {
 
                 const adapterInstance = this.getAdapterInstance();
 
-                if (this.options.crsType === CetsAdapter.type) {
+                if (this.options.crsType === TravelportCetsAdapter.type) {
                     try {
                         adapterInstance.sendData(adapterData);
                         resolve();

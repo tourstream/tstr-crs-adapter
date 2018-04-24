@@ -55,7 +55,7 @@ const CONFIG = {
     },
 };
 
-class TomaAdapter {
+class AmadeusTomaAdapter {
     constructor(logger, options = {}) {
         this.options = options;
         this.logger = logger;
@@ -118,7 +118,7 @@ class TomaAdapter {
                         date: CONFIG.crs.dateFormat,
                         time: CONFIG.crs.timeFormat,
                     },
-                    type: TomaAdapter.type,
+                    type: AmadeusTomaAdapter.type,
                 },
             });
         } catch(error) {
@@ -293,6 +293,6 @@ class TomaAdapter {
     }
 }
 
-TomaAdapter.type = 'toma';
+AmadeusTomaAdapter.type = 'toma';
 
-export default TomaAdapter;
+export default AmadeusTomaAdapter;

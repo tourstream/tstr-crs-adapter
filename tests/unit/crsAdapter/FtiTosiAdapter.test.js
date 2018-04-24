@@ -1,7 +1,7 @@
-import injector from 'inject!../../../src/crsAdapter/TosiAdapter';
+import injector from 'inject!../../../src/crsAdapter/FtiTosiAdapter';
 import {DEFAULT_OPTIONS} from '../../../src/UbpCrsAdapter';
 
-describe('TosiAdapter', () => {
+describe('FtiTosiAdapter', () => {
     const xmlHead = '<?xml version="1.0" encoding="UTF-8"?>';
 
     let adapter, TosiAdapter, axios, requestParameter, logService;

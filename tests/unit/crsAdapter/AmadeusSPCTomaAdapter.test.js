@@ -1,13 +1,13 @@
-import TomaSPCAdapter from '../../../src/crsAdapter/TomaSPCAdapter';
+import AmadeusSPCTomaAdapter from '../../../src/crsAdapter/AmadeusSPCTomaAdapter';
 import {DEFAULT_OPTIONS} from '../../../src/UbpCrsAdapter';
 
-describe('TomaSPCAdapter', () => {
+describe('AmadeusSPCTomaAdapter', () => {
     let adapter, documentHeadAppendChildSpy, TomaSPCConnection;
 
     beforeEach(() => {
         let logService = require('tests/unit/_mocks/LogService')();
 
-        adapter = new TomaSPCAdapter(logService, DEFAULT_OPTIONS);
+        adapter = new AmadeusSPCTomaAdapter(logService, DEFAULT_OPTIONS);
 
         documentHeadAppendChildSpy = spyOn(document.head, 'appendChild');
         documentHeadAppendChildSpy.and.callFake((script) => script.onload());
@@ -235,7 +235,7 @@ describe('TomaSPCAdapter', () => {
                         date: 'DDMMYY',
                         time: 'HHmm'
                     },
-                    type: TomaSPCAdapter.type,
+                    type: AmadeusSPCTomaAdapter.type,
                 });
 
                 expect(result.normalized).toEqual({

@@ -1,11 +1,11 @@
 import injector from 'inject!../../src/UbpCrsAdapter';
-import CetsAdapter from '../../src/crsAdapter/CetsAdapter';
-import TomaAdapter from '../../src/crsAdapter/TomaAdapter';
-import TomaSPCAdapter from '../../src/crsAdapter/TomaSPCAdapter';
+import TravelportCetsAdapter from '../../src/crsAdapter/TravelportCetsAdapter';
+import AmadeusTomaAdapter from '../../src/crsAdapter/AmadeusTomaAdapter';
+import AmadeusSPCTomaAdapter from '../../src/crsAdapter/AmadeusSPCTomaAdapter';
 import BewotecExpertAdapter from '../../src/crsAdapter/BewotecExpertAdapter';
-import MerlinAdapter from '../../src/crsAdapter/MerlinAdapter';
+import SabreMerlinAdapter from '../../src/crsAdapter/SabreMerlinAdapter';
 import TrafficsTbmAdapter from '../../src/crsAdapter/TrafficsTbmAdapter';
-import TosiAdapter from '../../src/crsAdapter/TosiAdapter';
+import FtiTosiAdapter from '../../src/crsAdapter/FtiTosiAdapter';
 
 describe('UbpCrsAdapter', () => {
     let UbpCrsAdapter, AnyCrsAdapter, LogService, CrsDataMapper, AdapterDataReducer;
@@ -26,13 +26,13 @@ describe('UbpCrsAdapter', () => {
         LogService = require('tests/unit/_mocks/LogService');
         UbpCrsAdapter = injector({
             'LogService': LogService,
-            'crsAdapter/TomaAdapter': createCrsAdapterImport(TomaAdapter.type),
-            'crsAdapter/TomaSPCAdapter': createCrsAdapterImport(TomaSPCAdapter.type),
-            'crsAdapter/CetsAdapter': createCrsAdapterImport(CetsAdapter.type),
+            'crsAdapter/AmadeusTomaAdapter': createCrsAdapterImport(AmadeusTomaAdapter.type),
+            'crsAdapter/AmadeusSPCTomaAdapter': createCrsAdapterImport(AmadeusSPCTomaAdapter.type),
+            'crsAdapter/TravelportCetsAdapter': createCrsAdapterImport(TravelportCetsAdapter.type),
             'crsAdapter/BewotecExpertAdapter': createCrsAdapterImport(BewotecExpertAdapter.type),
-            'crsAdapter/MerlinAdapter': createCrsAdapterImport(MerlinAdapter.type),
+            'crsAdapter/SabreMerlinAdapter': createCrsAdapterImport(SabreMerlinAdapter.type),
             'crsAdapter/TrafficsTbmAdapter': createCrsAdapterImport(TrafficsTbmAdapter.type),
-            'crsAdapter/TosiAdapter': createCrsAdapterImport(TosiAdapter.type),
+            'crsAdapter/FtiTosiAdapter': createCrsAdapterImport(FtiTosiAdapter.type),
             './mapper/CrsDataMapper': jasmine.createSpy('CrsDataMapperSpy').and.returnValue(CrsDataMapper),
             './reducer/AdapterDataReducer': jasmine.createSpy('AdapterDataReducerSpy').and.returnValue(AdapterDataReducer),
         });

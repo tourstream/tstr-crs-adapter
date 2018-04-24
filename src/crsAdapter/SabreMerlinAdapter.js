@@ -6,7 +6,7 @@ import fastXmlParser from 'fast-xml-parser';
 
 let CONFIG;
 
-class MerlinAdapter {
+class SabreMerlinAdapter {
     constructor(logger, options = {}) {
         CONFIG = {
             crs: {
@@ -119,7 +119,7 @@ class MerlinAdapter {
                         date: CONFIG.crs.dateFormat,
                         time: CONFIG.crs.timeFormat,
                     },
-                    type: MerlinAdapter.type,
+                    type: SabreMerlinAdapter.type,
                 },
             };
         });
@@ -296,6 +296,6 @@ class MerlinAdapter {
     }
 }
 
-MerlinAdapter.type = 'merlin';
+SabreMerlinAdapter.type = 'merlin';
 
-export default MerlinAdapter;
+export default SabreMerlinAdapter;

@@ -5,7 +5,7 @@ import ObjectHelper from '../helper/ObjectHelper';
 
 let CONFIG;
 
-class TosiAdapter {
+class FtiTosiAdapter {
     constructor(logger, options = {}) {
         CONFIG = {
             crs: {
@@ -95,7 +95,7 @@ class TosiAdapter {
                     date: CONFIG.crs.dateFormat,
                     time: CONFIG.crs.timeFormat,
                 },
-                type: TosiAdapter.type,
+                type: FtiTosiAdapter.type,
             },
         });
     }
@@ -269,6 +269,6 @@ class TosiAdapter {
     }
 }
 
-TosiAdapter.type = 'tosi';
+FtiTosiAdapter.type = 'tosi';
 
-export default TosiAdapter;
+export default FtiTosiAdapter;

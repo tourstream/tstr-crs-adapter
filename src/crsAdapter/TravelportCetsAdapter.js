@@ -91,7 +91,7 @@ const CONFIG = {
     },
 };
 
-class CetsAdapter {
+class TravelportCetsAdapter {
     constructor(logger, options = {}) {
         this.options = options;
         this.logger = logger;
@@ -672,6 +672,6 @@ class CetsAdapter {
     };
 }
 
-CetsAdapter.type = 'cets';
+TravelportCetsAdapter.type = 'cets';
 
-export default CetsAdapter;
+export default TravelportCetsAdapter;

@@ -1,13 +1,13 @@
-import CetsAdapter from '../../../src/crsAdapter/CetsAdapter';
+import TravelportCetsAdapter from '../../../src/crsAdapter/TravelportCetsAdapter';
 import {DEFAULT_OPTIONS, SERVICE_TYPES} from '../../../src/UbpCrsAdapter';
 
-describe('CetsAdapter', () => {
+describe('TravelportCetsAdapter', () => {
     let adapter;
 
     beforeEach(() => {
         let logService = require('tests/unit/_mocks/LogService')();
 
-        adapter = new CetsAdapter(logService, DEFAULT_OPTIONS);
+        adapter = new TravelportCetsAdapter(logService, DEFAULT_OPTIONS);
     });
 
     it('should throw error if any method is used without crs-connection', () => {

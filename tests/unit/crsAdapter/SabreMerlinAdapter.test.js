@@ -1,7 +1,7 @@
-import injector from 'inject!../../../src/crsAdapter/MerlinAdapter';
+import injector from 'inject!../../../src/crsAdapter/SabreMerlinAdapter';
 import {DEFAULT_OPTIONS} from '../../../src/UbpCrsAdapter';
 
-describe('MerlinAdapter', () => {
+describe('SabreMerlinAdapter', () => {
     const xmlHead = '<?xml version="1.0" encoding="UTF-8"?>';
 
     let adapter, MerlinAdapter, axios, requestParameter, logService;
