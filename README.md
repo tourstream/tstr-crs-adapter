@@ -158,17 +158,17 @@ Depending on the `ServiceData.type` the structure of a `ServiceData` object diff
 
 You can check the currently supported service types with `UbpCrsAdapter.SERVICE_TYPES`.
 
-|          | car   | hotel | roundtrip | camper 
----        | :---: | :---: | :---:     | :---:
-CETS       | X     | X     | X         | 
-TOMA (old) | X     | X     | X         | X 
-TOMA (new) | X     | X     | X         | X
-Merlin     | X     | X     | X         | X
-MyJack     | X     | X     | X         | X
-JackPlus   | X     | X     | X         | X
-Cosmo      | X     | X     | X         | X
-CosmoNaut  | X     | X     | X         | X
-Tosi       | X     | X     | X         | X
+|          | car   | hotel | roundtrip | camper | "raw"
+---        | :---: | :---: | :---:     | :---:  | :---:
+CETS       | X     | X     | X         |        |
+TOMA (old) | X     | X     | X         | X      | X
+TOMA (new) | X     | X     | X         | X      | X
+Merlin     | X     | X     | X         | X      | X
+MyJack     | X     | X     | X         | X      | X
+JackPlus   | X     | X     | X         | X      | X
+Cosmo      | X     | X     | X         | X      | X
+CosmoNaut  | X     | X     | X         | X      | X
+Tosi       | X     | X     | X         | X      | X
 
 
 ##### `ServiceData` structure
