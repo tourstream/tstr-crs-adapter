@@ -78,7 +78,7 @@ describe('AdapterDataReducer', () => {
             normalized: {},
         };
 
-        reducerList.default = underlyingReducer;
+        reducerList.raw = underlyingReducer;
 
         reducer.reduceIntoCrsData(adapterData, crsData);
 

@@ -52,6 +52,7 @@
                 <button type="button" data-toggle="button" class="btn btn-outline-primary" value="hotel">hotel</button>
                 <button type="button" data-toggle="button" class="btn btn-outline-primary" value="roundTrip">round trip</button>
                 <button type="button" data-toggle="button" class="btn btn-outline-primary" value="camper">camper</button>
+                <button type="button" data-toggle="button" class="btn btn-outline-primary" value="raw">raw</button>
 
                 <span class="mx-4">
                     <button name="get" class="btn btn-outline-warning">
@@ -78,6 +79,7 @@
     <form id="product" class="form my-2">
         <span id="product-base"></span>
         <span id="product-service"></span>
+        <span id="product-travellers"></span>
     </form>
 
     <div id="templates" hidden>
@@ -218,29 +220,6 @@
                     <div data-form-field data-label="dateTo" data-name="services.$.dateTo" data-dynamic-date="21"></div>
                 </fieldset>
             </div>
-
-            <div class="form-row">
-                <fieldset class="col my-1">
-                    <div data-form-field data-label="traveller 1 gender" data-name="services.$.travellers.0.gender" data-value="female"></div>
-                    <div data-form-field data-label="traveller 1 firstName" data-name="services.$.travellers.0.firstName" data-value="jane mary"></div>
-                    <div data-form-field data-label="traveller 1 lastName" data-name="services.$.travellers.0.lastName" data-value="doe"></div>
-                    <div data-form-field data-label="traveller 1 age" data-name="services.$.travellers.0.age" data-value="28"></div>
-                </fieldset>
-
-                <fieldset class="col my-1">
-                    <div data-form-field data-label="traveller 2 gender" data-name="services.$.travellers.1.gender" data-value="male"></div>
-                    <div data-form-field data-label="traveller 2 firstName" data-name="services.$.travellers.1.firstName" data-value="john"></div>
-                    <div data-form-field data-label="traveller 2 lastName" data-name="services.$.travellers.1.lastName" data-value="doe"></div>
-                    <div data-form-field data-label="traveller 2 age" data-name="services.$.travellers.1.age" data-value="32"></div>
-                </fieldset>
-
-                <fieldset class="col my-1">
-                    <div data-form-field data-label="traveller 3 gender" data-name="services.$.travellers.2.gender" data-value="child"></div>
-                    <div data-form-field data-label="traveller 3 firstName" data-name="services.$.travellers.2.firstName" data-value="judy"></div>
-                    <div data-form-field data-label="traveller 3 lastName" data-name="services.$.travellers.2.lastName" data-value="doe"></div>
-                    <div data-form-field data-label="traveller 3 age" data-name="services.$.travellers.2.age" data-value="11"></div>
-                </fieldset>
-            </div>
         </div>
 
         <div id="roundTrip-form-fields">
@@ -255,22 +234,6 @@
                 <fieldset class="col my-1">
                     <div data-form-field data-label="startDate" data-name="services.$.startDate" data-dynamic-date="14"></div>
                     <div data-form-field data-label="endDate" data-name="services.$.endDate" data-dynamic-date="21"></div>
-                </fieldset>
-            </div>
-
-            <div class="form-row">
-                <fieldset class="col my-1">
-                    <div data-form-field data-label="traveller 1 gender" data-name="services.$.travellers.0.gender" data-value="female"></div>
-                    <div data-form-field data-label="traveller 1 firstName" data-name="services.$.travellers.0.firstName" data-value="jane"></div>
-                    <div data-form-field data-label="traveller 1 lastName" data-name="services.$.travellers.0.lastName" data-value="doe"></div>
-                    <div data-form-field data-label="traveller 1 age" data-name="services.$.travellers.0.age" data-value="11"></div>
-                </fieldset>
-
-                <fieldset class="col my-1">
-                    <div data-form-field data-label="traveller 2 gender" data-name="services.$.travellers.1.gender" data-value="male"></div>
-                    <div data-form-field data-label="traveller 2 firstName" data-name="services.$.travellers.1.firstName" data-value="jane"></div>
-                    <div data-form-field data-label="traveller 2 lastName" data-name="services.$.travellers.1.lastName" data-value="doe"></div>
-                    <div data-form-field data-label="traveller 2 age" data-name="services.$.travellers.1.age" data-value="32"></div>
                 </fieldset>
             </div>
         </div>
@@ -317,6 +280,51 @@
                 <fieldset class="col my-1">
                     <div data-form-field data-label="extra 3 code" data-name="services.$.extras.2.code"></div>
                     <div data-form-field data-label="extra 3 amount" data-name="services.$.extras.2.amount"></div>
+                </fieldset>
+            </div>
+        </div>
+
+        <div id="raw-form-fields">
+            <div class="form-row">
+                <fieldset class="col my-1">
+                    <div data-form-field data-label="type" data-name="services.$.type" data-value="OK"></div>
+                    <div data-form-field data-label="code" data-name="services.$.code" data-value="CODE"></div>
+                </fieldset>
+
+                <fieldset class="col my-1">
+                    <div data-form-field data-label="accommodation" data-name="services.$.accommodation" data-value="ACCO"></div>
+                    <div data-form-field data-label="occupancy" data-name="services.$.occupancy" data-value="3"></div>
+                    <div data-form-field data-label="quantity" data-name="services.$.quantity" data-value="42"></div>
+                </fieldset>
+
+                <fieldset class="col my-1">
+                    <div data-form-field data-label="fromDate" data-name="services.$.fromDate" data-dynamic-date="14"></div>
+                    <div data-form-field data-label="toDate" data-name="services.$.toDate" data-dynamic-date="21"></div>
+                </fieldset>
+            </div>
+        </div>
+
+        <div id="travellers-form-fields">
+            <div class="form-row">
+                <fieldset class="col my-1">
+                    <div data-form-field data-label="traveller 1 gender" data-name="services.$.travellers.0.gender" data-value="female"></div>
+                    <div data-form-field data-label="traveller 1 firstName" data-name="services.$.travellers.0.firstName" data-value="jane mary"></div>
+                    <div data-form-field data-label="traveller 1 lastName" data-name="services.$.travellers.0.lastName" data-value="doe"></div>
+                    <div data-form-field data-label="traveller 1 age" data-name="services.$.travellers.0.age" data-value="28"></div>
+                </fieldset>
+
+                <fieldset class="col my-1">
+                    <div data-form-field data-label="traveller 2 gender" data-name="services.$.travellers.1.gender" data-value="male"></div>
+                    <div data-form-field data-label="traveller 2 firstName" data-name="services.$.travellers.1.firstName" data-value="john"></div>
+                    <div data-form-field data-label="traveller 2 lastName" data-name="services.$.travellers.1.lastName" data-value="doe"></div>
+                    <div data-form-field data-label="traveller 2 age" data-name="services.$.travellers.1.age" data-value="32"></div>
+                </fieldset>
+
+                <fieldset class="col my-1">
+                    <div data-form-field data-label="traveller 3 gender" data-name="services.$.travellers.2.gender" data-value="child"></div>
+                    <div data-form-field data-label="traveller 3 firstName" data-name="services.$.travellers.2.firstName" data-value="judy"></div>
+                    <div data-form-field data-label="traveller 3 lastName" data-name="services.$.travellers.2.lastName" data-value="doe"></div>
+                    <div data-form-field data-label="traveller 3 age" data-name="services.$.travellers.2.age" data-value="11"></div>
                 </fieldset>
             </div>
         </div>

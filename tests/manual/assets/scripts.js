@@ -6,6 +6,7 @@
     const productForm = document.getElementById('product');
     const productBaseForm = document.getElementById('product-base');
     const productServiceForm = document.getElementById('product-service');
+    const productTravellersForm = document.getElementById('product-travellers');
     const crsSelectionButtons = document.getElementById('crs-selection').getElementsByTagName('button');
     const productSelectionButtons = document.getElementById('product-selection').getElementsByTagName('button');
     const formFieldTemplate = document.getElementById('form-field-template');
@@ -21,6 +22,7 @@
         resetForm(connectionOptionsForm);
         resetForm(productBaseForm);
         resetForm(productServiceForm);
+        resetForm(productTravellersForm);
     }
 
     function initSelectionButtons() {
@@ -102,6 +104,7 @@
                 }
 
                 selectTemplate(productServiceForm, event.target.value);
+                selectTemplate(productTravellersForm, 'travellers');
 
                 Array.from(productSelectionButtons).forEach(function(button) {
                     button.classList.remove('active');

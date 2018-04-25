@@ -1,6 +1,6 @@
-import DefaultServiceReducer from '../../../src/reducer/DefaultServiceReducer';
+import RawServiceReducer from '../../../src/reducer/RawServiceReducer';
 
-describe('DefaultServiceReducer', () => {
+describe('RawServiceReducer', () => {
     let reducer, config, helper;
 
     beforeEach(() => {
@@ -12,7 +12,7 @@ describe('DefaultServiceReducer', () => {
             traveller: require('tests/unit/_mocks/TravellerHelper')(),
         };
 
-        reducer = new DefaultServiceReducer(
+        reducer = new RawServiceReducer(
             require('tests/unit/_mocks/LogService')(),
             config, helper
         );

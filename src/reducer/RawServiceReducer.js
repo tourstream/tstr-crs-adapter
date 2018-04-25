@@ -1,6 +1,6 @@
 import moment from 'moment/moment';
 
-class DefaultServiceReducer {
+class RawServiceReducer {
     constructor(logger, config, helper) {
         this.config = config;
         this.helper = helper;
@@ -40,4 +40,4 @@ class DefaultServiceReducer {
     }
 }
 
-export default DefaultServiceReducer;
+export default RawServiceReducer;
