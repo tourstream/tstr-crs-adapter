@@ -33,6 +33,8 @@ class TravellerHelper {
             travellers: [],
         };
 
+        let startAssociation = crsData.normalized.travellers.length + 1;
+
         adapterService.travellers.forEach((adapterTraveller) => {
             const crsTraveller = {};
 
@@ -45,7 +47,8 @@ class TravellerHelper {
         });
 
         // todo: separate from this function
-        const startAssociation = this.calculateStartAssociation(crsService, crsData);
+        startAssociation = Math.max(this.calculateStartAssociation(crsService, crsData), startAssociation);
+
         const endAssociation = Math.max(
             +this.extractLastTravellerAssociation(crsService.travellerAssociation),
             startAssociation + this.calculateServiceTravellersCount(adapterService) - 1
