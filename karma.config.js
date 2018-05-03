@@ -36,35 +36,44 @@ module.exports = function (config) {
             'coverage-istanbul'
         ],
         webpack: {
+            mode: 'development',
             devtool: 'inline-source-map',
             module: {
-                rules: [
-                    {
-                        test: /\.js$/,
-                        include: [
-                            path.resolve(__dirname, 'src'),
-                            path.resolve(__dirname, 'tests'),
-                        ],
-                        exclude: [
-                            path.resolve(__dirname, 'node_modules')
-                        ],
-                        loader: 'babel-loader'
+                rules: [{
+                    test: /\.ts$/,
+                    exclude: [
+                        path.resolve(__dirname, 'node_modules'),
+                    ],
+                    loader: [
+                        'babel-loader',
+                        'ts-loader',
+                    ],
+                }, {
+                    test: /\.js$/,
+                    include: [
+                        path.resolve(__dirname, 'src'),
+                        path.resolve(__dirname, 'tests'),
+                    ],
+                    exclude: [
+                        path.resolve(__dirname, 'node_modules'),
+                    ],
+                    loader: [
+                        'babel-loader',
+                    ],
+                }, {
+                    test: /\.js$/,
+                    include: [
+                        path.resolve(__dirname, 'src'),
+                    ],
+                    exclude: [
+                        path.resolve(__dirname, 'tests'),
+                        path.resolve(__dirname, 'node_modules'),
+                    ],
+                    loader: 'istanbul-instrumenter-loader',
+                    options: {
+                        esModules: true
                     },
-                    {
-                        test: /\.js$/,
-                        include: [
-                            path.resolve(__dirname, 'src'),
-                        ],
-                        exclude: [
-                            path.resolve(__dirname, 'tests'),
-                            path.resolve(__dirname, 'node_modules')
-                        ],
-                        loader: 'istanbul-instrumenter-loader',
-                        options: {
-                            esModules: true
-                        }
-                    }
-                ]
+                }]
             },
             resolve: {
                 modules: [
@@ -74,13 +83,11 @@ module.exports = function (config) {
                     path.resolve(__dirname, 'tests')
                 ],
                 extensions: [
+                    '.ts',
                     '.json',
                     '.js'
                 ]
             },
-            resolveLoader: {
-                moduleExtensions: ['-loader']
-            }
         },
         webpackMiddleware: {
             stats: 'errors-only',

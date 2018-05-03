@@ -16,11 +16,11 @@ class TravellerHelper {
     }
 
     extractLastTravellerAssociation(travellerAssociation = '') {
-        return travellerAssociation.split('-').pop();
+        return travellerAssociation.toString().split('-').pop();
     }
 
     extractFirstTravellerAssociation(travellerAssociation = '') {
-        return travellerAssociation.split('-').shift();
+        return travellerAssociation.toString().split('-').shift();
     }
 
     reduceTravellersIntoCrsData(adapterService = {}, crsService = {}, crsData = {}) {

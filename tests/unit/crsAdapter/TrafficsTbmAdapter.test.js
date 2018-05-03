@@ -1,4 +1,4 @@
-import injector from 'inject!../../../src/crsAdapter/TrafficsTbmAdapter';
+import injector from 'inject-loader!../../../src/crsAdapter/TrafficsTbmAdapter';
 import {DEFAULT_OPTIONS} from '../../../src/UbpCrsAdapter';
 
 describe('TrafficsTbmAdapter', () => {

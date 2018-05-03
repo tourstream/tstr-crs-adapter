@@ -13,7 +13,9 @@ describe('AmadeusTomaAdapter', () => {
     });
 
     it('connect() should throw error if ActiveX is not supported', () => {
-        expect(() => adapter.connect({providerKey: 'key'})).toThrowError('Connection is only working with Internet Explorer (with ActiveX support).');
+        expect(() => adapter.connect({providerKey: 'key'})).toThrowError(
+            'Connection is only working with Internet Explorer (with ActiveX support).'
+        );
     });
 
     it('connect() should throw error if providerKey is not given', () => {
@@ -31,8 +33,7 @@ describe('AmadeusTomaAdapter', () => {
     });
 
     it('connect() should throw error if providerKey could not be checked', () => {
-        window.ActiveXObject = () => {
-        };
+        window.ActiveXObject = () => {};
 
         expect(() => adapter.connect({providerKey: 'key'})).toThrowError(/^Provider key check error:/);
     });

@@ -1,4 +1,4 @@
-import injector from 'inject!../../../src/crsAdapter/SabreMerlinAdapter';
+import injector from 'inject-loader!../../../src/crsAdapter/SabreMerlinAdapter';
 import {DEFAULT_OPTIONS} from '../../../src/UbpCrsAdapter';
 
 describe('SabreMerlinAdapter', () => {

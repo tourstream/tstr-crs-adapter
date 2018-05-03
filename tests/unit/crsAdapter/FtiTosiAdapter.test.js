@@ -1,4 +1,4 @@
-import injector from 'inject!../../../src/crsAdapter/FtiTosiAdapter';
+import injector from 'inject-loader!../../../src/crsAdapter/FtiTosiAdapter';
 import {DEFAULT_OPTIONS} from '../../../src/UbpCrsAdapter';
 
 describe('FtiTosiAdapter', () => {
