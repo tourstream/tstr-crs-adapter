@@ -112,8 +112,7 @@ describe('LogService', () => {
     });
 
     it('should debug not stringifyable object correct', () => {
-        logger.log(() => 'test');
-        expect(debugDocument.writeln).toHaveBeenCalledWith(jasmine.stringMatching("return 'test';"));
+        logger.log(() => null);
+        expect(debugDocument.writeln).toHaveBeenCalledWith(jasmine.stringMatching("return <span class=\"null\">null</span>;"));
     });
 });
-

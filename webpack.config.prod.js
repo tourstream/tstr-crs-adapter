@@ -1,10 +1,9 @@
 "use strict";
 
 const webpack = require('webpack');
-const baseConfig = require('./webpack.config.base.js');
+const config = require('./webpack.config.base.js');
 
-let config = Object.create(baseConfig);
-
+config.mode = 'production';
 config.devtool = 'cheap-module-source-map';
 config.output.filename = 'ubpCrsAdapter.min.js';
 config.plugins = [
