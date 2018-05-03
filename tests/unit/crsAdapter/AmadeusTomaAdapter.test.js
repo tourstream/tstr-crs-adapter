@@ -12,6 +12,10 @@ describe('AmadeusTomaAdapter', () => {
         adapter = new AmadeusTomaAdapter(logService, DEFAULT_OPTIONS);
     });
 
+    afterEach(() => {
+        delete window.ActiveXObject;
+    });
+
     it('connect() should throw error if ActiveX is not supported', () => {
         expect(() => adapter.connect({providerKey: 'key'})).toThrowError(
             'Connection is only working with Internet Explorer (with ActiveX support).'

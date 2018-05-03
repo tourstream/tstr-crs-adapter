@@ -10,6 +10,10 @@ describe('TravelportCetsAdapter', () => {
         adapter = new TravelportCetsAdapter(logService, DEFAULT_OPTIONS);
     });
 
+    afterEach(() => {
+        delete window.external;
+    });
+
     it('should throw error if any method is used without crs-connection', () => {
         let message = 'connection::getXmlRequest: No connection available - please connect to CETS first.';
 
@@ -19,7 +23,7 @@ describe('TravelportCetsAdapter', () => {
     });
 
     it('connect() should throw error if external.Get is not supported', () => {
-        expect(adapter.connect.bind(adapter)).toThrowError('Instantiate connection error: Can\'t find variable: external');
+        expect(adapter.connect.bind(adapter)).toThrowError('Connection failure - no communication possible with CETS.');
     });
 
     it('connect() should throw error if connection is not available', () => {
