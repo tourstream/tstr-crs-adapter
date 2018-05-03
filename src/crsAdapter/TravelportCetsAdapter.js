@@ -1,5 +1,5 @@
 import xml2js from 'xml2js';
-import fastXmlParser from 'fast-xml-parser';
+import * as fastXmlParser from 'fast-xml-parser';
 import moment from 'moment';
 import {SERVICE_TYPES} from '../UbpCrsAdapter';
 import TravellerHelper from '../helper/TravellerHelper';

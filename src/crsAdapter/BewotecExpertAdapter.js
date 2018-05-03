@@ -2,7 +2,7 @@ import axios from 'axios';
 import {CRS_TYPES} from '../UbpCrsAdapter';
 import querystring from 'querystring';
 import WindowHelper from '../helper/WindowHelper';
-import fastXmlParser from 'fast-xml-parser';
+import * as fastXmlParser from 'fast-xml-parser';
 
 const CONFIG = {
     crs: {
