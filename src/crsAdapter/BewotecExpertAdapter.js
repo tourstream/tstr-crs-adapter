@@ -246,8 +246,6 @@ class BewotecExpertAdapter {
             return data;
         };
 
-        axios.defaults.headers.get['Cache-Control'] = 'no-cache,no-store,must-revalidate,max-age=-1,private';
-
         return {
             get: () => {
                 if (this.options.crsType === CRS_TYPES.jackPlus) {
@@ -272,38 +270,7 @@ class BewotecExpertAdapter {
 
                 this.logger.warn('HTTPS detected - will use dataBridge for getting data');
 
-                return new Promise((resolve, reject) => {
-                    this.helper.window.addEventListener('message', (message) => {
-                        if (message.data.name !== 'bewotecDataTransfer') {
-                            return;
-                        }
-
-                        this.logger.info('received data from bewotec data bridge: ');
-                        this.logger.info(message.data);
-
-                        if (message.data.errorMessage) {
-                            if (((message.data.error || {}).response || {}).status !== 404) {
-                                this.logger.error('received error from bewotec data bridge');
-
-                                return reject(new Error(message.data.errorMessage));
-                            }
-                        }
-
-                        return resolve(message.data);
-                    }, false);
-
-                    const url = options.dataBridgeUrl + '?token=' + options.token + (this.options.debug ? '&debug' : '');
-
-                    if (this.bridgeWindow && !this.bridgeWindow.closed) {
-                        this.bridgeWindow.close();
-                    }
-
-                    this.bridgeWindow = this.helper.window.open(url, '_blank', 'height=300,width=400');
-
-                    if (!this.bridgeWindow) {
-                        return reject(new Error('can not establish connection to bewotec data bridge'));
-                    }
-                });
+                return this.getDataFromBewotecBridge(options);
             },
             send: (data = {}) => {
                 const baseUrl = CONFIG.crs.connectionUrl + '/fill';
@@ -313,11 +280,10 @@ class BewotecExpertAdapter {
                     return axios.get(baseUrl, {params: params});
                 }
 
-                // will window.open be a better solution? but when shall we then close the window?
-
                 this.logger.warn('HTTPS detected - will use img.src for data transfer');
 
                 // will create a mixed content warning
+                // will window.open be a better solution? but when shall we then close the window?
                 (new Image()).src = baseUrl + '?' + querystring.stringify(params);
 
                 return Promise.resolve();
@@ -325,6 +291,66 @@ class BewotecExpertAdapter {
         };
     }
 
+    /**
+     * @private
+     * @param options object
+     * @returns {*}
+     */
+    getDataFromBewotecBridge(options) {
+        return new Promise((resolve, reject) => {
+            const bewotecDataListener = (message) => {
+                if (message.data.name !== 'bewotecDataTransfer') {
+                    return;
+                }
+
+                if (this.helper.window.removeEventListener) {
+                    this.helper.window.removeEventListener('message', bewotecDataListener);
+                }
+
+                this.logger.info('received data from bewotec data bridge: ');
+                this.logger.info(message.data);
+
+                if (message.data.errorMessage) {
+                    if (((message.data.error || {}).response || {}).status !== 404) {
+                        this.logger.error('received error from bewotec data bridge');
+
+                        return reject(new Error(message.data.errorMessage));
+                    }
+                }
+
+                return resolve(message.data);
+            };
+
+            /* istanbul ignore else */
+            if (this.helper.window.addEventListener) {
+                this.helper.window.addEventListener('message', bewotecDataListener, false);
+            } else if (this.helper.window.attachEvent)  {
+                this.helper.window.attachEvent('onmessage', bewotecDataListener, false);
+            }
+
+            const url = options.dataBridgeUrl + '?token=' + options.token + (this.options.debug ? '&debug' : '');
+
+            if (this.bridgeWindow && !this.bridgeWindow.closed) {
+                this.bridgeWindow.close();
+            }
+
+            this.bridgeWindow = this.helper.window.open(url, '_blank', 'height=300,width=400');
+
+            if (!this.bridgeWindow) {
+                if (this.helper.window.removeEventListener) {
+                    this.helper.window.removeEventListener('message', bewotecDataListener);
+                }
+
+                return reject(new Error('bewotec data bridge window can not be opened'));
+            }
+        });
+    }
+
+    /**
+     * @private
+     * @param type string
+     * @returns {boolean}
+     */
     isProtocolSameAs(type = '') {
         return this.helper.window.location.href.indexOf(type.toLowerCase() + '://') > -1;
     }
