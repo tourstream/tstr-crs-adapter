@@ -40,6 +40,10 @@ class TravellerHelper {
 
             crsData.normalized.travellers.push(crsTraveller);
 
+            if (!adapterTraveller) {
+                return;
+            }
+
             crsTraveller.title = crsData.meta.genderTypes[adapterTraveller.gender];
             crsTraveller.firstName = adapterTraveller.firstName;
             crsTraveller.lastName = adapterTraveller.lastName;

@@ -15,3 +15,13 @@ pre {
 .boolean { color: blue; }
 .null { color: magenta; }
 .key { color: gray; }
+
+.btn-danger:first-child {
+    border-radius: 50%;
+    line-height: 0;
+    padding: 2px;
+    position: absolute;
+    right: 0;
+    top: -10px;
+    z-index: 5;
+}

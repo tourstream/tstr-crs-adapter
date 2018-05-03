@@ -49,6 +49,14 @@
         });
     }
 
+    function initTravellerActionButtons() {
+        Array.from(productTravellersForm.getElementsByClassName('btn-danger')).forEach(function(button) {
+            button.onclick = function(event) {
+                event.target.parentElement.remove();
+            };
+        });
+    }
+
     function connectToCrs() {
         try {
             if (!connectionOptionsForm.type) {
@@ -106,6 +114,8 @@
                 selectTemplate(productServiceForm, event.target.value);
                 selectTemplate(productTravellersForm, 'travellers');
 
+                initTravellerActionButtons();
+
                 Array.from(productSelectionButtons).forEach(function(button) {
                     button.classList.remove('active');
                 });
@@ -156,6 +166,10 @@
             const path = productForm[key].name.replace('services.$', 'services.' + serviceIndex);
 
             setValueToPropertyPath(data, path, productForm[key].value || void 0);
+        });
+
+        data.services.forEach(function(service) {
+            service.travellers = service.travellers.filter(Boolean);
         });
 
         log(data);
