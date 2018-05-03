@@ -94,6 +94,21 @@ describe('TravellerHelper', () => {
         expect(crsData.normalized.travellers).toEqual([void 0]);
     });
 
+    it('reduceTravellersIntoCrsData() should reduce for "null" adapterService.travellers', () => {
+        const adapterService = {
+            travellers: [
+                null
+            ],
+        };
+        const crsService = {};
+        const crsData = {};
+
+        helper.reduceTravellersIntoCrsData(adapterService, crsService, crsData);
+
+        expect(crsService.travellerAssociation).toBe('1');
+        expect(crsData.normalized.travellers).toEqual([{}]);
+    });
+
     it('reduceTravellersIntoCrsData() should reduce for adapterService.travellers', () => {
         const adapterService = {
             travellers: [{
@@ -206,28 +221,9 @@ describe('TravellerHelper', () => {
             },
         };
 
-        expect(helper.mapToAdapterTravellers(crsService, crsData)).toEqual([]);
-    });
-
-    it('mapToAdapterTravellers() should return correct value for traveller with no name', () => {
-        const crsService = { travellerAssociation: '1' };
-        const crsData = {
-            meta: {
-                genderTypes: {
-                    gender: 'mappedGenderType'
-                }
-            },
-            normalized: {
-                travellers: [
-                    {
-                        title: 'title',
-                        age: 'age',
-                    }
-                ],
-            },
-        };
-
-        expect(helper.mapToAdapterTravellers(crsService, crsData)).toEqual([]);
+        expect(helper.mapToAdapterTravellers(crsService, crsData)).toEqual([
+            {}
+        ]);
     });
 
     it('mapToAdapterTravellers() should return correct value', () => {

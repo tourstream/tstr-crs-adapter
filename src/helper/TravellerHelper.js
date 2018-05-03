@@ -126,22 +126,14 @@ class TravellerHelper {
         let counter = 0;
 
         do {
-            const traveller = (crsData.normalized.travellers || [])[startTravellerId + counter - 1];
+            const traveller = (crsData.normalized.travellers || [])[startTravellerId + counter - 1] || {};
 
-            if (!traveller) {
-                break;
-            }
-
-            if (!traveller.firstName || !traveller.lastName) {
-                continue;
-            }
-
-            travellers.push({
+            travellers.push(JSON.parse(JSON.stringify({
                 gender: genderMap[traveller.title],
                 firstName: traveller.firstName,
                 lastName: traveller.lastName,
                 age: traveller.age,
-            });
+            })));
         } while (++counter + startTravellerId <= endTravellerId);
 
         return travellers;
