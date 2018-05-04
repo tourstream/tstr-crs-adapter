@@ -5,6 +5,7 @@
     "module": "commonjs",
     "noImplicitAny": true,
     "allowJs": true,
+    "noEmitHelpers": true,
     "lib": [
       "es5",
       "es2015",

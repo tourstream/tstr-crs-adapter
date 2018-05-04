@@ -26,13 +26,12 @@ const CONFIG = {
         lineNumberMap: ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'],
     },
     parserOptions: {
-        attrPrefix: '__attributes',
+        attributeNamePrefix: '__attributes',
         textNodeName: '__textNode',
-        ignoreNonTextNodeAttr: false,
-        ignoreTextNodeAttr: false,
+        ignoreAttributes: false,
         ignoreNameSpace: true,
-        ignoreRootElement: false,
-        textNodeConversion: false,
+        parseNodeValue: false,
+        parseAttributeValue: false,
     },
 };
 
@@ -62,9 +61,9 @@ class BewotecExpertAdapter {
                     let propertyNames = Object.getOwnPropertyNames(object);
 
                     propertyNames.forEach((name) => {
-                        if (name.startsWith(CONFIG.parserOptions.attrPrefix)) {
-                            object[CONFIG.parserOptions.attrPrefix] = object[CONFIG.parserOptions.attrPrefix] || {};
-                            object[CONFIG.parserOptions.attrPrefix][name.substring(CONFIG.parserOptions.attrPrefix.length)] = object[name];
+                        if (name.startsWith(CONFIG.parserOptions.attributeNamePrefix)) {
+                            object[CONFIG.parserOptions.attributeNamePrefix] = object[CONFIG.parserOptions.attributeNamePrefix] || {};
+                            object[CONFIG.parserOptions.attributeNamePrefix][name.substring(CONFIG.parserOptions.attributeNamePrefix.length)] = object[name];
 
                             delete object[name];
                         } else {
@@ -117,9 +116,9 @@ class BewotecExpertAdapter {
                 parsed: parsedData,
                 normalized: {
                     agencyNumber: crsData.Agency,
-                    operator: (crsData[CONFIG.parserOptions.attrPrefix] || {}).operator,
+                    operator: (crsData[CONFIG.parserOptions.attributeNamePrefix] || {}).operator,
                     numberOfTravellers: crsData.PersonCount,
-                    travelType: (crsData[CONFIG.parserOptions.attrPrefix] || {}).traveltype,
+                    travelType: (crsData[CONFIG.parserOptions.attributeNamePrefix] || {}).traveltype,
                     remark: crsData.Remarks,
                     services: this.collectServices(crsData),
                     travellers: this.collectTravellers(crsData),
@@ -139,7 +138,7 @@ class BewotecExpertAdapter {
 
     collectServices(crsData) {
         return crsData.Services.Service.map((service) => {
-            let serviceData = service[CONFIG.parserOptions.attrPrefix];
+            let serviceData = service[CONFIG.parserOptions.attributeNamePrefix];
 
             return {
                 marker: serviceData.marker,
@@ -161,7 +160,7 @@ class BewotecExpertAdapter {
                 return {};
             }
 
-            const travellerData = traveller[CONFIG.parserOptions.attrPrefix];
+            const travellerData = traveller[CONFIG.parserOptions.attributeNamePrefix];
             const travellerNames = (travellerData.name || '').split(' ');
 
             return {

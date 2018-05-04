@@ -5,7 +5,7 @@ const path = require('path');
 module.exports = function (config) {
     config.set({
         browsers: [
-            'PhantomJS'
+            'ChromeHeadless'
         ],
         port: 9876,
         colors: true,
@@ -57,9 +57,7 @@ module.exports = function (config) {
                     exclude: [
                         path.resolve(__dirname, 'node_modules'),
                     ],
-                    loader: [
-                        'babel-loader',
-                    ],
+                    loader: 'babel-loader',
                 }, {
                     test: /\.js$/,
                     include: [

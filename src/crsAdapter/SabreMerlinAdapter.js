@@ -29,13 +29,12 @@ class SabreMerlinAdapter {
                 },
             },
             parserOptions: {
-                attrPrefix: '__attributes',
+                attributeNamePrefix: '__attributes',
                 textNodeName: '__textNode',
-                ignoreNonTextNodeAttr: false,
-                ignoreTextNodeAttr: false,
-                ignoreNameSpace: false,
-                ignoreRootElement: false,
-                textNodeConversion: false,
+                ignoreAttributes: false,
+                ignoreNameSpace: true,
+                parseNodeValue: false,
+                parseAttributeValue: false,
             },
             builderOptions: {
                 attrkey: '__attributes',
@@ -61,7 +60,7 @@ class SabreMerlinAdapter {
         this.logger = logger;
 
         this.helper = {
-            object: new ObjectHelper({ attrPrefix: CONFIG.parserOptions.attrPrefix }),
+            object: new ObjectHelper({ attrPrefix: CONFIG.parserOptions.attributeNamePrefix }),
         };
 
         this.xmlParser = {
@@ -181,7 +180,7 @@ class SabreMerlinAdapter {
         crsData.normalized.services.forEach((service, index) => {
             const crsServiceObject = {};
 
-            crsServiceObject[CONFIG.parserOptions.attrPrefix] = {
+            crsServiceObject[CONFIG.parserOptions.attributeNamePrefix] = {
                 positionNo: index + 1
             };
             crsServiceObject.MarkField = service.marker;
@@ -202,7 +201,7 @@ class SabreMerlinAdapter {
         crsData.normalized.travellers.forEach((traveller, index) => {
             const crsTravellerObject = {};
 
-            crsTravellerObject[CONFIG.parserOptions.attrPrefix] = {
+            crsTravellerObject[CONFIG.parserOptions.attributeNamePrefix] = {
                 travellerNo: index + 1
             };
             crsTravellerObject.Salutation = traveller.title;

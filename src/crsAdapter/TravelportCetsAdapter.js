@@ -63,13 +63,12 @@ const CONFIG = {
     },
     limitedCatalogs: ['DCH', 'CCH', 'DRI', 'DRIV', 'CARS'],
     parserOptions: {
-        attrPrefix: '__attributes',
+        attributeNamePrefix: '__attributes',
         textNodeName: '__textNode',
-        ignoreNonTextNodeAttr: false,
-        ignoreTextNodeAttr: false,
-        ignoreNameSpace: false,
-        ignoreRootElement: false,
-        textNodeConversion: false,
+        ignoreAttributes: false,
+        ignoreNameSpace: true,
+        parseNodeValue: false,
+        parseAttributeValue: false,
     },
     builderOptions: {
         attrkey: '__attributes',
@@ -100,7 +99,7 @@ class TravelportCetsAdapter {
                 crsDateFormat: CONFIG.crs.dateFormat,
                 gender2SalutationMap: CONFIG.gender2SalutationMap,
             })),
-            object: new ObjectHelper({attrPrefix: CONFIG.parserOptions.attrPrefix}),
+            object: new ObjectHelper({attrPrefix: CONFIG.parserOptions.attributeNamePrefix}),
         };
 
         this.xmlParser = {
@@ -117,8 +116,8 @@ class TravelportCetsAdapter {
             build: (xmlObject) => {
                 const builder = new xml2js.Builder(CONFIG.builderOptions);
 
-                xmlObject.Request[CONFIG.parserOptions.attrPrefix].From = 'FTI';
-                xmlObject.Request[CONFIG.parserOptions.attrPrefix].To = 'cets';
+                xmlObject.Request[CONFIG.parserOptions.attributeNamePrefix].From = 'FTI';
+                xmlObject.Request[CONFIG.parserOptions.attributeNamePrefix].To = 'cets';
 
                 return builder.buildObject(xmlObject);
             }
@@ -216,7 +215,7 @@ class TravelportCetsAdapter {
         let xmlRequest = xmlObject.Request;
 
         let dataObject = {
-            agencyNumber: xmlRequest[CONFIG.parserOptions.attrPrefix].Agent,
+            agencyNumber: xmlRequest[CONFIG.parserOptions.attributeNamePrefix].Agent,
             operator: xmlRequest.Fab.TOCode,
             numberOfTravellers: xmlRequest.Fab.Adults,
             travelType: CONFIG.catalog2TravelTypeMap[xmlRequest.Fab.Catalog],
@@ -226,7 +225,7 @@ class TravelportCetsAdapter {
         xmlRequest.Fab.Fah.forEach((xmlService) => {
             let service;
 
-            switch (xmlService[CONFIG.parserOptions.attrPrefix].ServiceType) {
+            switch (xmlService[CONFIG.parserOptions.attributeNamePrefix].ServiceType) {
                 case CONFIG.defaults.serviceType.car: {
                     service = this.mapCarServiceFromXmlObjectToAdapterObject(xmlService);
                     break;
@@ -242,7 +241,7 @@ class TravelportCetsAdapter {
                 default:
                     this.logger.warn(
                         '[.mapXmlObjectToAdapterObject] service type "'
-                        + xmlService[CONFIG.parserOptions.attrPrefix].ServiceType
+                        + xmlService[CONFIG.parserOptions.attributeNamePrefix].ServiceType
                         + '" is not supported'
                     );
                     break;
@@ -256,7 +255,7 @@ class TravelportCetsAdapter {
         if (xmlRequest.Avl) {
             let service;
 
-            switch (xmlRequest.Avl[CONFIG.parserOptions.attrPrefix].ServiceType) {
+            switch (xmlRequest.Avl[CONFIG.parserOptions.attributeNamePrefix].ServiceType) {
                 case CONFIG.defaults.serviceType.car: {
                     service = this.mapCarServiceFromXmlObjectToAdapterObject(xmlRequest.Avl);
                     break;
@@ -299,8 +298,8 @@ class TravelportCetsAdapter {
             let pickUpTime = moment(xmlService.CarDetails.PickUp.Time, CONFIG.crs.timeFormat);
             let dropOffTime = moment(xmlService.CarDetails.DropOff.Time, CONFIG.crs.timeFormat);
 
-            service.pickUpLocation = xmlService.CarDetails.PickUp.CarStation[CONFIG.parserOptions.attrPrefix].Code;
-            service.dropOffLocation = xmlService.CarDetails.DropOff.CarStation[CONFIG.parserOptions.attrPrefix].Code;
+            service.pickUpLocation = xmlService.CarDetails.PickUp.CarStation[CONFIG.parserOptions.attributeNamePrefix].Code;
+            service.dropOffLocation = xmlService.CarDetails.DropOff.CarStation[CONFIG.parserOptions.attributeNamePrefix].Code;
             service.pickUpTime = pickUpTime.isValid() ? pickUpTime.format(this.options.useTimeFormat) : xmlService.CarDetails.PickUp.Time;
             service.dropOffTime = dropOffTime.isValid() ? dropOffTime.format(this.options.useTimeFormat) : xmlService.CarDetails.DropOff.Time;
         }
@@ -354,9 +353,9 @@ class TravelportCetsAdapter {
         const addFabNode = (xmlObject) => {
             let normalizedObject = {Request: {}};
 
-            normalizedObject.Request[CONFIG.parserOptions.attrPrefix] = xmlObject.Request[CONFIG.parserOptions.attrPrefix];
+            normalizedObject.Request[CONFIG.parserOptions.attributeNamePrefix] = xmlObject.Request[CONFIG.parserOptions.attributeNamePrefix];
 
-            delete xmlObject.Request[CONFIG.parserOptions.attrPrefix];
+            delete xmlObject.Request[CONFIG.parserOptions.attributeNamePrefix];
 
             if (xmlObject.Request.Avl) {
                 xmlObject.Request.Catalog = xmlObject.Request.Avl.Catalog;
@@ -395,11 +394,11 @@ class TravelportCetsAdapter {
 
         if (xmlObject.Request.Fab.Fah.length > 1) {
             xmlObject.Request.Fab.Fah.reduce((previousService, currentService) => {
-                if (currentService[CONFIG.parserOptions.attrPrefix].ServiceType !== previousService[CONFIG.parserOptions.attrPrefix].ServiceType) {
+                if (currentService[CONFIG.parserOptions.attributeNamePrefix].ServiceType !== previousService[CONFIG.parserOptions.attributeNamePrefix].ServiceType) {
                     xmlObject.Request.Fab.Catalog = CONFIG.serviceType2catalog.M;
                 }
             });
-        } else if (xmlObject.Request.Fab.Fah[0][CONFIG.parserOptions.attrPrefix].ServiceType !== CONFIG.catalogs2serviceType[xmlObject.Request.Fab.Catalog]) {
+        } else if (xmlObject.Request.Fab.Fah[0][CONFIG.parserOptions.attributeNamePrefix].ServiceType !== CONFIG.catalogs2serviceType[xmlObject.Request.Fab.Catalog]) {
             xmlObject.Request.Fab.Catalog = CONFIG.serviceType2catalog[xmlObject.Request.Fab.Fah[0][CONFIG.builderOptions.attrkey].ServiceType];
         }
     }

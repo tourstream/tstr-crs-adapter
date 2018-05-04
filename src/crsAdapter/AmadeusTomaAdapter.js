@@ -3,7 +3,7 @@ import * as fastXmlParser from 'fast-xml-parser';
 
 /**
  * need to be true:
- *      parserOptions.attrPrefix === builderOptions.attrkey
+ *      parserOptions.attributeNamePrefix === builderOptions.attrkey
  *      parserOptions.textNodeName === builderOptions.charkey
  */
 const CONFIG = {
@@ -27,13 +27,12 @@ const CONFIG = {
         },
     },
     parserOptions: {
-        attrPrefix: '__attributes',
+        attributeNamePrefix: '__attributes',
         textNodeName: '__textNode',
-        ignoreNonTextNodeAttr: false,
-        ignoreTextNodeAttr: false,
-        ignoreNameSpace: false,
-        ignoreRootElement: false,
-        textNodeConversion: false,
+        ignoreAttributes: true,
+        ignoreNameSpace: true,
+        parseNodeValue: false,
+        parseAttributeValue: false,
     },
     builderOptions: {
         attrkey: '__attributes',
@@ -105,7 +104,7 @@ class AmadeusTomaAdapter {
                 normalized: {
                     agencyNumber: crsData.AgencyNumber,
                     operator: crsData.Operator,
-                    numberOfTravellers: crsData.NoOfPersons ? crsData.NoOfPersons[CONFIG.parserOptions.textNodeName] : void 0,
+                    numberOfTravellers: crsData.NoOfPersons,
                     travelType: crsData.Traveltype,
                     remark: crsData.Remark,
                     services: this.collectServices(crsData),
