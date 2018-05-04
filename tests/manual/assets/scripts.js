@@ -50,9 +50,9 @@
     }
 
     function initTravellerActionButtons() {
-        Array.from(productTravellersForm.getElementsByClassName('btn-danger')).forEach(function(button) {
-            button.onclick = function(event) {
-                event.target.parentElement.remove();
+        Array.from(productTravellersForm.getElementsByTagName('button')).forEach(function(button) {
+            button.onclick = function() {
+                button.parentElement.remove();
             };
         });
     }
