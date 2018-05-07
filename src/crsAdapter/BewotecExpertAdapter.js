@@ -157,6 +157,10 @@ class BewotecExpertAdapter {
 
     collectTravellers(crsData) {
         return crsData.Travellers.Traveller.map((traveller) => {
+            if (!traveller) {
+                return {};
+            }
+
             const travellerData = traveller[CONFIG.parserOptions.attrPrefix];
             const travellerNames = (travellerData.name || '').split(' ');
 
@@ -376,14 +380,18 @@ class BewotecExpertAdapter {
         }
 
         crsObject.ExpertModel.Services.Service = crsObject.ExpertModel.Services.Service.filter(Boolean);
-
         crsObject.ExpertModel.Travellers = crsObject.ExpertModel.Travellers || {};
 
         if (!Array.isArray(crsObject.ExpertModel.Travellers.Traveller)) {
             crsObject.ExpertModel.Travellers.Traveller = [crsObject.ExpertModel.Travellers.Traveller];
         }
 
-        crsObject.ExpertModel.Travellers.Traveller = crsObject.ExpertModel.Travellers.Traveller.filter(Boolean);
+        while (
+            crsObject.ExpertModel.Travellers.Traveller.length
+            && !crsObject.ExpertModel.Travellers.Traveller[crsObject.ExpertModel.Travellers.Traveller.length - 1]
+        ) {
+            crsObject.ExpertModel.Travellers.Traveller.pop();
+        }
     }
 }
 

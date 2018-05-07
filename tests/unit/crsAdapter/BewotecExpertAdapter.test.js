@@ -293,6 +293,7 @@ describe('BewotecExpertAdapter', () => {
                 'allocation="allocation" />' +
                 '</Services>' +
                 '<Travellers>' +
+                '<Traveller/>' +
                 '<Traveller name="my long name" salutation="salutation" age="age" />' +
                 '</Travellers>' +
                 '</ExpertModel>',
@@ -338,12 +339,15 @@ describe('BewotecExpertAdapter', () => {
                         quantity: 'count',
                         travellerAssociation: 'allocation'
                     }],
-                    travellers: [{
-                        title: 'salutation',
-                        firstName: 'my long',
-                        lastName: 'name',
-                        age: 'age'
-                    }],
+                    travellers: [
+                        {},
+                        {
+                            title: 'salutation',
+                            firstName: 'my long',
+                            lastName: 'name',
+                            age: 'age'
+                        },
+                    ],
                 });
                 done();
             }, (error) => {
