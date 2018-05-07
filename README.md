@@ -270,7 +270,7 @@ Tosi       | X     | X     | X         | X      | X
 `.pickUpTime` format is changeable by setting `adapterOptions.useTimeFormat`.
 
 
-###### unknown `.type`
+###### raw `.type`
 
 ```
 {

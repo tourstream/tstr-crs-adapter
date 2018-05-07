@@ -20,6 +20,7 @@ import CarServiceMapper from './mapper/CarServiceMapper';
 import HotelServiceMapper from './mapper/HotelServiceMapper';
 import RoundTripServiceMapper from './mapper/RoundTripServiceMapper';
 import CamperServiceMapper from './mapper/CamperServiceMapper';
+import RawServiceMapper from './mapper/RawServiceMapper';
 
 import AdapterDataReducer from './reducer/AdapterDataReducer';
 import CarServiceReducer from './reducer/CarServiceReducer';
@@ -199,6 +200,7 @@ class UbpCrsAdapter {
                         [SERVICE_TYPES.hotel]: new HotelServiceMapper(this.logger, this.options, helper.hotel),
                         [SERVICE_TYPES.roundTrip]: new RoundTripServiceMapper(this.logger, this.options, helper.roundTrip),
                         [SERVICE_TYPES.camper]: new CamperServiceMapper(this.logger, this.options, helper.vehicle),
+                        raw: new RawServiceMapper(this.logger, this.options),
                     };
 
                     const dataMapper = new CrsDataMapper(this.logger, this.options, mapper, helper);
@@ -259,7 +261,7 @@ class UbpCrsAdapter {
                         [SERVICE_TYPES.hotel]: new HotelServiceReducer(this.logger, this.options, helper),
                         [SERVICE_TYPES.roundTrip]: new RoundTripServiceReducer(this.logger, this.options, helper),
                         [SERVICE_TYPES.camper]: new CamperServiceReducer(this.logger, this.options, helper),
-                        ['raw']: new RawServiceReducer(this.logger, this.options, helper),
+                        raw: new RawServiceReducer(this.logger, this.options, helper),
                     };
                     const dataReducer = new AdapterDataReducer(this.logger, this.options, reducer, helper);
                     const reducedData = dataReducer.reduceIntoCrsData(adapterData, crsData);
