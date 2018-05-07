@@ -1,46 +1,72 @@
-"use strict";
+'use strict';
 
 const path = require('path');
 
 module.exports = function (config) {
     config.set({
         browsers: [
-            'ChromeHeadless'
+            'ChromeHeadless',
         ],
         port: 9876,
         colors: true,
         logLevel: config.LOG_INFO,
         autoWatch: true,
         singleRun: true,
-        coverageIstanbulReporter: {
-            reports: [
-                'html',
-                'text-summary'
-            ],
-            fixWebpackSourcePaths: true
-        },
         files: [
-            'tests.js'
+            'tests.js',
+            'src/**/*.ts',
         ],
         frameworks: [
-            'jasmine'
+            'jasmine',
+            'karma-typescript',
         ],
         preprocessors: {
+            'src/**/*.ts': [
+                'karma-typescript',
+            ],
             'tests.js': [
                 'webpack',
-                'sourcemap'
-            ]
+                'sourcemap',
+            ],
         },
         reporters: [
             'progress',
-            'coverage-istanbul'
+            'karma-typescript',
         ],
+        karmaTypescriptConfig: {
+            compilerOptions: {
+                sourceMap: true,
+                target: 'es5',
+                module: 'commonjs',
+                allowJs: true,
+                noEmitHelpers: true,
+            },
+            remapOptions: {
+                warn: function() {},
+            },
+            reports: {
+                cobertura: {
+                    directory: 'coverage',
+                    subdirectory: 'cobertura',
+                    filename: 'coverage.xml',
+                },
+                html: {
+                    directory: 'coverage',
+                    subdirectory: '.',
+                },
+                'text-summary': ''
+            },
+        },
         webpack: {
             mode: 'development',
             devtool: 'inline-source-map',
             module: {
                 rules: [{
                     test: /\.ts$/,
+                    include: [
+                        path.resolve(__dirname, 'src'),
+                        path.resolve(__dirname, 'tests'),
+                    ],
                     exclude: [
                         path.resolve(__dirname, 'node_modules'),
                     ],
