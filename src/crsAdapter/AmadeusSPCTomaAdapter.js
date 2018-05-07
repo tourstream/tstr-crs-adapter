@@ -20,7 +20,7 @@ const CONFIG = {
     },
 };
 
-class TomaSPCAdapter {
+class AmadeusSPCTomaAdapter {
     constructor(logger, options = {}) {
         this.options = options;
         this.logger = logger;
@@ -64,7 +64,7 @@ class TomaSPCAdapter {
                         date: CONFIG.crs.dateFormat,
                         time: CONFIG.crs.timeFormat,
                     },
-                    type: TomaSPCAdapter.type,
+                    type: AmadeusSPCTomaAdapter.type,
                 },
             };
         });
@@ -360,6 +360,6 @@ class TomaSPCAdapter {
     }
 }
 
-TomaSPCAdapter.type = 'toma2';
+AmadeusSPCTomaAdapter.type = 'toma2';
 
-export default TomaSPCAdapter;
+export default AmadeusSPCTomaAdapter;

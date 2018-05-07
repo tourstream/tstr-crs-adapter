@@ -4,6 +4,9 @@
     const crsAdapter = new window.UbpCrsAdapter.default({debug: true});
     const connectionOptionsForm = document.getElementById('connect-options');
     const productForm = document.getElementById('product');
+    const productBaseForm = document.getElementById('product-base');
+    const productServiceForm = document.getElementById('product-service');
+    const productTravellersForm = document.getElementById('product-travellers');
     const crsSelectionButtons = document.getElementById('crs-selection').getElementsByTagName('button');
     const productSelectionButtons = document.getElementById('product-selection').getElementsByTagName('button');
     const formFieldTemplate = document.getElementById('form-field-template');
@@ -17,7 +20,9 @@
         initSelectionButtons();
         initFormFields();
         resetForm(connectionOptionsForm);
-        resetForm(productForm);
+        resetForm(productBaseForm);
+        resetForm(productServiceForm);
+        resetForm(productTravellersForm);
     }
 
     function initSelectionButtons() {
@@ -35,10 +40,19 @@
                 }
 
                 resetConnectButton();
-                resetForm(connectionOptionsForm);
-                resetForm(productForm);
                 selectTemplate(connectionOptionsForm, event.target.value);
-                selectTemplate(productForm, 'base-product');
+
+                Array.from(crsSelectionButtons).forEach(function(button) {
+                    button.classList.remove('active');
+                });
+            };
+        });
+    }
+
+    function initTravellerActionButtons() {
+        Array.from(productTravellersForm.getElementsByTagName('button')).forEach(function(button) {
+            button.onclick = function() {
+                button.parentElement.remove();
             };
         });
     }
@@ -63,6 +77,7 @@
                 .connect(connectionOptionsForm.type.value, data)
                 .then(function() {
                     setConnectionTypeToConnectButton(connectionOptionsForm.type.value);
+                    selectTemplate(productBaseForm, 'base-product');
                     log('connection successful');
                 }, log);
         } catch (e) {
@@ -96,9 +111,14 @@
                     return;
                 }
 
-                resetForm(productForm);
-                selectTemplate(productForm, 'base-product');
-                selectTemplate(productForm, event.target.value);
+                selectTemplate(productServiceForm, event.target.value);
+                selectTemplate(productTravellersForm, 'travellers');
+
+                initTravellerActionButtons();
+
+                Array.from(productSelectionButtons).forEach(function(button) {
+                    button.classList.remove('active');
+                });
             };
         });
     }
@@ -122,6 +142,8 @@
     }
 
     function selectTemplate(form, type) {
+        resetForm(form);
+
         let template = document.getElementById(type + '-form-fields');
 
         if (template) {
@@ -141,18 +163,20 @@
         const serviceIndex = (data.services || []).length;
 
         Object.keys(productForm).forEach(function(key) {
-            if (!productForm[key].name || productForm[key].value === '') return;
-
             const path = productForm[key].name.replace('services.$', 'services.' + serviceIndex);
 
-            setValueToPropertyPath(data, path, productForm[key].value);
+            setValueToPropertyPath(data, path, productForm[key].value || void 0);
+        });
+
+        data.services.forEach(function(service) {
+            service.travellers = service.travellers.filter(Boolean);
         });
 
         log(data);
     }
 
     function sendData() {
-        crsAdapter.setData(data).then(function() {
+        crsAdapter.setData(JSON.parse(JSON.stringify(data))).then(function() {
             data.services = [];
             log('data transferred');
         }).catch(log);

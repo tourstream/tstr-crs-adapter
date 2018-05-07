@@ -1,7 +1,7 @@
-import TomaAdapter from '../../../src/crsAdapter/TomaAdapter';
+import AmadeusTomaAdapter from '../../../src/crsAdapter/AmadeusTomaAdapter';
 import {DEFAULT_OPTIONS} from '../../../src/UbpCrsAdapter';
 
-describe('TomaAdapter', () => {
+describe('AmadeusTomaAdapter', () => {
     const xmlHead = '<?xml version="1.0" encoding="UTF-8"?>';
 
     let adapter;
@@ -9,7 +9,7 @@ describe('TomaAdapter', () => {
     beforeEach(() => {
         let logService = require('tests/unit/_mocks/LogService')();
 
-        adapter = new TomaAdapter(logService, DEFAULT_OPTIONS);
+        adapter = new AmadeusTomaAdapter(logService, DEFAULT_OPTIONS);
     });
 
     it('connect() should throw error if ActiveX is not supported', () => {
@@ -181,7 +181,7 @@ describe('TomaAdapter', () => {
                         date: 'DDMMYY',
                         time: 'HHmm'
                     },
-                    type: TomaAdapter.type,
+                    type: AmadeusTomaAdapter.type,
                 });
 
                 expect(result.normalized).toEqual({

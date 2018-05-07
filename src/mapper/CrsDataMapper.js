@@ -27,10 +27,18 @@ class CrsDataMapper {
         adapterData.services = [];
 
         (crsData.normalized.services || []).forEach((crsService) => {
-            const mapper = this.mapper[findAdapterServiceType(crsService.type)];
+            let mapper = this.mapper[findAdapterServiceType(crsService.type)];
 
             if (!mapper) {
                 this.logger.warn('[.mapToAdapterData] service type "' + crsService.type + '" is not supported');
+                this.logger.info('will use raw mapper');
+
+                mapper = this.mapper.raw;
+            }
+
+            if (!mapper) {
+                this.logger.error('no mapper defined');
+
                 return;
             }
 

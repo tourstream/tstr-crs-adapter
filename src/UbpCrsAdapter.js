@@ -2,13 +2,13 @@ import 'polyfills';
 
 import LogService from 'LogService';
 
-import TomaAdapter from 'crsAdapter/TomaAdapter';
-import TomaSPCAdapter from 'crsAdapter/TomaSPCAdapter';
-import CetsAdapter from 'crsAdapter/CetsAdapter';
-import MerlinAdapter from 'crsAdapter/MerlinAdapter';
+import AmadeusTomaAdapter from 'crsAdapter/AmadeusTomaAdapter';
+import AmadeusSPCTomaAdapter from 'crsAdapter/AmadeusSPCTomaAdapter';
+import TravelportCetsAdapter from 'crsAdapter/TravelportCetsAdapter';
+import SabreMerlinAdapter from 'crsAdapter/SabreMerlinAdapter';
 import BewotecExpertAdapter from 'crsAdapter/BewotecExpertAdapter';
 import TrafficsTbmAdapter from 'crsAdapter/TrafficsTbmAdapter';
-import TosiAdapter from 'crsAdapter/TosiAdapter';
+import FtiTosiAdapter from 'crsAdapter/FtiTosiAdapter';
 
 import VehicleHelper from './helper/VehicleHelper';
 import HotelHelper from './helper/HotelHelper';
@@ -20,12 +20,14 @@ import CarServiceMapper from './mapper/CarServiceMapper';
 import HotelServiceMapper from './mapper/HotelServiceMapper';
 import RoundTripServiceMapper from './mapper/RoundTripServiceMapper';
 import CamperServiceMapper from './mapper/CamperServiceMapper';
+import RawServiceMapper from './mapper/RawServiceMapper';
 
 import AdapterDataReducer from './reducer/AdapterDataReducer';
 import CarServiceReducer from './reducer/CarServiceReducer';
 import HotelServiceReducer from './reducer/HotelServiceReducer';
 import RoundTripServiceReducer from './reducer/RoundTripServiceReducer';
 import CamperServiceReducer from './reducer/CamperServiceReducer';
+import RawServiceReducer from './reducer/RawServiceReducer';
 
 const SERVICE_TYPES = {
     car: 'car',
@@ -87,15 +89,15 @@ const GENDER_TYPES = {
 };
 
 const CRS_TYPE_2_ADAPTER_MAP = {
-    [CRS_TYPES.toma]: TomaAdapter,
-    [CRS_TYPES.toma2]: TomaSPCAdapter,
-    [CRS_TYPES.cets]: CetsAdapter,
-    [CRS_TYPES.merlin]: MerlinAdapter,
+    [CRS_TYPES.toma]: AmadeusTomaAdapter,
+    [CRS_TYPES.toma2]: AmadeusSPCTomaAdapter,
+    [CRS_TYPES.cets]: TravelportCetsAdapter,
+    [CRS_TYPES.merlin]: SabreMerlinAdapter,
     [CRS_TYPES.myJack]: BewotecExpertAdapter,
     [CRS_TYPES.jackPlus]: BewotecExpertAdapter,
     [CRS_TYPES.cosmo]: TrafficsTbmAdapter,
     [CRS_TYPES.cosmoNaut]: TrafficsTbmAdapter,
-    [CRS_TYPES.tosi]: TosiAdapter,
+    [CRS_TYPES.tosi]: FtiTosiAdapter,
 };
 
 const DEFAULT_OPTIONS = {
@@ -169,7 +171,7 @@ class UbpCrsAdapter {
             try {
                 const adapterInstance = this.getAdapterInstance();
 
-                if (this.options.crsType === CetsAdapter.type) {
+                if (this.options.crsType === TravelportCetsAdapter.type) {
                     try {
                         resolve(adapterInstance.fetchData());
                     } catch (error) {
@@ -198,6 +200,7 @@ class UbpCrsAdapter {
                         [SERVICE_TYPES.hotel]: new HotelServiceMapper(this.logger, this.options, helper.hotel),
                         [SERVICE_TYPES.roundTrip]: new RoundTripServiceMapper(this.logger, this.options, helper.roundTrip),
                         [SERVICE_TYPES.camper]: new CamperServiceMapper(this.logger, this.options, helper.vehicle),
+                        raw: new RawServiceMapper(this.logger, this.options),
                     };
 
                     const dataMapper = new CrsDataMapper(this.logger, this.options, mapper, helper);
@@ -230,7 +233,7 @@ class UbpCrsAdapter {
 
                 const adapterInstance = this.getAdapterInstance();
 
-                if (this.options.crsType === CetsAdapter.type) {
+                if (this.options.crsType === TravelportCetsAdapter.type) {
                     try {
                         adapterInstance.sendData(adapterData);
                         resolve();
@@ -258,6 +261,7 @@ class UbpCrsAdapter {
                         [SERVICE_TYPES.hotel]: new HotelServiceReducer(this.logger, this.options, helper),
                         [SERVICE_TYPES.roundTrip]: new RoundTripServiceReducer(this.logger, this.options, helper),
                         [SERVICE_TYPES.camper]: new CamperServiceReducer(this.logger, this.options, helper),
+                        raw: new RawServiceReducer(this.logger, this.options, helper),
                     };
                     const dataReducer = new AdapterDataReducer(this.logger, this.options, reducer, helper);
                     const reducedData = dataReducer.reduceIntoCrsData(adapterData, crsData);

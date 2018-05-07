@@ -69,6 +69,22 @@ describe('AdapterDataReducer', () => {
         });
     });
 
+    it('reduceIntoCrsData() use default reducer to reduce data', () => {
+        const underlyingReducer = require('tests/unit/_mocks/AnyDataReducer')();
+        const adapterData = {
+            services: [{}],
+        };
+        const crsData = {
+            normalized: {},
+        };
+
+        reducerList.raw = underlyingReducer;
+
+        reducer.reduceIntoCrsData(adapterData, crsData);
+
+        expect(underlyingReducer.reduceIntoCrsData).toHaveBeenCalled();
+    });
+
     it('reduceIntoCrsData() should reduce travellers', () => {
         const underlyingReducer = require('tests/unit/_mocks/AnyDataReducer')();
         const adapterData = {

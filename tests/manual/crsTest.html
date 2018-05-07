@@ -22,21 +22,21 @@
             <h2>Select the CRS to which you want to transfer data:</h2>
 
             <div id="crs-selection">
-                <button type="button" class="btn btn-outline-primary" value="toma">TOMA (old)</button>
-                <button type="button" class="btn btn-outline-primary" value="toma2">TOMA (new)</button>
-                <button type="button" class="btn btn-outline-primary" value="cets">CETS</button>
-                <button type="button" class="btn btn-outline-primary" value="merlin">Merlin</button>
-                <button type="button" class="btn btn-outline-primary" value="myjack">MyJack</button>
-                <button type="button" class="btn btn-outline-primary" value="jackplus">Jack+</button>
-                <button type="button" class="btn btn-outline-primary" value="traffics">Cosmo</button>
-                <button type="button" class="btn btn-outline-primary" value="traffics">CosmoNaut</button>
-                <button type="button" class="btn btn-outline-primary" value="tosi">TOSI</button>
+                <button type="button" data-toggle="button" class="btn btn-outline-primary" value="toma">TOMA (old)</button>
+                <button type="button" data-toggle="button" class="btn btn-outline-primary" value="toma2">TOMA (new)</button>
+                <button type="button" data-toggle="button" class="btn btn-outline-primary" value="cets">CETS</button>
+                <button type="button" data-toggle="button" class="btn btn-outline-primary" value="merlin">Merlin</button>
+                <button type="button" data-toggle="button" class="btn btn-outline-primary" value="myjack">MyJack</button>
+                <button type="button" data-toggle="button" class="btn btn-outline-primary" value="jackplus">Jack+</button>
+                <button type="button" data-toggle="button" class="btn btn-outline-primary" value="traffics">Cosmo</button>
+                <button type="button" data-toggle="button" class="btn btn-outline-primary" value="traffics">CosmoNaut</button>
+                <button type="button" data-toggle="button" class="btn btn-outline-primary" value="tosi">TOSI</button>
 
-                <span class="mx-4">
+                <div class="my-2">
                     <button name="connect" class="btn btn-success btn-outline-success" id="connect-button">
                         connect to CRS
                     </button>
-                </span>
+                </div>
             </div>
         </div>
     </div>
@@ -48,12 +48,13 @@
             <h2>Select the product type you want to transfer:</h2>
 
             <div id="product-selection">
-                <button type="button" class="btn btn-outline-primary" value="car">car</button>
-                <button type="button" class="btn btn-outline-primary" value="hotel">hotel</button>
-                <button type="button" class="btn btn-outline-primary" value="roundTrip">round trip</button>
-                <button type="button" class="btn btn-outline-primary" value="camper">camper</button>
+                <button type="button" data-toggle="button" class="btn btn-outline-primary" value="car">car</button>
+                <button type="button" data-toggle="button" class="btn btn-outline-primary" value="hotel">hotel</button>
+                <button type="button" data-toggle="button" class="btn btn-outline-primary" value="roundTrip">round trip</button>
+                <button type="button" data-toggle="button" class="btn btn-outline-primary" value="camper">camper</button>
+                <button type="button" data-toggle="button" class="btn btn-outline-primary" value="raw">raw</button>
 
-                <span class="mx-4">
+                <div class="my-2">
                     <button name="get" class="btn btn-outline-warning">
                         <i class="fas fa-sign-out-alt"></i>
                         get data from CRS
@@ -70,12 +71,16 @@
                         <i class="fas fa-ban"></i>
                         cancel
                     </button>
-                </span>
+                </div>
             </div>
         </div>
     </div>
 
-    <form id="product" class="form my-2"></form>
+    <form id="product" class="form my-2">
+        <span id="product-base"></span>
+        <span id="product-service"></span>
+        <span id="product-travellers"></span>
+    </form>
 
     <div id="templates" hidden>
         <div id="form-field-template" class="input-group">
@@ -215,29 +220,6 @@
                     <div data-form-field data-label="dateTo" data-name="services.$.dateTo" data-dynamic-date="21"></div>
                 </fieldset>
             </div>
-
-            <div class="form-row">
-                <fieldset class="col my-1">
-                    <div data-form-field data-label="traveller 1 gender" data-name="services.$.travellers.0.gender" data-value="female"></div>
-                    <div data-form-field data-label="traveller 1 firstName" data-name="services.$.travellers.0.firstName" data-value="jane mary"></div>
-                    <div data-form-field data-label="traveller 1 lastName" data-name="services.$.travellers.0.lastName" data-value="doe"></div>
-                    <div data-form-field data-label="traveller 1 age" data-name="services.$.travellers.0.age" data-value="28"></div>
-                </fieldset>
-
-                <fieldset class="col my-1">
-                    <div data-form-field data-label="traveller 2 gender" data-name="services.$.travellers.1.gender" data-value="male"></div>
-                    <div data-form-field data-label="traveller 2 firstName" data-name="services.$.travellers.1.firstName" data-value="john"></div>
-                    <div data-form-field data-label="traveller 2 lastName" data-name="services.$.travellers.1.lastName" data-value="doe"></div>
-                    <div data-form-field data-label="traveller 2 age" data-name="services.$.travellers.1.age" data-value="32"></div>
-                </fieldset>
-
-                <fieldset class="col my-1">
-                    <div data-form-field data-label="traveller 3 gender" data-name="services.$.travellers.2.gender" data-value="child"></div>
-                    <div data-form-field data-label="traveller 3 firstName" data-name="services.$.travellers.2.firstName" data-value="judy"></div>
-                    <div data-form-field data-label="traveller 3 lastName" data-name="services.$.travellers.2.lastName" data-value="doe"></div>
-                    <div data-form-field data-label="traveller 3 age" data-name="services.$.travellers.2.age" data-value="11"></div>
-                </fieldset>
-            </div>
         </div>
 
         <div id="roundTrip-form-fields">
@@ -252,22 +234,6 @@
                 <fieldset class="col my-1">
                     <div data-form-field data-label="startDate" data-name="services.$.startDate" data-dynamic-date="14"></div>
                     <div data-form-field data-label="endDate" data-name="services.$.endDate" data-dynamic-date="21"></div>
-                </fieldset>
-            </div>
-
-            <div class="form-row">
-                <fieldset class="col my-1">
-                    <div data-form-field data-label="traveller 1 gender" data-name="services.$.travellers.0.gender" data-value="female"></div>
-                    <div data-form-field data-label="traveller 1 firstName" data-name="services.$.travellers.0.firstName" data-value="jane"></div>
-                    <div data-form-field data-label="traveller 1 lastName" data-name="services.$.travellers.0.lastName" data-value="doe"></div>
-                    <div data-form-field data-label="traveller 1 age" data-name="services.$.travellers.0.age" data-value="11"></div>
-                </fieldset>
-
-                <fieldset class="col my-1">
-                    <div data-form-field data-label="traveller 2 gender" data-name="services.$.travellers.1.gender" data-value="male"></div>
-                    <div data-form-field data-label="traveller 2 firstName" data-name="services.$.travellers.1.firstName" data-value="jane"></div>
-                    <div data-form-field data-label="traveller 2 lastName" data-name="services.$.travellers.1.lastName" data-value="doe"></div>
-                    <div data-form-field data-label="traveller 2 age" data-name="services.$.travellers.1.age" data-value="32"></div>
                 </fieldset>
             </div>
         </div>
@@ -317,6 +283,54 @@
                 </fieldset>
             </div>
         </div>
+
+        <div id="raw-form-fields">
+            <div class="form-row">
+                <fieldset class="col my-1">
+                    <div data-form-field data-label="type" data-name="services.$.type" data-value="OK"></div>
+                    <div data-form-field data-label="code" data-name="services.$.code" data-value="CODE"></div>
+                </fieldset>
+
+                <fieldset class="col my-1">
+                    <div data-form-field data-label="accommodation" data-name="services.$.accommodation" data-value="ACCO"></div>
+                    <div data-form-field data-label="occupancy" data-name="services.$.occupancy" data-value="3"></div>
+                    <div data-form-field data-label="quantity" data-name="services.$.quantity" data-value="42"></div>
+                </fieldset>
+
+                <fieldset class="col my-1">
+                    <div data-form-field data-label="fromDate" data-name="services.$.fromDate" data-dynamic-date="14"></div>
+                    <div data-form-field data-label="toDate" data-name="services.$.toDate" data-dynamic-date="21"></div>
+                </fieldset>
+            </div>
+        </div>
+
+        <div id="travellers-form-fields">
+            <div class="form-row">
+                <fieldset class="col my-1">
+                    <button class="btn btn-sm btn-danger" name="remove-parent" type="button"><i class="fas fa-minus-circle"></i></button>
+                    <div data-form-field data-label="traveller gender" data-name="services.$.travellers.0.gender" data-value="female"></div>
+                    <div data-form-field data-label="traveller firstName" data-name="services.$.travellers.0.firstName" data-value="jane mary"></div>
+                    <div data-form-field data-label="traveller lastName" data-name="services.$.travellers.0.lastName" data-value="doe"></div>
+                    <div data-form-field data-label="traveller age" data-name="services.$.travellers.0.age" data-value="28"></div>
+                </fieldset>
+
+                <fieldset class="col my-1">
+                    <button class="btn btn-sm btn-danger" name="remove-parent" type="button"><i class="fas fa-minus-circle"></i></button>
+                    <div data-form-field data-label="traveller gender" data-name="services.$.travellers.1.gender" data-value="male"></div>
+                    <div data-form-field data-label="traveller firstName" data-name="services.$.travellers.1.firstName" data-value="john"></div>
+                    <div data-form-field data-label="traveller lastName" data-name="services.$.travellers.1.lastName" data-value="doe"></div>
+                    <div data-form-field data-label="traveller age" data-name="services.$.travellers.1.age" data-value="32"></div>
+                </fieldset>
+
+                <fieldset class="col my-1">
+                    <button class="btn btn-sm btn-danger" name="remove-parent" type="button"><i class="fas fa-minus-circle"></i></button>
+                    <div data-form-field data-label="traveller gender" data-name="services.$.travellers.2.gender" data-value="child"></div>
+                    <div data-form-field data-label="traveller firstName" data-name="services.$.travellers.2.firstName" data-value="judy"></div>
+                    <div data-form-field data-label="traveller lastName" data-name="services.$.travellers.2.lastName" data-value="doe"></div>
+                    <div data-form-field data-label="traveller age" data-name="services.$.travellers.2.age" data-value="11"></div>
+                </fieldset>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -327,6 +341,6 @@
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js" integrity="sha384-alpBpkh1PFOepccYVYDB4do5UnbKysX5WZXm3XxPqe5iKTfUKjNkCk9SaVuEZflJ" crossorigin="anonymous"></script>
 
 <script type="application/javascript" src="assets/ubpCrsAdapter.js"></script>
-<script type="application/javascript" src="assets/helpers.js"></script>
+<script type="application/javascript" src="assets/scripts.js"></script>
 </body>
 </html>

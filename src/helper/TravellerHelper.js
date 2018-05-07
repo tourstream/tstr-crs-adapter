@@ -33,10 +33,16 @@ class TravellerHelper {
             travellers: [],
         };
 
+        let startAssociation = crsData.normalized.travellers.length + 1;
+
         adapterService.travellers.forEach((adapterTraveller) => {
             const crsTraveller = {};
 
             crsData.normalized.travellers.push(crsTraveller);
+
+            if (!adapterTraveller) {
+                return;
+            }
 
             crsTraveller.title = crsData.meta.genderTypes[adapterTraveller.gender];
             crsTraveller.firstName = adapterTraveller.firstName;
@@ -45,7 +51,8 @@ class TravellerHelper {
         });
 
         // todo: separate from this function
-        const startAssociation = this.calculateStartAssociation(crsService, crsData);
+        startAssociation = Math.max(this.calculateStartAssociation(crsService, crsData), startAssociation);
+
         const endAssociation = Math.max(
             +this.extractLastTravellerAssociation(crsService.travellerAssociation),
             startAssociation + this.calculateServiceTravellersCount(adapterService) - 1
@@ -119,22 +126,14 @@ class TravellerHelper {
         let counter = 0;
 
         do {
-            const traveller = (crsData.normalized.travellers || [])[startTravellerId + counter - 1];
+            const traveller = (crsData.normalized.travellers || [])[startTravellerId + counter - 1] || {};
 
-            if (!traveller) {
-                break;
-            }
-
-            if (!traveller.firstName || !traveller.lastName) {
-                continue;
-            }
-
-            travellers.push({
+            travellers.push(JSON.parse(JSON.stringify({
                 gender: genderMap[traveller.title],
                 firstName: traveller.firstName,
                 lastName: traveller.lastName,
                 age: traveller.age,
-            });
+            })));
         } while (++counter + startTravellerId <= endTravellerId);
 
         return travellers;
