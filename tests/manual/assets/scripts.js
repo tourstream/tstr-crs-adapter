@@ -163,6 +163,10 @@
         const serviceIndex = (data.services || []).length;
 
         Object.keys(productForm).forEach(function(key) {
+            if (!productForm[key].name) {
+                return;
+            }
+
             const path = productForm[key].name.replace('services.$', 'services.' + serviceIndex);
 
             setValueToPropertyPath(data, path, productForm[key].value || void 0);
