@@ -97,6 +97,7 @@ describe('AdapterDataReducer', () => {
         const crsData = {
             normalized: {
                 travellers: [
+                    void 0,
                     {
                         firstName: 'fn',
                         lastName: 'ln',
@@ -110,6 +111,7 @@ describe('AdapterDataReducer', () => {
         expect(JSON.parse(JSON.stringify(reducer.reduceIntoCrsData(adapterData, crsData))).normalized).toEqual({
             action: 'BA',
             travellers: [
+                {},
                 {
                     name: 'fn ln',
                 }

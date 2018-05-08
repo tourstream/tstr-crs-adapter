@@ -738,6 +738,63 @@ describe('TravelportCetsAdapter', () => {
                 expect(CetsConnection.returnBooking).toHaveBeenCalledWith(expectedXml);
             });
 
+            it('sendData() should send hotel service without travellers correct', () => {
+                requestXml = createRequestXml(
+                    '<Avl ServiceType="C">' +
+                    '<TOCode>FTI</TOCode>' +
+                    '<Catalog>TCH</Catalog>' +
+                    '<StartDate>02072017</StartDate>' +
+                    '<Duration>7</Duration>' +
+                    '<Destination>LAX</Destination>' +
+                    '<Adults>1</Adults>' +
+                    '</Avl>'
+                );
+                CetsConnection.getXmlRequest.and.returnValue(requestXml);
+
+                let data = {
+                    services: [
+                        {
+                            type: 'hotel',
+                            roomCode: 'DZ',
+                            mealCode: 'U',
+                            roomQuantity: '2',
+                            roomOccupancy: '4',
+                            destination: 'LAX20S',
+                            dateFrom: '12122017',
+                            dateTo: '19122017',
+                        },
+                    ],
+                };
+
+                let service = '<Fap ID="1">' +
+                    '<PersonType>M</PersonType>' +
+                    '<Name>NTBAA</Name>' +
+                    '<FirstName>NN</FirstName>' +
+                    '</Fap>' +
+
+                    '<Catalog>TCH</Catalog>' +
+                    '<TOCode>FTI</TOCode>' +
+                    '<Adults>1</Adults>' +
+
+                    '<Fah ServiceType="H">' +
+                    '<Product>20S</Product>' +
+                    '<Program>HOTEL</Program>' +
+                    '<Destination>LAX</Destination>' +
+                    '<Room>DZ</Room>' +
+                    '<Norm>4</Norm>' +
+                    '<MaxAdults>2</MaxAdults>' +
+                    '<Meal>U</Meal>' +
+                    '<StartDate>12122017</StartDate>' +
+                    '<Duration>7</Duration>' +
+                    '</Fah>';
+
+                let expectedXml = createCustomResponseXml(service);
+
+                adapter.sendData(data);
+
+                expect(CetsConnection.returnBooking).toHaveBeenCalledWith(expectedXml);
+            });
+
             it('cancel() should throw error if connection is not able to cancel', () => {
                 CetsConnection.getXmlRequest.and.throwError('error');
 

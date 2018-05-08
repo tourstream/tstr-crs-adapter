@@ -203,11 +203,14 @@ describe('AmadeusSPCTomaAdapter', () => {
                     quantity: 'quantity',
                     travellerAssociation: 'travellerAssociation'
                 }],
-                travellers: [{
-                    title:'title',
-                    name: 'my long name',
-                    discount: 'discount'
-                }],
+                travellers: [
+                    {},
+                    {
+                        title:'title',
+                        name: 'my long name',
+                        discount: 'discount'
+                    }
+                ],
                 agencyNumber: 'agencyNumber',
                 operator: 'operator',
                 numTravellers: 'numTravellers',
@@ -255,12 +258,15 @@ describe('AmadeusSPCTomaAdapter', () => {
                         quantity: 'quantity',
                         travellerAssociation: 'travellerAssociation'
                     }],
-                    travellers: [{
-                        title: 'title',
-                        firstName: 'my long',
-                        lastName: 'name',
-                        age: 'discount'
-                    }],
+                    travellers: [
+                        void 0,
+                        {
+                            title: 'title',
+                            firstName: 'my long',
+                            lastName: 'name',
+                            age: 'discount'
+                        }
+                    ],
                 });
                 done();
             }, (error) => {

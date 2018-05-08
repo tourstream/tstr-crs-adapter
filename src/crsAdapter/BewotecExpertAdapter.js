@@ -388,6 +388,10 @@ class BewotecExpertAdapter {
         crsObject.ExpertModel.Services.Service = crsObject.ExpertModel.Services.Service.filter(Boolean);
         crsObject.ExpertModel.Travellers = crsObject.ExpertModel.Travellers || {};
 
+        if (crsObject.ExpertModel.Travellers.Traveller === void 0) {
+            crsObject.ExpertModel.Travellers.Traveller = [];
+        }
+
         if (!Array.isArray(crsObject.ExpertModel.Travellers.Traveller)) {
             crsObject.ExpertModel.Travellers.Traveller = [crsObject.ExpertModel.Travellers.Traveller];
         }

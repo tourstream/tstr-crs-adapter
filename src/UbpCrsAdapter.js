@@ -115,7 +115,7 @@ class UbpCrsAdapter {
         this.options = Object.assign({}, DEFAULT_OPTIONS, options);
         this.logger = new LogService();
 
-        this.initLogger();
+        this.initDebugging();
 
         this.logger.log('init adapter with:');
         this.logger.log(this.options);
@@ -124,13 +124,15 @@ class UbpCrsAdapter {
     /**
      * @private
      */
-    initLogger() {
+    initDebugging() {
         let isDebugUrl = window.location && (
             (window.location.search && window.location.search.indexOf('debug') !== -1) ||
             (window.location.hash && window.location.hash.indexOf('debug') !== -1)
         );
 
-        if (this.options.debug || isDebugUrl) {
+        this.options.debug = this.options.debug || isDebugUrl;
+
+        if (this.options.debug) {
             this.logger.enable();
         }
     }
@@ -350,10 +352,12 @@ class UbpCrsAdapter {
 
             const travellerHelper = new TravellerHelper(this.options);
 
-            crsData.normalized.travellers = travellerHelper.cleanUpTravellers(
-                crsData.normalized.travellers,
-                crsData.normalized.services
-            );
+            if (crsData.normalized) {
+                crsData.normalized.travellers = travellerHelper.cleanUpTravellers(
+                    crsData.normalized.travellers,
+                    crsData.normalized.services
+                );
+            }
 
             this.logger.info('NORMALIZED CRS DATA:');
             this.logger.info(crsData.normalized);

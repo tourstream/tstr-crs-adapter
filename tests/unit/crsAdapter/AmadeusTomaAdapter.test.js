@@ -160,6 +160,9 @@ describe('AmadeusTomaAdapter', () => {
                 '<Title.1>Title</Title.1>' +
                 '<Name.1>My Long Name</Name.1>' +
                 '<Reduction.1>Reduction</Reduction.1>' +
+                '<Title.2></Title.2>' +
+                '<Name.2></Name.2>' +
+                '<Reduction.2></Reduction.2>' +
                 '</TOM>' +
                 '</Body>' +
                 '</Envelope>';
@@ -206,12 +209,15 @@ describe('AmadeusTomaAdapter', () => {
                         quantity: 'Count',
                         travellerAssociation: 'TravAssociation'
                     }],
-                    travellers: [{
-                        title: 'Title',
-                        firstName: 'My Long',
-                        lastName: 'Name',
-                        age: 'Reduction'
-                    }],
+                    travellers: [
+                        {
+                            title: 'Title',
+                            firstName: 'My Long',
+                            lastName: 'Name',
+                            age: 'Reduction'
+                        },
+                        void 0,
+                    ],
                 });
                 done();
             }, (error) => {
