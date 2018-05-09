@@ -5,12 +5,21 @@ const path = require('path');
 module.exports = {
     module: {
         rules: [{
+            test: /\.ts$/,
+            exclude: [
+                /node_modules/
+            ],
+            use: [
+                'babel-loader',
+                'ts-loader',
+            ]
+        }, {
             test: /\.js$/,
             exclude: [
                 /node_modules/
             ],
             use: ['babel-loader']
-        }]
+        }],
     },
     entry: './src/UbpCrsAdapter.js',
     output: {
@@ -26,6 +35,7 @@ module.exports = {
             path.resolve(__dirname),
         ],
         extensions: [
+            '.ts',
             '.json',
             '.js'
         ]

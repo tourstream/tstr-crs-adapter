@@ -28,13 +28,12 @@ class FtiTosiAdapter {
                 },
             },
             parserOptions: {
-                attrPrefix: '__attributes',
+                attributeNamePrefix: '__attributes',
                 textNodeName: '__textNode',
-                ignoreNonTextNodeAttr: false,
-                ignoreTextNodeAttr: false,
-                ignoreNameSpace: false,
-                ignoreRootElement: false,
-                textNodeConversion: false,
+                ignoreAttributes: false,
+                ignoreNameSpace: true,
+                parseNodeValue: false,
+                parseAttributeValue: false,
             },
             builderOptions: {
                 attrkey: '__attributes',
@@ -61,7 +60,7 @@ class FtiTosiAdapter {
         this.connectionOptions = {};
 
         this.helper = {
-            object: new ObjectHelper({ attrPrefix: CONFIG.parserOptions.attrPrefix }),
+            object: new ObjectHelper({ attrPrefix: CONFIG.parserOptions.attributeNamePrefix }),
         };
 
         this.xmlBuilder = {

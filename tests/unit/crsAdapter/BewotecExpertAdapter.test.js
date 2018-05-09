@@ -1,4 +1,4 @@
-import injector from 'inject!../../../src/crsAdapter/BewotecExpertAdapter';
+import injector from 'inject-loader!../../../src/crsAdapter/BewotecExpertAdapter';
 import {CRS_TYPES, DEFAULT_OPTIONS} from '../../../src/UbpCrsAdapter';
 
 describe('BewotecExpertAdapter', () => {
@@ -482,24 +482,17 @@ describe('BewotecExpertAdapter', () => {
         });
     });
 
-    describe('initialized with jackplus', () => {
-        BewotecExpertAdapter = injector({
-            'axios': axios,
-            '../helper/WindowHelper': jasmine.createSpy().and.returnValue(windowSpy),
-        });
-
+    it('is initialized with jackplus and connect() should not reject if no dataBridgeUrl is given', (done) => {
         const adapter = new BewotecExpertAdapter(
-            require('tests/unit/_mocks/LogService')(),
+            logService,
             Object.assign({}, DEFAULT_OPTIONS, { crsType: CRS_TYPES.jackPlus })
         );
 
-        it('connect() should not reject if no dataBridgeUrl is given', (done) => {
-            adapter.connect({ token: 'token' }).then(() => {
-                done();
-            }, (error) => {
-                console.log(error.message);
-                done.fail('unexpected result');
-            });
+        adapter.connect({ token: 'token' }).then(() => {
+            done();
+        }, (error) => {
+            console.log(error.message);
+            done.fail('unexpected result');
         });
     });
 });

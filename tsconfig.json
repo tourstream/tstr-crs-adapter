@@ -1,0 +1,16 @@
+{
+  "compilerOptions": {
+    "sourceMap": true,
+    "target": "es5",
+    "module": "commonjs",
+    "allowJs": true,
+    "noImplicitAny": true,
+    "noEmitHelpers": true,
+    "lib": [
+      "es5",
+      "es2015",
+      "es6",
+      "dom"
+    ]
+  }
+}

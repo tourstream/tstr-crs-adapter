@@ -1,4 +1,4 @@
-import injector from 'inject!../../src/UbpCrsAdapter';
+import injector from 'inject-loader!../../src/UbpCrsAdapter';
 import TravelportCetsAdapter from '../../src/crsAdapter/TravelportCetsAdapter';
 import AmadeusTomaAdapter from '../../src/crsAdapter/AmadeusTomaAdapter';
 import AmadeusSPCTomaAdapter from '../../src/crsAdapter/AmadeusSPCTomaAdapter';
