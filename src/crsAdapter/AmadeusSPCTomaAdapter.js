@@ -88,6 +88,10 @@ class AmadeusSPCTomaAdapter {
 
     collectTravellers(crsData) {
         return crsData.travellers.map((traveller) => {
+            if (!traveller.title && !traveller.name) {
+                return;
+            }
+
             const travellerNames = (traveller.name || '').split(' ');
 
             return {

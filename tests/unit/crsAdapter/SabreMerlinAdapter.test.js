@@ -134,6 +134,7 @@ describe('SabreMerlinAdapter', () => {
                 '<Name>My Long Name</Name>' +
                 '<Age>Age</Age>' +
                 '</PersonRow>' +
+                '<PersonRow travellerNo="2" />' +
                 '</PersonBlock>' +
                 '</TravellerBlock>' +
 
@@ -187,12 +188,15 @@ describe('SabreMerlinAdapter', () => {
                         quantity: 'NoOfServices',
                         travellerAssociation: 'TravellerAllocation'
                     }],
-                    travellers: [{
-                        title: 'Salutation',
-                        firstName: 'My Long',
-                        lastName: 'Name',
-                        age: 'Age'
-                    }],
+                    travellers: [
+                        {
+                            title: 'Salutation',
+                            firstName: 'My Long',
+                            lastName: 'Name',
+                            age: 'Age'
+                        },
+                        void 0,
+                    ],
                 });
                 done();
             }, (error) => {

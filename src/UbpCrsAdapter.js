@@ -115,7 +115,7 @@ class UbpCrsAdapter {
         this.options = Object.assign({}, DEFAULT_OPTIONS, options);
         this.logger = new LogService();
 
-        this.initLogger();
+        this.initDebugging();
 
         this.logger.log('init adapter with:');
         this.logger.log(this.options);
@@ -124,13 +124,15 @@ class UbpCrsAdapter {
     /**
      * @private
      */
-    initLogger() {
+    initDebugging() {
         let isDebugUrl = window.location && (
             (window.location.search && window.location.search.indexOf('debug') !== -1) ||
             (window.location.hash && window.location.hash.indexOf('debug') !== -1)
         );
 
-        if (this.options.debug || isDebugUrl) {
+        this.options.debug = this.options.debug || isDebugUrl;
+
+        if (this.options.debug) {
             this.logger.enable();
         }
     }
@@ -181,13 +183,7 @@ class UbpCrsAdapter {
                     return;
                 }
 
-                adapterInstance.fetchData().then((crsData) => {
-                    this.logger.info('RAW CRS DATA:');
-                    this.logger.info(crsData.raw);
-
-                    this.logger.info('PARSED CRS DATA:');
-                    this.logger.info(crsData.parsed);
-
+                this.fetchData().then((crsData) => {
                     const helper = {
                         vehicle: new VehicleHelper(this.options),
                         roundTrip: new RoundTripHelper(this.options),
@@ -244,11 +240,8 @@ class UbpCrsAdapter {
                     return;
                 }
 
-                adapterInstance.fetchData().then((crsData) => {
+                this.fetchData().then((crsData) => {
                     adapterData.services = adapterData.services || [];
-
-                    this.logger.info('FETCHED CRS DATA:');
-                    this.logger.info(crsData.parsed);
 
                     const helper = {
                         vehicle: new VehicleHelper(this.options),
@@ -343,6 +336,34 @@ class UbpCrsAdapter {
         }
 
         reject(new Error([message, error.message].filter(Boolean).join(' ')));
+    }
+
+    /**
+     * @private
+     * @returns {Promise<object>}
+     */
+    fetchData() {
+        return this.getAdapterInstance().fetchData().then((crsData) => {
+            this.logger.info('RAW CRS DATA:');
+            this.logger.info(crsData.raw);
+
+            this.logger.info('PARSED CRS DATA:');
+            this.logger.info(crsData.parsed);
+
+            const travellerHelper = new TravellerHelper(this.options);
+
+            if (crsData.normalized) {
+                crsData.normalized.travellers = travellerHelper.cleanUpTravellers(
+                    crsData.normalized.travellers,
+                    crsData.normalized.services
+                );
+            }
+
+            this.logger.info('NORMALIZED CRS DATA:');
+            this.logger.info(crsData.normalized);
+
+            return crsData;
+        });
     }
 }
 

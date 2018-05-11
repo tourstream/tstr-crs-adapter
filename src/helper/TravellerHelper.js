@@ -138,6 +138,27 @@ class TravellerHelper {
 
         return travellers;
     }
+
+    cleanUpTravellers(travellers = [], services = []) {
+        if (!travellers.length) {
+            return travellers;
+        }
+
+        let lastTravellerAssociation = services.reduce((highestTravellerAssociation, service) => {
+            return Math.max(
+                +highestTravellerAssociation,
+                +this.extractLastTravellerAssociation(service.travellerAssociation)
+            );
+        }, 0) || -1;
+
+        for (let index = travellers.length - 1; lastTravellerAssociation <= index; index--) {
+            if (!travellers[index]) {
+                travellers.splice(index, 1);
+            }
+        }
+
+        return travellers;
+    }
 }
 
 export default TravellerHelper;

@@ -57,6 +57,10 @@ class AdapterDataReducer {
 
     reduceTravellerNames(crsData) {
         crsData.normalized.travellers = (crsData.normalized.travellers || []).map((traveller) => {
+            if (!traveller) {
+                return {};
+            }
+
             return {
                 title: traveller.salutation,
                 name: [traveller.firstName, traveller.lastName].filter(Boolean).join(' '),

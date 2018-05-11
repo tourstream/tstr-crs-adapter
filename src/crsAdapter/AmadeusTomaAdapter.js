@@ -25,6 +25,7 @@ const CONFIG = {
             child: 'K',
             infant: 'K',
         },
+        maxTravellers: 6,
     },
     parserOptions: {
         attributeNamePrefix: '__attributes',
@@ -155,7 +156,15 @@ class AmadeusTomaAdapter {
         let lineNumber = 1;
 
         do {
-            if (!crsData['Title.' + lineNumber] && !crsData['Name.' + lineNumber]) break;
+            if (crsData['Title.' + lineNumber] === void 0 && crsData['Name.' + lineNumber] === void 0) {
+                break;
+            }
+
+            if (!crsData['Title.' + lineNumber] && !crsData['Name.' + lineNumber]) {
+                travellers.push(void 0);
+
+                continue;
+            }
 
             const travellerNames = (crsData['Name.' + lineNumber] || '').split(' ');
 
@@ -165,7 +174,7 @@ class AmadeusTomaAdapter {
                 firstName: travellerNames.join (' '),
                 age: crsData['Reduction.' + lineNumber],
             });
-        } while (lineNumber++);
+        } while (++lineNumber <= CONFIG.crs.maxTravellers);
 
         return travellers;
     }

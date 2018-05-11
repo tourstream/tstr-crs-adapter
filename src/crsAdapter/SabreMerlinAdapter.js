@@ -142,6 +142,10 @@ class SabreMerlinAdapter {
 
     collectTravellers(crsData) {
         return crsData.TravellerBlock.PersonBlock.PersonRow.map((traveller) => {
+            if (!traveller.Salutation && !traveller.Name) {
+                return;
+            }
+
             const travellerNames = (traveller.Name || '').split(' ');
 
             return {
