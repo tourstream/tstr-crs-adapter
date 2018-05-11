@@ -318,10 +318,6 @@ class BewotecExpertAdapter {
                     this.helper.window.removeEventListener('message', bewotecDataListener);
                 }
 
-                if (this.helper.window.removeEventListener) {
-                    this.helper.window.removeEventListener('message', bewotecDataListener);
-                }
-
                 if (message.data.errorMessage) {
                     if (((message.data.error || {}).response || {}).status !== 404) {
                         this.logger.error('received error from bewotec data bridge');
