@@ -306,12 +306,17 @@ class BewotecExpertAdapter {
                     return;
                 }
 
+                this.logger.info('received data from data bridge:');
+                this.logger.info(message.data);
+
+                if (!this.options.debug && this.bridgeWindow && !this.bridgeWindow.closed) {
+                    this.logger.info('bewotec data bridge will be closed now');
+                    this.bridgeWindow.close();
+                }
+
                 if (this.helper.window.removeEventListener) {
                     this.helper.window.removeEventListener('message', bewotecDataListener);
                 }
-
-                this.logger.info('received data from data bridge:');
-                this.logger.info(message.data);
 
                 if (message.data.errorMessage) {
                     if (((message.data.error || {}).response || {}).status !== 404) {
