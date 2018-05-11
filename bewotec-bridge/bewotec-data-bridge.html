@@ -62,10 +62,6 @@
                     if (window.opener) {
                         window.opener.postMessage(transferObject, '*');
                     }
-
-                    if (!debug) {
-                        window.close();
-                    }
                 };
 
                 axios.get('http://localhost:7354/airob/expert', { params: { token: token } }).then(function(response) {

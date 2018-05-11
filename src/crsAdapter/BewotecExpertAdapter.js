@@ -302,6 +302,10 @@ class BewotecExpertAdapter {
     getDataFromBewotecBridge(options) {
         return new Promise((resolve, reject) => {
             const bewotecDataListener = (message) => {
+                if (!this.options.debug && this.bridgeWindow && !this.bridgeWindow.closed) {
+                    this.bridgeWindow.close();
+                }
+
                 if (message.data.name !== 'bewotecDataTransfer') {
                     return;
                 }
