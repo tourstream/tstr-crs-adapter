@@ -302,12 +302,13 @@ class BewotecExpertAdapter {
     getDataFromBewotecBridge(options) {
         return new Promise((resolve, reject) => {
             const bewotecDataListener = (message) => {
-                if (!this.options.debug && this.bridgeWindow && !this.bridgeWindow.closed) {
-                    this.bridgeWindow.close();
-                }
-
                 if (message.data.name !== 'bewotecDataTransfer') {
                     return;
+                }
+
+                if (!this.options.debug && this.bridgeWindow && !this.bridgeWindow.closed) {
+                    this.logger.info('bewotec data bridge will be closed now');
+                    this.bridgeWindow.close();
                 }
 
                 if (this.helper.window.removeEventListener) {
