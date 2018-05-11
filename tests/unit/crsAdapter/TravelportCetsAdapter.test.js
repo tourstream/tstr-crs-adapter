@@ -28,10 +28,10 @@ describe('TravelportCetsAdapter', () => {
 
     it('connect() should throw error if connection is not available', () => {
         window.external = {
-            Get: jasmine.createSpy('CetsConnectionSpy').and.returnValue(null),
+            Get: jasmine.createSpy('CetsConnectionSpy').and.throwError('no available connection'),
         };
 
-        expect(adapter.connect.bind(adapter)).toThrowError('Connection failure - no communication possible with CETS.');
+        expect(adapter.connect.bind(adapter)).toThrowError('Instantiate connection error: no available connection');
     });
 
     describe('is connected with CETS -', () => {
@@ -738,6 +738,58 @@ describe('TravelportCetsAdapter', () => {
                 expect(CetsConnection.returnBooking).toHaveBeenCalledWith(expectedXml);
             });
 
+            it('sendData() should send hotel service correct with no travellers', () => {
+                requestXml = createRequestXml(
+                    '<Avl ServiceType="C">' +
+                    '<TOCode>FTI</TOCode>' +
+                    '<Catalog>TCH</Catalog>' +
+                    '<StartDate>02072017</StartDate>' +
+                    '<Duration>7</Duration>' +
+                    '<Destination>LAX</Destination>' +
+                    '<Adults>1</Adults>' +
+                    '</Avl>'
+                );
+                CetsConnection.getXmlRequest.and.returnValue(requestXml);
+
+                let data = {
+                    services: [
+                        {
+                            type: 'hotel',
+                            roomCode: 'DZ',
+                            mealCode: 'U',
+                            roomQuantity: '2',
+                            roomOccupancy: '4',
+                            destination: 'LAX20S',
+                            dateFrom: '12122017',
+                            dateTo: '19122017',
+                        },
+                    ],
+                };
+
+                let service = createFapXml() +
+                    '<Catalog>TCH</Catalog>' +
+                    '<TOCode>FTI</TOCode>' +
+                    '<Adults>1</Adults>' +
+
+                    '<Fah ServiceType="H">' +
+                    '<Product>20S</Product>' +
+                    '<Program>HOTEL</Program>' +
+                    '<Destination>LAX</Destination>' +
+                    '<Room>DZ</Room>' +
+                    '<Norm>4</Norm>' +
+                    '<MaxAdults>2</MaxAdults>' +
+                    '<Meal>U</Meal>' +
+                    '<StartDate>12122017</StartDate>' +
+                    '<Duration>7</Duration>' +
+                    '</Fah>'
+
+                let expectedXml = createCustomResponseXml(service);
+
+                adapter.sendData(data);
+
+                expect(CetsConnection.returnBooking).toHaveBeenCalledWith(expectedXml);
+            });
+
             it('cancel() should throw error if connection is not able to cancel', () => {
                 CetsConnection.getXmlRequest.and.throwError('error');
 
@@ -753,6 +805,71 @@ describe('TravelportCetsAdapter', () => {
                 adapter.cancel();
 
                 expect(CetsConnection.returnBooking).toHaveBeenCalledWith(createResponseXml());
+            });
+
+            it('sendData() should change catalog if different services are going to be send', () => {
+                requestXml = createRequestXml(
+                    '<Avl ServiceType="C">' +
+                    '<TOCode>FTI</TOCode>' +
+                    '<Catalog>TCH</Catalog>' +
+                    '<StartDate>02072017</StartDate>' +
+                    '<Duration>7</Duration>' +
+                    '<Destination>LAX</Destination>' +
+                    '<Adults>1</Adults>' +
+                    '</Avl>'
+                );
+                CetsConnection.getXmlRequest.and.returnValue(requestXml);
+
+                let data = {
+                    services: [
+                        {
+                            type: 'hotel',
+                            roomCode: 'DZ',
+                            mealCode: 'U',
+                            roomQuantity: '2',
+                            roomOccupancy: '4',
+                            destination: 'LAX20S',
+                            dateFrom: '12122017',
+                            dateTo: '19122017',
+                        },
+                        {
+                            type: SERVICE_TYPES.roundTrip,
+                            startDate: 'start',
+                            endDate: 'end',
+                        },
+                    ],
+                };
+
+                let service = createFapXml() +
+                    '<Catalog>360</Catalog>' +
+                    '<TOCode>FTI</TOCode>' +
+                    '<Adults>1</Adults>' +
+
+                    '<Fah ServiceType="H">' +
+                    '<Product>20S</Product>' +
+                    '<Program>HOTEL</Program>' +
+                    '<Destination>LAX</Destination>' +
+                    '<Room>DZ</Room>' +
+                    '<Norm>4</Norm>' +
+                    '<MaxAdults>2</MaxAdults>' +
+                    '<Meal>U</Meal>' +
+                    '<StartDate>12122017</StartDate>' +
+                    '<Duration>7</Duration>' +
+                    '</Fah>' +
+                    '<Fah ServiceType="R">' +
+                    '<Product/>' +
+                    '<Program>BAUSTEIN</Program>' +
+                    '<Destination>NEZ</Destination>' +
+                    '<Room/>' +
+                    '<StartDate>start</StartDate>' +
+                    '<Duration/>' +
+                    '</Fah>';
+
+                let expectedXml = createCustomResponseXml(service);
+
+                adapter.sendData(data);
+
+                expect(CetsConnection.returnBooking).toHaveBeenCalledWith(expectedXml);
             });
         });
 

@@ -306,6 +306,8 @@ class BewotecExpertAdapter {
                     return;
                 }
 
+                this.logger.info('received data from bewotec data bridge: ');
+
                 if (!this.options.debug && this.bridgeWindow && !this.bridgeWindow.closed) {
                     this.logger.info('bewotec data bridge will be closed now');
                     this.bridgeWindow.close();
@@ -315,7 +317,6 @@ class BewotecExpertAdapter {
                     this.helper.window.removeEventListener('message', bewotecDataListener);
                 }
 
-                this.logger.info('received data from bewotec data bridge: ');
                 this.logger.info(message.data);
 
                 if (message.data.errorMessage) {
