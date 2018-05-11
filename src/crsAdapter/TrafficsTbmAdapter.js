@@ -142,6 +142,10 @@ class TrafficsTbmAdapter {
 
     collectTravellers(crsData) {
         return crsData.travellers.traveller.map((traveller) => {
+            if (!traveller['$'].typ && !traveller['$'].sur) {
+                return;
+            }
+
             const travellerNames = (traveller['$'].sur || '').split(' ');
 
             return {

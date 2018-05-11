@@ -157,7 +157,7 @@ class BewotecExpertAdapter {
     collectTravellers(crsData) {
         return crsData.Travellers.Traveller.map((traveller) => {
             if (!traveller) {
-                return {};
+                return;
             }
 
             const travellerData = traveller[CONFIG.parserOptions.attributeNamePrefix];
@@ -271,7 +271,7 @@ class BewotecExpertAdapter {
                     });
                 }
 
-                this.logger.warn('HTTPS detected - will use dataBridge for getting data');
+                this.logger.warn('HTTPS detected - will use dataBridge for getting the data');
 
                 return this.getDataFromBewotecBridge(options);
             },
@@ -306,12 +306,16 @@ class BewotecExpertAdapter {
                     return;
                 }
 
-                this.logger.info('received data from bewotec data bridge: ');
+                this.logger.info('received data from data bridge:');
                 this.logger.info(message.data);
 
                 if (!this.options.debug && this.bridgeWindow && !this.bridgeWindow.closed) {
                     this.logger.info('bewotec data bridge will be closed now');
                     this.bridgeWindow.close();
+                }
+
+                if (this.helper.window.removeEventListener) {
+                    this.helper.window.removeEventListener('message', bewotecDataListener);
                 }
 
                 if (this.helper.window.removeEventListener) {
@@ -336,7 +340,12 @@ class BewotecExpertAdapter {
                 this.helper.window.attachEvent('onmessage', bewotecDataListener, false);
             }
 
-            const url = options.dataBridgeUrl + '?token=' + options.token + (this.options.debug ? '&debug' : '');
+            const url = [
+                options.dataBridgeUrl,
+                '?token=' + options.token,
+                '&' + (+new Date).toString(36),
+                (this.options.debug ? '&debug' : '')
+            ].join('');
 
             if (this.bridgeWindow && !this.bridgeWindow.closed) {
                 this.bridgeWindow.close();
@@ -351,6 +360,8 @@ class BewotecExpertAdapter {
 
                 return reject(new Error('bewotec data bridge window can not be opened'));
             }
+
+            this.logger.info('data bridge opened - waiting for data ...');
         });
     }
 
@@ -386,15 +397,12 @@ class BewotecExpertAdapter {
         crsObject.ExpertModel.Services.Service = crsObject.ExpertModel.Services.Service.filter(Boolean);
         crsObject.ExpertModel.Travellers = crsObject.ExpertModel.Travellers || {};
 
-        if (!Array.isArray(crsObject.ExpertModel.Travellers.Traveller)) {
-            crsObject.ExpertModel.Travellers.Traveller = [crsObject.ExpertModel.Travellers.Traveller];
+        if (crsObject.ExpertModel.Travellers.Traveller === void 0) {
+            crsObject.ExpertModel.Travellers.Traveller = [];
         }
 
-        while (
-            crsObject.ExpertModel.Travellers.Traveller.length
-            && !crsObject.ExpertModel.Travellers.Traveller[crsObject.ExpertModel.Travellers.Traveller.length - 1]
-        ) {
-            crsObject.ExpertModel.Travellers.Traveller.pop();
+        if (!Array.isArray(crsObject.ExpertModel.Travellers.Traveller)) {
+            crsObject.ExpertModel.Travellers.Traveller = [crsObject.ExpertModel.Travellers.Traveller];
         }
     }
 }

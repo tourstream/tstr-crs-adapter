@@ -255,5 +255,18 @@ describe('TravellerHelper', () => {
             }
         ]);
     });
+
+    it('cleanUpTravellers() should return empty traveller list', () => {
+        expect(helper.cleanUpTravellers()).toEqual([]);
+    });
+
+    it('cleanUpTravellers() should return empty traveller list', () => {
+        const travellers = [{ id: 1 }, { id: 2 }, { id: 3 }, { id: 4 }];
+        const services = [{
+            association: '2-3',
+        }];
+
+        expect(helper.cleanUpTravellers(travellers, services)).toEqual([{ id: 1 }, { id: 2 }, { id: 3 }]);
+    });
 });
 

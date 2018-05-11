@@ -139,7 +139,7 @@ describe('BewotecExpertAdapter', () => {
                 console.log(data);
                 done.fail('unexpected result');
             }, (error) => {
-                expect(windowSpy.open.calls.mostRecent().args[0]).toBe('dataBridgeUrl?token=token');
+                expect(windowSpy.open.calls.mostRecent().args[0]).toContain('dataBridgeUrl?token=token');
                 expect(error.message).toBe('transfer error');
                 done();
             });
@@ -340,7 +340,7 @@ describe('BewotecExpertAdapter', () => {
                         travellerAssociation: 'allocation'
                     }],
                     travellers: [
-                        {},
+                        void 0,
                         {
                             title: 'salutation',
                             firstName: 'my long',
@@ -348,6 +348,28 @@ describe('BewotecExpertAdapter', () => {
                             age: 'age'
                         },
                     ],
+                });
+                done();
+            }, (error) => {
+                console.log(error.message);
+                done.fail('unexpected result');
+            });
+        });
+
+        it('fetchData() should normalize one traveller correct', (done) => {
+            axios.get.and.returnValue(Promise.resolve({
+                data: xmlHead +
+                '<ExpertModel>' +
+                '<Travellers>' +
+                '<Traveller/>' +
+                '</Travellers>' +
+                '</ExpertModel>',
+            }));
+
+            adapter.fetchData().then((result) => {
+                expect(JSON.parse(JSON.stringify(result.normalized))).toEqual({
+                    services: [],
+                    travellers: [null],
                 });
                 done();
             }, (error) => {

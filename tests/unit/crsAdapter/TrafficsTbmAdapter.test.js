@@ -214,13 +214,18 @@ describe('TrafficsTbmAdapter', () => {
                         }],
                     },
                     travellers: {
-                        traveller: [{
-                            $: {
-                                typ: 'typ',
-                                sur: 'very long sur',
-                                age: 'age',
+                        traveller: [
+                            {
+                                $: {
+                                    typ: 'typ',
+                                    sur: 'very long sur',
+                                    age: 'age',
+                                },
                             },
-                        }],
+                            {
+                                $: {},
+                            },
+                        ],
                     },
                 },
             };
@@ -265,12 +270,15 @@ describe('TrafficsTbmAdapter', () => {
                         quantity: 'cnt',
                         travellerAssociation: 'agn'
                     }],
-                    travellers: [{
-                        title: 'typ',
-                        firstName: 'very long',
-                        lastName: 'sur',
-                        age: 'age'
-                    }],
+                    travellers: [
+                        {
+                            title: 'typ',
+                            firstName: 'very long',
+                            lastName: 'sur',
+                            age: 'age'
+                        },
+                        void 0,
+                    ],
                 });
                 done();
             }, (error) => {

@@ -273,6 +273,7 @@ class TravelportCetsAdapter {
                 dataObject.services.push(service);
             }
         }
+
         return JSON.parse(JSON.stringify(dataObject));
     }
 

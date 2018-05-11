@@ -266,8 +266,10 @@ describe('UbpCrsAdapter', () => {
             })
         });
 
-        it('getData() should return data', (done) => {
-            AnyCrsAdapter.fetchData.and.returnValue(Promise.resolve({}));
+        it('getData() should return data and clean up travellers', (done) => {
+            AnyCrsAdapter.fetchData.and.returnValue(Promise.resolve({
+                normalized: {},
+            }));
             CrsDataMapper.mapToAdapterData.and.returnValue({});
 
             adapter.getData().then((data) => {
