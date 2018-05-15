@@ -5,11 +5,12 @@ const CONFIG = {
         timeFormat: 'HHmm',
         serviceTypes: {
             car: 'MW',
-            carExtra: 'E',
+            carHotelLocation: 'E',
             hotel: 'H',
             camper: 'WM',
             camperExtra: 'TA',
             roundTrip: 'R',
+            insurance: 'V',
         },
         gender2SalutationMap: {
             male: 'H',

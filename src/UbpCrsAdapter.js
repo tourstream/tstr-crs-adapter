@@ -81,6 +81,12 @@ const CRS_OPTIONS = {
     },
 };
 
+const CAMPER_EXTRA_TYPES = {
+    equipment: 'equipment',
+    special: 'special',
+    insurance: 'insurance',
+};
+
 const GENDER_TYPES = {
     female: 'female',
     male: 'male',
@@ -371,6 +377,7 @@ export {
     SERVICE_TYPES,
     CRS_TYPES,
     GENDER_TYPES,
+    CAMPER_EXTRA_TYPES,
     DEFAULT_OPTIONS,
     UbpCrsAdapter as default,
 };

@@ -8,11 +8,12 @@ const CONFIG = {
         timeFormat: 'HHmm',
         serviceTypes: {
             car: 'MW',
-            carExtra: 'E',
+            carHotelLocation: 'E',
             hotel: 'H',
             roundTrip: 'R',
             camper: 'WM',
             camperExtra: 'TA',
+            insurance: 'V',
         },
         connectionUrl: 'cosmonaut://params/',
         gender2SalutationMap: {

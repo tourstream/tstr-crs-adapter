@@ -14,11 +14,12 @@ class SabreMerlinAdapter {
                 timeFormat: 'HHmm',
                 serviceTypes: {
                     car: 'MW',
-                    carExtra: 'E',
+                    carHotelLocation: 'E',
                     hotel: 'H',
                     roundTrip: 'R',
                     camper: 'WM',
                     camperExtra: 'TA',
+                    insurance: 'V',
                 },
                 connectionUrl: 'https://localhost:12771/',
                 gender2SalutationMap: {

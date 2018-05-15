@@ -12,11 +12,12 @@ const CONFIG = {
         timeFormat: 'HHmm',
         serviceTypes: {
             car: 'MW',
-            carExtra: 'E',
+            carHotelLocation: 'E',
             hotel: 'H',
             roundTrip: 'R',
             camper: 'WM',
             camperExtra: 'TA',
+            insurance: 'V',
         },
         activeXObjectName: 'Spice.Start',
         gender2SalutationMap: {

@@ -33,7 +33,7 @@ class CarServiceReducer {
         if (hotelName) {
             let hotelService = this.createEmptyService(crsData);
 
-            hotelService.type = crsData.meta.serviceTypes.carExtra;
+            hotelService.type = crsData.meta.serviceTypes.carHotelLocation;
             hotelService.code = hotelName;
             hotelService.fromDate = crsService.fromDate;
             hotelService.toDate = crsService.toDate;

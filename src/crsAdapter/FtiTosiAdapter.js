@@ -13,11 +13,12 @@ class FtiTosiAdapter {
                 timeFormat: 'HHmm',
                 serviceTypes: {
                     car: 'MW',
-                    carExtra: 'E',
+                    carHotelLocation: 'E',
                     hotel: 'H',
                     roundTrip: 'R',
                     camper: 'WM',
                     camperExtra: 'TA',
+                    insurance: 'V',
                 },
                 connectionUrl: '//xmlrpc.fti.de/xmlrpc',
                 gender2SalutationMap: {

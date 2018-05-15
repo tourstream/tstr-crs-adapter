@@ -303,7 +303,7 @@ describe('BewotecExpertAdapter', () => {
                 expect(result.meta).toEqual({
                     serviceTypes: {
                         car: 'MW',
-                        carExtra: 'E',
+                        carHotelLocation: 'E',
                         hotel: 'H',
                         roundTrip: 'R',
                         camper: 'WM',

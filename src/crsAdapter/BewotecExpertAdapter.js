@@ -10,11 +10,12 @@ const CONFIG = {
         timeFormat: 'HHmm',
         serviceTypes: {
             car: 'MW',
-            carExtra: 'E',
+            carHotelLocation: 'E',
             hotel: 'H',
             roundTrip: 'R',
             camper: 'WM',
             camperExtra: 'TA',
+            insurance: 'V',
         },
         connectionUrl: 'http://localhost:7354/airob',
         gender2SalutationMap: {
