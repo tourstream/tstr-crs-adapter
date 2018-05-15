@@ -156,7 +156,8 @@ describe('SabreMerlinAdapter', () => {
                         hotel: 'H',
                         roundTrip: 'R',
                         camper: 'WM',
-                        camperExtra: 'TA'
+                        camperExtra: 'TA',
+                        insurance: 'V',
                     },
                     genderTypes: {
                         male: 'H',
