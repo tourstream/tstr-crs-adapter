@@ -220,24 +220,11 @@ describe('AmadeusSPCTomaAdapter', () => {
 
             adapter.fetchData().then((result) => {
                 expect(result.meta).toEqual({
-                    serviceTypes: {
-                        car: 'MW',
-                        carHotelLocation: 'E',
-                        hotel: 'H',
-                        roundTrip: 'R',
-                        camper: 'WM',
-                        camperExtra: 'TA',
-                        insurance: 'V',
-                    },
                     genderTypes: {
                         male: 'H',
                         female: 'D',
                         child: 'K',
                         infant: 'K'
-                    },
-                    formats: {
-                        date: 'DDMMYY',
-                        time: 'HHmm'
                     },
                     type: AmadeusSPCTomaAdapter.type,
                 });

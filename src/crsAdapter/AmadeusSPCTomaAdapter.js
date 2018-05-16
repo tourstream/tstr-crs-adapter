@@ -1,28 +1,19 @@
-const CONFIG = {
-    crs: {
-        catalogFileName: 'ExternalCatalog.js',
-        dateFormat: 'DDMMYY',
-        timeFormat: 'HHmm',
-        serviceTypes: {
-            car: 'MW',
-            carHotelLocation: 'E',
-            hotel: 'H',
-            camper: 'WM',
-            camperExtra: 'TA',
-            roundTrip: 'R',
-            insurance: 'V',
-        },
-        gender2SalutationMap: {
-            male: 'H',
-            female: 'D',
-            child: 'K',
-            infant: 'K',
-        },
-    },
-};
+import {GENDER_TYPES} from '../UbpCrsAdapter';
 
 class AmadeusSPCTomaAdapter {
     constructor(logger, options = {}) {
+        this.config = {
+            crs: {
+                catalogFileName: 'ExternalCatalog.js',
+                genderTypes: {
+                    [GENDER_TYPES.male]: 'H',
+                    [GENDER_TYPES.female]: 'D',
+                    [GENDER_TYPES.child]: 'K',
+                    [GENDER_TYPES.infant]: 'K',
+                },
+            }
+        };
+
         this.options = options;
         this.logger = logger;
         this.connectionOptions = {};
@@ -59,12 +50,7 @@ class AmadeusSPCTomaAdapter {
                     travellers: this.collectTravellers(parsed),
                 },
                 meta: {
-                    serviceTypes: CONFIG.crs.serviceTypes,
-                    genderTypes: CONFIG.crs.gender2SalutationMap,
-                    formats: {
-                        date: CONFIG.crs.dateFormat,
-                        time: CONFIG.crs.timeFormat,
-                    },
+                    genderTypes: this.config.crs.genderTypes,
                     type: AmadeusSPCTomaAdapter.type,
                 },
             };
@@ -240,7 +226,7 @@ class AmadeusSPCTomaAdapter {
             this.logger.info('use ' + connectionUrl + ' for connection to Amadeus');
 
             let catalogVersion = this.getUrlParameter('EXTERNAL_CATALOG_VERSION') || options.externalCatalogVersion;
-            let filePath = connectionUrl + '/' + CONFIG.crs.catalogFileName + (catalogVersion ? '?version=' + catalogVersion : '');
+            let filePath = connectionUrl + '/' + this.config.crs.catalogFileName + (catalogVersion ? '?version=' + catalogVersion : '');
             let script = document.createElement('script');
 
             script.src = filePath;

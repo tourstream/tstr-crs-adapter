@@ -1,72 +1,55 @@
 import xml2js from 'xml2js';
 import * as fastXmlParser from 'fast-xml-parser';
 
-/**
- * need to be true:
- *      parserOptions.attributeNamePrefix === builderOptions.attrkey
- *      parserOptions.textNodeName === builderOptions.charkey
- */
-const CONFIG = {
-    crs: {
-        dateFormat: 'DDMMYY',
-        timeFormat: 'HHmm',
-        serviceTypes: {
-            car: 'MW',
-            carHotelLocation: 'E',
-            hotel: 'H',
-            roundTrip: 'R',
-            camper: 'WM',
-            camperExtra: 'TA',
-            insurance: 'V',
-        },
-        activeXObjectName: 'Spice.Start',
-        gender2SalutationMap: {
-            male: 'H',
-            female: 'F',
-            child: 'K',
-            infant: 'K',
-        },
-        maxTravellers: 6,
-    },
-    parserOptions: {
-        attributeNamePrefix: '__attributes',
-        textNodeName: '__textNode',
-        ignoreAttributes: true,
-        ignoreNameSpace: true,
-        parseNodeValue: false,
-        parseAttributeValue: false,
-    },
-    builderOptions: {
-        attrkey: '__attributes',
-        charkey: '__textNode',
-        renderOpts: {
-            pretty: false,
-            indent: false,
-            newline: false,
-        },
-        xmldec: {
-            version: '1.0',
-            encoding: 'UTF-8',
-            standalone: void 0,
-        },
-        doctype: null,
-        headless: false,
-        allowSurrogateChars: false,
-        cdata: false,
-    },
-};
-
 class AmadeusTomaAdapter {
     constructor(logger, options = {}) {
+        /**
+         * need to be true:
+         *      parserOptions.attributeNamePrefix === builderOptions.attrkey
+         *      parserOptions.textNodeName === builderOptions.charkey
+         */
+        this.config = {
+            crs: {
+                activeXObjectName: 'Spice.Start',
+                    maxTravellers: 6,
+            },
+            parserOptions: {
+                attributeNamePrefix: '__attributes',
+                    textNodeName: '__textNode',
+                    ignoreAttributes: true,
+                    ignoreNameSpace: true,
+                    parseNodeValue: false,
+                    parseAttributeValue: false,
+            },
+            builderOptions: {
+                attrkey: '__attributes',
+                    charkey: '__textNode',
+                    renderOpts: {
+                    pretty: false,
+                        indent: false,
+                        newline: false,
+                },
+                xmldec: {
+                    version: '1.0',
+                        encoding: 'UTF-8',
+                        standalone: void 0,
+                },
+                doctype: null,
+                    headless: false,
+                    allowSurrogateChars: false,
+                    cdata: false,
+            },
+        };
+
         this.options = options;
         this.logger = logger;
 
         this.xmlParser = {
-            parse: xmlString => fastXmlParser.parse(xmlString, CONFIG.parserOptions)
+            parse: xmlString => fastXmlParser.parse(xmlString, this.config.parserOptions)
         };
 
         this.xmlBuilder = {
-            build: xmlObject => (new xml2js.Builder(CONFIG.builderOptions)).buildObject(JSON.parse(JSON.stringify(xmlObject)))
+            build: xmlObject => (new xml2js.Builder(this.config.builderOptions)).buildObject(JSON.parse(JSON.stringify(xmlObject)))
         };
     }
 
@@ -113,12 +96,6 @@ class AmadeusTomaAdapter {
                     travellers: this.collectTravellers(crsData),
                 },
                 meta: {
-                    serviceTypes: CONFIG.crs.serviceTypes,
-                    genderTypes: CONFIG.crs.gender2SalutationMap,
-                    formats: {
-                        date: CONFIG.crs.dateFormat,
-                        time: CONFIG.crs.timeFormat,
-                    },
                     type: AmadeusTomaAdapter.type,
                 },
             });
@@ -175,7 +152,7 @@ class AmadeusTomaAdapter {
                 firstName: travellerNames.join (' '),
                 age: crsData['Reduction.' + lineNumber],
             });
-        } while (++lineNumber <= CONFIG.crs.maxTravellers);
+        } while (++lineNumber <= this.config.crs.maxTravellers);
 
         return travellers;
     }
@@ -269,7 +246,7 @@ class AmadeusTomaAdapter {
         }
 
         try {
-            this.connection = new window.ActiveXObject(CONFIG.crs.activeXObjectName);
+            this.connection = new window.ActiveXObject(this.config.crs.activeXObjectName);
         } catch (error) {
             this.logger.error(error);
             throw new Error('Instantiate connection error: ' + error.message);

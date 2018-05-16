@@ -189,6 +189,7 @@ class UbpCrsAdapter {
                     return;
                 }
 
+                // in case of "german CRS"
                 this.fetchData().then((crsData) => {
                     const helper = {
                         vehicle: new VehicleHelper(this.options),
@@ -246,6 +247,7 @@ class UbpCrsAdapter {
                     return;
                 }
 
+                // in case of "german CRS"
                 this.fetchData().then((crsData) => {
                     adapterData.services = adapterData.services || [];
 
@@ -308,7 +310,7 @@ class UbpCrsAdapter {
         let normalizedCrsType = crsType.toLowerCase();
 
         if (!CRS_TYPE_2_ADAPTER_MAP[normalizedCrsType]) {
-            throw new Error('The CRS "' + normalizedCrsType + '" is currently not supported.');
+            throw new Error('The CRS "' + crsType + '" is currently not supported.');
         }
 
         this.options.crsType = normalizedCrsType;
@@ -355,6 +357,30 @@ class UbpCrsAdapter {
 
             this.logger.info('PARSED CRS DATA:');
             this.logger.info(crsData.parsed);
+
+            const defaultMetadata = {
+                formats: {
+                    date: 'DDMMYY',
+                    time: 'HHmm',
+                },
+                serviceTypes: {
+                    [SERVICE_TYPES.car]: 'MW',
+                    carHotelLocation: 'E',
+                    [SERVICE_TYPES.hotel]: 'H',
+                    [SERVICE_TYPES.roundTrip]: 'R',
+                    [SERVICE_TYPES.camper]: 'WM',
+                    camperExtra: 'TA',
+                    insurance: 'V',
+                },
+                genderTypes: {
+                    [GENDER_TYPES.male]: 'H',
+                    [GENDER_TYPES.female]: 'F',
+                    [GENDER_TYPES.child]: 'K',
+                    [GENDER_TYPES.infant]: 'K',
+                },
+            };
+
+            crsData.meta = Object.assign({}, defaultMetadata, crsData.meta);
 
             const travellerHelper = new TravellerHelper(this.options);
 

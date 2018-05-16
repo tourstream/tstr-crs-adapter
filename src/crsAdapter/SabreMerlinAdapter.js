@@ -1,33 +1,13 @@
 import xml2js from 'xml2js';
 import axios from 'axios';
-import {GENDER_TYPES} from '../UbpCrsAdapter';
 import ObjectHelper from '../helper/ObjectHelper';
 import * as fastXmlParser from 'fast-xml-parser';
 
-let CONFIG;
-
 class SabreMerlinAdapter {
     constructor(logger, options = {}) {
-        CONFIG = {
+        this.config = {
             crs: {
-                dateFormat: 'DDMMYY',
-                timeFormat: 'HHmm',
-                serviceTypes: {
-                    car: 'MW',
-                    carHotelLocation: 'E',
-                    hotel: 'H',
-                    roundTrip: 'R',
-                    camper: 'WM',
-                    camperExtra: 'TA',
-                    insurance: 'V',
-                },
                 connectionUrl: 'https://localhost:12771/',
-                gender2SalutationMap: {
-                    [GENDER_TYPES.male]: 'H',
-                    [GENDER_TYPES.female]: 'F',
-                    [GENDER_TYPES.child]: 'K',
-                    [GENDER_TYPES.infant]: 'K',
-                },
             },
             parserOptions: {
                 attributeNamePrefix: '__attributes',
@@ -61,12 +41,12 @@ class SabreMerlinAdapter {
         this.logger = logger;
 
         this.helper = {
-            object: new ObjectHelper({ attrPrefix: CONFIG.parserOptions.attributeNamePrefix }),
+            object: new ObjectHelper({ attrPrefix: this.config.parserOptions.attributeNamePrefix }),
         };
 
         this.xmlParser = {
             parse: (xmlString = '') => {
-                const crsObject = fastXmlParser.parse(xmlString, CONFIG.parserOptions);
+                const crsObject = fastXmlParser.parse(xmlString, this.config.parserOptions);
 
                 this.helper.object.groupAttributes(crsObject);
                 this.normalizeCrsObject(crsObject);
@@ -76,7 +56,7 @@ class SabreMerlinAdapter {
         };
 
         this.xmlBuilder = {
-            build: (xmlObject) => (new xml2js.Builder(CONFIG.builderOptions)).buildObject(JSON.parse(JSON.stringify(xmlObject)))
+            build: (xmlObject) => (new xml2js.Builder(this.config.builderOptions)).buildObject(JSON.parse(JSON.stringify(xmlObject)))
         };
     }
 
@@ -113,12 +93,6 @@ class SabreMerlinAdapter {
                     travellers: this.collectTravellers(crsData),
                 },
                 meta: {
-                    serviceTypes: CONFIG.crs.serviceTypes,
-                    genderTypes: CONFIG.crs.gender2SalutationMap,
-                    formats: {
-                        date: CONFIG.crs.dateFormat,
-                        time: CONFIG.crs.timeFormat,
-                    },
                     type: SabreMerlinAdapter.type,
                 },
             };
@@ -185,7 +159,7 @@ class SabreMerlinAdapter {
         crsData.normalized.services.forEach((service, index) => {
             const crsServiceObject = {};
 
-            crsServiceObject[CONFIG.parserOptions.attributeNamePrefix] = {
+            crsServiceObject[this.config.parserOptions.attributeNamePrefix] = {
                 positionNo: index + 1
             };
             crsServiceObject.MarkField = service.marker;
@@ -206,7 +180,7 @@ class SabreMerlinAdapter {
         crsData.normalized.travellers.forEach((traveller, index) => {
             const crsTravellerObject = {};
 
-            crsTravellerObject[CONFIG.parserOptions.attributeNamePrefix] = {
+            crsTravellerObject[this.config.parserOptions.attributeNamePrefix] = {
                 travellerNo: index + 1
             };
             crsTravellerObject.Salutation = traveller.title;
@@ -246,8 +220,8 @@ class SabreMerlinAdapter {
         axios.defaults.headers.post['Content-Type'] = 'application/xml';
 
         return {
-            get: () => axios.get(CONFIG.crs.connectionUrl + 'gate2mx'),
-            post: (data = '') => axios.post(CONFIG.crs.connectionUrl + 'httpImport', data),
+            get: () => axios.get(this.config.crs.connectionUrl + 'gate2mx'),
+            post: (data = '') => axios.post(this.config.crs.connectionUrl + 'httpImport', data),
         };
     }
 

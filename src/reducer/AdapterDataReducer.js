@@ -11,10 +11,6 @@ class AdapterDataReducer {
             return;
         }
 
-        return this.reduceIntoGermanCrs(adapterData, crsData);
-    }
-
-    reduceIntoGermanCrs(adapterData, crsData) {
         adapterData.services = adapterData.services || [];
 
         crsData.normalized.action = 'BA';
