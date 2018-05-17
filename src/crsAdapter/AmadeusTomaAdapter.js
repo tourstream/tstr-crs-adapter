@@ -11,33 +11,38 @@ class AmadeusTomaAdapter {
         this.config = {
             crs: {
                 activeXObjectName: 'Spice.Start',
-                    maxTravellers: 6,
+                maxServiceLines: 6,
+                maxTravellerLines: 6,
+                actions: {
+                    nextPage: '+',
+                    previousPage: '-',
+                },
             },
             parserOptions: {
                 attributeNamePrefix: '__attributes',
-                    textNodeName: '__textNode',
-                    ignoreAttributes: true,
-                    ignoreNameSpace: true,
-                    parseNodeValue: false,
-                    parseAttributeValue: false,
+                textNodeName: '__textNode',
+                ignoreAttributes: true,
+                ignoreNameSpace: true,
+                parseNodeValue: false,
+                parseAttributeValue: false,
             },
             builderOptions: {
                 attrkey: '__attributes',
-                    charkey: '__textNode',
-                    renderOpts: {
+                charkey: '__textNode',
+                renderOpts: {
                     pretty: false,
-                        indent: false,
-                        newline: false,
+                    indent: false,
+                    newline: false,
                 },
                 xmldec: {
                     version: '1.0',
-                        encoding: 'UTF-8',
-                        standalone: void 0,
+                    encoding: 'UTF-8',
+                    standalone: void 0,
                 },
                 doctype: null,
-                    headless: false,
-                    allowSurrogateChars: false,
-                    cdata: false,
+                headless: false,
+                allowSurrogateChars: false,
+                cdata: false,
             },
         };
 
@@ -152,7 +157,7 @@ class AmadeusTomaAdapter {
                 firstName: travellerNames.join (' '),
                 age: crsData['Reduction.' + lineNumber],
             });
-        } while (++lineNumber <= this.config.crs.maxTravellers);
+        } while (++lineNumber <= this.config.crs.maxTravellerLines);
 
         return travellers;
     }
@@ -220,6 +225,30 @@ class AmadeusTomaAdapter {
 
     sendData(crsData) {
         try {
+            while ((crsData.normalized.services || []).length > CONFIG.crs.maxServiceLines) {
+                this.logger.info(
+                    'Found ' + crsData.normalized.services.length + ' service lines - but only ' +
+                    CONFIG.crs.maxServiceLines + ' are allowed.'
+                );
+
+                const crsDataObject = crsData.converted.Envelope.Body.TOM;
+
+                crsDataObject.Action = CONFIG.crs.actions.nextPage;
+                crsData.build = this.xmlBuilder.build(crsData.converted);
+
+                this.getConnection().PutXmlData(crsData.build);
+                this.getConnection().PutActionKey(1);
+
+                crsData.normalized.services.splice(0, CONFIG.crs.maxServiceLines);
+                crsData.normalized.travellers.splice(0, CONFIG.crs.maxTravellerLines);
+
+                crsData.parsed.Envelope.Header.Application.Reset = '0';
+
+                crsData = this.convert(crsData);
+
+                this.logger.info('Will write the rest service lines to the next page.');
+            }
+
             this.getConnection().FIFramePutData(crsData.build);
             return Promise.resolve();
         } catch (error) {
