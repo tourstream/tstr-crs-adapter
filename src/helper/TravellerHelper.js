@@ -28,10 +28,9 @@ class TravellerHelper {
             return;
         }
 
-        crsData.normalized = crsData.normalized || {
-            services: [],
-            travellers: [],
-        };
+        crsData.normalized = crsData.normalized || {};
+        crsData.normalized.services = crsData.normalized.services || [];
+        crsData.normalized.travellers = crsData.normalized.travellers || [];
 
         let startAssociation = crsData.normalized.travellers.length + 1;
 

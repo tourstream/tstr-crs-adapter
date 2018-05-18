@@ -32,6 +32,8 @@ class CamperServiceReducer {
 
         const startAssociation = this.helper.traveller.calculateStartAssociation({}, crsData) || 1;
 
+        this.helper.traveller.reduceTravellersIntoCrsData(adapterService, crsService, crsData);
+
         (adapterService.extras || []).forEach((extra) => {
             const service = this.createEmptyService(crsData);
 
@@ -43,8 +45,6 @@ class CamperServiceReducer {
                 (value, index, array) => array.indexOf(value) === index
             ).join('-');
         });
-
-        this.helper.traveller.reduceTravellersIntoCrsData(adapterService, crsService, crsData);
     }
 
     findCrsService(adapterService, crsData) {

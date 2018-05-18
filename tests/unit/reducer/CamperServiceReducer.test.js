@@ -1,4 +1,5 @@
 import CamperServiceReducer from '../../../src/reducer/CamperServiceReducer';
+import TravellerHelper from '../../../src/helper/TravellerHelper';
 import {DEFAULT_OPTIONS, SERVICE_TYPES} from '../../../src/UbpCrsAdapter';
 
 describe('CamperServiceReducer', () => {
@@ -8,7 +9,7 @@ describe('CamperServiceReducer', () => {
         vehicleHelper = require('tests/unit/_mocks/VehicleHelper')();
         config = DEFAULT_OPTIONS;
         helper = {
-            traveller: require('tests/unit/_mocks/TravellerHelper')(),
+            traveller: new TravellerHelper(),
             vehicle: vehicleHelper,
         };
 
@@ -65,6 +66,9 @@ describe('CamperServiceReducer', () => {
                     amount: 3,
                 },
             ],
+            travellers: [
+                {}
+            ],
         };
         const crsData = {
             normalized: {
@@ -86,6 +90,7 @@ describe('CamperServiceReducer', () => {
                     date: 'YYYY-MM-DD',
                     time: 'HH:mm',
                 },
+                genderTypes: {},
             },
         };
 
@@ -110,6 +115,7 @@ describe('CamperServiceReducer', () => {
                     occupancy: 'milesPackagesIncluded',
                     fromDate: '2018-03-16',
                     toDate: '2018-03-21',
+                    travellerAssociation: '1',
                 },
                 {
                     type: 'extraType',
@@ -125,6 +131,9 @@ describe('CamperServiceReducer', () => {
                     toDate: '2018-03-16',
                     travellerAssociation: '1-3',
                 },
+            ],
+            travellers: [
+                {}
             ],
         });
     });
