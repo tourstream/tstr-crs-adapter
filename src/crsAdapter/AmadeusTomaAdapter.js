@@ -241,15 +241,17 @@ class AmadeusTomaAdapter {
 
                 crsData.normalized.services.splice(0, CONFIG.crs.maxServiceLines);
                 crsData.normalized.travellers.splice(0, CONFIG.crs.maxTravellerLines);
-
                 crsData.parsed.Envelope.Header.Application.Reset = '0';
 
                 crsData = this.convert(crsData);
 
-                this.logger.info('Will write the rest service lines to the next page.');
+                this.logger.info('Will write the rest to the next page:');
+                this.logger.info(crsData.converted);
+                this.logger.info(crsData.build);
             }
 
             this.getConnection().FIFramePutData(crsData.build);
+
             return Promise.resolve();
         } catch (error) {
             return Promise.reject(error);
