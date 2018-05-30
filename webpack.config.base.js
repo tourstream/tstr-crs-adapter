@@ -21,7 +21,8 @@ module.exports = {
             use: ['babel-loader']
         }],
     },
-    entry: './src/UbpCrsAdapter.js',
+    devtool: "source-map",
+    entry: ["babel-polyfill", './src/UbpCrsAdapter.js'],
     output: {
         library: 'UbpCrsAdapter',
         libraryTarget: 'umd',

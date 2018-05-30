@@ -1,3 +1,4 @@
+import 'babel-polyfill';
 import 'polyfills';
 
 import LogService from 'LogService';
