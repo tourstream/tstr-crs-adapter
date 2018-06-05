@@ -15,8 +15,9 @@ module.exports = {
             ]
         }, {
             test: /\.js$/,
+            // fast-xml-parser from version 3.2.0 isn't compiled to es5, so it is done here.
             exclude: [
-                /node_modules/
+                /node_modules\/(?!fast-xml-parser)/
             ],
             use: ['babel-loader']
         }],
