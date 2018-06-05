@@ -358,7 +358,7 @@ describe('TravelportCetsAdapter', () => {
                     '<Info>WALK IN</Info>' +
                     '</PickUp>' +
                     '<DropOff>' +
-                    '<Time/>' +
+                    '<Time>0820</Time>' +
                     '<CarStation Code="DROP.OFF.LOCATION"/>' +
                     '</DropOff>' +
                     '</CarDetails>' +
@@ -445,7 +445,7 @@ describe('TravelportCetsAdapter', () => {
                     '<Info>pick.up.hotel.name</Info>' +
                     '</PickUp>' +
                     '<DropOff>' +
-                    '<Time/>' +
+                    '<Time>0940</Time>' +
                     '<CarStation Code="DROP.OFF.LOCATION"/>' +
                     '</DropOff>' +
                     '</CarDetails>' +
@@ -499,7 +499,7 @@ describe('TravelportCetsAdapter', () => {
                     '<Info>WALK IN</Info>' +
                     '</PickUp>' +
                     '<DropOff>' +
-                    '<Time/>' +
+                    '<Time>0940</Time>' +
                     '<CarStation Code="DROP.OFF.LOCATION"/>' +
                     '<Info>drop.off.hotel.name</Info>' +
                     '</DropOff>' +
@@ -554,7 +554,7 @@ describe('TravelportCetsAdapter', () => {
                     '<Info>pick.up.hotel.name</Info>' +
                     '</PickUp>' +
                     '<DropOff>' +
-                    '<Time/>' +
+                    '<Time>0940</Time>' +
                     '<CarStation Code="DROP.OFF.LOCATION"/>' +
                     '</DropOff>' +
                     '</CarDetails>' +
@@ -980,7 +980,7 @@ describe('TravelportCetsAdapter', () => {
                                 '<Info>WALK IN</Info>' +
                             '</PickUp>' +
                             '<DropOff>' +
-                                '<Time/>' +
+                                '<Time>0820</Time>' +
                                 '<CarStation Code="DROP.OFF.LOCATION"/>' +
                             '</DropOff>' +
                         '</CarDetails>' +
@@ -1036,7 +1036,7 @@ describe('TravelportCetsAdapter', () => {
                     '<Info>WALK IN</Info>' +
                     '</PickUp>' +
                     '<DropOff>' +
-                    '<Time/>' +
+                    '<Time>0820</Time>' +
                     '<CarStation Code="DROP.OFF.LOCATION"/>' +
                     '</DropOff>' +
                     '</CarDetails>' +

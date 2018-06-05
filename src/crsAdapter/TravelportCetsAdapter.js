@@ -484,7 +484,6 @@ class TravelportCetsAdapter {
 
         let pickUpDate = moment(service.pickUpDate, this.options.useDateFormat);
         let pickUpTime = moment(service.pickUpTime, this.options.useTimeFormat);
-        let dropOffTime = moment(service.dropOffTime, this.options.useTimeFormat);
 
         let xmlService = {
             [CONFIG.builderOptions.attrkey]: {
@@ -515,8 +514,9 @@ class TravelportCetsAdapter {
                     Info: CONFIG.defaults.pickUp.walkIn.info,
                 },
                 DropOff: {
-                    // "Time" is sadly not evaluated by CETS at the moment
-                    Time: dropOffTime.isValid() ? dropOffTime.format(CONFIG.crs.timeFormat) : service.dropOffTime,
+                    // "Time" is not evaluated by CETS
+                    // so we use the pickUp time here to have a consistent view with the final booking
+                    Time: pickUpTime.isValid() ? pickUpTime.format(CONFIG.crs.timeFormat) : service.pickUpTime,
                     CarStation: {
                         [CONFIG.builderOptions.attrkey]: {
                             Code: service.dropOffLocation,
