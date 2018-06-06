@@ -209,20 +209,34 @@ describe('AmadeusTomaAdapter', () => {
         });
 
         it('sendData() should throw error if connection can not put data', (done) => {
-            TomaConnection.FIFramePutData.and.throwError('FIFramePutData.error');
+            TomaConnection.PutXmlData.and.throwError('PutXmlData.error');
 
             adapter.sendData({}).then(() => {
                 done.fail('unexpected result');
             }, (error) => {
-                expect(error.toString()).toBe('Error: FIFramePutData.error');
+                expect(error.toString()).toBe('Error: PutXmlData.error');
                 done();
             });
         });
 
         it('sendData() should resolve', (done) => {
-            TomaConnection.FIFramePutData.and.returnValue(Promise.resolve());
-
             adapter.sendData({}).then(() => {
+                done();
+            }, (error) => {
+                console.log(error.toString());
+                done.fail('unexpected result');
+            });
+        });
+
+        it('sendData() with more than 6 services should resolve', (done) => {
+            const crsData = {
+                normalized: {
+                    services: [{}, {}, {}, {}, {}, {}, {}],
+                },
+            };
+
+            adapter.sendData(crsData).then(() => {
+                expect(TomaConnection.PutActionKey).toHaveBeenCalled();
                 done();
             }, (error) => {
                 console.log(error.toString());

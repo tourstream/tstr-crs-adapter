@@ -257,9 +257,9 @@ class AmadeusTomaAdapter {
 
                 this.paginate();
 
-                crsData.normalized.services.splice(0, CONFIG.crs.maxServiceLines);
-                crsData.normalized.travellers.splice(0, CONFIG.crs.maxTravellerLines);
-                crsData.parsed.Envelope.Header.Application.Reset = '0';
+                ((crsData.normalized || {}).services || []).splice(0, CONFIG.crs.maxServiceLines);
+                ((crsData.normalized || {}).travellers || []).splice(0, CONFIG.crs.maxTravellerLines);
+                ((((crsData.parsed || {}).Envelope || {}).Header || {}).Application || {}).Reset = '0';
 
                 crsData = this.convert(crsData);
 
@@ -331,8 +331,8 @@ class AmadeusTomaAdapter {
      * @returns {boolean}
      */
     needToPaginate(crsData) {
-        return (crsData.normalized.services || []).length > CONFIG.crs.maxServiceLines
-            || (crsData.normalized.travellers || []).length > CONFIG.crs.maxServiceLines;
+        return ((crsData.normalized || {}).services || []).length > CONFIG.crs.maxServiceLines
+            || ((crsData.normalized || {}).travellers || []).length > CONFIG.crs.maxServiceLines;
     }
 
     /**
@@ -359,10 +359,10 @@ class AmadeusTomaAdapter {
      * @param milliseconds
      */
     sleep(milliseconds) {
-        let start = new Date().getTime();
+        let start = new window.Date().getTime();
 
         while (true) {
-            if ((new Date().getTime() - start) > milliseconds){
+            if ((new window.Date().getTime() - start) > milliseconds){
                 break;
             }
         }
