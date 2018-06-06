@@ -176,6 +176,8 @@ class AmadeusTomaAdapter {
                 },
             };
 
+        this.cleanConverted(crsData);
+
         const crsDataObject = crsData.converted.Envelope.Body.TOM;
 
         crsDataObject.Action = crsData.normalized.action;
@@ -191,6 +193,20 @@ class AmadeusTomaAdapter {
         crsData.build = this.xmlBuilder.build(crsData.converted);
 
         return crsData;
+    }
+
+    cleanConverted(crsData) {
+        let fields2Remove = [
+            'Next', 'Page', 'Page.2',
+            'Position.1', 'Position.2', 'Position.3', 'Position.4', 'Position.5', 'Position.6',
+            'PassengerNo.1', 'PassengerNo.2', 'PassengerNo.3', 'PassengerNo.4', 'PassengerNo.5', 'PassengerNo.6',
+        ];
+
+        fields2Remove.forEach((field) => {
+            crsData.converted.Envelope.Body.TOM[field] = void 0;
+
+            delete crsData.converted.Envelope.Body.TOM[field];
+        });
     }
 
     assignServices(crsData) {
@@ -335,6 +351,21 @@ class AmadeusTomaAdapter {
             }
         ));
         this.getConnection().PutActionKey(1);
+        this.sleep(1000);
+    }
+
+    /**
+     * @private
+     * @param milliseconds
+     */
+    sleep(milliseconds) {
+        let start = new Date().getTime();
+
+        while (true) {
+            if ((new Date().getTime() - start) > milliseconds){
+                break;
+            }
+        }
     }
 }
 
