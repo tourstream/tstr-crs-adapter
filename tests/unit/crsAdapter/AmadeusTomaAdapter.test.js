@@ -244,6 +244,22 @@ describe('AmadeusTomaAdapter', () => {
             });
         });
 
+        it('sendData() with more than 6 travellers should resolve', (done) => {
+            const crsData = {
+                normalized: {
+                    travellers: [{}, {}, {}, {}, {}, {}, {}],
+                },
+            };
+
+            adapter.sendData(crsData).then(() => {
+                expect(TomaConnection.PutActionKey).toHaveBeenCalled();
+                done();
+            }, (error) => {
+                console.log(error.toString());
+                done.fail('unexpected result');
+            });
+        });
+
         it('convert() should convert "empty" data', () => {
             let build = xmlHead + '<Envelope>' +
                 '<Body>' +

@@ -1,7 +1,7 @@
 import AmadeusSPCTomaAdapter from '../../../src/crsAdapter/AmadeusSPCTomaAdapter';
 import {DEFAULT_OPTIONS} from '../../../src/UbpCrsAdapter';
 
-describe('AmadeusSPCTomaAdapter', () => {
+fdescribe('AmadeusSPCTomaAdapter', () => {
     let adapter, documentHeadAppendChildSpy, TomaSPCConnection;
 
     beforeEach(() => {

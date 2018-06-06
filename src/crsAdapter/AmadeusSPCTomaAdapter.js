@@ -11,6 +11,10 @@ class AmadeusSPCTomaAdapter {
                     [GENDER_TYPES.child]: 'K',
                     [GENDER_TYPES.infant]: 'K',
                 },
+                actions: {
+                    nextPage: '+',
+                    previousPage: '-',
+                },
             }
         };
 
@@ -292,18 +296,15 @@ class AmadeusSPCTomaAdapter {
      * @param crsObject
      * @returns {Promise}
      */
-    sendCrsObject(crsObject) {
+    sendCrsObject(crsObject = {}) {
         return new Promise((resolve) => {
             if ((crsObject.services || []).length > 6) {
-                const preservedAction = crsObject.action;
-
-                crsObject.action = '+';
-
                 this.getConnection().requestService(
-                    'bookingfile.toma.setData', [crsObject], this.createCallbackObject(() => {
+                    'bookingfile.toma.setData',
+                    [Object.assign({}, crsObject, {action: CONFIG.crs.actions.nextPage})],
+                    this.createCallbackObject(() => {
                         this.getConnection().requestService(
                             'bookingfile.toma.sendRequest', [], this.createCallbackObject(() => {
-                                crsObject.action = preservedAction;
                                 crsObject.services.splice(0, 6);
                                 crsObject.travellers.splice(0, 6);
 
