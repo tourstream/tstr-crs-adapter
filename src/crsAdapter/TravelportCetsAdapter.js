@@ -175,7 +175,7 @@ class TravelportCetsAdapter {
     }
 
     createConnection() {
-        if (((window || {}).external || {}).Get) {
+        if ((((window || {}).external) || {}).Get) {
             try {
                 // instance of "Travi.Win.Cets.Core.DeepLinkBrowser"
                 this.connection = window.external.Get(CONFIG.crs.externalObjectName) || void 0;
