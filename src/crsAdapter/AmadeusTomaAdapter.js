@@ -225,19 +225,21 @@ class AmadeusTomaAdapter {
 
     sendData(crsData) {
         try {
-            while ((crsData.normalized.services || []).length > CONFIG.crs.maxServiceLines) {
-                this.logger.info(
-                    'Found ' + crsData.normalized.services.length + ' service lines - but only ' +
-                    CONFIG.crs.maxServiceLines + ' are allowed.'
-                );
+            this.logger.info('closing iFrame');
 
-                const crsDataObject = crsData.converted.Envelope.Body.TOM;
+            this.getConnection().FIFrameCancel();
 
-                crsDataObject.Action = CONFIG.crs.actions.nextPage;
-                crsData.build = this.xmlBuilder.build(crsData.converted);
-
+            while (true) {
+                // fill mask with data
                 this.getConnection().PutXmlData(crsData.build);
-                this.getConnection().PutActionKey(1);
+
+                if (!this.needToPaginate(crsData)) {
+                    break;
+                }
+
+                this.logger.info('Found more data than allowed - will paginate.');
+
+                this.paginate();
 
                 crsData.normalized.services.splice(0, CONFIG.crs.maxServiceLines);
                 crsData.normalized.travellers.splice(0, CONFIG.crs.maxTravellerLines);
@@ -249,8 +251,6 @@ class AmadeusTomaAdapter {
                 this.logger.info(crsData.converted);
                 this.logger.info(crsData.build);
             }
-
-            this.getConnection().FIFramePutData(crsData.build);
 
             return Promise.resolve();
         } catch (error) {
@@ -307,6 +307,34 @@ class AmadeusTomaAdapter {
             this.logger.error(error);
             throw error;
         }
+    }
+
+    /**
+     * @private
+     * @param crsData
+     * @returns {boolean}
+     */
+    needToPaginate(crsData) {
+        return (crsData.normalized.services || []).length > CONFIG.crs.maxServiceLines
+            || (crsData.normalized.travellers || []).length > CONFIG.crs.maxServiceLines;
+    }
+
+    /**
+     * @private
+     */
+    paginate() {
+        this.getConnection().PutXmlData(this.xmlBuilder.build(
+            {
+                Envelope: {
+                    Body: {
+                        TOM: {
+                            Action: CONFIG.crs.actions.nextPage,
+                        }
+                    }
+                }
+            }
+        ));
+        this.getConnection().PutActionKey(1);
     }
 }
 
