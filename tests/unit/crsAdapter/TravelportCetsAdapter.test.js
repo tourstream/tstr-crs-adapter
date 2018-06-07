@@ -23,7 +23,11 @@ describe('TravelportCetsAdapter', () => {
     });
 
     it('connect() should throw error if external.Get is not supported', () => {
-        expect(adapter.connect.bind(adapter)).toThrowError('Connection failure - no communication possible with CETS.');
+        window.external = void 0;
+
+        expect(adapter.connect.bind(adapter)).toThrowError(
+            'Instantiate connection error: Cannot read property \'Get\' of undefined'
+        );
     });
 
     it('connect() should throw error if connection is not available', () => {

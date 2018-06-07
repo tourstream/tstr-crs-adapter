@@ -175,14 +175,12 @@ class TravelportCetsAdapter {
     }
 
     createConnection() {
-        if ((((window || {}).external) || {}).Get) {
-            try {
-                // instance of "Travi.Win.Cets.Core.DeepLinkBrowser"
-                this.connection = window.external.Get(CONFIG.crs.externalObjectName) || void 0;
-            } catch (error) {
-                this.logger.error(error);
-                throw new Error('Instantiate connection error: ' + error.message);
-            }
+        try {
+            // instance of "Travi.Win.Cets.Core.DeepLinkBrowser"
+            this.connection = window.external.Get(CONFIG.crs.externalObjectName) || void 0;
+        } catch (error) {
+            this.logger.error(error);
+            throw new Error('Instantiate connection error: ' + error.message);
         }
 
         if (!this.connection) {
