@@ -298,29 +298,27 @@ class AmadeusSPCTomaAdapter {
      */
     sendCrsObject(crsObject = {}) {
         return new Promise((resolve) => {
-            if ((crsObject.services || []).length > 6) {
-                this.getConnection().requestService(
-                    'bookingfile.toma.setData',
-                    [Object.assign({}, crsObject, {action: CONFIG.crs.actions.nextPage})],
-                    this.createCallbackObject(() => {
-                        this.getConnection().requestService(
-                            'bookingfile.toma.sendRequest', [], this.createCallbackObject(() => {
-                                crsObject.services.splice(0, 6);
-                                crsObject.travellers.splice(0, 6);
+            let requestData = [crsObject];
+            let requestCallback = this.createPromiseCallbackObject(resolve, null, 'sending data failed');
 
-                                this.sendCrsObject(crsObject).then(resolve);
-                            })
-                        );
-                    }
-                ));
+            if ((crsObject.services || []).length > 6 || (crsObject.travellers || []).length > 6) {
+                requestData = [Object.assign({}, crsObject, {action: CONFIG.crs.actions.nextPage})];
+                requestCallback = this.createCallbackObject(() => {
+                    this.getConnection().requestService(
+                        'bookingfile.toma.sendRequest', [], this.createCallbackObject(() => {
+                            (crsObject.services || []).splice(0, 6);
+                            (crsObject.travellers || []).splice(0, 6);
 
-                return;
+                            this.sendCrsObject(crsObject).then(resolve);
+                        })
+                    );
+                });
             }
 
             this.getConnection().requestService(
                 'bookingfile.toma.setData',
-                [crsObject],
-                this.createPromiseCallbackObject(resolve, null, 'sending data failed')
+                requestData,
+                requestCallback
             );
         });
     }
