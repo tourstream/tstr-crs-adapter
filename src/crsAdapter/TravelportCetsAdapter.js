@@ -295,12 +295,10 @@ class TravelportCetsAdapter {
 
         if (xmlService.CarDetails) {
             let pickUpTime = moment(xmlService.CarDetails.PickUp.Time, CONFIG.crs.timeFormat);
-            let dropOffTime = moment(xmlService.CarDetails.DropOff.Time, CONFIG.crs.timeFormat);
 
             service.pickUpLocation = xmlService.CarDetails.PickUp.CarStation[CONFIG.parserOptions.attributeNamePrefix].Code;
             service.dropOffLocation = xmlService.CarDetails.DropOff.CarStation[CONFIG.parserOptions.attributeNamePrefix].Code;
             service.pickUpTime = pickUpTime.isValid() ? pickUpTime.format(this.options.useTimeFormat) : xmlService.CarDetails.PickUp.Time;
-            service.dropOffTime = dropOffTime.isValid() ? dropOffTime.format(this.options.useTimeFormat) : xmlService.CarDetails.DropOff.Time;
         }
 
         return service;

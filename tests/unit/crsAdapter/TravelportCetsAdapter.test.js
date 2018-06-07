@@ -30,6 +30,14 @@ describe('TravelportCetsAdapter', () => {
         );
     });
 
+    it('connect() should throw error if external.Get returns "empty"', () => {
+        window.external = {
+            Get: jasmine.createSpy('CetsConnectionSpy'),
+        };
+
+        expect(adapter.connect.bind(adapter)).toThrowError('Connection failure - no communication possible with CETS.');
+    });
+
     it('connect() should throw error if connection is not available', () => {
         window.external = {
             Get: jasmine.createSpy('CetsConnectionSpy').and.throwError('no available connection'),
@@ -188,7 +196,6 @@ describe('TravelportCetsAdapter', () => {
                         pickUpLocation: 'LAX',
                         dropOffLocation: 'LAX',
                         dropOffDate: '11072017',
-                        dropOffTime: '0900',
                         type: 'car',
                     },
                     {
