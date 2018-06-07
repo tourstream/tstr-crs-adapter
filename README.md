@@ -177,7 +177,6 @@ Tosi       | X     | X     | X          | X      | X
 
 ```
 {
-  ...,
   type: 'car',
   vehicleCode: 'E4',
   renterCode: 'DEU85',
@@ -205,7 +204,6 @@ Tosi       | X     | X     | X          | X      | X
 
 ```
 {
-  ...,
   type: 'hotel',
   roomCode: 'DZ', 
   mealCode: 'U',
@@ -224,7 +222,6 @@ Tosi       | X     | X     | X          | X      | X
 
 ```
 {
-  ...,
   type: 'roundTrip',
   bookingId: 'E2784NQXTHEN', 
   destination: 'YYZ', 
@@ -240,7 +237,6 @@ Tosi       | X     | X     | X          | X      | X
 
 ```
 {
-  ...,
   type: 'camper',
   vehicleCode: 'FS',
   renterCode: 'PRT02',
@@ -280,7 +276,6 @@ Tosi       | X     | X     | X          | X      | X
 
 ```
 {
-  ...,
   type: 'TY',
   code: 'CODE',
   accommodation: '42',
@@ -312,6 +307,9 @@ Personal goal: Try to increase the test coverage to ~100%.
 We prepared a test file, which can be opened directly in the CRS systems.
 The file is located in __test/manual__: *[crsTest.html](tests/manual/crsTest.html)*
 For serving the test file locally we provide a command for it: `npm run serve`
+
+If you want to define test data by your own, you can create a file named *"testData.json"* and place it into the 
+__tests/manual__ folder. The structure of the file has to be an array with [`<CrsData>`](#interface) elements.
 
 It depends on the CRS how to use the test file.
 

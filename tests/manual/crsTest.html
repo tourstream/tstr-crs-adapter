@@ -54,6 +54,14 @@
                 <button type="button" data-toggle="button" class="btn btn-outline-primary" value="camper">camper</button>
                 <button type="button" data-toggle="button" class="btn btn-outline-primary" value="raw">raw</button>
 
+                <div class="btn-group dropright">
+                    <a id="test-data-menu" class="btn btn-outline-primary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        --- no test data provided ---
+                    </a>
+
+                    <div id="test-data-list" class="dropdown-menu"></div>
+                </div>
+
                 <div class="my-2">
                     <button name="get" class="btn btn-outline-warning">
                         <i class="fas fa-sign-out-alt"></i>
@@ -81,6 +89,8 @@
         <span id="product-service"></span>
         <span id="product-travellers"></span>
     </form>
+
+    <pre id="test-data-preview" hidden></pre>
 
     <div id="templates" hidden>
         <div id="form-field-template" class="input-group">
@@ -334,12 +344,14 @@
                 </fieldset>
             </div>
         </div>
+
+        <button id="test-data-set-template" class="dropdown-item" type="button"></button>
     </div>
 </div>
 
 <div id="report"></div>
 
-<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+<script src="https://code.jquery.com/jquery-3.2.1.min.js" crossorigin="anonymous"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js" integrity="sha384-vFJXuSJphROIrBnz7yo7oB41mKfc8JzQZiCq4NCceLEaO4IHwicKwpJf9c9IpFgh" crossorigin="anonymous"></script>
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js" integrity="sha384-alpBpkh1PFOepccYVYDB4do5UnbKysX5WZXm3XxPqe5iKTfUKjNkCk9SaVuEZflJ" crossorigin="anonymous"></script>
 

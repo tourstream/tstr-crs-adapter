@@ -1,4 +1,7 @@
-(function() {
+$.when(
+    $.getJSON('testData.json'),
+    $.ready
+).always(function(data) {
     "use strict";
 
     const crsAdapter = new window.UbpCrsAdapter.default({debug: true});
@@ -10,15 +13,20 @@
     const crsSelectionButtons = document.getElementById('crs-selection').getElementsByTagName('button');
     const productSelectionButtons = document.getElementById('product-selection').getElementsByTagName('button');
     const formFieldTemplate = document.getElementById('form-field-template');
+    const testDataSetTemplate = document.getElementById('test-data-set-template');
     const reportBlock = window.document.getElementById('report');
     const connectButton = document.getElementById('connect-button');
-    const data = {};
+    const testDataMenu = document.getElementById('test-data-menu');
+    const testDataList = document.getElementById('test-data-list');
+    const testDataPreview = document.getElementById('test-data-preview');
+    const testData = data[0];
 
     init();
 
     function init() {
         initSelectionButtons();
         initFormFields();
+        initTestDataList();
         resetForm(connectionOptionsForm);
         resetForm(productBaseForm);
         resetForm(productServiceForm);
@@ -54,6 +62,12 @@
             button.onclick = function() {
                 button.parentElement.remove();
             };
+        });
+    }
+
+    function deselectProductSelectionButtons() {
+        Array.from(productSelectionButtons).forEach(function(button) {
+            button.classList.remove('active');
         });
     }
 
@@ -114,11 +128,11 @@
                 selectTemplate(productServiceForm, event.target.value);
                 selectTemplate(productTravellersForm, 'travellers');
 
+                testDataPreview.hidden = true;
+
                 initTravellerActionButtons();
 
-                Array.from(productSelectionButtons).forEach(function(button) {
-                    button.classList.remove('active');
-                });
+                deselectProductSelectionButtons();
             };
         });
     }
@@ -160,21 +174,23 @@
     }
 
     function addData() {
-        const serviceIndex = (data.services || []).length;
+        if (data.services) {
+            const serviceIndex = data.services.length;
 
-        Object.keys(productForm).forEach(function(key) {
-            if (!productForm[key].name) {
-                return;
-            }
+            Object.keys(productForm).forEach(function(key) {
+                if (!productForm[key].name) {
+                    return;
+                }
 
-            const path = productForm[key].name.replace('services.$', 'services.' + serviceIndex);
+                const path = productForm[key].name.replace('services.$', 'services.' + serviceIndex);
 
-            setValueToPropertyPath(data, path, productForm[key].value || void 0);
-        });
+                setValueToPropertyPath(data, path, productForm[key].value || void 0);
+            });
 
-        data.services.forEach(function(service) {
-            service.travellers = service.travellers.filter(Boolean);
-        });
+            data.services.forEach(function(service) {
+                service.travellers = service.travellers.filter(Boolean);
+            });
+        }
 
         log(data);
     }
@@ -284,4 +300,30 @@
             date.getFullYear(),
         ].join('');
     }
-})();
+
+    function initTestDataList() {
+        if (!testData) {
+            return;
+        }
+
+        testDataMenu.innerHTML = 'select data set';
+
+        testData.forEach(function(dataSet) {
+            const dataSetNode = testDataSetTemplate.cloneNode(true);
+
+            dataSetNode.innerHTML = dataSet._description || JSON.stringify(dataSet);
+            dataSetNode.onclick = function() {
+                data = dataSet;
+
+                resetForm(productServiceForm);
+                resetForm(productTravellersForm);
+                deselectProductSelectionButtons();
+
+                testDataPreview.hidden = false;
+                testDataPreview.innerHTML = JSON.stringify(dataSet, null, 4);
+            };
+
+            testDataList.appendChild(dataSetNode);
+        });
+    }
+});
