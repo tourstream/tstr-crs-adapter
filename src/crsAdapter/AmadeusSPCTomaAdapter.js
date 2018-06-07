@@ -11,6 +11,8 @@ class AmadeusSPCTomaAdapter {
                     [GENDER_TYPES.child]: 'K',
                     [GENDER_TYPES.infant]: 'K',
                 },
+                maxServiceLines: 6,
+                maxTravellerLines: 6,
                 actions: {
                     nextPage: '+',
                     previousPage: '-',
@@ -301,7 +303,7 @@ class AmadeusSPCTomaAdapter {
             let requestData = [crsObject];
             let requestCallback = this.createPromiseCallbackObject(resolve, null, 'sending data failed');
 
-            if ((crsObject.services || []).length > 6 || (crsObject.travellers || []).length > 6) {
+            if (this.needToPaginate(crsObject)) {
                 requestData = [Object.assign({}, crsObject, {action: CONFIG.crs.actions.nextPage})];
                 requestCallback = this.createCallbackObject(() => {
                     this.getConnection().requestService(
@@ -321,6 +323,16 @@ class AmadeusSPCTomaAdapter {
                 requestCallback
             );
         });
+    }
+
+    /**
+     * @private
+     * @param crsObject
+     * @returns {boolean}
+     */
+    needToPaginate(crsObject) {
+        return (crsObject.services || []).length > CONFIG.crs.maxServiceLines
+            || (crsObject.travellers || []).length > CONFIG.crs.maxTravellerLines;
     }
 
     /**
