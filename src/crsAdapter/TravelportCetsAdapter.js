@@ -175,14 +175,12 @@ class TravelportCetsAdapter {
     }
 
     createConnection() {
-        if (((window || {}).external || {}).Get) {
-            try {
-                // instance of "Travi.Win.Cets.Core.DeepLinkBrowser"
-                this.connection = window.external.Get(CONFIG.crs.externalObjectName) || void 0;
-            } catch (error) {
-                this.logger.error(error);
-                throw new Error('Instantiate connection error: ' + error.message);
-            }
+        try {
+            // instance of "Travi.Win.Cets.Core.DeepLinkBrowser"
+            this.connection = window.external.Get(CONFIG.crs.externalObjectName) || void 0;
+        } catch (error) {
+            this.logger.error(error);
+            throw new Error('Instantiate connection error: ' + error.message);
         }
 
         if (!this.connection) {
@@ -297,12 +295,10 @@ class TravelportCetsAdapter {
 
         if (xmlService.CarDetails) {
             let pickUpTime = moment(xmlService.CarDetails.PickUp.Time, CONFIG.crs.timeFormat);
-            let dropOffTime = moment(xmlService.CarDetails.DropOff.Time, CONFIG.crs.timeFormat);
 
             service.pickUpLocation = xmlService.CarDetails.PickUp.CarStation[CONFIG.parserOptions.attributeNamePrefix].Code;
             service.dropOffLocation = xmlService.CarDetails.DropOff.CarStation[CONFIG.parserOptions.attributeNamePrefix].Code;
             service.pickUpTime = pickUpTime.isValid() ? pickUpTime.format(this.options.useTimeFormat) : xmlService.CarDetails.PickUp.Time;
-            service.dropOffTime = dropOffTime.isValid() ? dropOffTime.format(this.options.useTimeFormat) : xmlService.CarDetails.DropOff.Time;
         }
 
         return service;
@@ -484,7 +480,6 @@ class TravelportCetsAdapter {
 
         let pickUpDate = moment(service.pickUpDate, this.options.useDateFormat);
         let pickUpTime = moment(service.pickUpTime, this.options.useTimeFormat);
-        let dropOffTime = moment(service.dropOffTime, this.options.useTimeFormat);
 
         let xmlService = {
             [CONFIG.builderOptions.attrkey]: {
@@ -515,8 +510,9 @@ class TravelportCetsAdapter {
                     Info: CONFIG.defaults.pickUp.walkIn.info,
                 },
                 DropOff: {
-                    // "Time" is sadly not evaluated by CETS at the moment
-                    Time: dropOffTime.isValid() ? dropOffTime.format(CONFIG.crs.timeFormat) : service.dropOffTime,
+                    // "Time" is not evaluated by CETS
+                    // so we use the pickUp time here to have a consistent view with the final booking
+                    Time: pickUpTime.isValid() ? pickUpTime.format(CONFIG.crs.timeFormat) : service.pickUpTime,
                     CarStation: {
                         [CONFIG.builderOptions.attrkey]: {
                             Code: service.dropOffLocation,

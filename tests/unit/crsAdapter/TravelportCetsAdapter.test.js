@@ -23,6 +23,18 @@ describe('TravelportCetsAdapter', () => {
     });
 
     it('connect() should throw error if external.Get is not supported', () => {
+        window.external = void 0;
+
+        expect(adapter.connect.bind(adapter)).toThrowError(
+            'Instantiate connection error: Cannot read property \'Get\' of undefined'
+        );
+    });
+
+    it('connect() should throw error if external.Get returns "empty"', () => {
+        window.external = {
+            Get: jasmine.createSpy('CetsConnectionSpy'),
+        };
+
         expect(adapter.connect.bind(adapter)).toThrowError('Connection failure - no communication possible with CETS.');
     });
 
@@ -184,7 +196,6 @@ describe('TravelportCetsAdapter', () => {
                         pickUpLocation: 'LAX',
                         dropOffLocation: 'LAX',
                         dropOffDate: '11072017',
-                        dropOffTime: '0900',
                         type: 'car',
                     },
                     {
@@ -358,7 +369,7 @@ describe('TravelportCetsAdapter', () => {
                     '<Info>WALK IN</Info>' +
                     '</PickUp>' +
                     '<DropOff>' +
-                    '<Time/>' +
+                    '<Time>0820</Time>' +
                     '<CarStation Code="DROP.OFF.LOCATION"/>' +
                     '</DropOff>' +
                     '</CarDetails>' +
@@ -445,7 +456,7 @@ describe('TravelportCetsAdapter', () => {
                     '<Info>pick.up.hotel.name</Info>' +
                     '</PickUp>' +
                     '<DropOff>' +
-                    '<Time/>' +
+                    '<Time>0940</Time>' +
                     '<CarStation Code="DROP.OFF.LOCATION"/>' +
                     '</DropOff>' +
                     '</CarDetails>' +
@@ -499,7 +510,7 @@ describe('TravelportCetsAdapter', () => {
                     '<Info>WALK IN</Info>' +
                     '</PickUp>' +
                     '<DropOff>' +
-                    '<Time/>' +
+                    '<Time>0940</Time>' +
                     '<CarStation Code="DROP.OFF.LOCATION"/>' +
                     '<Info>drop.off.hotel.name</Info>' +
                     '</DropOff>' +
@@ -554,7 +565,7 @@ describe('TravelportCetsAdapter', () => {
                     '<Info>pick.up.hotel.name</Info>' +
                     '</PickUp>' +
                     '<DropOff>' +
-                    '<Time/>' +
+                    '<Time>0940</Time>' +
                     '<CarStation Code="DROP.OFF.LOCATION"/>' +
                     '</DropOff>' +
                     '</CarDetails>' +
@@ -980,7 +991,7 @@ describe('TravelportCetsAdapter', () => {
                                 '<Info>WALK IN</Info>' +
                             '</PickUp>' +
                             '<DropOff>' +
-                                '<Time/>' +
+                                '<Time>0820</Time>' +
                                 '<CarStation Code="DROP.OFF.LOCATION"/>' +
                             '</DropOff>' +
                         '</CarDetails>' +
@@ -1036,7 +1047,7 @@ describe('TravelportCetsAdapter', () => {
                     '<Info>WALK IN</Info>' +
                     '</PickUp>' +
                     '<DropOff>' +
-                    '<Time/>' +
+                    '<Time>0820</Time>' +
                     '<CarStation Code="DROP.OFF.LOCATION"/>' +
                     '</DropOff>' +
                     '</CarDetails>' +
