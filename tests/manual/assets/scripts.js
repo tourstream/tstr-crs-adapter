@@ -1,7 +1,7 @@
 $.when(
     $.getJSON('testData.json'),
     $.ready
-).always(function(data) {
+).always(function(startUpData) {
     "use strict";
 
     const crsAdapter = new window.UbpCrsAdapter.default({debug: true});
@@ -15,11 +15,14 @@ $.when(
     const formFieldTemplate = document.getElementById('form-field-template');
     const testDataSetTemplate = document.getElementById('test-data-set-template');
     const reportBlock = window.document.getElementById('report');
+    const crsDataPreview = window.document.getElementById('crs-data-preview');
     const connectButton = document.getElementById('connect-button');
     const testDataMenu = document.getElementById('test-data-menu');
     const testDataList = document.getElementById('test-data-list');
-    const testDataPreview = document.getElementById('test-data-preview');
-    const testData = data[0];
+    const testData = startUpData[0];
+
+    let crsData = {};
+    let selectedDataSet = {};
 
     init();
 
@@ -77,18 +80,20 @@ $.when(
                 throw new Error('no CRS selected');
             }
 
-            let data = {};
+            crsData = {};
+
+            log(crsData, crsDataPreview);
 
             Object.keys(connectionOptionsForm).forEach(function(key) {
                 if (!connectionOptionsForm[key].name || connectionOptionsForm[key].value === '') return;
 
-                setValueToPropertyPath(data, connectionOptionsForm[key].name, connectionOptionsForm[key].value);
+                setValueToPropertyPath(crsData, connectionOptionsForm[key].name, connectionOptionsForm[key].value);
             });
 
-            delete data.type;
+            delete crsData.type;
 
             crsAdapter
-                .connect(connectionOptionsForm.type.value, data)
+                .connect(connectionOptionsForm.type.value, crsData)
                 .then(function() {
                     setConnectionTypeToConnectButton(connectionOptionsForm.type.value);
                     selectTemplate(productBaseForm, 'base-product');
@@ -125,10 +130,18 @@ $.when(
                     return;
                 }
 
+                if (button.type === 'reset') {
+                    crsData = {};
+
+                    log(crsData, crsDataPreview);
+
+                    return;
+                }
+
                 selectTemplate(productServiceForm, event.target.value);
                 selectTemplate(productTravellersForm, 'travellers');
 
-                testDataPreview.hidden = true;
+                selectedDataSet = void 0;
 
                 initTravellerActionButtons();
 
@@ -174,46 +187,47 @@ $.when(
     }
 
     function addData() {
-        if (data.services) {
-            const serviceIndex = data.services.length;
+        if (selectedDataSet) {
+            crsData = JSON.parse(JSON.stringify(selectedDataSet));
 
-            Object.keys(productForm).forEach(function(key) {
-                if (!productForm[key].name) {
-                    return;
-                }
+            log(crsData, crsDataPreview);
 
-                const path = productForm[key].name.replace('services.$', 'services.' + serviceIndex);
-
-                setValueToPropertyPath(data, path, productForm[key].value || void 0);
-            });
-
-            data.services.forEach(function(service) {
-                service.travellers = service.travellers.filter(Boolean);
-            });
+            return;
         }
 
-        log(data);
+        const serviceIndex = (crsData.services || []).length;
+
+        Object.keys(productForm).forEach(function(key) {
+            if (!productForm[key].name) {
+                return;
+            }
+
+            const path = productForm[key].name.replace('services.$', 'services.' + serviceIndex);
+
+            setValueToPropertyPath(crsData, path, productForm[key].value || void 0);
+        });
+
+        (crsData.services || []).forEach(function(service) {
+            service.travellers = (service.travellers || []).filter(Boolean);
+        });
+
+        log(crsData, crsDataPreview);
     }
 
     function sendData() {
-        crsAdapter.setData(JSON.parse(JSON.stringify(data))).then(function() {
-            data.services = [];
-            log('data transferred');
+        crsAdapter.setData(JSON.parse(JSON.stringify(crsData))).then(function() {
+            crsData.services = [];
+            log('data transferred to CRS');
         }).catch(log);
     }
 
-    function log(text) {
+    function log(text, to = reportBlock) {
         resetReport();
 
         let stringified = JSON.stringify(text, void 0, 4) || '';
-
-        if (stringified === '{}') {
-            stringified = text.toString();
-        }
-
         let highlighted = syntaxHighlight(stringified.replace(/\\n/g, '\n'));
 
-        reportBlock.innerHTML = '<pre>' + highlighted + '</pre>';
+        to.innerHTML = '<pre>' + highlighted + '</pre>';
     }
 
     function syntaxHighlight(json) {
@@ -308,19 +322,18 @@ $.when(
 
         testDataMenu.innerHTML = 'select data set';
 
-        testData.forEach(function(dataSet) {
+        testData.forEach(function(dataSet, index) {
             const dataSetNode = testDataSetTemplate.cloneNode(true);
 
-            dataSetNode.innerHTML = dataSet._description || JSON.stringify(dataSet);
+            dataSetNode.innerHTML = dataSet._description || index;
             dataSetNode.onclick = function() {
-                data = dataSet;
+                selectedDataSet = dataSet;
 
                 resetForm(productServiceForm);
                 resetForm(productTravellersForm);
                 deselectProductSelectionButtons();
 
-                testDataPreview.hidden = false;
-                testDataPreview.innerHTML = JSON.stringify(dataSet, null, 4);
+                log(dataSet);
             };
 
             testDataList.appendChild(dataSetNode);

@@ -310,6 +310,24 @@ For serving the test file locally we provide a command for it: `npm run serve`
 
 If you want to define test data by your own, you can create a file named *"testData.json"* and place it into the 
 __tests/manual__ folder. The structure of the file has to be an array with [`<CrsData>`](#interface) elements.
+The elements should also include a property `._description` which is than shown in the test file.
+
+Test data example:
+
+```
+[
+  {
+    "_description": "my custom test data",
+    "services": [...],
+    ...
+  },
+  {
+    "_description": "other test data",
+    "remark": "..."
+    ...
+  }
+]
+```
 
 It depends on the CRS how to use the test file.
 
