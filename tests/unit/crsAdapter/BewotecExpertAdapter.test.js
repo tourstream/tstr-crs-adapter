@@ -190,21 +190,26 @@ describe('BewotecExpertAdapter', () => {
         it('connect() should close known bridge window before opening a new one', (done) => {
             windowSpy.open.and.returnValue('newWindowRef');
             windowSpy.addEventListener.and.callFake((eventName, callback) => {
-                callback({ data: {
+                callback({
+                    data: {
                         name: 'bewotecDataTransfer',
                         some: 'data',
-                    } });
+                    }
+                });
             });
 
             const closeSpy = jasmine.createSpy('closeSpy');
+            const postMessageSpy = jasmine.createSpy('postMessageSpy');
 
             adapter.bridgeWindow = {
                 closed: false,
                 close: closeSpy,
+                postMessage: postMessageSpy,
             };
 
             adapter.connect({ token: 'token', dataBridgeUrl: 'dataBridgeUrl' }).then(() => {
                 expect(closeSpy).toHaveBeenCalled();
+                expect(postMessageSpy).toHaveBeenCalled();
                 done();
             }, (error) => {
                 console.log(error.message);

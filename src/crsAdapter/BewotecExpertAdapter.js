@@ -286,6 +286,12 @@ class BewotecExpertAdapter {
      */
     getDataFromBewotecBridge(options) {
         return new Promise((resolve, reject) => {
+            const closeBridge = () => {
+                if (!this.options.debug && this.bridgeWindow && !this.bridgeWindow.closed) {
+                    this.bridgeWindow.close();
+                }
+            };
+
             const bewotecDataListener = (message) => {
                 if (message.data.name !== 'bewotecDataTransfer') {
                     return;
@@ -294,14 +300,14 @@ class BewotecExpertAdapter {
                 this.logger.info('received data from data bridge:');
                 this.logger.info(message.data);
 
-                if (!this.options.debug && this.bridgeWindow && !this.bridgeWindow.closed) {
-                    this.logger.info('bewotec data bridge will be closed now');
-                    this.bridgeWindow.close();
+                if (this.bridgeWindow) {
+                    this.logger.info('send confirmation to bewotec data bridge');
+                    this.bridgeWindow.postMessage({ name: 'bewotecDataReceived' }, '*');
+
+                    closeBridge();
                 }
 
-                if (this.helper.window.removeEventListener) {
-                    this.helper.window.removeEventListener('message', bewotecDataListener);
-                }
+                removeListener();
 
                 if (message.data.errorMessage) {
                     if (((message.data.error || {}).response || {}).status !== 404) {
@@ -311,15 +317,14 @@ class BewotecExpertAdapter {
                     }
                 }
 
-                return resolve(message.data);
+                resolve(message.data);
             };
 
-            /* istanbul ignore else */
-            if (this.helper.window.addEventListener) {
-                this.helper.window.addEventListener('message', bewotecDataListener, false);
-            } else if (this.helper.window.attachEvent)  {
-                this.helper.window.attachEvent('onmessage', bewotecDataListener, false);
-            }
+            const removeListener = () => {
+                if (this.helper.window.removeEventListener) {
+                    this.helper.window.removeEventListener('message', bewotecDataListener);
+                }
+            };
 
             const url = [
                 options.dataBridgeUrl,
@@ -328,21 +333,28 @@ class BewotecExpertAdapter {
                 (this.options.debug ? '&debug' : '')
             ].join('');
 
-            if (this.bridgeWindow && !this.bridgeWindow.closed) {
-                this.bridgeWindow.close();
+            removeListener();
+
+            /* istanbul ignore else */
+            if (this.helper.window.addEventListener) {
+                this.helper.window.addEventListener('message', bewotecDataListener, false);
+            } else if (this.helper.window.attachEvent)  {
+                this.helper.window.attachEvent('onmessage', bewotecDataListener, false);
             }
 
-            this.bridgeWindow = this.helper.window.open(url, '_blank', 'height=300,width=400');
+            closeBridge();
 
-            if (!this.bridgeWindow) {
-                if (this.helper.window.removeEventListener) {
-                    this.helper.window.removeEventListener('message', bewotecDataListener);
-                }
+            this.bridgeWindow = this.helper.window.open(url, '_blank', 'height=300,width=400,resizable,scrollbars');
 
-                return reject(new Error('bewotec data bridge window can not be opened'));
+            if (this.bridgeWindow) {
+                this.logger.info('data bridge opened - waiting for data ...');
+
+                return;
             }
 
-            this.logger.info('data bridge opened - waiting for data ...');
+            this.logger.error('data bridge could not be opened - check console output');
+
+            reject(new Error('bewotec data bridge window can not be opened'));
         });
     }
 

@@ -8,27 +8,193 @@
     <style>
         #debug-info {
             color: red;
-            display: none;
+            cursor: help;
             font-weight: bold;
+        }
+
+        #debug-info small {
+            background-color: red;
+            -webkit-border-radius: 50%;
+            -moz-border-radius: 50%;
+            border-radius: 50%;
+            color: #fff;
+            display: inline-block;
+            height: 5px;
+            line-height: 5px;
+            padding: 5px;
+            width: 5px;
+        }
+
+        .hidden {
+            display: none;
         }
     </style>
 </head>
 
 <body>
-<h1>Bewotec Data Handover</h1>
-<h4>in progress ...</h4>
+<h1>Bewotec Datenübertrag</h1>
 
-<p>
-    Wenn dieses Fenster länger als 10 Sekunden offen bleibt, ist wahrscheinlich ein Fehler bei der Übertragung
-    zum CRS aufgetreten. Bitte schließen Sie dieses Fenster und versuchen sie es noch einmal.
-</p>
+<div id="debug-info" class="hidden" title="In diesem Modus bleibt das Fenster geöffnet.">
+    <h5>Debug-Mode <small>?</small></h5>
+</div>
 
-<p id="debug-info">
-    window is in debug mode and will stay open
-</p>
+<div id="report"></div>
 
 <script>
     (function() {
+        var token = getUrlParams().token;
+        var isDebugMode = window.location && (
+            (window.location.search && window.location.search.indexOf('debug') !== -1) ||
+            (window.location.hash && window.location.hash.indexOf('debug') !== -1)
+        );
+        var reportBlock = document.getElementById('report');
+        var isClosed = false;
+
+        init();
+
+        function init() {
+            initDebugNote();
+            requestCRS();
+        }
+
+        function initDebugNote() {
+            if (isDebugMode) {
+                document.getElementById('debug-info').classList.remove('hidden');
+            }
+        }
+
+        function requestCRS() {
+            if (!token) {
+                logText('Kein Token in der URL gefunden! Anfrage wird abgebrochen.');
+                sendError(new Error('no token found'));
+
+                return;
+            }
+
+            logText('CRS-Token gefunden: ' + token);
+            logText('CRS wird angefragt ...');
+
+            axios.get('http://localhost:7354/airob/expert', {
+                params: { token: token },
+            }).then(function(response) {
+                logText('Antwort vom CRS erhalten!');
+                debug(response);
+                doHandover({ data: response.data });
+            }, function(error) {
+                logText('Die Anfrage an das CRS ergab einen Fehler. Weiterverarbeitung wird abgebrochen.');
+                sendError(error);
+            });
+        }
+
+        function sendError(error) {
+            logText('Sende Fehler ...');
+            debug(error);
+
+            doHandover({
+                error: JSON.parse(JSON.stringify(error)),
+                errorMessage: error.message
+            });
+        }
+
+        function doHandover(transferObject) {
+            transferObject.name = 'bewotecDataTransfer';
+
+            logText('Datenübertrag wird vorbereitet ...');
+            debug(transferObject);
+
+            if (!window.opener) {
+                logText('Kein Empfänger gefunden! Datenübertrag kann nicht durchgeführt werden.');
+                logText('Bitte informieren sie die IT über das Problem!');
+
+                return;
+            }
+
+            if (window.addEventListener) {
+                window.addEventListener('message', dataReceivedMessageListener, false);
+            } else if (window.attachEvent)  {
+                window.attachEvent('onmessage', dataReceivedMessageListener, false);
+            }
+
+            window.opener.postMessage(transferObject, '*');
+
+            logText('Daten werden übertragen. Warte auf Empfangsbestätigung ...');
+
+            window.setTimeout(showDelayWarning, 5000);
+            window.setTimeout(showExpiredWarning, 10000);
+        }
+
+        function dataReceivedMessageListener(message) {
+            if (message.data.name !== 'bewotecDataReceived') {
+                return;
+            }
+
+            logText('Empfangsbestätigung erhalten.');
+            logText('Das Fenster wird nun geschlossen.');
+
+            if (!isDebugMode) {
+                window.close();
+            }
+
+            isClosed = true;
+
+            logText('Im Debug-Mode bleibt das Fenster geöffnet');
+        }
+
+        function showDelayWarning() {
+            if (!isClosed) {
+                logText('Der Übertrag ist langsam. Bitte haben sie noch etwas Geduld ...');
+            }
+        }
+
+        function showExpiredWarning() {
+            if (!isClosed) {
+                logText('Der Übertrag dauert zu lange und ist wahrscheinlich fehlgeschlagen.');
+                logText('Bitte informieren sie die IT über das Problem!');
+            }
+        }
+
+        function logText(message) {
+            var blockNode = document.createElement('p');
+
+            blockNode.innerHTML = [
+                '<small>[' + (new Date()).toUTCString() + ']: </small>',
+                message,
+            ].join('');
+
+            reportBlock.appendChild(blockNode);
+
+            let height = document.body.scrollHeight
+                || document.body.offsetHeight
+                || document.body.height;
+
+            window.scroll(0, height);
+        }
+
+        function debug(data) {
+            if (console) {
+                console.log(data);
+            }
+
+            if (!isDebugMode) {
+                return;
+            }
+
+            let additionalProperties = void 0;
+            let stringified = JSON.stringify(data, additionalProperties, 2);
+
+            if (stringified === void 0) {
+                stringified = data.toString();
+            }
+
+            if (stringified === '{}') {
+                additionalProperties = Object.getOwnPropertyNames(data);
+
+                stringified = JSON.stringify(data, additionalProperties, 2);
+            }
+
+            logText('<pre>' + stringified.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</pre>');
+        }
+
         function getUrlParams() {
             var vars = {};
 
@@ -40,56 +206,6 @@
             );
 
             return vars;
-        }
-
-        var token = getUrlParams().token;
-        var debug = window.location && (
-            (window.location.search && window.location.search.indexOf('debug') !== -1) ||
-            (window.location.hash && window.location.hash.indexOf('debug') !== -1)
-        );
-
-        if (debug) {
-            document.getElementById('debug-info').style.display = 'block';
-        }
-
-        var doHandover = function(transferObject) {
-            transferObject.name = 'bewotecDataTransfer';
-
-            if (debug) {
-                console.log('will transfer data to the adapter: ', transferObject);
-            }
-
-            if (window.opener) {
-                window.opener.postMessage(transferObject, '*');
-            }
-
-            if (!debug) {
-                window.close();
-            }
-        };
-
-        try {
-            axios.get('http://localhost:7354/airob/expert', {
-                params: { token: token },
-            }).then(function(response) {
-                if (debug) {
-                    console.log(response);
-                }
-
-                doHandover({ data: response.data });
-            }, function(error) {
-                if (debug) {
-                    console.log(error);
-                }
-
-                doHandover({
-                    error: JSON.parse(JSON.stringify(error)),
-                    errorMessage: error.message
-                });
-            });
-        } catch(error) {
-            console.log('#E: ');
-            console.log(error);
         }
     })()
 </script>
