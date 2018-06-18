@@ -221,7 +221,9 @@ $.when(
         }).catch(log);
     }
 
-    function log(text, to = reportBlock) {
+    function log(text, to) {
+        to = to || reportBlock;
+
         resetReport();
 
         let stringified = JSON.stringify(text, void 0, 4) || '';
