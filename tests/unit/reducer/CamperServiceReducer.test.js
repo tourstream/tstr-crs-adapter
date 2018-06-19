@@ -1,6 +1,6 @@
 import CamperServiceReducer from '../../../src/reducer/CamperServiceReducer';
 import TravellerHelper from '../../../src/helper/TravellerHelper';
-import {DEFAULT_OPTIONS, SERVICE_TYPES} from '../../../src/UbpCrsAdapter';
+import {CAMPER_EXTRA_TYPES, DEFAULT_OPTIONS, SERVICE_TYPES} from '../../../src/UbpCrsAdapter';
 
 describe('CamperServiceReducer', () => {
     let reducer, config, helper, vehicleHelper;
@@ -62,8 +62,13 @@ describe('CamperServiceReducer', () => {
                     code: 'extraCodeWithoutAmount',
                 },
                 {
+                    type: CAMPER_EXTRA_TYPES.equipment,
                     code: 'extraCode',
                     amount: 3,
+                },
+                {
+                    type: CAMPER_EXTRA_TYPES.insurance,
+                    code: 'insuranceCode',
                 },
             ],
             travellers: [
@@ -85,6 +90,7 @@ describe('CamperServiceReducer', () => {
                 serviceTypes: {
                     [SERVICE_TYPES.camper]: 'camperType',
                     camperExtra: 'extraType',
+                    insurance: 'insuranceType',
                 },
                 formats: {
                     date: 'YYYY-MM-DD',
@@ -131,6 +137,13 @@ describe('CamperServiceReducer', () => {
                     toDate: '2018-03-16',
                     travellerAssociation: '1-3',
                 },
+                {
+                    type: 'insuranceType',
+                    code: 'insuranceCode',
+                    fromDate: '2018-03-16',
+                    toDate: '2018-03-16',
+                    travellerAssociation: '1',
+                },
             ],
             travellers: [
                 {}
@@ -138,4 +151,3 @@ describe('CamperServiceReducer', () => {
         });
     });
 });
-

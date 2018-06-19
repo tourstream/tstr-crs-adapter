@@ -1,4 +1,5 @@
 import moment from 'moment/moment';
+import {CAMPER_EXTRA_TYPES} from '../UbpCrsAdapter';
 
 class CamperServiceReducer {
     constructor(logger, config, helper) {
@@ -37,7 +38,9 @@ class CamperServiceReducer {
         (adapterService.extras || []).forEach((extra) => {
             const service = this.createEmptyService(crsData);
 
-            service.type = crsData.meta.serviceTypes.camperExtra;
+            service.type = extra.type === CAMPER_EXTRA_TYPES.insurance
+                ? crsData.meta.serviceTypes.insurance
+                : crsData.meta.serviceTypes.camperExtra;
             service.code = extra.code;
             service.fromDate = crsService.fromDate;
             service.toDate = crsService.fromDate;

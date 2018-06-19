@@ -2,39 +2,23 @@ import axios from 'axios';
 import querystring from 'querystring';
 import WindowHelper from '../helper/WindowHelper';
 
-const CONFIG = {
-    crs: {
-        dateFormat: 'DDMMYY',
-        timeFormat: 'HHmm',
-        serviceTypes: {
-            car: 'MW',
-            carExtra: 'E',
-            hotel: 'H',
-            roundTrip: 'R',
-            camper: 'WM',
-            camperExtra: 'TA',
-        },
-        connectionUrl: 'cosmonaut://params/',
-        gender2SalutationMap: {
-            male: 'H',
-            female: 'F',
-            child: 'K',
-            infant: 'K',
-        },
-        exportUrls: {
-            live: 'https://tbm.traffics.de',
-            test: 'https://cosmo-staging.traffics-switch.de',
-        }
-    },
-    supportedConnectionOptions: {
-        dataSourceUrl: void 0,
-        environment: ['live', 'test'],
-        exportId: void 0,
-    }
-};
-
 class TrafficsTbmAdapter {
     constructor(logger, options = {}) {
+        this.config = {
+            crs: {
+                connectionUrl: 'cosmonaut://params/',
+                exportUrls: {
+                    live: 'https://tbm.traffics.de',
+                    test: 'https://cosmo-staging.traffics-switch.de',
+                }
+            },
+            supportedConnectionOptions: {
+                dataSourceUrl: void 0,
+                environment: ['live', 'test'],
+                exportId: void 0,
+            }
+        };
+
         this.options = options;
         this.logger = logger;
 
@@ -45,14 +29,14 @@ class TrafficsTbmAdapter {
 
     connect(options = {}) {
         try {
-            Object.keys(CONFIG.supportedConnectionOptions).forEach((optionName) => {
+            Object.keys(this.config.supportedConnectionOptions).forEach((optionName) => {
                 if (!options[optionName]) {
                     throw new Error('No ' + optionName + ' found in connectionOptions.');
                 }
 
-                if (!CONFIG.supportedConnectionOptions[optionName]) return;
+                if (!this.config.supportedConnectionOptions[optionName]) return;
 
-                if (!CONFIG.supportedConnectionOptions[optionName].includes(options[optionName])) {
+                if (!this.config.supportedConnectionOptions[optionName].includes(options[optionName])) {
                     throw new Error('Value ' + options[optionName] + ' is not allowed for ' + optionName + '.');
                 }
             });
@@ -109,12 +93,6 @@ class TrafficsTbmAdapter {
                         travellers: this.collectTravellers(crsData),
                     },
                     meta: {
-                        serviceTypes: CONFIG.crs.serviceTypes,
-                        genderTypes: CONFIG.crs.gender2SalutationMap,
-                        formats: {
-                            date: CONFIG.crs.dateFormat,
-                            time: CONFIG.crs.timeFormat,
-                        },
                         type: TrafficsTbmAdapter.type,
                     },
                 };
@@ -224,7 +202,7 @@ class TrafficsTbmAdapter {
         return {
             send: (data = {}) => {
                 try {
-                    const dataUrl = CONFIG.crs.connectionUrl
+                    const dataUrl = this.config.crs.connectionUrl
                         + btoa('#tbm&file=' + options.dataSourceUrl + '?' + querystring.stringify(data));
 
                     this.logger.info('data transfer url: ');
@@ -238,7 +216,7 @@ class TrafficsTbmAdapter {
                 }
             },
             get: () => {
-                const exportUrl = CONFIG.crs.exportUrls[options.environment] + '/tbmExport?id=' + options.exportId;
+                const exportUrl = this.config.crs.exportUrls[options.environment] + '/tbmExport?id=' + options.exportId;
 
                 this.logger.info('connection url: ');
                 this.logger.info(exportUrl);

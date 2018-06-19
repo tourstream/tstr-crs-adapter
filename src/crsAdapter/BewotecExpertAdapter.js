@@ -1,42 +1,32 @@
 import axios from 'axios';
-import {CRS_TYPES} from '../UbpCrsAdapter';
+import {CRS_TYPES, GENDER_TYPES} from '../UbpCrsAdapter';
 import querystring from 'querystring';
 import WindowHelper from '../helper/WindowHelper';
 import * as fastXmlParser from 'fast-xml-parser';
 
-const CONFIG = {
-    crs: {
-        dateFormat: 'DDMMYY',
-        timeFormat: 'HHmm',
-        serviceTypes: {
-            car: 'MW',
-            carExtra: 'E',
-            hotel: 'H',
-            roundTrip: 'R',
-            camper: 'WM',
-            camperExtra: 'TA',
-        },
-        connectionUrl: 'http://localhost:7354/airob',
-        gender2SalutationMap: {
-            male: 'H',
-            female: 'D',
-            child: 'K',
-            infant: 'B',
-        },
-        lineNumberMap: ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'],
-    },
-    parserOptions: {
-        attributeNamePrefix: '__attributes',
-        textNodeName: '__textNode',
-        ignoreAttributes: false,
-        ignoreNameSpace: true,
-        parseNodeValue: false,
-        parseAttributeValue: false,
-    },
-};
-
 class BewotecExpertAdapter {
     constructor(logger, options = {}) {
+        this.config = {
+            crs: {
+                connectionUrl: 'http://localhost:7354/airob',
+                genderTypes: {
+                    [GENDER_TYPES.male]: 'H',
+                    [GENDER_TYPES.female]: 'D',
+                    [GENDER_TYPES.child]: 'K',
+                    [GENDER_TYPES.infant]: 'B',
+                },
+                lineNumberMap: ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'],
+            },
+            parserOptions: {
+                attributeNamePrefix: '__attributes',
+                textNodeName: '__textNode',
+                ignoreAttributes: false,
+                ignoreNameSpace: true,
+                parseNodeValue: false,
+                parseAttributeValue: false,
+            },
+        };
+
         this.options = options;
         this.logger = logger;
         this.bridgeWindow = void 0;
@@ -50,7 +40,7 @@ class BewotecExpertAdapter {
                 let crsObject = {};
 
                 if (xmlString && fastXmlParser.validate(xmlString) === true) {
-                    crsObject = fastXmlParser.parse(xmlString, CONFIG.parserOptions);
+                    crsObject = fastXmlParser.parse(xmlString, this.config.parserOptions);
                 }
 
                 const groupObjectAttributes = (object) => {
@@ -61,9 +51,9 @@ class BewotecExpertAdapter {
                     let propertyNames = Object.getOwnPropertyNames(object);
 
                     propertyNames.forEach((name) => {
-                        if (name.startsWith(CONFIG.parserOptions.attributeNamePrefix)) {
-                            object[CONFIG.parserOptions.attributeNamePrefix] = object[CONFIG.parserOptions.attributeNamePrefix] || {};
-                            object[CONFIG.parserOptions.attributeNamePrefix][name.substring(CONFIG.parserOptions.attributeNamePrefix.length)] = object[name];
+                        if (name.startsWith(this.config.parserOptions.attributeNamePrefix)) {
+                            object[this.config.parserOptions.attributeNamePrefix] = object[this.config.parserOptions.attributeNamePrefix] || {};
+                            object[this.config.parserOptions.attributeNamePrefix][name.substring(this.config.parserOptions.attributeNamePrefix.length)] = object[name];
 
                             delete object[name];
                         } else {
@@ -116,20 +106,15 @@ class BewotecExpertAdapter {
                 parsed: parsedData,
                 normalized: {
                     agencyNumber: crsData.Agency,
-                    operator: (crsData[CONFIG.parserOptions.attributeNamePrefix] || {}).operator,
+                    operator: (crsData[this.config.parserOptions.attributeNamePrefix] || {}).operator,
                     numberOfTravellers: crsData.PersonCount,
-                    travelType: (crsData[CONFIG.parserOptions.attributeNamePrefix] || {}).traveltype,
+                    travelType: (crsData[this.config.parserOptions.attributeNamePrefix] || {}).traveltype,
                     remark: crsData.Remarks,
                     services: this.collectServices(crsData),
                     travellers: this.collectTravellers(crsData),
                 },
                 meta: {
-                    serviceTypes: CONFIG.crs.serviceTypes,
-                    genderTypes: CONFIG.crs.gender2SalutationMap,
-                    formats: {
-                        date: CONFIG.crs.dateFormat,
-                        time: CONFIG.crs.timeFormat,
-                    },
+                    genderTypes: this.config.crs.genderTypes,
                     type: BewotecExpertAdapter.type,
                 },
             };
@@ -138,7 +123,7 @@ class BewotecExpertAdapter {
 
     collectServices(crsData) {
         return crsData.Services.Service.map((service) => {
-            let serviceData = service[CONFIG.parserOptions.attributeNamePrefix];
+            let serviceData = service[this.config.parserOptions.attributeNamePrefix];
 
             return {
                 marker: serviceData.marker,
@@ -160,7 +145,7 @@ class BewotecExpertAdapter {
                 return;
             }
 
-            const travellerData = traveller[CONFIG.parserOptions.attributeNamePrefix];
+            const travellerData = traveller[this.config.parserOptions.attributeNamePrefix];
             const travellerNames = (travellerData.name || '').split(' ');
 
             return {
@@ -195,7 +180,7 @@ class BewotecExpertAdapter {
 
     assignServices(crsData) {
         crsData.normalized.services.forEach((service, index) => {
-            const lineNumber = CONFIG.crs.lineNumberMap[index];
+            const lineNumber = this.config.crs.lineNumberMap[index];
 
             crsData.converted['m' + lineNumber] = service.marker;
             crsData.converted['n' + lineNumber] = service.type;
@@ -211,7 +196,7 @@ class BewotecExpertAdapter {
 
     assignTravellers(crsData) {
         crsData.normalized.travellers.forEach((traveller, index) => {
-            const lineNumber = CONFIG.crs.lineNumberMap[index];
+            const lineNumber = this.config.crs.lineNumberMap[index];
 
             crsData.converted['ta' + lineNumber] = traveller.title;
             crsData.converted['tn' + lineNumber] = traveller.name;
@@ -257,7 +242,7 @@ class BewotecExpertAdapter {
                     return Promise.resolve();
                 }
 
-                const baseUrl = CONFIG.crs.connectionUrl + '/expert';
+                const baseUrl = this.config.crs.connectionUrl + '/expert';
                 const params = {token: options.token};
 
                 if (!this.isProtocolSameAs('https')) {
@@ -276,7 +261,7 @@ class BewotecExpertAdapter {
                 return this.getDataFromBewotecBridge(options);
             },
             send: (data = {}) => {
-                const baseUrl = CONFIG.crs.connectionUrl + '/fill';
+                const baseUrl = this.config.crs.connectionUrl + '/fill';
                 const params = extendSendData(data);
 
                 if (!this.isProtocolSameAs('https')) {

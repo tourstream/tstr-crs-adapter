@@ -7,10 +7,6 @@ class CrsDataMapper {
     }
 
     mapToAdapterData(crsData) {
-        return this.mapFromGermanCrs(crsData);
-    }
-
-    mapFromGermanCrs(crsData) {
         const findAdapterServiceType = (crsServiceType) => {
             return Object.keys(crsData.meta.serviceTypes).find(
                 (key) => crsData.meta.serviceTypes[key] === crsServiceType

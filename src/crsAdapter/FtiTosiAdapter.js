@@ -1,31 +1,12 @@
 import xml2js from 'xml2js';
 import axios from 'axios';
-import {GENDER_TYPES} from '../UbpCrsAdapter';
 import ObjectHelper from '../helper/ObjectHelper';
-
-let CONFIG;
 
 class FtiTosiAdapter {
     constructor(logger, options = {}) {
-        CONFIG = {
+        this.config = {
             crs: {
-                dateFormat: 'DDMMYY',
-                timeFormat: 'HHmm',
-                serviceTypes: {
-                    car: 'MW',
-                    carExtra: 'E',
-                    hotel: 'H',
-                    roundTrip: 'R',
-                    camper: 'WM',
-                    camperExtra: 'TA',
-                },
                 connectionUrl: '//xmlrpc.fti.de/xmlrpc',
-                gender2SalutationMap: {
-                    [GENDER_TYPES.male]: 'H',
-                    [GENDER_TYPES.female]: 'F',
-                    [GENDER_TYPES.child]: 'K',
-                    [GENDER_TYPES.infant]: 'K',
-                },
             },
             parserOptions: {
                 attributeNamePrefix: '__attributes',
@@ -60,11 +41,11 @@ class FtiTosiAdapter {
         this.connectionOptions = {};
 
         this.helper = {
-            object: new ObjectHelper({ attrPrefix: CONFIG.parserOptions.attributeNamePrefix }),
+            object: new ObjectHelper({ attrPrefix: this.config.parserOptions.attributeNamePrefix }),
         };
 
         this.xmlBuilder = {
-            build: (xmlObject) => (new xml2js.Builder(CONFIG.builderOptions)).buildObject(JSON.parse(JSON.stringify(xmlObject)))
+            build: (xmlObject) => (new xml2js.Builder(this.config.builderOptions)).buildObject(JSON.parse(JSON.stringify(xmlObject)))
         };
     }
 
@@ -88,12 +69,6 @@ class FtiTosiAdapter {
             parsed: {},
             normalized: {},
             meta: {
-                serviceTypes: CONFIG.crs.serviceTypes,
-                genderTypes: CONFIG.crs.gender2SalutationMap,
-                formats: {
-                    date: CONFIG.crs.dateFormat,
-                    time: CONFIG.crs.timeFormat,
-                },
                 type: FtiTosiAdapter.type,
             },
         });
@@ -217,7 +192,7 @@ class FtiTosiAdapter {
         axios.defaults.headers.post['Content-Type'] = 'text/plain';
 
         return {
-            post: (data = '') => axios.post(CONFIG.crs.connectionUrl, data),
+            post: (data = '') => axios.post(this.config.crs.connectionUrl, data),
         };
     }
 

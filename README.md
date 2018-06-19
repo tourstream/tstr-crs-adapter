@@ -158,22 +158,22 @@ Depending on the `ServiceData.type` the structure of a `ServiceData` object diff
 
 You can check the currently supported service types with `UbpCrsAdapter.SERVICE_TYPES`.
 
-|          | car   | hotel | roundtrip | camper | "raw"
----        | :---: | :---: | :---:     | :---:  | :---:
-CETS       | X     | X     | X         |        |
-TOMA (old) | X     | X     | X         | X      | X
-TOMA (new) | X     | X     | X         | X      | X
-Merlin     | X     | X     | X         | X      | X
-MyJack     | X     | X     | X         | X      | X
-JackPlus   | X     | X     | X         | X      | X
-Cosmo      | X     | X     | X         | X      | X
-CosmoNaut  | X     | X     | X         | X      | X
-Tosi       | X     | X     | X         | X      | X
+|          | car   | hotel | round trip | camper | "raw"
+---        | :---: | :---: | :---:      | :---:  | :---:
+CETS       | X     | X     | X          |        |
+TOMA (old) | X     | X     | X          | X      | X
+TOMA (new) | X     | X     | X          | X      | X
+Merlin     | X     | X     | X          | X      | X
+MyJack     | X     | X     | X          | X      | X
+JackPlus   | X     | X     | X          | X      | X
+Cosmo      | X     | X     | X          | X      | X
+CosmoNaut  | X     | X     | X          | X      | X
+Tosi       | X     | X     | X          | X      | X
 
 
 ##### `ServiceData` structure
 
-###### Type Car
+###### Rental Car
 
 ```
 {
@@ -201,7 +201,7 @@ Tosi       | X     | X     | X         | X      | X
 `.pickUpTime` format is changeable by setting `adapterOptions.useTimeFormat`.
 
 
-###### Type Hotel
+###### Hotel
 
 ```
 {
@@ -220,7 +220,7 @@ Tosi       | X     | X     | X         | X      | X
 `.dateFrom, .dateTo` format is changeable by setting `adapterOptions.useDateFormat`.
 
 
-###### Type RoundTrip
+###### RoundTrip
 
 ```
 {
@@ -236,7 +236,7 @@ Tosi       | X     | X     | X         | X      | X
 `.startDate, .endDate` format is changeable by setting `adapterOptions.useDateFormat`.
 
 
-###### Type Camper
+###### Camper
 
 ```
 {
@@ -253,13 +253,19 @@ Tosi       | X     | X     | X         | X      | X
   milesPackagesIncluded: '3',
   extras: [ 
     { 
+      type: 'equipment',
       code: 'ECX0001', 
-      amount: '2' 
+      amount: '2',
     }, 
     { 
+      type: 'special',
       code: 'USA740', 
-      amount: '1' 
-    }, 
+      amount: '1',
+    },
+    { 
+      type: 'insurance',
+      code: '13361', 
+    },  
     ..., 
   ],
 }
@@ -270,7 +276,7 @@ Tosi       | X     | X     | X         | X      | X
 `.pickUpTime` format is changeable by setting `adapterOptions.useTimeFormat`.
 
 
-###### raw `.type`
+###### "raw"
 
 ```
 {

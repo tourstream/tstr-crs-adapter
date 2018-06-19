@@ -232,24 +232,6 @@ describe('TrafficsTbmAdapter', () => {
 
             adapter.fetchData().then((result) => {
                 expect(result.meta).toEqual({
-                    serviceTypes: {
-                        car: 'MW',
-                        carExtra: 'E',
-                        hotel: 'H',
-                        roundTrip: 'R',
-                        camper: 'WM',
-                        camperExtra: 'TA'
-                    },
-                    genderTypes: {
-                        male: 'H',
-                        female: 'F',
-                        child: 'K',
-                        infant: 'K'
-                    },
-                    formats: {
-                        date: 'DDMMYY',
-                        time: 'HHmm'
-                    },
                     type: TrafficsTbmAdapter.type,
                 });
 

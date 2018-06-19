@@ -117,7 +117,7 @@ describe('UbpCrsAdapter', () => {
         adapter.connect('invalid.crsType').then(() => {
             done.fail('unexpected result');
         }).catch((error) => {
-            expect(error.toString()).toBe('Error: load error: The CRS "invalid.crstype" is currently not supported.');
+            expect(error.toString()).toBe('Error: load error: The CRS "invalid.crsType" is currently not supported.');
             done();
         });
     });
