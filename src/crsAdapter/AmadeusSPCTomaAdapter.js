@@ -304,7 +304,7 @@ class AmadeusSPCTomaAdapter {
             let requestCallback = this.createPromiseCallbackObject(resolve, null, 'sending data failed');
 
             if (this.needToPaginate(crsObject)) {
-                requestData = [Object.assign({}, crsObject, {action: CONFIG.crs.actions.nextPage})];
+                requestData = [Object.assign({}, crsObject, {action: this.config.crs.actions.nextPage})];
                 requestCallback = this.createCallbackObject(() => {
                     this.getConnection().requestService(
                         'bookingfile.toma.sendRequest', [], this.createCallbackObject(() => {
@@ -331,8 +331,8 @@ class AmadeusSPCTomaAdapter {
      * @returns {boolean}
      */
     needToPaginate(crsObject) {
-        return (crsObject.services || []).length > CONFIG.crs.maxServiceLines
-            || (crsObject.travellers || []).length > CONFIG.crs.maxTravellerLines;
+        return (crsObject.services || []).length > this.config.crs.maxServiceLines
+            || (crsObject.travellers || []).length > this.config.crs.maxTravellerLines;
     }
 
     /**

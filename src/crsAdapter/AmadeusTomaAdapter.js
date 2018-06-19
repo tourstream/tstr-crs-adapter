@@ -257,8 +257,8 @@ class AmadeusTomaAdapter {
 
                 this.paginate();
 
-                ((crsData.normalized || {}).services || []).splice(0, CONFIG.crs.maxServiceLines);
-                ((crsData.normalized || {}).travellers || []).splice(0, CONFIG.crs.maxTravellerLines);
+                ((crsData.normalized || {}).services || []).splice(0, this.config.crs.maxServiceLines);
+                ((crsData.normalized || {}).travellers || []).splice(0, this.config.crs.maxTravellerLines);
                 ((((crsData.parsed || {}).Envelope || {}).Header || {}).Application || {}).Reset = '0';
 
                 crsData = this.convert(crsData);
@@ -331,8 +331,8 @@ class AmadeusTomaAdapter {
      * @returns {boolean}
      */
     needToPaginate(crsData) {
-        return ((crsData.normalized || {}).services || []).length > CONFIG.crs.maxServiceLines
-            || ((crsData.normalized || {}).travellers || []).length > CONFIG.crs.maxServiceLines;
+        return ((crsData.normalized || {}).services || []).length > this.config.crs.maxServiceLines
+            || ((crsData.normalized || {}).travellers || []).length > this.config.crs.maxServiceLines;
     }
 
     /**
@@ -344,7 +344,7 @@ class AmadeusTomaAdapter {
                 Envelope: {
                     Body: {
                         TOM: {
-                            Action: CONFIG.crs.actions.nextPage,
+                            Action: this.config.crs.actions.nextPage,
                         }
                     }
                 }
