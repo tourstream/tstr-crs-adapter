@@ -15,72 +15,90 @@
 
 <body>
 <div class="container-fluid">
-    <h1>CRS Adapter Test</h1>
-
     <div class="row">
         <div class="col">
-            <h2>Select the CRS to which you want to transfer data:</h2>
+            <h1>CRS Adapter Test</h1>
 
-            <div id="crs-selection">
-                <button type="button" data-toggle="button" class="btn btn-outline-primary" value="toma">TOMA (old)</button>
-                <button type="button" data-toggle="button" class="btn btn-outline-primary" value="toma2">TOMA (new)</button>
-                <button type="button" data-toggle="button" class="btn btn-outline-primary" value="cets">CETS</button>
-                <button type="button" data-toggle="button" class="btn btn-outline-primary" value="merlin">Merlin</button>
-                <button type="button" data-toggle="button" class="btn btn-outline-primary" value="myjack">MyJack</button>
-                <button type="button" data-toggle="button" class="btn btn-outline-primary" value="jackplus">Jack+</button>
-                <button type="button" data-toggle="button" class="btn btn-outline-primary" value="traffics">Cosmo</button>
-                <button type="button" data-toggle="button" class="btn btn-outline-primary" value="traffics">CosmoNaut</button>
-                <button type="button" data-toggle="button" class="btn btn-outline-primary" value="tosi">TOSI</button>
+            <div class="row">
+                <div class="col">
+                    <h2>Select the CRS to which you want to transfer data:</h2>
 
-                <div class="my-2">
-                    <button name="connect" class="btn btn-success btn-outline-success" id="connect-button">
-                        connect to CRS
-                    </button>
+                    <div id="crs-selection">
+                        <button type="button" data-toggle="button" class="btn btn-outline-primary" value="toma">TOMA (old)</button>
+                        <button type="button" data-toggle="button" class="btn btn-outline-primary" value="toma2">TOMA (new)</button>
+                        <button type="button" data-toggle="button" class="btn btn-outline-primary" value="cets">CETS</button>
+                        <button type="button" data-toggle="button" class="btn btn-outline-primary" value="merlin">Merlin</button>
+                        <button type="button" data-toggle="button" class="btn btn-outline-primary" value="myjack">MyJack</button>
+                        <button type="button" data-toggle="button" class="btn btn-outline-primary" value="jackplus">Jack+</button>
+                        <button type="button" data-toggle="button" class="btn btn-outline-primary" value="traffics">Cosmo</button>
+                        <button type="button" data-toggle="button" class="btn btn-outline-primary" value="traffics">CosmoNaut</button>
+                        <button type="button" data-toggle="button" class="btn btn-outline-primary" value="tosi">TOSI</button>
+
+                        <form id="connect-options" class="form my-2"></form>
+
+                        <div class="my-2">
+                            <button name="connect" class="btn btn-success btn-outline-success" id="connect-button">
+                                connect to CRS
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
-        </div>
-    </div>
 
-    <form id="connect-options" class="form my-2"></form>
+            <div class="row">
+                <div class="col">
+                    <h2>Select the product type you want to transfer:</h2>
 
-    <div class="row">
-        <div class="col">
-            <h2>Select the product type you want to transfer:</h2>
+                    <div id="product-selection">
+                        <button type="button" data-toggle="button" class="btn btn-outline-primary" value="car">car</button>
+                        <button type="button" data-toggle="button" class="btn btn-outline-primary" value="hotel">hotel</button>
+                        <button type="button" data-toggle="button" class="btn btn-outline-primary" value="roundTrip">round trip</button>
+                        <button type="button" data-toggle="button" class="btn btn-outline-primary" value="camper">camper</button>
+                        <button type="button" data-toggle="button" class="btn btn-outline-primary" value="raw">raw</button>
 
-            <div id="product-selection">
-                <button type="button" data-toggle="button" class="btn btn-outline-primary" value="car">car</button>
-                <button type="button" data-toggle="button" class="btn btn-outline-primary" value="hotel">hotel</button>
-                <button type="button" data-toggle="button" class="btn btn-outline-primary" value="roundTrip">round trip</button>
-                <button type="button" data-toggle="button" class="btn btn-outline-primary" value="camper">camper</button>
-                <button type="button" data-toggle="button" class="btn btn-outline-primary" value="raw">raw</button>
+                        <div class="btn-group dropright">
+                            <a id="test-data-menu" class="btn btn-outline-primary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                --- no test data provided ---
+                            </a>
 
-                <div class="my-2">
-                    <button name="get" class="btn btn-outline-warning">
-                        <i class="fas fa-sign-out-alt"></i>
-                        get data from CRS
-                    </button>
-                    <button name="add" class="btn btn-outline-warning">
-                        <i class="fas fa-plus-square"></i>
-                        add data to transfer list
-                    </button>
-                    <button name="send" class="btn btn-outline-warning">
-                        <i class="fas fa-sign-in-alt"></i>
-                        send transfer list to CRS
-                    </button>
-                    <button name="cancel" class="btn btn-outline-warning">
-                        <i class="fas fa-ban"></i>
-                        cancel
-                    </button>
+                            <div id="test-data-list" class="dropdown-menu"></div>
+                        </div>
+
+                        <button type="reset" class="btn btn-outline-danger mx-4">reset</button>
+
+                        <div class="my-2">
+                            <button name="get" class="btn btn-outline-warning">
+                                <i class="fas fa-sign-out-alt"></i>
+                                get data from CRS
+                            </button>
+                            <button name="add" class="btn btn-outline-warning">
+                                <i class="fas fa-plus-square"></i>
+                                add data to transfer list
+                            </button>
+                            <button name="send" class="btn btn-outline-warning">
+                                <i class="fas fa-sign-in-alt"></i>
+                                send transfer list to CRS
+                            </button>
+                            <button name="cancel" class="btn btn-outline-warning">
+                                <i class="fas fa-ban"></i>
+                                cancel
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
-        </div>
-    </div>
 
-    <form id="product" class="form my-2">
-        <span id="product-base"></span>
-        <span id="product-service"></span>
-        <span id="product-travellers"></span>
-    </form>
+            <form id="product" class="form my-2">
+                <span id="product-base"></span>
+                <span id="product-service"></span>
+                <span id="product-travellers"></span>
+            </form>
+
+            <div id="report"></div>
+        </div>
+
+        <div id="crs-data-preview" class="col-4"></div>
+    </div>
 
     <div id="templates" hidden>
         <div id="form-field-template" class="input-group">
@@ -91,7 +109,7 @@
         <div id="toma-form-fields">
             <input type="hidden" name="type" value="toma"/>
 
-            <div class="form-row">
+            <div>
                 <div data-form-field data-label="providerKey" data-name="providerKey"></div>
             </div>
         </div>
@@ -99,7 +117,7 @@
         <div id="toma2-form-fields">
             <input type="hidden" name="type" value="toma2"/>
 
-            <div class="form-row">
+            <div>
                 <div data-form-field data-label="connectionUrl (leave blank for auto-detection)" data-name="connectionUrl" data-value="https://acceptance.emea1.sellingplatformconnect.amadeus.com"></div>
                 <div data-form-field data-label="popupId (leave blank for auto-detection)" data-name="popupId"></div>
             </div>
@@ -116,7 +134,7 @@
         <div id="myjack-form-fields">
             <input type="hidden" name="type" value="myjack"/>
 
-            <div class="form-row">
+            <div>
                 <div data-form-field data-label="token" data-name="token"></div>
                 <div data-form-field data-label="dataBridgeUrl" data-name="dataBridgeUrl" data-value="http://localhost:1338"></div>
             </div>
@@ -125,7 +143,7 @@
         <div id="jackplus-form-fields">
             <input type="hidden" name="type" value="jackplus"/>
 
-            <div class="form-row">
+            <div>
                 <div data-form-field data-label="token" data-name="token"></div>
             </div>
         </div>
@@ -133,7 +151,7 @@
         <div id="traffics-form-fields">
             <input type="hidden" name="type" value="cosmonaut"/>
 
-            <div class="form-row">
+            <div>
                 <div data-form-field data-label="environment" data-name="environment" data-value="test" data-title="'test' or 'live'"></div>
                 <div data-form-field data-label="dataSourceUrl" data-name="dataSourceUrl" data-value="https://us-central1-fti360-bm-staging.cloudfunctions.net/query2Json"></div>
                 <div data-form-field data-label="exportId" data-name="exportId" data-value="fake_id"></div>
@@ -143,7 +161,7 @@
         <div id="tosi-form-fields">
             <input type="hidden" name="type" value="tosi"/>
 
-            <div class="form-row">
+            <div>
                 <div data-form-field data-label="token" data-name="token"></div>
             </div>
         </div>
@@ -334,12 +352,12 @@
                 </fieldset>
             </div>
         </div>
+
+        <button id="test-data-set-template" class="dropdown-item" type="button"></button>
     </div>
 </div>
 
-<div id="report"></div>
-
-<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+<script src="https://code.jquery.com/jquery-3.2.1.min.js" crossorigin="anonymous"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js" integrity="sha384-vFJXuSJphROIrBnz7yo7oB41mKfc8JzQZiCq4NCceLEaO4IHwicKwpJf9c9IpFgh" crossorigin="anonymous"></script>
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js" integrity="sha384-alpBpkh1PFOepccYVYDB4do5UnbKysX5WZXm3XxPqe5iKTfUKjNkCk9SaVuEZflJ" crossorigin="anonymous"></script>
 

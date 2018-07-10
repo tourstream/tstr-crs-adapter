@@ -177,7 +177,6 @@ Tosi       | X     | X     | X          | X      | X
 
 ```
 {
-  ...,
   type: 'car',
   vehicleCode: 'E4',
   renterCode: 'DEU85',
@@ -205,7 +204,6 @@ Tosi       | X     | X     | X          | X      | X
 
 ```
 {
-  ...,
   type: 'hotel',
   roomCode: 'DZ', 
   mealCode: 'U',
@@ -224,7 +222,6 @@ Tosi       | X     | X     | X          | X      | X
 
 ```
 {
-  ...,
   type: 'roundTrip',
   bookingId: 'E2784NQXTHEN', 
   destination: 'YYZ', 
@@ -240,7 +237,6 @@ Tosi       | X     | X     | X          | X      | X
 
 ```
 {
-  ...,
   type: 'camper',
   vehicleCode: 'FS',
   renterCode: 'PRT02',
@@ -280,7 +276,6 @@ Tosi       | X     | X     | X          | X      | X
 
 ```
 {
-  ...,
   type: 'TY',
   code: 'CODE',
   accommodation: '42',
@@ -312,6 +307,28 @@ Personal goal: Try to increase the test coverage to ~100%.
 We prepared a test file, which can be opened directly in the CRS systems.
 The file is located in __test/manual__: *[crsTest.html](tests/manual/crsTest.html)*
 For serving the test file locally we provide a command for it: `npm run serve`
+The test file is than available via [https://localhost:1337](https://localhost:1337).
+
+If you want to define test data by your own, you can create a file named *"testData.json"* and place it into the 
+__tests/manual__ folder. The structure of the file has to be an array with [`<CrsData>`](#interface) elements.
+The elements should also include a property `._description` which is than shown in the test file.
+
+Test data example:
+
+```
+[
+  {
+    "_description": "my custom test data",
+    "services": [...],
+    ...
+  },
+  {
+    "_description": "other test data",
+    "remark": "..."
+    ...
+  }
+]
+```
 
 It depends on the CRS how to use the test file.
 
@@ -336,12 +353,13 @@ _precondition:_
 * the TOMA mask is visible 
 * the test file is served under a whitelisted domain
 
-The file is than available via https://localhost:1337 and already whitelisted by Amadeus for their test system. 
+The served test file is already whitelisted by Amadeus for their test system. 
 But you should open this URL in your browser first to accept any unknown certificates!
 
-Then you have to request an already embedded IBE (like the drive IBE) 
+Then you have to open the IBE iFrame - for example by requesting an already existing IBE (like the drive IBE) 
 and replace the iFrame URL with the URL of the test file. 
-This is because Amadeus whitelist the domains which have access to the CRS.
+You can use the following script as bookmark to replace the URL automatically:
+`javascript:(function(){let%20fc=document.getElementsByTagName('iframe');let%20f=fc[fc.length-1];let%20s=f.src.split('/dispatcher/');s[0]='https://localhost:1337/';f.src=s.join('');})()`
 
 
 ###### ... in CETS

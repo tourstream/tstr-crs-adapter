@@ -7,3 +7,4 @@ package-lock.json
 /node_modules/
 
 /tests/manual/assets/ubpCrsAdapter.*
+/tests/manual/testData.json
