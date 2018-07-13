@@ -2,15 +2,24 @@ import RoundTripServiceReducer from '../../../src/reducer/RoundTripServiceReduce
 import {DEFAULT_OPTIONS, SERVICE_TYPES} from '../../../src/UbpCrsAdapter';
 
 describe('RoundTripServiceReducer', () => {
-    let reducer, config, helper, roundTripHelper;
+    let reducer, config, helper, roundTripHelper, serviceHelper;
 
     beforeEach(() => {
         config = DEFAULT_OPTIONS;
         roundTripHelper = require('tests/unit/_mocks/RoundTripHelper')();
+        serviceHelper = require('tests/unit/_mocks/ServiceHelper')();
         helper = {
             traveller: require('tests/unit/_mocks/TravellerHelper')(),
             roundTrip: roundTripHelper,
+            service: serviceHelper,
         };
+
+        serviceHelper.findMarkedService.and.callFake((crsData) => crsData.normalized.services[0]);
+        serviceHelper.createEmptyService.and.callFake((crsData) => {
+            const service = {};
+            crsData.normalized.services.push(service)
+            return service;
+        });
 
         reducer = new RoundTripServiceReducer(
             require('tests/unit/_mocks/LogService')(),
@@ -75,9 +84,6 @@ describe('RoundTripServiceReducer', () => {
 
         expect(JSON.parse(JSON.stringify(crsData)).normalized).toEqual({
             services: [
-                {
-                    type: 'unknown',
-                },
                 {
                     type: 'roundTripType',
                     code: 'NEZbookingId',

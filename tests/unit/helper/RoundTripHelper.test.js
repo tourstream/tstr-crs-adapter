@@ -21,12 +21,12 @@ describe('RoundTripHelper', () => {
         expect(helper.isServiceMarked({code: 'NEZcode'})).toBeFalsy();
     });
 
-    it('isServiceMarked should return true for matching bookingId', () => {
-        expect(helper.isServiceMarked({code: 'NEZcode'}, 'code')).toBeTruthy();
+    it('isServiceMarked should return true for code without "NEZ" prefix', () => {
+        expect(helper.isServiceMarked({code: 'code'})).toBeTruthy();
     });
 
-    it('isServiceMarked should return false for not matching bookingId', () => {
-        expect(helper.isServiceMarked({code: 'NEZcode'}, 'mycode')).toBeFalsy();
+    it('isServiceMarked should return false for code with "NEZ" prefix', () => {
+        expect(helper.isServiceMarked({code: 'NEZcode'})).toBeFalsy();
     });
 });
 

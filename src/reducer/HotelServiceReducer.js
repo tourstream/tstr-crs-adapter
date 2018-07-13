@@ -14,7 +14,7 @@ class HotelServiceReducer {
 
         crsData.normalized.services = crsData.normalized.services || [];
 
-        const crsService = this.findCrsService(adapterService, crsData) || this.createEmptyService(crsData);
+        const crsService = this.helper.service.findMarkedService(crsData) || this.helper.service.createEmptyService(crsData);
         const dateFrom = moment(adapterService.dateFrom, this.config.useDateFormat);
         const dateTo = moment(adapterService.dateTo, this.config.useDateFormat);
 
@@ -29,24 +29,6 @@ class HotelServiceReducer {
         crsService.toDate = dateTo.isValid() ? dateTo.format(crsData.meta.formats.date) : adapterService.dateTo;
 
         this.helper.traveller.reduceTravellersIntoCrsData(adapterService, crsService, crsData);
-    }
-
-    findCrsService(adapterService, crsData) {
-        return crsData.normalized.services.find((crsService) => {
-            if (crsService.type !== crsData.meta.serviceTypes[adapterService.type]) {
-                return false;
-            }
-
-            return this.helper.hotel.isServiceMarked(crsService);
-        });
-    }
-
-    createEmptyService(crsData) {
-        const service = {};
-
-        crsData.normalized.services.push(service);
-
-        return service;
     }
 }
 

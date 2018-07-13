@@ -1,5 +1,3 @@
-import {SERVICE_TYPES} from '../UbpCrsAdapter'
-
 class AdapterDataReducer {
     constructor(logger, config, reducer, helpers) {
         this.config = config;
@@ -20,10 +18,6 @@ class AdapterDataReducer {
         crsData.normalized.operator = adapterData.operator || crsData.normalized.operator;
         crsData.normalized.travelType = adapterData.travelType || crsData.normalized.travelType;
         crsData.normalized.remark = [crsData.normalized.remark, adapterData.remark].filter(Boolean).join(';') || void 0;
-
-        if (adapterData.services.length) {
-            this.removeIncompleteServices(crsData);
-        }
 
         adapterData.services.forEach((adapterService) => {
             let reducer = this.reducer[adapterService.type];
@@ -68,21 +62,6 @@ class AdapterDataReducer {
                 name: [traveller.firstName, traveller.lastName].filter(Boolean).join(' '),
                 age: traveller.age,
             }
-        });
-    }
-
-    removeIncompleteServices(crsData) {
-        const serviceHelpers = {
-            [crsData.meta.serviceTypes[SERVICE_TYPES.car]]: this.helpers.vehicle,
-            [crsData.meta.serviceTypes[SERVICE_TYPES.camper]]: this.helpers.vehicle,
-            [crsData.meta.serviceTypes[SERVICE_TYPES.roundTrip]]: this.helpers.roundTrip,
-            [crsData.meta.serviceTypes[SERVICE_TYPES.hotel]]: this.helpers.hotel,
-        };
-
-        crsData.normalized.services = (crsData.normalized.services || []).filter((service) => {
-            const helper = serviceHelpers[service.type];
-
-            return !helper || !helper.isServiceMarked(service);
         });
     }
 }

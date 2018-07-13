@@ -17,7 +17,7 @@ class CamperServiceReducer {
 
         adapterService.extras = adapterService.extras || [];
 
-        const crsService = this.findCrsService(adapterService, crsData) || this.createEmptyService(crsData);
+        const crsService = this.helper.service.findMarkedService(crsData) || this.helper.service.createEmptyService(crsData);
         const pickUpDate = moment(adapterService.pickUpDate, this.config.useDateFormat);
         const dropOffDate = moment(adapterService.dropOffDate, this.config.useDateFormat);
         const pickUpTime = moment(adapterService.pickUpTime, this.config.useTimeFormat);
@@ -36,7 +36,7 @@ class CamperServiceReducer {
         this.helper.traveller.reduceTravellersIntoCrsData(adapterService, crsService, crsData);
 
         (adapterService.extras || []).forEach((extra) => {
-            const service = this.createEmptyService(crsData);
+            const service = this.helper.service.createEmptyService(crsData);
 
             service.type = extra.type === CAMPER_EXTRA_TYPES.insurance
                 ? crsData.meta.serviceTypes.insurance
@@ -48,24 +48,6 @@ class CamperServiceReducer {
                 (value, index, array) => array.indexOf(value) === index
             ).join('-');
         });
-    }
-
-    findCrsService(adapterService, crsData) {
-        return crsData.normalized.services.find((crsService) => {
-            if (crsService.type !== crsData.meta.serviceTypes[adapterService.type]) {
-                return false;
-            }
-
-            return this.helper.vehicle.isServiceMarked(crsService);
-        });
-    }
-
-    createEmptyService(crsData) {
-        const service = {};
-
-        crsData.normalized.services.push(service);
-
-        return service;
     }
 }
 

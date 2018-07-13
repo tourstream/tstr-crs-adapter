@@ -2,14 +2,23 @@ import HotelServiceReducer from '../../../src/reducer/HotelServiceReducer';
 import {DEFAULT_OPTIONS, SERVICE_TYPES} from '../../../src/UbpCrsAdapter';
 
 describe('HotelServiceReducer', () => {
-    let reducer, config, helper;
+    let reducer, config, helper, serviceHelper;
 
     beforeEach(() => {
+        serviceHelper = require('tests/unit/_mocks/ServiceHelper')();
         config = DEFAULT_OPTIONS;
         helper = {
             traveller: require('tests/unit/_mocks/TravellerHelper')(),
             hotel: require('tests/unit/_mocks/HotelHelper')(),
+            service: serviceHelper,
         };
+
+        serviceHelper.findMarkedService.and.callFake((crsData) => crsData.normalized.services[0]);
+        serviceHelper.createEmptyService.and.callFake((crsData) => {
+            const service = {};
+            crsData.normalized.services.push(service)
+            return service;
+        });
 
         reducer = new HotelServiceReducer(
             require('tests/unit/_mocks/LogService')(),
@@ -81,12 +90,6 @@ describe('HotelServiceReducer', () => {
         expect(JSON.parse(JSON.stringify(crsData)).normalized).toEqual({
             services: [
                 {
-                    type: 'unknown',
-                },
-                {
-                    type: 'hotelType',
-                },
-                {
                     type: 'hotelType',
                     marker: 'X',
                     code: 'MUC20XS',
@@ -95,6 +98,9 @@ describe('HotelServiceReducer', () => {
                     quantity: 2,
                     fromDate: '2018-03-16',
                     toDate: '2018-03-21',
+                },
+                {
+                    type: 'hotelType',
                 },
             ],
         });

@@ -3,11 +3,12 @@ class RoundTripHelper {
         this.config = config;
     }
 
-    isServiceMarked(service, bookingId) {
+    isServiceMarked(service) {
         if (service.marker) {
             return true;
         }
-        return !service.code || service.code.replace(/^NEZ/, '') === bookingId;
+
+        return !service.code || !service.code.startsWith('NEZ');
     }
 }
 

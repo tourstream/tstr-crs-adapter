@@ -3,15 +3,24 @@ import TravellerHelper from '../../../src/helper/TravellerHelper';
 import {CAMPER_EXTRA_TYPES, DEFAULT_OPTIONS, SERVICE_TYPES} from '../../../src/UbpCrsAdapter';
 
 describe('CamperServiceReducer', () => {
-    let reducer, config, helper, vehicleHelper;
+    let reducer, config, helper, vehicleHelper, serviceHelper;
 
     beforeEach(() => {
         vehicleHelper = require('tests/unit/_mocks/VehicleHelper')();
+        serviceHelper = require('tests/unit/_mocks/ServiceHelper')();
         config = DEFAULT_OPTIONS;
         helper = {
             traveller: new TravellerHelper(),
             vehicle: vehicleHelper,
+            service: serviceHelper,
         };
+
+        serviceHelper.findMarkedService.and.callFake((crsData) => crsData.normalized.services[0]);
+        serviceHelper.createEmptyService.and.callFake((crsData) => {
+            const service = {};
+            crsData.normalized.services.push(service)
+            return service;
+        });
 
         reducer = new CamperServiceReducer(
             require('tests/unit/_mocks/LogService')(),
@@ -107,12 +116,6 @@ describe('CamperServiceReducer', () => {
         expect(JSON.parse(JSON.stringify(crsData)).normalized).toEqual({
             services: [
                 {
-                    type: 'unknown',
-                },
-                {
-                    type: 'camperType',
-                },
-                {
                     type: 'camperType',
                     marker: 'X',
                     code: 'service.code',
@@ -122,6 +125,9 @@ describe('CamperServiceReducer', () => {
                     fromDate: '2018-03-16',
                     toDate: '2018-03-21',
                     travellerAssociation: '1',
+                },
+                {
+                    type: 'camperType',
                 },
                 {
                     type: 'extraType',

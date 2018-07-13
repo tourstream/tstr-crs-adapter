@@ -1,16 +1,24 @@
 import RawServiceReducer from '../../../src/reducer/RawServiceReducer';
 
 describe('RawServiceReducer', () => {
-    let reducer, config, helper;
+    let reducer, config, helper, serviceHelper;
 
     beforeEach(() => {
+        serviceHelper = require('tests/unit/_mocks/ServiceHelper')();
         config = {
             useDateFormat: 'YYYY-MM-DD',
             useTimeFormat: 'HH:mm',
         };
         helper = {
             traveller: require('tests/unit/_mocks/TravellerHelper')(),
+            service: serviceHelper,
         };
+
+        serviceHelper.createEmptyService.and.callFake((crsData) => {
+            const service = {};
+            crsData.normalized.services.push(service)
+            return service;
+        });
 
         reducer = new RawServiceReducer(
             require('tests/unit/_mocks/LogService')(),

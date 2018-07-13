@@ -48,7 +48,6 @@ describe('AdapterDataReducer', () => {
         expect(JSON.parse(JSON.stringify(reducer.reduceIntoCrsData(adapterData, crsData))).normalized).toEqual({
             action: 'BA',
             travellers: [],
-            services: [],
         });
     });
 
@@ -73,7 +72,6 @@ describe('AdapterDataReducer', () => {
         expect(JSON.parse(JSON.stringify(reducer.reduceIntoCrsData(adapterData, crsData))).normalized).toEqual({
             action: 'BA',
             travellers: [],
-            services: [],
         });
     });
 
@@ -130,7 +128,6 @@ describe('AdapterDataReducer', () => {
                     name: 'fn ln',
                 }
             ],
-            services: [],
         });
     });
 });
