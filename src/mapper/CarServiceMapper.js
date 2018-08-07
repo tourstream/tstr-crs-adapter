@@ -24,6 +24,7 @@ class CarServiceMapper {
 
         const serviceCodeDetails = this.helper.splitServiceCode(crsService.code);
 
+        adapterService.sipp = serviceCodeDetails.sipp;
         adapterService.renterCode = serviceCodeDetails.renterCode;
         adapterService.vehicleCode = serviceCodeDetails.vehicleCode;
         adapterService.pickUpLocation = serviceCodeDetails.pickUpLocation;

@@ -180,6 +180,7 @@ Tosi       | X     | X     | X          | X      | X
   type: 'car',
   vehicleCode: 'E4',
   renterCode: 'DEU85',
+  sipp: 'MBMN',
   pickUpLocation: 'BER3',
   pickUpDate: '28122017',
   pickUpTime: '0915',
@@ -198,6 +199,8 @@ Tosi       | X     | X     | X          | X      | X
 `.pickUpDate, .dropOffDate` format is changeable by setting `adapterOptions.useDateFormat`.
 
 `.pickUpTime` format is changeable by setting `adapterOptions.useTimeFormat`.
+
+`.sipp` is only needed, when a different service code should be generated for the CRS
 
 
 ###### Hotel
