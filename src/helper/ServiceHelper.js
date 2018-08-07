@@ -1,6 +1,6 @@
 class ServiceHelper {
     findMarkedService(crsData) {
-        return crsData.normalized.services.find((crsService) => {
+        return (crsData.normalized.services || []).find((crsService) => {
             return !!crsService.marker;
         });
     }
@@ -8,6 +8,7 @@ class ServiceHelper {
     createEmptyService(crsData) {
         const service = {};
 
+        crsData.normalized.services = crsData.normalized.services || [];
         crsData.normalized.services.push(service);
 
         return service;

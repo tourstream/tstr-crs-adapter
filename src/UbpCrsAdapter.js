@@ -410,10 +410,10 @@ class UbpCrsAdapter {
             [crsData.meta.serviceTypes[SERVICE_TYPES.hotel]]: new HotelHelper(this.options),
         };
 
-        crsData.normalized.services = (crsData.normalized.services || []).forEach((service) => {
+        (crsData.normalized.services || []).forEach((service) => {
             const helper = serviceHelpers[service.type];
 
-            service.marker = crsData.normalized.services.length === 1 || (helper && helper.isServiceMarked(service));
+            service.marker = crsData.normalized.services.length === 1 || (helper && helper.isServiceMarked(service)) ? 'X' : void 0;
         });
     }
 }
