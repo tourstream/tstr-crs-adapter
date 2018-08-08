@@ -59,6 +59,7 @@ describe('CarServiceMapper', () => {
             vehicleCode: 'vehicleCode',
             pickUpLocation: 'pickUpLocation',
             dropOffLocation: 'dropOffLocation',
+            sipp: void 0,
             marked: true,
             type: 'car',
         });

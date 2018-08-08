@@ -181,7 +181,7 @@ Tosi       | X     | X     | X          | X      | X
   vehicleCode: 'E4',
   renterCode: 'DEU85',
   sipp: 'MBMN',
-  pickUpLocation: 'BER3',
+  pickUpLocation: 'BER0H',
   pickUpDate: '28122017',
   pickUpTime: '0915',
   pickUpHotelName: 'Best Hotel',
