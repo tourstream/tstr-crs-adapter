@@ -1,5 +1,13 @@
 const CONFIG = {
-    serviceCodeRegEx: /([A-Z]*[0-9]*)?([A-Z]*[0-9]*)?(\/)?([A-Z]*[0-9]*)?(-)?([A-Z]*[0-9]*)?/,
+    serviceCodeRegEx: {
+        // USA96A4/MIA0H-TPA
+        old: /^([A-Z]*[0-9]*)([A-Z]*[0-9]*)\/(.*)-(.*)$/,
+        // MIA03SFO0HMBMN81
+        sipp: /^(.{5})(.{5})(.{4})(.{2})$/,
+        // MUC10-BER
+        // SFO
+        locationsOnly:/^([A-Z0-9]{3,5})-?([A-Z0-9]{3,5})?$/,
+    },
 };
 
 class VehicleHelper {
@@ -12,40 +20,75 @@ class VehicleHelper {
             return true;
         }
 
-        // gaps in the regEx result array will result in lined up "." after the join
-        return !service.code || service.code.match(CONFIG.serviceCodeRegEx).join('.').indexOf('..') !== -1;
+        return !service.code || !!service.code.match(CONFIG.serviceCodeRegEx.locationsOnly);
     }
 
     splitServiceCode(code) {
         if (!code) return {};
 
+        return this.splitSippServiceCode(code)
+            || this.splitOldServiceCode(code)
+            || this.splitLocationsOnlyServiceCode(code)
+            || {};
+    };
+
+    splitOldServiceCode(code) {
         const indexRentalCode = 1;
         const indexVehicleTypeCode = 2;
-        const indexSeparator = 3;
-        const indexPickUpLocation = 4;
-        const indexLocationSeparator = 5;
-        const indexDropOffLocation = 6;
+        const indexPickUpLocation = 3;
+        const indexDropOffLocation = 4;
 
-        let codeParts = code.match(/([A-Z]*[0-9]*)?([A-Z]*[0-9]*)?(\/)?([A-Z]*[0-9]*)?(-)?([A-Z]*[0-9]*)?/);
+        let codeParts = code.match(CONFIG.serviceCodeRegEx.old);
 
-        // i.e. MIA or MIA1 or MIA1-TPA
-        if (!codeParts[indexSeparator]) {
-            return {
-                pickUpLocation: codeParts[indexRentalCode],
-                dropOffLocation: codeParts[indexDropOffLocation],
-            };
-        }
-
-        // i.e USA96/MIA1 or USA96A4/MIA1-TPA"
-        return {
+        return codeParts ? {
             renterCode: codeParts[indexRentalCode],
             vehicleCode: codeParts[indexVehicleTypeCode],
             pickUpLocation: codeParts[indexPickUpLocation],
             dropOffLocation: codeParts[indexDropOffLocation],
-        };
-    };
+        } : void 0;
+    }
+
+    splitLocationsOnlyServiceCode(code) {
+        const indexPickUpLocation = 1;
+        const indexDropOffLocation = 2;
+
+        let codeParts = code.match(CONFIG.serviceCodeRegEx.locationsOnly);
+
+        return codeParts ? {
+            pickUpLocation: codeParts[indexPickUpLocation],
+            dropOffLocation: codeParts[indexDropOffLocation],
+        } : void 0;
+    }
+
+    splitSippServiceCode(code) {
+        if (code.length !== 16) {
+            return;
+        }
+
+        const indexPickUpLocation = 1;
+        const indexDropOffLocation = 2;
+        const indexSipp = 3;
+        const indexLastPartOfRenterCode = 4;
+
+        let codeParts = code.match(CONFIG.serviceCodeRegEx.sipp);
+
+        return codeParts ? {
+            pickUpLocation: codeParts[indexPickUpLocation],
+            dropOffLocation: codeParts[indexDropOffLocation],
+            sipp: codeParts[indexSipp],
+        } : void 0;
+    }
 
     createServiceCode(adapterService = {}) {
+        if (adapterService.sipp) {
+            return [
+                adapterService.pickUpLocation,
+                adapterService.dropOffLocation,
+                adapterService.sipp,
+                adapterService.renterCode.slice(-2),
+            ].join('') || void 0;
+        }
+
         return [
             adapterService.renterCode,
             adapterService.vehicleCode,

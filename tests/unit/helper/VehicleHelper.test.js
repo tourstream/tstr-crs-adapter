@@ -41,12 +41,20 @@ describe('VehicleHelper', () => {
         });
     });
 
-    it('splitServiceCode() returns object for complete .code', () => {
+    it('splitServiceCode() returns object for complete old .code', () => {
         expect(helper.splitServiceCode('US81A4/LAX-SFO')).toEqual({
             pickUpLocation: 'LAX',
             dropOffLocation: 'SFO',
             renterCode: 'US81',
             vehicleCode: 'A4',
+        });
+    });
+
+    it('splitServiceCode() returns object for sipp .code', () => {
+        expect(helper.splitServiceCode('MIA03SFO0HMBMN81')).toEqual({
+            pickUpLocation: 'MIA03',
+            dropOffLocation: 'SFO0H',
+            sipp: 'MBMN',
         });
     });
 
@@ -83,5 +91,9 @@ describe('VehicleHelper', () => {
         expect(helper.createServiceCode({pickUpLocation: 'pul', dropOffLocation: 'dol'})).toBe('/pul-dol');
 
         expect(helper.createServiceCode({dropOffLocation: 'dol'})).toBe('dol');
+
+        expect(helper.createServiceCode({
+            pickUpLocation: 'pul', dropOffLocation: 'dol', renterCode: 'rc', sipp: 'sipp'
+        })).toBe('puldolsipprc');
     });
 });
