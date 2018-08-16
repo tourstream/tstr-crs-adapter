@@ -413,7 +413,7 @@ class UbpCrsAdapter {
         (crsData.normalized.services || []).forEach((service) => {
             const helper = serviceHelpers[service.type];
 
-            service.marker = crsData.normalized.services.length === 1 || (helper && helper.isServiceMarked(service)) ? 'X' : void 0;
+            service.marker = (helper && helper.isServiceMarked(service)) ? 'X' : void 0;
         });
     }
 }
