@@ -14,7 +14,7 @@ class RoundTripServiceReducer {
 
         crsData.normalized.services = crsData.normalized.services || [];
 
-        const crsService = this.helper.service.findMarkedService(crsData) || this.helper.service.createEmptyService(crsData);
+        const crsService = this.helper.service.findEditableService(crsData) || this.helper.service.createEmptyService(crsData);
         const startDate = moment(adapterService.startDate, this.config.useDateFormat);
         const endDate = moment(adapterService.endDate, this.config.useDateFormat);
 

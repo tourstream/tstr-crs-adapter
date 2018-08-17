@@ -1,7 +1,7 @@
 export default (() => jasmine.createSpyObj(
     'ServiceHelper',
     [
-        'findMarkedService',
+        'findEditableService',
         'createEmptyService',
     ]
 ));

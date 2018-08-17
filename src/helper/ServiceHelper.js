@@ -1,7 +1,7 @@
 class ServiceHelper {
-    findMarkedService(crsData) {
+    findEditableService(crsData) {
         return (crsData.normalized.services || []).find((crsService) => {
-            return !!crsService.marker;
+            return !!crsService.editable;
         });
     }
 

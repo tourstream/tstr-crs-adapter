@@ -392,7 +392,7 @@ class UbpCrsAdapter {
                     crsData.normalized.services
                 );
 
-                this.markIncompleteService(crsData);
+                this.markEditableServices(crsData);
             }
 
             this.logger.info('NORMALIZED CRS DATA:');
@@ -402,7 +402,7 @@ class UbpCrsAdapter {
         });
     }
 
-    markIncompleteService(crsData) {
+    markEditableServices(crsData) {
         const serviceHelpers = {
             [crsData.meta.serviceTypes[SERVICE_TYPES.car]]: new VehicleHelper(this.options),
             [crsData.meta.serviceTypes[SERVICE_TYPES.camper]]: new VehicleHelper(this.options),
@@ -413,7 +413,7 @@ class UbpCrsAdapter {
         (crsData.normalized.services || []).forEach((service) => {
             const helper = serviceHelpers[service.type];
 
-            service.marker = (helper && helper.isServiceMarked(service)) ? 'X' : void 0;
+            service.editable = (helper && helper.isServiceMarked(service)) ? 'X' : void 0;
         });
     }
 }

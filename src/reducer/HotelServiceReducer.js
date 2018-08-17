@@ -14,7 +14,7 @@ class HotelServiceReducer {
 
         crsData.normalized.services = crsData.normalized.services || [];
 
-        const crsService = this.helper.service.findMarkedService(crsData) || this.helper.service.createEmptyService(crsData);
+        const crsService = this.helper.service.findEditableService(crsData) || this.helper.service.createEmptyService(crsData);
         const dateFrom = moment(adapterService.dateFrom, this.config.useDateFormat);
         const dateTo = moment(adapterService.dateTo, this.config.useDateFormat);
 

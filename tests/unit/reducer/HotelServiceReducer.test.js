@@ -13,7 +13,7 @@ describe('HotelServiceReducer', () => {
             service: serviceHelper,
         };
 
-        serviceHelper.findMarkedService.and.callFake((crsData) => crsData.normalized.services[0]);
+        serviceHelper.findEditableService.and.callFake((crsData) => crsData.normalized.services[0]);
         serviceHelper.createEmptyService.and.callFake((crsData) => {
             const service = {};
             crsData.normalized.services.push(service)

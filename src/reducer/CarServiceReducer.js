@@ -16,7 +16,7 @@ class CarServiceReducer {
 
         adapterService.extras = adapterService.extras || [];
 
-        const crsService = this.helper.service.findMarkedService(crsData) || this.helper.service.createEmptyService(crsData);
+        const crsService = this.helper.service.findEditableService(crsData) || this.helper.service.createEmptyService(crsData);
         const pickUpDate = moment(adapterService.pickUpDate, this.config.useDateFormat);
         const dropOffDate = moment(adapterService.dropOffDate, this.config.useDateFormat);
         const pickUpTime = moment(adapterService.pickUpTime, this.config.useTimeFormat);

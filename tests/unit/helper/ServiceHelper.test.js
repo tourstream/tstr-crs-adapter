@@ -7,11 +7,11 @@ describe('ServiceHelper', () => {
         helper = new ServiceHelper({});
     });
 
-    it('findMarkedService should return no service', () => {
+    it('findEditableService should return no service', () => {
         const crsData = {
             normalized: {},
         };
-        expect(helper.findMarkedService(crsData)).toBeUndefined();
+        expect(helper.findEditableService(crsData)).toBeUndefined();
 
         crsData.normalized.services = [
             {
@@ -19,23 +19,23 @@ describe('ServiceHelper', () => {
             },
             {}
         ];
-        expect(helper.findMarkedService(crsData)).toBeUndefined();
+        expect(helper.findEditableService(crsData)).toBeUndefined();
     });
 
-    it('findMarkedService should return marked service', () => {
-        const markedService = {
-            marker: 'X',
+    it('findEditableService should return marked service', () => {
+        const editableService = {
+            editable: true,
         };
 
         const crsData = {
             normalized: {
                 services: [
                     {},
-                    markedService,
+                    editableService,
                 ]
             },
         };
-        expect(helper.findMarkedService(crsData)).toBe(markedService);
+        expect(helper.findEditableService(crsData)).toBe(editableService);
     });
 
     it('createEmptyService should create a new service', () => {
