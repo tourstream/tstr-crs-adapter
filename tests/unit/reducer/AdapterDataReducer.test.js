@@ -40,6 +40,9 @@ describe('AdapterDataReducer', () => {
         };
         const crsData = {
             normalized: {},
+            meta: {
+                serviceTypes: {}
+            },
         };
 
         expect(JSON.parse(JSON.stringify(reducer.reduceIntoCrsData(adapterData, crsData))).normalized).toEqual({
@@ -59,6 +62,9 @@ describe('AdapterDataReducer', () => {
         };
         const crsData = {
             normalized: {},
+            meta: {
+                serviceTypes: {}
+            },
         };
 
         reducerList.adapterType = underlyingReducer;
@@ -76,6 +82,9 @@ describe('AdapterDataReducer', () => {
         };
         const crsData = {
             normalized: {},
+            meta: {
+                serviceTypes: {}
+            },
         };
 
         reducerList.raw = underlyingReducer;
@@ -95,6 +104,9 @@ describe('AdapterDataReducer', () => {
             ],
         };
         const crsData = {
+            meta: {
+                serviceTypes: {}
+            },
             normalized: {
                 travellers: [
                     void 0,
@@ -115,7 +127,7 @@ describe('AdapterDataReducer', () => {
                 {
                     name: 'fn ln',
                 }
-            ]
+            ],
         });
     });
 });

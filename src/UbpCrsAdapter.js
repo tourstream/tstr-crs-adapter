@@ -14,6 +14,7 @@ import VehicleHelper from './helper/VehicleHelper';
 import HotelHelper from './helper/HotelHelper';
 import RoundTripHelper from './helper/RoundTripHelper';
 import TravellerHelper from './helper/TravellerHelper';
+import ServiceHelper from './helper/ServiceHelper'
 
 import CrsDataMapper from './mapper/CrsDataMapper';
 import CarServiceMapper from './mapper/CarServiceMapper';
@@ -256,6 +257,7 @@ class UbpCrsAdapter {
                         roundTrip: new RoundTripHelper(this.options),
                         hotel: new HotelHelper(this.options),
                         traveller: new TravellerHelper(this.options),
+                        service: new ServiceHelper(),
                     };
                     const reducer = {
                         [SERVICE_TYPES.car]: new CarServiceReducer(this.logger, this.options, helper),
@@ -389,12 +391,29 @@ class UbpCrsAdapter {
                     crsData.normalized.travellers,
                     crsData.normalized.services
                 );
+
+                this.markEditableServices(crsData);
             }
 
             this.logger.info('NORMALIZED CRS DATA:');
             this.logger.info(crsData.normalized);
 
             return crsData;
+        });
+    }
+
+    markEditableServices(crsData) {
+        const serviceHelpers = {
+            [crsData.meta.serviceTypes[SERVICE_TYPES.car]]: new VehicleHelper(this.options),
+            [crsData.meta.serviceTypes[SERVICE_TYPES.camper]]: new VehicleHelper(this.options),
+            [crsData.meta.serviceTypes[SERVICE_TYPES.roundTrip]]: new RoundTripHelper(this.options),
+            [crsData.meta.serviceTypes[SERVICE_TYPES.hotel]]: new HotelHelper(this.options),
+        };
+
+        (crsData.normalized.services || []).forEach((service) => {
+            const helper = serviceHelpers[service.type];
+
+            service.editable = (helper && helper.isServiceMarked(service)) ? 'X' : void 0;
         });
     }
 }

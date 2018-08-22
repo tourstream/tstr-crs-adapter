@@ -16,7 +16,7 @@ class CarServiceReducer {
 
         adapterService.extras = adapterService.extras || [];
 
-        const crsService = this.findCrsService(adapterService, crsData) || this.createEmptyService(crsData);
+        const crsService = this.helper.service.findEditableService(crsData) || this.helper.service.createEmptyService(crsData);
         const pickUpDate = moment(adapterService.pickUpDate, this.config.useDateFormat);
         const dropOffDate = moment(adapterService.dropOffDate, this.config.useDateFormat);
         const pickUpTime = moment(adapterService.pickUpTime, this.config.useTimeFormat);
@@ -31,7 +31,7 @@ class CarServiceReducer {
         let hotelName = adapterService.pickUpHotelName || adapterService.dropOffHotelName;
 
         if (hotelName) {
-            let hotelService = this.createEmptyService(crsData);
+            let hotelService = this.helper.service.createEmptyService(crsData);
 
             hotelService.type = crsData.meta.serviceTypes.carHotelLocation;
             hotelService.code = hotelName;
@@ -46,24 +46,6 @@ class CarServiceReducer {
         ].filter(Boolean).join(';') || void 0;
 
         this.helper.traveller.reduceTravellersIntoCrsData(adapterService, crsService, crsData);
-    }
-
-    findCrsService(adapterService, crsData) {
-        return crsData.normalized.services.find((crsService) => {
-            if (crsService.type !== crsData.meta.serviceTypes[adapterService.type]) {
-                return false;
-            }
-
-            return this.helper.vehicle.isServiceMarked(crsService);
-        });
-    }
-
-    createEmptyService(crsData) {
-        const service = {};
-
-        crsData.normalized.services.push(service);
-
-        return service;
     }
 
     reduceHotelDataToString(adapterService) {

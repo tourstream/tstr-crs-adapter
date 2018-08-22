@@ -14,7 +14,7 @@ class RoundTripServiceReducer {
 
         crsData.normalized.services = crsData.normalized.services || [];
 
-        const crsService = this.findCrsService(adapterService, crsData) || this.createEmptyService(crsData);
+        const crsService = this.helper.service.findEditableService(crsData) || this.helper.service.createEmptyService(crsData);
         const startDate = moment(adapterService.startDate, this.config.useDateFormat);
         const endDate = moment(adapterService.endDate, this.config.useDateFormat);
 
@@ -27,28 +27,6 @@ class RoundTripServiceReducer {
         crsService.toDate = endDate.isValid() ? endDate.format(crsData.meta.formats.date) : adapterService.endDate;
 
         this.helper.traveller.reduceTravellersIntoCrsData(adapterService, crsService, crsData);
-    }
-
-    findCrsService(adapterService, crsData) {
-        return crsData.normalized.services.find((crsService) => {
-            if (crsService.type !== crsData.meta.serviceTypes[adapterService.type]) {
-                return false;
-            }
-
-            if ((crsService.code || '').replace(/^NEZ/, '') === adapterService.bookingId) {
-                return true
-            }
-
-            return this.helper.roundTrip.isServiceMarked(crsService);
-        });
-    }
-
-    createEmptyService(crsData) {
-        const service = {};
-
-        crsData.normalized.services.push(service);
-
-        return service;
     }
 }
 

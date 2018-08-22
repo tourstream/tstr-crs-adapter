@@ -8,7 +8,7 @@ class RoundTripHelper {
             return true;
         }
 
-        return !service.code || service.code.indexOf(service.bookingId) > -1;
+        return !service.code || !service.code.startsWith('NEZ');
     }
 }
 

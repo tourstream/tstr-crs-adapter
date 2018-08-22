@@ -14,7 +14,7 @@ class RawServiceReducer {
 
         crsData.normalized.services = crsData.normalized.services || [];
 
-        const crsService = this.createEmptyService(crsData);
+        const crsService = this.helper.service.createEmptyService(crsData);
         const fromDate = moment(adapterService.fromDate, this.config.useDateFormat);
         const toDate = moment(adapterService.toDate, this.config.useDateFormat);
 
@@ -29,14 +29,6 @@ class RawServiceReducer {
         crsService.toDate = toDate.isValid() ? toDate.format(crsData.meta.formats.date) : adapterService.toDate;
 
         this.helper.traveller.reduceTravellersIntoCrsData(adapterService, crsService, crsData);
-    }
-
-    createEmptyService(crsData) {
-        const service = {};
-
-        crsData.normalized.services.push(service);
-
-        return service;
     }
 }
 

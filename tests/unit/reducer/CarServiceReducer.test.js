@@ -2,15 +2,24 @@ import CarServiceReducer from '../../../src/reducer/CarServiceReducer';
 import {DEFAULT_OPTIONS, SERVICE_TYPES} from '../../../src/UbpCrsAdapter';
 
 describe('CarServiceReducer', () => {
-    let reducer, config, helper, vehicleHelper;
+    let reducer, config, helper, vehicleHelper, serviceHelper;
 
     beforeEach(() => {
         vehicleHelper = require('tests/unit/_mocks/VehicleHelper')();
+        serviceHelper = require('tests/unit/_mocks/ServiceHelper')();
         config = DEFAULT_OPTIONS;
         helper = {
             traveller: require('tests/unit/_mocks/TravellerHelper')(),
             vehicle: vehicleHelper,
+            service: serviceHelper,
         };
+
+        serviceHelper.findEditableService.and.callFake((crsData) => crsData.normalized.services[0]);
+        serviceHelper.createEmptyService.and.callFake((crsData) => {
+            const service = {};
+            crsData.normalized.services.push(service)
+            return service;
+        });
 
         reducer = new CarServiceReducer(
             require('tests/unit/_mocks/LogService')(),
@@ -147,18 +156,15 @@ describe('CarServiceReducer', () => {
         expect(JSON.parse(JSON.stringify(crsData)).normalized).toEqual({
             services: [
                 {
-                    type: 'unknown'
-                },
-                {
-                    type: 'carType'
-                },
-                {
                     type: 'carType',
                     marker: 'X',
                     code: 'service.code',
                     fromDate: '2018-03-16',
                     toDate: '2018-03-21',
                     accommodation: '09:15'
+                },
+                {
+                    type: 'carType'
                 },
                 {
                     code: 'pu hname',
