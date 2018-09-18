@@ -12,6 +12,7 @@ describe('TravelportCetsAdapter', () => {
 
     afterEach(() => {
         delete window.external;
+        delete window.cetsObject;
     });
 
     it('should throw error if any method is used without crs-connection', () => {
@@ -20,6 +21,15 @@ describe('TravelportCetsAdapter', () => {
         expect(adapter.fetchData.bind(adapter)).toThrowError(message);
         expect(() => adapter.sendData({}).bind(adapter)).toThrowError(message);
         expect(adapter.cancel.bind(adapter)).toThrowError(message);
+    });
+
+    it('connect() should work if cetsObject is available', () => {
+        window.cetsObject = jasmine.createSpy('CetsConnectionSpy').and.returnValue(
+            require('tests/unit/_mocks/CetsConnection')()
+        );
+        window.external = void 0;
+
+        expect(adapter.connect.bind(adapter)).not.toThrowError();
     });
 
     it('connect() should throw error if external.Get is not supported', () => {
