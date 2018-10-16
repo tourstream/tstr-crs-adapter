@@ -12,6 +12,7 @@ describe('TravelportCetsAdapter', () => {
 
     afterEach(() => {
         delete window.external;
+        delete window.cetsObject;
     });
 
     it('should throw error if any method is used without crs-connection', () => {
@@ -22,11 +23,21 @@ describe('TravelportCetsAdapter', () => {
         expect(adapter.cancel.bind(adapter)).toThrowError(message);
     });
 
-    it('connect() should throw error if external.Get is not supported', () => {
-        window.external = void 0;
+    it('connect() should work if cetsObject is available', () => {
+        window.cetsObject = jasmine.createSpy('CetsConnectionSpy').and.returnValue(
+            require('tests/unit/_mocks/CetsConnection')()
+        );
+
+        expect(adapter.connect.bind(adapter)).not.toThrowError();
+    });
+
+    it('connect() should throw error if external.Get throws error', () => {
+        window.external = {
+            Get: () => { throw new Error('.Get error') }
+        };
 
         expect(adapter.connect.bind(adapter)).toThrowError(
-            'Instantiate connection error: Cannot read property \'Get\' of undefined'
+            'Instantiate connection error: .Get error'
         );
     });
 

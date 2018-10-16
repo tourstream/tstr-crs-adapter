@@ -176,8 +176,16 @@ class TravelportCetsAdapter {
 
     createConnection() {
         try {
+            const externalCetsObject = (window.external || {}).Get && window.external.Get(CONFIG.crs.externalObjectName);
+
+            this.logger.info('native cetsObject:');
+            this.logger.info(!!window.cetsObject);
+
+            this.logger.info('external cetsObject:');
+            this.logger.info(!!externalCetsObject);
+
             // instance of "Travi.Win.Cets.Core.DeepLinkBrowser"
-            this.connection = window.external.Get(CONFIG.crs.externalObjectName) || void 0;
+            this.connection = window.cetsObject || externalCetsObject || void 0;
         } catch (error) {
             this.logger.error(error);
             throw new Error('Instantiate connection error: ' + error.message);
