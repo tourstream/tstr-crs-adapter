@@ -27,16 +27,17 @@ describe('TravelportCetsAdapter', () => {
         window.cetsObject = jasmine.createSpy('CetsConnectionSpy').and.returnValue(
             require('tests/unit/_mocks/CetsConnection')()
         );
-        window.external = void 0;
 
         expect(adapter.connect.bind(adapter)).not.toThrowError();
     });
 
-    it('connect() should throw error if external.Get is not supported', () => {
-        window.external = void 0;
+    it('connect() should throw error if external.Get throws error', () => {
+        window.external = {
+            Get: () => { throw new Error('.Get error') }
+        };
 
         expect(adapter.connect.bind(adapter)).toThrowError(
-            'Instantiate connection error: Cannot read property \'Get\' of undefined'
+            'Instantiate connection error: .Get error'
         );
     });
 
