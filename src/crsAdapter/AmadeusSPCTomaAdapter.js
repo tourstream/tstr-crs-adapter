@@ -45,6 +45,7 @@ class AmadeusSPCTomaAdapter {
                     operator: parsed.operator,
                     numberOfTravellers: parsed.numTravellers,
                     travelType: parsed.traveltype,
+                    multiFunctionLine: parsed.multiFunctionLine,
                     remark: parsed.remark,
                     services: this.collectServices(parsed),
                     travellers: this.collectTravellers(parsed),
@@ -106,6 +107,7 @@ class AmadeusSPCTomaAdapter {
         crsData.converted.operator = crsData.normalized.operator;
         crsData.converted.numTravellers = crsData.normalized.numberOfTravellers;
         crsData.converted.traveltype = crsData.normalized.travelType;
+        crsData.converted.multiFunctionLine = crsData.normalized.multiFunctionLine;
         crsData.converted.remark = crsData.normalized.remark;
 
         this.assignServices(crsData);

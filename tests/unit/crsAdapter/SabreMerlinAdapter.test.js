@@ -142,6 +142,7 @@ describe('SabreMerlinAdapter', () => {
                 '<TourOperator>TourOperator</TourOperator>' +
                 '<NoOfPersons>NoOfPersons</NoOfPersons>' +
                 '<TravelType>TravelType</TravelType>' +
+                '<MultifunctionalLine>MultifunctionalLine</MultifunctionalLine>' +
                 '<Remarks>Remarks</Remarks>' +
                 '</Import>' +
                 '</SendRequest>' +
@@ -158,6 +159,7 @@ describe('SabreMerlinAdapter', () => {
                     operator: 'TourOperator',
                     numberOfTravellers: 'NoOfPersons',
                     travelType: 'TravelType',
+                    multiFunctionLine: 'MultifunctionalLine',
                     remark: 'Remarks',
                     services: [{
                         marker: 'MarkField',
@@ -255,6 +257,7 @@ describe('SabreMerlinAdapter', () => {
                     '<TourOperator>operator</TourOperator>' +
                     '<NoOfPersons>numberOfTravellers</NoOfPersons>' +
                     '<TravelType>travelType</TravelType>' +
+                    '<MultifunctionalLine>multiFunctionLine</MultifunctionalLine>' +
                     '<Remarks>remark</Remarks>' +
                     '</Import>' +
                     '</SendRequest>' +
@@ -284,6 +287,7 @@ describe('SabreMerlinAdapter', () => {
                     numberOfTravellers: 'numberOfTravellers',
                     agencyNumber: 'agencyNumber',
                     operator: 'operator',
+                    multiFunctionLine: 'multiFunctionLine',
                     services: [
                         {
                             marker: 'marker',

@@ -283,6 +283,7 @@ describe('BewotecExpertAdapter', () => {
                 data: xmlHead +
                 '<ExpertModel operator="operator" traveltype="traveltype">' +
                 '<Agency>Agency</Agency>' +
+                '<MFZ>MFZ</MFZ>' +
                 '<PersonCount>PersonCount</PersonCount>' +
                 '<Remarks>Remarks</Remarks>' +
                 '<Services>' +
@@ -320,6 +321,7 @@ describe('BewotecExpertAdapter', () => {
                     operator: 'operator',
                     numberOfTravellers: 'PersonCount',
                     travelType: 'traveltype',
+                    multiFunctionLine: 'MFZ',
                     remark: 'Remarks',
                     services: [{
                         marker: 'marker',
@@ -404,6 +406,7 @@ describe('BewotecExpertAdapter', () => {
                 p: 'numberOfTravellers',
                 g: 'agencyNumber',
                 v: 'operator',
+                mfz: 'multiFunctionLine',
                 m0: 'marker',
                 n0: 'type',
                 l0: 'code',
@@ -426,6 +429,7 @@ describe('BewotecExpertAdapter', () => {
                     numberOfTravellers: 'numberOfTravellers',
                     agencyNumber: 'agencyNumber',
                     operator: 'operator',
+                    multiFunctionLine: 'multiFunctionLine',
                     services: [
                         {
                             marker: 'marker',

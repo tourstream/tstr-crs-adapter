@@ -45,6 +45,7 @@ ubpCrsAdapter.getData().then((crsData) => {});
 The `crsData` you get is an `<CrsData>` object and will look like that:
 ```
 {
+    multiFunctionLine: 'multi function line',
     agencyNumber: '123456',
     operator: 'TOUR',
     numberOfTravellers: 3,
@@ -178,6 +179,7 @@ Tosi       | X     | X     | X          | X      | X
 ```
 {
   type: 'car',
+  pnr: '15faz',
   vehicleCode: 'E4',
   renterCode: 'DEU85',
   sipp: 'MBMN',

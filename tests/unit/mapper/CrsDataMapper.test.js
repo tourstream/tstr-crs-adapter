@@ -56,6 +56,12 @@ describe('CrsDataMapper', () => {
                 },
             },
             normalized: {
+                agencyNumber: 'agencyNumber',
+                operator: 'operator',
+                numberOfTravellers: 'numberOfTravellers',
+                travelType: 'travelType',
+                multiFunctionLine: 'multiFunctionLine',
+                remark: 'remark',
                 services: [{
                     type: 'serviceType'
                 }],
@@ -70,6 +76,12 @@ describe('CrsDataMapper', () => {
         const adapterData = mapper.mapToAdapterData(crsData);
 
         expect(JSON.parse(JSON.stringify(adapterData))).toEqual({
+            agencyNumber: 'agencyNumber',
+            operator: 'operator',
+            numberOfTravellers: 'numberOfTravellers',
+            travelType: 'travelType',
+            multiFunctionLine: 'multiFunctionLine',
+            remark: 'remark',
             services: [{
                 travellers: []
             }],

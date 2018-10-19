@@ -21,6 +21,8 @@ class CarServiceReducer {
         const dropOffDate = moment(adapterService.dropOffDate, this.config.useDateFormat);
         const pickUpTime = moment(adapterService.pickUpTime, this.config.useTimeFormat);
 
+        crsData.normalized.multiFunctionLine = adapterService.pnr;
+
         crsService.type = crsData.meta.serviceTypes.car;
         crsService.marker = adapterService.marked ? 'X' : void 0;
         crsService.code = this.helper.vehicle.createServiceCode(adapterService);
