@@ -88,6 +88,7 @@ class SabreMerlinAdapter {
                     operator: crsData.TourOperator,
                     numberOfTravellers: crsData.NoOfPersons,
                     travelType: crsData.TravelType,
+                    multiFunctionLine: crsData.MultifunctionalLine,
                     remark: crsData.Remarks,
                     services: this.collectServices(crsData),
                     travellers: this.collectTravellers(crsData),
@@ -145,6 +146,7 @@ class SabreMerlinAdapter {
         crsDataObject.TourOperator = crsData.normalized.operator;
         crsDataObject.NoOfPersons = crsData.normalized.numberOfTravellers;
         crsDataObject.TravelType = crsData.normalized.travelType;
+        crsDataObject.MultifunctionalLine = crsData.normalized.multiFunctionLine;
         crsDataObject.Remarks = crsData.normalized.remark;
 
         this.assignServices(crsData);

@@ -19,6 +19,7 @@ class CrsDataMapper {
         adapterData.operator = crsData.normalized.operator;
         adapterData.numberOfTravellers = crsData.normalized.numberOfTravellers;
         adapterData.travelType = crsData.normalized.travelType;
+        adapterData.multiFunctionLine = crsData.normalized.multiFunctionLine;
         adapterData.remark = crsData.normalized.remark;
         adapterData.services = [];
 

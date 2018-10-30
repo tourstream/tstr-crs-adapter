@@ -17,6 +17,7 @@ class AdapterDataReducer {
         crsData.normalized.agencyNumber = adapterData.agencyNumber || crsData.normalized.agencyNumber;
         crsData.normalized.operator = adapterData.operator || crsData.normalized.operator;
         crsData.normalized.travelType = adapterData.travelType || crsData.normalized.travelType;
+        crsData.normalized.multiFunctionLine = adapterData.multiFunctionLine || crsData.normalized.multiFunctionLine;
         crsData.normalized.remark = [crsData.normalized.remark, adapterData.remark].filter(Boolean).join(';') || void 0;
 
         adapterData.services.forEach((adapterService) => {

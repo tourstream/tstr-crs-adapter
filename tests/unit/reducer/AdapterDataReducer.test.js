@@ -54,11 +54,11 @@ describe('AdapterDataReducer', () => {
     it('reduceIntoCrsData() returns reduced data', () => {
         const underlyingReducer = require('tests/unit/_mocks/AnyDataReducer')();
         const adapterData = {
-            services: [
-                {
-                    type: 'adapterType'
-                }
-            ],
+            agencyNumber: 'agencyNumber',
+            operator: 'operator',
+            travelType: 'travelType',
+            multiFunctionLine: 'multiFunctionLine',
+            remark: 'remark',
         };
         const crsData = {
             normalized: {},
@@ -72,6 +72,11 @@ describe('AdapterDataReducer', () => {
         expect(JSON.parse(JSON.stringify(reducer.reduceIntoCrsData(adapterData, crsData))).normalized).toEqual({
             action: 'BA',
             travellers: [],
+            agencyNumber: 'agencyNumber',
+            operator: 'operator',
+            travelType: 'travelType',
+            multiFunctionLine: 'multiFunctionLine',
+            remark: 'remark',
         });
     });
 

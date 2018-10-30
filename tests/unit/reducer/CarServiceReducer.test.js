@@ -116,6 +116,7 @@ describe('CarServiceReducer', () => {
             marked: true,
             renterCode: 'renterCode',
             vehicleCode: 'vehicleCode',
+            pnr: 'pnr',
             pickUpLocation: 'pickUpLocation',
             dropOffLocation: 'dropOffLocation',
             pickUpHotelName: 'pu hname',
@@ -154,6 +155,7 @@ describe('CarServiceReducer', () => {
         reducer.reduceIntoCrsData(adapterService, crsData);
 
         expect(JSON.parse(JSON.stringify(crsData)).normalized).toEqual({
+            multiFunctionLine: 'pnr',
             services: [
                 {
                     type: 'carType',

@@ -1,114 +1,134 @@
-<?xml version="1.0" encoding="UTF-8"?>
 <Envelope>
     <Header>
         <Service>
-            <Name />
-            <Version />
+            <Name>TOMA</Name>
+            <Version>03</Version>
         </Service>
-        <Sender>
-            <ExpCode />
-        </Sender>
         <Application>
-            <Reset />
+            <Context/>
+            <ContextFunction/>
         </Application>
+        <Sender>
+            <ExpCode/>
+        </Sender>
     </Header>
     <Body>
-        <ADD Version="01">
-            <Data />
-            <EMail />
-            <MobileNo />
-            <SOS />
-        </ADD>
         <AWK Version="01">
-            <ANR />
-            <LB />
-            <VB />
+            <ANR/>
+            <VB/>
+            <LB/>
         </AWK>
-        <MOE Version="01">
-            <FOSCode />
-            <CWI />
-            <FOSKey2 />
-            <FOSKey />
-            <TMRId />
-            <CSXLocator />
-            <SDId />
-            <FOSCode2 />
-        </MOE>
-        <CUR Version="01">
-            <Row />
-            <Col />
-        </CUR>
-        <FRN Version="01">
-            <FN />
-        </FRN>
-        <MFN Version="01">
-            <Display />
-        </MFN>
-        <TOM Version="04">
-            <Next />
-            <Page />
-            <Page.2 />
-
-            <Action />
-            <Operator />
-            <Traveltype />
-            <NoOfPersons />
-            <AgencyNumber />
-            <BookingNo1 />
-            <BookingNo2 />
-            <MultiFunctionLine />
-            <ConsultantNo />
-
-            <Position.1 />
-            <MarkerField.1 />
-            <KindOfService.1 />
-            <ServiceCode.1 />
-            <Accommodation.1 />
-            <BoardAndLodging.1 />
-            <Occupancy.1 />
-            <Count.1 />
-            <From.1 />
-            <To.1 />
-            <TravAssociation.1 />
-            <Status.1 />
-            <Price.1 />
-
-            <Message.1 />
-
-            <PassengerNo.1 />
-            <Title.1 />
-            <Name.1 />
-            <Reduction.1 />
-            <PricePerPass.1 />
-
-            <Remark />
-
-            <CustomerName />
-            <CustFirstName />
-            <PhoneNo />
-            <StreetNo />
-            <PostalCode />
-            <City />
-            <AddInfo />
-
-            <TransferToTV />
-            <CostCenter />
-            <OrderNo />
-            <Transport />
-            <TypeOfTravel />
-            <NumberOfPass />
-            <Destination />
-            <Duration />
-            <StoreData />
-            <BookByPhone />
-            <InsurancePolicy />
-
-            <Prepayment />
-            <Currency />
-            <Total />
+        <CUR Version="01"/>
+        <TOM Version="03">
+            <Accommodation.6/>
+            <Accommodation.5/>
+            <Accommodation.4/>
+            <Accommodation.3/>
+            <Accommodation.2/>
+            <Accommodation.1/>
+            <OrderNo/>
+            <Reduction.6/>
+            <Reduction.5/>
+            <Reduction.4/>
+            <AddInfo/>
+            <StoreData/>
+            <Reduction.3/>
+            <Reduction.2/>
+            <Reduction.1/>
+            <Action/>
+            <City/>
+            <Title.6/>
+            <Title.5/>
+            <Title.4/>
+            <Title.3/>
+            <Title.2/>
+            <Title.1/>
+            <Destination/>
+            <Count.6/>
+            <Count.5/>
+            <Count.4/>
+            <Count.3/>
+            <Remark/>
+            <Count.2/>
+            <To.6/>
+            <Count.1/>
+            <To.5/>
+            <To.4/>
+            <To.3/>
+            <To.2/>
+            <Name.6/>
+            <To.1/>
+            <Name.5/>
+            <Name.4/>
+            <Name.3/>
+            <Name.2/>
+            <ConsultantNo/>
+            <Name.1/>
+            <Operator/>
+            <TravAssociation.6/>
+            <TravAssociation.5/>
+            <TravAssociation.4/>
+            <TravAssociation.3/>
+            <TravAssociation.2/>
+            <TravAssociation.1/>
+            <ServiceCode.6/>
+            <ServiceCode.5/>
+            <ServiceCode.4/>
+            <ServiceCode.3/>
+            <ServiceCode.2/>
+            <ServiceCode.1/>
+            <BookingNo2/>
+            <BookingNo1/>
+            <Prepayment/>
+            <NumberOfPass/>
+            <NoOfPersons/>
+            <BoardAndLodging.6/>
+            <BoardAndLodging.5/>
+            <BoardAndLodging.4/>
+            <BoardAndLodging.3/>
+            <BoardAndLodging.2/>
+            <BoardAndLodging.1/>
+            <From.6/>
+            <From.5/>
+            <From.4/>
+            <From.3/>
+            <From.2/>
+            <From.1/>
+            <MultiFunctionLine/>
+            <CostCenter/>
+            <TransferToTV/>
+            <StreetNo/>
+            <FormOfPayment/>
+            <AgencyNumber/>
+            <CustomerName/>
+            <MarkerField.6/>
+            <MarkerField.5/>
+            <MarkerField.4/>
+            <MarkerField.3/>
+            <KindOfService.6/>
+            <MarkerField.2/>
+            <KindOfService.5/>
+            <MarkerField.1/>
+            <KindOfService.4/>
+            <KindOfService.3/>
+            <KindOfService.2/>
+            <KindOfService.1/>
+            <Transport/>
+            <TypeOfTravel/>
+            <Traveltype/>
+            <InsurancePolicy/>
+            <Occupancy.6/>
+            <PhoneNo/>
+            <Occupancy.5/>
+            <Occupancy.4/>
+            <Occupancy.3/>
+            <CurrencyPrepayment/>
+            <Occupancy.2/>
+            <Occupancy.1/>
+            <BookByPhone/>
+            <Duration/>
+            <CustFirstName/>
+            <PostalCode/>
         </TOM>
-        <FEZ>
-            <Text />
-        </FEZ>
     </Body>
 </Envelope>

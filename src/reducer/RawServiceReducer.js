@@ -20,7 +20,6 @@ class RawServiceReducer {
 
         crsService.type = adapterService.type;
         crsService.marker = adapterService.marked ? 'X' : void 0;
-
         crsService.code = adapterService.code;
         crsService.accommodation = adapterService.accommodation;
         crsService.quantity = adapterService.quantity;

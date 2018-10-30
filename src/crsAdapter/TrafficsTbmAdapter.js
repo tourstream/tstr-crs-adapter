@@ -88,6 +88,7 @@ class TrafficsTbmAdapter {
                         operator: crsData.operator['$'].toc,
                         numberOfTravellers: crsData.operator['$'].psn,
                         travelType: crsData.operator['$'].knd,
+                        multiFunctionLine: crsData.operator['$'].mfz,
                         remark: crsData.customer['$'].rmk,
                         services: this.collectServices(crsData),
                         travellers: this.collectTravellers(crsData),
@@ -146,6 +147,7 @@ class TrafficsTbmAdapter {
             'TbmXml.admin.operator.$.psn': crsData.normalized.numberOfTravellers,
             'TbmXml.admin.operator.$.agt': crsData.normalized.agencyNumber,
             'TbmXml.admin.operator.$.toc': crsData.normalized.operator,
+            'TbmXml.admin.operator.$.mfz': crsData.normalized.multiFunctionLine,
         };
 
         this.assignServices(crsData);

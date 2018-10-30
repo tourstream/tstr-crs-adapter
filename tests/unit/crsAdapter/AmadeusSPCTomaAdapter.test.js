@@ -215,6 +215,7 @@ describe('AmadeusSPCTomaAdapter', () => {
                 operator: 'operator',
                 numTravellers: 'numTravellers',
                 traveltype: 'traveltype',
+                multiFunctionLine: 'multiFunctionLine',
                 remark: 'remark',
             };
 
@@ -234,6 +235,7 @@ describe('AmadeusSPCTomaAdapter', () => {
                     operator: 'operator',
                     numberOfTravellers: 'numTravellers',
                     travelType: 'traveltype',
+                    multiFunctionLine: 'multiFunctionLine',
                     remark: 'remark',
                     services: [{
                         marker: 'marker',
@@ -321,6 +323,7 @@ describe('AmadeusSPCTomaAdapter', () => {
                 operator: 'operator',
                 numTravellers: 'numberOfTravellers',
                 traveltype: 'travelType',
+                multiFunctionLine: 'multiFunctionLine',
                 remark: 'remark',
             };
 
@@ -336,6 +339,7 @@ describe('AmadeusSPCTomaAdapter', () => {
                     numberOfTravellers: 'numberOfTravellers',
                     agencyNumber: 'agencyNumber',
                     operator: 'operator',
+                    multiFunctionLine: 'multiFunctionLine',
                     services: [
                         {
                             marker: 'marker',

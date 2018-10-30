@@ -145,6 +145,7 @@ describe('AmadeusTomaAdapter', () => {
                 '<Operator>Operator</Operator>' +
                 '<NoOfPersons attr="val">NoOfPersons</NoOfPersons>' +
                 '<Traveltype>Traveltype</Traveltype>' +
+                '<MultiFunctionLine>MultiFunctionLine</Remark>' +
                 '<Remark>Remark</Remark>' +
 
                 '<MarkerField.1>MarkerField</MarkerField.1>' +
@@ -179,6 +180,7 @@ describe('AmadeusTomaAdapter', () => {
                     operator: 'Operator',
                     numberOfTravellers: 'NoOfPersons',
                     travelType: 'Traveltype',
+                    multiFunctionLine: 'MultiFunctionLine',
                     remark: 'Remark',
                     services: [{
                         marker: 'MarkerField',
@@ -255,6 +257,7 @@ describe('AmadeusTomaAdapter', () => {
                 '<Operator>operator</Operator>' +
                 '<NoOfPersons>numberOfTravellers</NoOfPersons>' +
                 '<Traveltype>travelType</Traveltype>' +
+                '<MultiFunctionLine>multiFunctionLine</MultiFunctionLine>' +
                 '<Remark>remark</Remark>' +
 
                 '<MarkerField.1>marker</MarkerField.1>' +
@@ -289,6 +292,7 @@ describe('AmadeusTomaAdapter', () => {
                     numberOfTravellers: 'numberOfTravellers',
                     agencyNumber: 'agencyNumber',
                     operator: 'operator',
+                    multiFunctionLine: 'multiFunctionLine',
                     services: [
                         {
                             marker: 'marker',

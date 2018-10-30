@@ -191,6 +191,7 @@ describe('TrafficsTbmAdapter', () => {
                             agt: 'agt',
                             toc: 'toc',
                             knd: 'knd',
+                            mfz: 'mfz',
                         },
                     },
                     customer: {
@@ -240,6 +241,7 @@ describe('TrafficsTbmAdapter', () => {
                     operator: 'toc',
                     numberOfTravellers: 'psn',
                     travelType: 'knd',
+                    multiFunctionLine: 'mfz',
                     remark: 'rmk',
                     services: [{
                         marker: 'mrk',
@@ -327,6 +329,7 @@ describe('TrafficsTbmAdapter', () => {
                 'TbmXml.admin.operator.$.agt': 'agencyNumber',
                 'TbmXml.admin.operator.$.toc': 'operator',
                 'TbmXml.admin.operator.$.knd': 'travelType',
+                'TbmXml.admin.operator.$.mfz': 'multiFunctionLine',
                 'TbmXml.admin.services.service.0.$.mrk': 'marker',
                 'TbmXml.admin.services.service.0.$.typ': 'type',
                 'TbmXml.admin.services.service.0.$.cod': 'code',
@@ -353,6 +356,7 @@ describe('TrafficsTbmAdapter', () => {
                     numberOfTravellers: 'numberOfTravellers',
                     agencyNumber: 'agencyNumber',
                     operator: 'operator',
+                    multiFunctionLine: 'multiFunctionLine',
                     services: [
                         {
                             marker: 'marker',

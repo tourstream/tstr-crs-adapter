@@ -109,6 +109,7 @@ class BewotecExpertAdapter {
                     operator: (crsData[this.config.parserOptions.attributeNamePrefix] || {}).operator,
                     numberOfTravellers: crsData.PersonCount,
                     travelType: (crsData[this.config.parserOptions.attributeNamePrefix] || {}).traveltype,
+                    multiFunctionLine: crsData.MFZ,
                     remark: crsData.Remarks,
                     services: this.collectServices(crsData),
                     travellers: this.collectTravellers(crsData),
@@ -168,6 +169,7 @@ class BewotecExpertAdapter {
             p: crsData.normalized.numberOfTravellers,
             g: crsData.normalized.agencyNumber,
             v: crsData.normalized.operator,
+            mfz: crsData.normalized.multiFunctionLine,
         };
 
         this.assignServices(crsData);

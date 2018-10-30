@@ -91,6 +91,7 @@ class AmadeusTomaAdapter {
                     operator: crsData.Operator,
                     numberOfTravellers: crsData.NoOfPersons,
                     travelType: crsData.Traveltype,
+                    multiFunctionLine: crsData.MultiFunctionLine,
                     remark: crsData.Remark,
                     services: this.collectServices(crsData),
                     travellers: this.collectTravellers(crsData),
@@ -178,6 +179,7 @@ class AmadeusTomaAdapter {
         crsDataObject.Operator = crsData.normalized.operator;
         crsDataObject.NoOfPersons = crsData.normalized.numberOfTravellers;
         crsDataObject.Traveltype = crsData.normalized.travelType;
+        crsDataObject.MultiFunctionLine = crsData.normalized.multiFunctionLine;
         crsDataObject.Remark = crsData.normalized.remark;
 
         this.assignServices(crsData);
