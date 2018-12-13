@@ -113,6 +113,7 @@ CosmoNaut  | UbpCrsAdapter.CRS_TYPES.cosmonaut | dataSourceUrl              | 'e
 |          |                                   | environment                | 'test' or 'live'
 |          |                                   | exportId                   | '0123-456789-abcdef'
 TOSI       | UbpCrsAdapter.CRS_TYPES.tosi      | token                      | '0123456789abcdef'
+Neo        | UbpCrsAdapter.CRS_TYPES.neo       | connectionUrl              | 'https://url-to-schmetterling.neo'
 
 (*) optional
 
@@ -125,6 +126,8 @@ which you can set in the `connectionOptions`.
 The example code for this page is provided [here](/bewotec-bridge).
 
 **[Cosmo / CosmoNaut]** _dataSourceUrl_ is an url from where the CRS can get the IBE data from
+
+**[Neo]** _connectionUrl_ is needed, when the adapter is not directly used in the first child window of the Neo application
 
 
 ### `ServiceData` object structure
@@ -170,6 +173,7 @@ JackPlus   | X     | X     | X          | X      | X
 Cosmo      | X     | X     | X          | X      | X
 CosmoNaut  | X     | X     | X          | X      | X
 Tosi       | X     | X     | X          | X      | X
+Neo        | X     | X     | X          | X      | X
 
 
 ##### `ServiceData` structure

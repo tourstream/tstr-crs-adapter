@@ -1,10 +1,10 @@
 import {GENDER_TYPES} from '../UbpCrsAdapter';
 
-class AmadeusSPCTomaAdapter {
+class SchmetterlingNeoAdapter {
     constructor(logger, options = {}) {
         this.config = {
             crs: {
-                catalogFileName: 'ExternalCatalog.js',
+                externalCatalogSrc: 'https://neo.go-suite.com/smartscripting/ExternalCatalog.js',
                 genderTypes: {
                     [GENDER_TYPES.male]: 'H',
                     [GENDER_TYPES.female]: 'D',
@@ -20,7 +20,7 @@ class AmadeusSPCTomaAdapter {
     }
 
     /**
-     * @param options <{externalCatalogVersion?: string, connectionUrl?: string, popupId?: string}>
+     * @param options <{connectionUrl?: string}>
      * @returns {Promise}
      */
     connect(options) {
@@ -52,7 +52,7 @@ class AmadeusSPCTomaAdapter {
                 },
                 meta: {
                     genderTypes: this.config.crs.genderTypes,
-                    type: AmadeusSPCTomaAdapter.type,
+                    type: SchmetterlingNeoAdapter.type,
                 },
             };
         });
@@ -156,16 +156,10 @@ class AmadeusSPCTomaAdapter {
 
     cancel() {
         return new Promise((resolve) => {
-            let popupId = this.getUrlParameter('POPUP_ID') || this.connectionOptions.popupId;
-
-            if (!popupId) {
-                throw new Error('can not cancel - popupId is missing');
-            }
-
             try {
                 this.getConnection().requestService(
                     'popups.close',
-                    { id: popupId },
+                    null,
                     this.createCallbackObject(resolve, null, 'cancel error')
                 );
             } catch (error) {
@@ -186,7 +180,7 @@ class AmadeusSPCTomaAdapter {
                 let callbackObject = this.createCallbackObject(
                     resolve,
                     () => {
-                        this.logger.info('connected to TOMA Selling Platform Connect');
+                        this.logger.info('connected to Schmetterling Neo');
                         this.connection = window.catalog;
                     },
                     'connection not possible'
@@ -207,13 +201,13 @@ class AmadeusSPCTomaAdapter {
             const getConnectionUrlFromReferrer = () => {
                 let url = this.getReferrer() || '';
 
-                if (url.indexOf('.sellingplatformconnect.amadeus.com') > -1) {
-                    this.logger.info('detected Amadeus URL: ' + url);
+                if (url.indexOf('neo.go-suite.com') > -1 || url.indexOf('app.schmetterling-neo.de') > -1) {
+                    this.logger.info('detected Schmetterling URL: ' + url);
 
                     return url;
                 }
 
-                this.logger.info('could not detect any Amadeus URL');
+                this.logger.info('could not detect any Schmetterling URL');
             };
 
             let connectionUrl = cleanUrl(getConnectionUrlFromReferrer() || options.connectionUrl);
@@ -225,13 +219,11 @@ class AmadeusSPCTomaAdapter {
                 throw new Error(message);
             }
 
-            this.logger.info('use ' + connectionUrl + ' for connection to Amadeus');
+            this.logger.info('use ' + connectionUrl + ' for connection to Schmetterling');
 
-            let catalogVersion = this.getUrlParameter('EXTERNAL_CATALOG_VERSION') || options.externalCatalogVersion;
-            let filePath = connectionUrl + '/' + this.config.crs.catalogFileName + (catalogVersion ? '?version=' + catalogVersion : '');
             let script = document.createElement('script');
 
-            script.src = filePath;
+            script.src = this.config.crs.externalCatalogSrc;
             script.onload = connectToCRS;
 
             document.head.appendChild(script);
@@ -271,7 +263,7 @@ class AmadeusSPCTomaAdapter {
             return this.connection;
         }
 
-        throw new Error('No connection available - please connect to TOMA SPC first.');
+        throw new Error('No connection available - please connect to Neo first.');
     }
 
     /**
@@ -301,32 +293,23 @@ class AmadeusSPCTomaAdapter {
      * @param resolve Function
      * @param callback Function
      * @param errorMessage string
-     * @returns {{fn: {onSuccess: (function(*=)), onError: (function(*=))}}}
+     * @returns {{fn: (function(*=))}}
      */
     createCallbackObject(resolve, callback, errorMessage = 'Error') {
-        return { fn: {
-            onSuccess: (response = {}) => {
-                if (this.hasResponseErrors(response)) {
-                    let message = errorMessage + ' - caused by faulty response';
-
-                    this.logger.error(message);
-                    this.logger.error(response);
-                    throw new Error(message);
-                }
-
-                if (callback) {
-                    callback(response);
-                }
-
-                resolve(response.data);
-            },
-            onError: (response) => {
-                let message = errorMessage + ' - something went wrong with the request';
+        return { fn: (response = {}) => {
+            if (this.hasResponseErrors(response)) {
+                let message = errorMessage + ' - caused by faulty response';
 
                 this.logger.error(message);
                 this.logger.error(response);
                 throw new Error(message);
             }
+
+            if (callback) {
+                callback(response);
+            }
+
+            resolve(response.data);
         }};
     }
 
@@ -353,6 +336,6 @@ class AmadeusSPCTomaAdapter {
     }
 }
 
-AmadeusSPCTomaAdapter.type = 'toma2';
+SchmetterlingNeoAdapter.type = 'neo';
 
-export default AmadeusSPCTomaAdapter;
+export default SchmetterlingNeoAdapter;
