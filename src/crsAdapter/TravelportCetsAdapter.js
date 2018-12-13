@@ -10,12 +10,12 @@ const CONFIG = {
         dateFormat: 'DDMMYYYY',
         timeFormat: 'HHmm',
         externalObjectName: 'cetsObject',
-        hotelLocationCode: 'MISC',
     },
     defaults: {
         personCount: 1,
         serviceCode: {car: 'MIETW'},
         serviceType: {
+            misc: 'MISC',
             car: 'C',
             customerRequest: 'Q',
             roundTrip: 'R',
@@ -33,6 +33,13 @@ const CONFIG = {
                 key: 'Hotel',
             },
         },
+        program: {
+            roundTrip: 'BAUSTEIN',
+            hotel: 'HOTEL',
+        },
+        destination: {
+            roundTrip: 'NEZ',
+        }
     },
     catalog2TravelTypeMap: {
         DCH: 'DRIV',
@@ -531,6 +538,21 @@ class TravelportCetsAdapter {
         };
 
         xml.Fah.push(xmlService);
+
+        if (!service.extras || !service.extras.length) {
+            return
+        }
+
+        let xmlFaq = {
+            [CONFIG.builderOptions.attrkey]: {
+                ServiceType: CONFIG.defaults.serviceType.customerRequest,
+            },
+            Code: CONFIG.defaults.serviceType.misc,
+            Persons: 1,
+            TextV: service.extras.filter(Boolean).join(','),
+        };
+
+        xml.Faq.push(xmlFaq);
     }
 
     /**
@@ -545,34 +567,20 @@ class TravelportCetsAdapter {
 
         if (service.pickUpHotelName) {
             xmlService.CarDetails.PickUp[CONFIG.builderOptions.attrkey].Where = CONFIG.defaults.pickUp.hotel.key;
-            xmlService.CarDetails.PickUp.Info = service.pickUpHotelName;
+            xmlService.CarDetails.PickUp.Info = [
+                service.pickUpHotelName,
+                service.pickUpHotelAddress,
+                service.pickUpHotelPhoneNumber,
+            ].filter(Boolean).join(' ');
         }
 
-        if (!service.pickUpHotelName && service.dropOffHotelName) {
-            xmlService.CarDetails.DropOff.Info = service.dropOffHotelName;
+        if (service.dropOffHotelName) {
+            xmlService.CarDetails.DropOff.Info = [
+                service.dropOffHotelName,
+                service.dropOffHotelAddress,
+                service.dropOffHotelPhoneNumber,
+            ].filter(Boolean).join(' ');
         }
-
-        let xmlFaq = {
-            [CONFIG.builderOptions.attrkey]: {
-                ServiceType: CONFIG.defaults.serviceType.customerRequest,
-            },
-            Code: CONFIG.crs.hotelLocationCode,
-            Persons: 1,
-            TextV: [
-                [
-                    service.pickUpHotelName,
-                    service.pickUpHotelPhoneNumber,
-                    service.pickUpHotelAddress
-                ].filter(Boolean).join(' '),
-                [
-                    service.dropOffHotelName,
-                    service.dropOffHotelPhoneNumber,
-                    service.dropOffHotelAddress,
-                ].filter(Boolean).join(' '),
-            ].filter(Boolean).join(';'),
-        };
-
-        xml.Faq.push(xmlFaq);
     }
 
     assignRoundTripServiceFromAdapterObjectToXmlObject(service, xml) {
@@ -583,8 +591,8 @@ class TravelportCetsAdapter {
                 ServiceType: CONFIG.defaults.serviceType.roundTrip,
             },
             Product: service.bookingId,
-            Program: 'BAUSTEIN',
-            Destination: 'NEZ',
+            Program: CONFIG.defaults.program.roundTrip,
+            Destination: CONFIG.defaults.destination.roundTrip,
             Room: service.destination,
             StartDate: startDate.isValid() ? startDate.format(CONFIG.crs.dateFormat) : service.startDate,
             Duration: this.calculateDuration(service.startDate, service.endDate),
@@ -623,7 +631,7 @@ class TravelportCetsAdapter {
                 ServiceType: CONFIG.defaults.serviceType.hotel,
             },
             Product: service.destination.substring(3),
-            Program: 'HOTEL',
+            Program: CONFIG.defaults.program.hotel,
             Destination: service.destination.substring(0, 3),
             Room: service.roomCode,
             Norm: service.roomOccupancy,

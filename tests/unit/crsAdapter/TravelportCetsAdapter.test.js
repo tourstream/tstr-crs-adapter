@@ -446,6 +446,7 @@ describe('TravelportCetsAdapter', () => {
                             'dropOffHotelName': 'drop.off.hotel.name',
                             'dropOffHotelAddress': 'drop.off.hotel.address',
                             'dropOffHotelPhoneNumber': '799103115',
+                            'extras': ['e1', 'e2'],
                         },
                     ],
                 };
@@ -464,18 +465,19 @@ describe('TravelportCetsAdapter', () => {
                     '<PickUp Where="Hotel">' +
                     '<Time>0940</Time>' +
                     '<CarStation Code="PICK.UP.LOCATION"/>' +
-                    '<Info>pick.up.hotel.name</Info>' +
+                    '<Info>pick.up.hotel.name pick.up.hotel.address 799103116</Info>' +
                     '</PickUp>' +
                     '<DropOff>' +
                     '<Time>0940</Time>' +
                     '<CarStation Code="DROP.OFF.LOCATION"/>' +
+                    '<Info>drop.off.hotel.name drop.off.hotel.address 799103115</Info>' +
                     '</DropOff>' +
                     '</CarDetails>' +
                     '</Fah>' +
                     '<Faq ServiceType="Q">' +
                     '<Code>MISC</Code>' +
                     '<Persons>1</Persons>' +
-                    '<TextV>pick.up.hotel.name 799103116 pick.up.hotel.address;drop.off.hotel.name 799103115 drop.off.hotel.address</TextV>' +
+                    '<TextV>e1,e2</TextV>' +
                     '</Faq>';
 
                 let expectedXml = createResponseXml(service);
@@ -523,15 +525,10 @@ describe('TravelportCetsAdapter', () => {
                     '<DropOff>' +
                     '<Time>0940</Time>' +
                     '<CarStation Code="DROP.OFF.LOCATION"/>' +
-                    '<Info>drop.off.hotel.name</Info>' +
+                    '<Info>drop.off.hotel.name drop.off.hotel.address 799103115</Info>' +
                     '</DropOff>' +
                     '</CarDetails>' +
-                    '</Fah>' +
-                    '<Faq ServiceType="Q">' +
-                    '<Code>MISC</Code>' +
-                    '<Persons>1</Persons>' +
-                    '<TextV>drop.off.hotel.name 799103115 drop.off.hotel.address</TextV>' +
-                    '</Faq>';
+                    '</Fah>';
 
                 let expectedXml = createResponseXml(service);
 
@@ -573,19 +570,14 @@ describe('TravelportCetsAdapter', () => {
                     '<PickUp Where="Hotel">' +
                     '<Time>0940</Time>' +
                     '<CarStation Code="PICK.UP.LOCATION"/>' +
-                    '<Info>pick.up.hotel.name</Info>' +
+                    '<Info>pick.up.hotel.name pick.up.hotel.address 799103116</Info>' +
                     '</PickUp>' +
                     '<DropOff>' +
                     '<Time>0940</Time>' +
                     '<CarStation Code="DROP.OFF.LOCATION"/>' +
                     '</DropOff>' +
                     '</CarDetails>' +
-                    '</Fah>' +
-                    '<Faq ServiceType="Q">' +
-                    '<Code>MISC</Code>' +
-                    '<Persons>1</Persons>' +
-                    '<TextV>pick.up.hotel.name 799103116 pick.up.hotel.address</TextV>' +
-                    '</Faq>';
+                    '</Fah>';
 
                 let expectedXml = createResponseXml(service);
 
