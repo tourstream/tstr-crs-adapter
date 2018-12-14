@@ -470,7 +470,7 @@ describe('TravelportCetsAdapter', () => {
                     '<DropOff>' +
                     '<Time>0940</Time>' +
                     '<CarStation Code="DROP.OFF.LOCATION"/>' +
-                    '<Info>drop.off.hotel.name drop.off.hotel.address 799103115</Info>' +
+                    // '<Info>drop.off.hotel.name drop.off.hotel.address 799103115</Info>' +
                     '</DropOff>' +
                     '</CarDetails>' +
                     '</Fah>' +
@@ -525,7 +525,7 @@ describe('TravelportCetsAdapter', () => {
                     '<DropOff>' +
                     '<Time>0940</Time>' +
                     '<CarStation Code="DROP.OFF.LOCATION"/>' +
-                    '<Info>drop.off.hotel.name drop.off.hotel.address 799103115</Info>' +
+                    // '<Info>drop.off.hotel.name drop.off.hotel.address 799103115</Info>' +
                     '</DropOff>' +
                     '</CarDetails>' +
                     '</Fah>';

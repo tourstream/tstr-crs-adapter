@@ -574,13 +574,15 @@ class TravelportCetsAdapter {
             ].filter(Boolean).join(' ');
         }
 
-        if (service.dropOffHotelName) {
-            xmlService.CarDetails.DropOff.Info = [
-                service.dropOffHotelName,
-                service.dropOffHotelAddress,
-                service.dropOffHotelPhoneNumber,
-            ].filter(Boolean).join(' ');
-        }
+        // we ignore the drop off hotel data because CETS has no visualization for that
+        // also it will overwrite somehow the visualization for the PickUp Information
+        // if (service.dropOffHotelName) {
+        //     xmlService.CarDetails.DropOff.Info = [
+        //         service.dropOffHotelName,
+        //         service.dropOffHotelAddress,
+        //         service.dropOffHotelPhoneNumber,
+        //     ].filter(Boolean).join(' ');
+        // }
     }
 
     assignRoundTripServiceFromAdapterObjectToXmlObject(service, xml) {
