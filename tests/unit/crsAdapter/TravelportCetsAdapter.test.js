@@ -465,19 +465,18 @@ describe('TravelportCetsAdapter', () => {
                     '<PickUp Where="Hotel">' +
                     '<Time>0940</Time>' +
                     '<CarStation Code="PICK.UP.LOCATION"/>' +
-                    '<Info>pick.up.hotel.name pick.up.hotel.address 799103116</Info>' +
+                    '<Info>pick.up.hotel.name</Info>' +
                     '</PickUp>' +
                     '<DropOff>' +
                     '<Time>0940</Time>' +
                     '<CarStation Code="DROP.OFF.LOCATION"/>' +
-                    // '<Info>drop.off.hotel.name drop.off.hotel.address 799103115</Info>' +
                     '</DropOff>' +
                     '</CarDetails>' +
                     '</Fah>' +
                     '<Faq ServiceType="Q">' +
                     '<Code>MISC</Code>' +
                     '<Persons>1</Persons>' +
-                    '<TextV>e1,e2</TextV>' +
+                    '<TextV>e1,e2;pick.up.hotel.address,799103116;drop.off.hotel.name,drop.off.hotel.address,799103115</TextV>' +
                     '</Faq>';
 
                 let expectedXml = createResponseXml(service);
@@ -525,10 +524,14 @@ describe('TravelportCetsAdapter', () => {
                     '<DropOff>' +
                     '<Time>0940</Time>' +
                     '<CarStation Code="DROP.OFF.LOCATION"/>' +
-                    // '<Info>drop.off.hotel.name drop.off.hotel.address 799103115</Info>' +
                     '</DropOff>' +
                     '</CarDetails>' +
-                    '</Fah>';
+                    '</Fah>' +
+                    '<Faq ServiceType="Q">' +
+                    '<Code>MISC</Code>' +
+                    '<Persons>1</Persons>' +
+                    '<TextV>drop.off.hotel.name,drop.off.hotel.address,799103115</TextV>' +
+                    '</Faq>';
 
                 let expectedXml = createResponseXml(service);
 
@@ -570,14 +573,19 @@ describe('TravelportCetsAdapter', () => {
                     '<PickUp Where="Hotel">' +
                     '<Time>0940</Time>' +
                     '<CarStation Code="PICK.UP.LOCATION"/>' +
-                    '<Info>pick.up.hotel.name pick.up.hotel.address 799103116</Info>' +
+                    '<Info>pick.up.hotel.name</Info>' +
                     '</PickUp>' +
                     '<DropOff>' +
                     '<Time>0940</Time>' +
                     '<CarStation Code="DROP.OFF.LOCATION"/>' +
                     '</DropOff>' +
                     '</CarDetails>' +
-                    '</Fah>';
+                    '</Fah>' +
+                    '<Faq ServiceType="Q">' +
+                    '<Code>MISC</Code>' +
+                    '<Persons>1</Persons>' +
+                    '<TextV>pick.up.hotel.address,799103116</TextV>' +
+                    '</Faq>';
 
                 let expectedXml = createResponseXml(service);
 

@@ -543,16 +543,9 @@ class TravelportCetsAdapter {
             return
         }
 
-        let xmlFaq = {
-            [CONFIG.builderOptions.attrkey]: {
-                ServiceType: CONFIG.defaults.serviceType.customerRequest,
-            },
-            Code: CONFIG.defaults.serviceType.misc,
-            Persons: 1,
-            TextV: service.extras.filter(Boolean).join(','),
-        };
+        const faq = this.findOrCreateQMiscLine(xml);
 
-        xml.Faq.push(xmlFaq);
+        faq.TextV = [faq.TextV, service.extras.filter(Boolean).join(',')].filter(Boolean).join(';');
     }
 
     /**
@@ -563,26 +556,41 @@ class TravelportCetsAdapter {
     assignHotelData(service, xml) {
         if (!service.pickUpHotelName && !service.dropOffHotelName) return;
 
-        let xmlService = xml.Fah.slice(-1)[0];
+        const xmlService = xml.Fah.slice(-1)[0];
+        const faq = this.findOrCreateQMiscLine(xml);
 
         if (service.pickUpHotelName) {
             xmlService.CarDetails.PickUp[CONFIG.builderOptions.attrkey].Where = CONFIG.defaults.pickUp.hotel.key;
-            xmlService.CarDetails.PickUp.Info = [
+            xmlService.CarDetails.PickUp.Info = service.pickUpHotelName;
+
+            faq.TextV = [
+                faq.TextV,
+                [
+                    service.pickUpHotelAddress,
+                    service.pickUpHotelPhoneNumber,
+                ].filter(Boolean).join(',')
+            ].filter(Boolean).join(';');
+        }
+
+        if (service.dropOffHotelName) {
+            const pickUpString = [
                 service.pickUpHotelName,
                 service.pickUpHotelAddress,
                 service.pickUpHotelPhoneNumber,
-            ].filter(Boolean).join(' ');
-        }
+            ].filter(Boolean).join(',')
 
-        // we ignore the drop off hotel data because CETS has no visualization for that
-        // also it will overwrite somehow the visualization for the PickUp Information
-        // if (service.dropOffHotelName) {
-        //     xmlService.CarDetails.DropOff.Info = [
-        //         service.dropOffHotelName,
-        //         service.dropOffHotelAddress,
-        //         service.dropOffHotelPhoneNumber,
-        //     ].filter(Boolean).join(' ');
-        // }
+            const dropOffString = [
+                service.dropOffHotelName,
+                service.dropOffHotelAddress,
+                service.dropOffHotelPhoneNumber,
+            ].filter(Boolean).join(',')
+
+            if (pickUpString === dropOffString) {
+                return;
+            }
+
+            faq.TextV = [faq.TextV, dropOffString].filter(Boolean).join(';');
+        }
     }
 
     assignRoundTripServiceFromAdapterObjectToXmlObject(service, xml) {
@@ -684,7 +692,30 @@ class TravelportCetsAdapter {
                 return Math.ceil(endDateObject.diff(startDateObject, 'days', true));
             }
         }
-    };
+    }
+
+    findOrCreateQMiscLine(xml) {
+        const faq = (xml.Faq || []).find((faq) => {
+            return faq.Code === CONFIG.defaults.serviceType.misc
+                && faq[CONFIG.builderOptions.attrkey].ServiceType === CONFIG.defaults.serviceType.customerRequest;
+        })
+
+        if (faq) {
+            return faq;
+        }
+
+        let newFaq = {
+            [CONFIG.builderOptions.attrkey]: {
+                ServiceType: CONFIG.defaults.serviceType.customerRequest,
+            },
+            Code: CONFIG.defaults.serviceType.misc,
+            Persons: 1,
+        };
+
+        xml.Faq.push(newFaq);
+
+        return newFaq
+    }
 }
 
 TravelportCetsAdapter.type = 'cets';
