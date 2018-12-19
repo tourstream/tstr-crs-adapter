@@ -446,6 +446,7 @@ describe('TravelportCetsAdapter', () => {
                             'dropOffHotelName': 'drop.off.hotel.name',
                             'dropOffHotelAddress': 'drop.off.hotel.address',
                             'dropOffHotelPhoneNumber': '799103115',
+                            'extras': ['e1', 'e2'],
                         },
                     ],
                 };
@@ -475,7 +476,7 @@ describe('TravelportCetsAdapter', () => {
                     '<Faq ServiceType="Q">' +
                     '<Code>MISC</Code>' +
                     '<Persons>1</Persons>' +
-                    '<TextV>pick.up.hotel.name 799103116 pick.up.hotel.address;drop.off.hotel.name 799103115 drop.off.hotel.address</TextV>' +
+                    '<TextV>e1,e2;pick.up.hotel.address,799103116;drop.off.hotel.name,drop.off.hotel.address,799103115</TextV>' +
                     '</Faq>';
 
                 let expectedXml = createResponseXml(service);
@@ -523,14 +524,13 @@ describe('TravelportCetsAdapter', () => {
                     '<DropOff>' +
                     '<Time>0940</Time>' +
                     '<CarStation Code="DROP.OFF.LOCATION"/>' +
-                    '<Info>drop.off.hotel.name</Info>' +
                     '</DropOff>' +
                     '</CarDetails>' +
                     '</Fah>' +
                     '<Faq ServiceType="Q">' +
                     '<Code>MISC</Code>' +
                     '<Persons>1</Persons>' +
-                    '<TextV>drop.off.hotel.name 799103115 drop.off.hotel.address</TextV>' +
+                    '<TextV>drop.off.hotel.name,drop.off.hotel.address,799103115</TextV>' +
                     '</Faq>';
 
                 let expectedXml = createResponseXml(service);
@@ -584,7 +584,7 @@ describe('TravelportCetsAdapter', () => {
                     '<Faq ServiceType="Q">' +
                     '<Code>MISC</Code>' +
                     '<Persons>1</Persons>' +
-                    '<TextV>pick.up.hotel.name 799103116 pick.up.hotel.address</TextV>' +
+                    '<TextV>pick.up.hotel.address,799103116</TextV>' +
                     '</Faq>';
 
                 let expectedXml = createResponseXml(service);

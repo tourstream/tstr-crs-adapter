@@ -10,12 +10,12 @@ const CONFIG = {
         dateFormat: 'DDMMYYYY',
         timeFormat: 'HHmm',
         externalObjectName: 'cetsObject',
-        hotelLocationCode: 'MISC',
     },
     defaults: {
         personCount: 1,
         serviceCode: {car: 'MIETW'},
         serviceType: {
+            misc: 'MISC',
             car: 'C',
             customerRequest: 'Q',
             roundTrip: 'R',
@@ -33,6 +33,13 @@ const CONFIG = {
                 key: 'Hotel',
             },
         },
+        program: {
+            roundTrip: 'BAUSTEIN',
+            hotel: 'HOTEL',
+        },
+        destination: {
+            roundTrip: 'NEZ',
+        }
     },
     catalog2TravelTypeMap: {
         DCH: 'DRIV',
@@ -531,6 +538,14 @@ class TravelportCetsAdapter {
         };
 
         xml.Fah.push(xmlService);
+
+        if (!service.extras || !service.extras.length) {
+            return
+        }
+
+        const faq = this.findOrCreateQMiscLine(xml);
+
+        faq.TextV = [faq.TextV, service.extras.filter(Boolean).join(',')].filter(Boolean).join(';');
     }
 
     /**
@@ -541,38 +556,41 @@ class TravelportCetsAdapter {
     assignHotelData(service, xml) {
         if (!service.pickUpHotelName && !service.dropOffHotelName) return;
 
-        let xmlService = xml.Fah.slice(-1)[0];
+        const xmlService = xml.Fah.slice(-1)[0];
+        const faq = this.findOrCreateQMiscLine(xml);
 
         if (service.pickUpHotelName) {
             xmlService.CarDetails.PickUp[CONFIG.builderOptions.attrkey].Where = CONFIG.defaults.pickUp.hotel.key;
             xmlService.CarDetails.PickUp.Info = service.pickUpHotelName;
-        }
 
-        if (!service.pickUpHotelName && service.dropOffHotelName) {
-            xmlService.CarDetails.DropOff.Info = service.dropOffHotelName;
-        }
-
-        let xmlFaq = {
-            [CONFIG.builderOptions.attrkey]: {
-                ServiceType: CONFIG.defaults.serviceType.customerRequest,
-            },
-            Code: CONFIG.crs.hotelLocationCode,
-            Persons: 1,
-            TextV: [
+            faq.TextV = [
+                faq.TextV,
                 [
-                    service.pickUpHotelName,
+                    service.pickUpHotelAddress,
                     service.pickUpHotelPhoneNumber,
-                    service.pickUpHotelAddress
-                ].filter(Boolean).join(' '),
-                [
-                    service.dropOffHotelName,
-                    service.dropOffHotelPhoneNumber,
-                    service.dropOffHotelAddress,
-                ].filter(Boolean).join(' '),
-            ].filter(Boolean).join(';'),
-        };
+                ].filter(Boolean).join(',')
+            ].filter(Boolean).join(';');
+        }
 
-        xml.Faq.push(xmlFaq);
+        if (service.dropOffHotelName) {
+            const pickUpString = [
+                service.pickUpHotelName,
+                service.pickUpHotelAddress,
+                service.pickUpHotelPhoneNumber,
+            ].filter(Boolean).join(',')
+
+            const dropOffString = [
+                service.dropOffHotelName,
+                service.dropOffHotelAddress,
+                service.dropOffHotelPhoneNumber,
+            ].filter(Boolean).join(',')
+
+            if (pickUpString === dropOffString) {
+                return;
+            }
+
+            faq.TextV = [faq.TextV, dropOffString].filter(Boolean).join(';');
+        }
     }
 
     assignRoundTripServiceFromAdapterObjectToXmlObject(service, xml) {
@@ -583,8 +601,8 @@ class TravelportCetsAdapter {
                 ServiceType: CONFIG.defaults.serviceType.roundTrip,
             },
             Product: service.bookingId,
-            Program: 'BAUSTEIN',
-            Destination: 'NEZ',
+            Program: CONFIG.defaults.program.roundTrip,
+            Destination: CONFIG.defaults.destination.roundTrip,
             Room: service.destination,
             StartDate: startDate.isValid() ? startDate.format(CONFIG.crs.dateFormat) : service.startDate,
             Duration: this.calculateDuration(service.startDate, service.endDate),
@@ -623,7 +641,7 @@ class TravelportCetsAdapter {
                 ServiceType: CONFIG.defaults.serviceType.hotel,
             },
             Product: service.destination.substring(3),
-            Program: 'HOTEL',
+            Program: CONFIG.defaults.program.hotel,
             Destination: service.destination.substring(0, 3),
             Room: service.roomCode,
             Norm: service.roomOccupancy,
@@ -674,7 +692,30 @@ class TravelportCetsAdapter {
                 return Math.ceil(endDateObject.diff(startDateObject, 'days', true));
             }
         }
-    };
+    }
+
+    findOrCreateQMiscLine(xml) {
+        const faq = (xml.Faq || []).find((faq) => {
+            return faq.Code === CONFIG.defaults.serviceType.misc
+                && faq[CONFIG.builderOptions.attrkey].ServiceType === CONFIG.defaults.serviceType.customerRequest;
+        })
+
+        if (faq) {
+            return faq;
+        }
+
+        let newFaq = {
+            [CONFIG.builderOptions.attrkey]: {
+                ServiceType: CONFIG.defaults.serviceType.customerRequest,
+            },
+            Code: CONFIG.defaults.serviceType.misc,
+            Persons: 1,
+        };
+
+        xml.Faq.push(newFaq);
+
+        return newFaq
+    }
 }
 
 TravelportCetsAdapter.type = 'cets';
