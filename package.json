@@ -1,6 +1,6 @@
 {
   "name": "ubp-crs-adapter",
-  "version": "1.7.0",
+  "version": "1.7.1",
   "description": "This library provides connections to different travel CRSs. It also let you read and write data from/to them.",
   "main": "dist/ubpCrsAdapter.js",
   "directories": {
