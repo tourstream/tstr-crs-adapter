@@ -4,7 +4,7 @@ class AmadeusSPCTomaAdapter {
     constructor(logger, options = {}) {
         this.config = {
             crs: {
-                catalogFileName: 'ExternalCatalog.js',
+                catalogFilePath: 'ExternalCatalog.js',
                 genderTypes: {
                     [GENDER_TYPES.male]: 'H',
                     [GENDER_TYPES.female]: 'D',
@@ -85,7 +85,7 @@ class AmadeusSPCTomaAdapter {
             return {
                 title: traveller.title,
                 lastName: travellerNames.pop(),
-                firstName: travellerNames.join (' '),
+                firstName: travellerNames.join(' '),
                 age: traveller.discount,
             }
         });
@@ -228,7 +228,7 @@ class AmadeusSPCTomaAdapter {
             this.logger.info('use ' + connectionUrl + ' for connection to Amadeus');
 
             let catalogVersion = this.getUrlParameter('EXTERNAL_CATALOG_VERSION') || options.externalCatalogVersion;
-            let filePath = connectionUrl + '/' + this.config.crs.catalogFileName + (catalogVersion ? '?version=' + catalogVersion : '');
+            let filePath = connectionUrl + '/' + this.config.crs.catalogFilePath + (catalogVersion ? '?version=' + catalogVersion : '');
             let script = document.createElement('script');
 
             script.src = filePath;
@@ -280,7 +280,11 @@ class AmadeusSPCTomaAdapter {
      */
     getCrsObject() {
         return new Promise((resolve) => {
-            this.getConnection().requestService('bookingfile.toma.getData', [], this.createCallbackObject(resolve, null, 'can not get data'));
+            this.getConnection().requestService(
+                'bookingfile.toma.getData',
+                [],
+                this.createCallbackObject(resolve, null, 'can not get data')
+            );
         });
     }
 
@@ -292,7 +296,11 @@ class AmadeusSPCTomaAdapter {
      */
     sendCrsObject(crsObject) {
         return new Promise((resolve) => {
-            this.getConnection().requestService('bookingfile.toma.setData', [crsObject], this.createCallbackObject(resolve, null, 'sending data failed'));
+            this.getConnection().requestService(
+                'bookingfile.toma.setData',
+                [crsObject],
+                this.createCallbackObject(resolve, null, 'sending data failed')
+            );
         });
     }
 

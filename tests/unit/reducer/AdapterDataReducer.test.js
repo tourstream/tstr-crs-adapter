@@ -34,7 +34,7 @@ describe('AdapterDataReducer', () => {
         });
     });
 
-    it('reduceIntoCrsData() returns "empty" reduced data when adapterData contains not reducable services', () => {
+    it('reduceIntoCrsData() returns "empty" reduced data when adapterData contains not reducible services', () => {
         const adapterData = {
             services: [{}]
         };
@@ -116,8 +116,10 @@ describe('AdapterDataReducer', () => {
                 travellers: [
                     void 0,
                     {
+                        title: 'title',
                         firstName: 'fn',
                         lastName: 'ln',
+                        age: 'age',
                     }
                 ]
             },
@@ -130,7 +132,9 @@ describe('AdapterDataReducer', () => {
             travellers: [
                 {},
                 {
+                    title: 'title',
                     name: 'fn ln',
+                    age: 'age',
                 }
             ],
         });

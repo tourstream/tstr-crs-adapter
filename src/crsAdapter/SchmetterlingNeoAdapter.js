@@ -4,7 +4,7 @@ class SchmetterlingNeoAdapter {
     constructor(logger, options = {}) {
         this.config = {
             crs: {
-                externalCatalogSrc: 'https://neo.go-suite.com/smartscripting/ExternalCatalog.js',
+                catalogFilePath: 'smartscripting/ExternalCatalog.js',
                 genderTypes: {
                     [GENDER_TYPES.male]: 'H',
                     [GENDER_TYPES.female]: 'D',
@@ -85,7 +85,7 @@ class SchmetterlingNeoAdapter {
             return {
                 title: traveller.title,
                 lastName: travellerNames.pop(),
-                firstName: travellerNames.join (' '),
+                firstName: travellerNames.join(' '),
                 age: traveller.discount,
             }
         });
@@ -180,7 +180,7 @@ class SchmetterlingNeoAdapter {
                 let callbackObject = this.createCallbackObject(
                     resolve,
                     () => {
-                        this.logger.info('connected to Schmetterling Neo');
+                        this.logger.info('connected to Schmetterling NEO');
                         this.connection = window.catalog;
                     },
                     'connection not possible'
@@ -221,9 +221,10 @@ class SchmetterlingNeoAdapter {
 
             this.logger.info('use ' + connectionUrl + ' for connection to Schmetterling');
 
+            let filePath = connectionUrl + '/' + this.config.crs.catalogFilePath;
             let script = document.createElement('script');
 
-            script.src = this.config.crs.externalCatalogSrc;
+            script.src = filePath;
             script.onload = connectToCRS;
 
             document.head.appendChild(script);
@@ -242,20 +243,6 @@ class SchmetterlingNeoAdapter {
 
     /**
      * @private
-     * @param name string
-     * @returns {string}
-     */
-    getUrlParameter(name) {
-        name = name.replace(/[\[]/, '\\[').replace(/[\]]/, '\\]');
-
-        let regex = new RegExp('[\\?&]' + name + '=([^&#]*)');
-        let results = regex.exec(window.location);
-
-        return results === null ? void 0 : decodeURIComponent(results[1].replace(/\+/g, ' '));
-    };
-
-    /**
-     * @private
      * @returns {object}
      */
     getConnection() {
@@ -263,7 +250,7 @@ class SchmetterlingNeoAdapter {
             return this.connection;
         }
 
-        throw new Error('No connection available - please connect to Neo first.');
+        throw new Error('No connection available - please connect to NEO first.');
     }
 
     /**
@@ -272,7 +259,11 @@ class SchmetterlingNeoAdapter {
      */
     getCrsObject() {
         return new Promise((resolve) => {
-            this.getConnection().requestService('bookingfile.toma.getData', [], this.createCallbackObject(resolve, null, 'can not get data'));
+            this.getConnection().requestService(
+                'bookingfile.toma.getData',
+                [],
+                this.createCallbackObject(resolve, null, 'can not get data')
+            );
         });
     }
 
@@ -284,7 +275,11 @@ class SchmetterlingNeoAdapter {
      */
     sendCrsObject(crsObject) {
         return new Promise((resolve) => {
-            this.getConnection().requestService('bookingfile.toma.setData', [crsObject], this.createCallbackObject(resolve, null, 'sending data failed'));
+            this.getConnection().requestService(
+                'bookingfile.toma.setData',
+                crsObject,
+                this.createCallbackObject(resolve, null, 'sending data failed')
+            );
         });
     }
 
@@ -293,23 +288,32 @@ class SchmetterlingNeoAdapter {
      * @param resolve Function
      * @param callback Function
      * @param errorMessage string
-     * @returns {{fn: (function(*=))}}
+     * @returns {{fn: {onSuccess: (function(*=)), onError: (function(*=))}}}
      */
     createCallbackObject(resolve, callback, errorMessage = 'Error') {
-        return { fn: (response = {}) => {
-            if (this.hasResponseErrors(response)) {
-                let message = errorMessage + ' - caused by faulty response';
+        return { fn: {
+            onSuccess: (response = {}) => {
+                if (this.hasResponseErrors(response)) {
+                    let message = errorMessage + ' - caused by faulty response';
+
+                    this.logger.error(message);
+                    this.logger.error(response);
+                    throw new Error(message);
+                }
+
+                if (callback) {
+                    callback(response);
+                }
+
+                resolve(response.data);
+            },
+            onError: (response) => {
+                let message = errorMessage + ' - something went wrong with the request';
 
                 this.logger.error(message);
                 this.logger.error(response);
                 throw new Error(message);
             }
-
-            if (callback) {
-                callback(response);
-            }
-
-            resolve(response.data);
         }};
     }
 

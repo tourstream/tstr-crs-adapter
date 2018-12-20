@@ -12,7 +12,7 @@ describe('SchmetterlingNeoAdapter', () => {
         documentHeadAppendChildSpy = spyOn(document.head, 'appendChild');
         documentHeadAppendChildSpy.and.callFake((script) => script.onload());
 
-        NeoConnection = require('tests/unit/_mocks/NeoConnection')();
+        NeoConnection = require('tests/unit/_mocks/SchmetterlingNeoConnection')();
         NeoConnection.connect.and.callFake((paramObject) => paramObject.fn.onSuccess());
 
         window.catalog = NeoConnection;
@@ -32,7 +32,7 @@ describe('SchmetterlingNeoAdapter', () => {
     });
 
     it('connect() with option.connectionUrl should result in correct script.src', (done) => {
-        let expectedSrc = 'https://conn-url.example/ExternalCatalog.js';
+        let expectedSrc = 'https://conn-url.example/smartscripting/ExternalCatalog.js';
         let expectedDest = 'https://conn-url.example';
 
         adapter.connect({connectionUrl: 'https://conn-url.example'}).then(() => {
@@ -47,7 +47,7 @@ describe('SchmetterlingNeoAdapter', () => {
     });
 
     it('connect() with option.connectionUrl should result in correct script.src when anchor tag has no modern support', (done) => {
-        let expectedSrc = 'https://conn-url.example/ExternalCatalog.js';
+        let expectedSrc = 'https://conn-url.example/smartscripting/ExternalCatalog.js';
         let expectedDest = 'https://conn-url.example';
 
         let documentCreateElementSpy = spyOn(document, 'createElement');
@@ -65,46 +65,11 @@ describe('SchmetterlingNeoAdapter', () => {
         });
     });
 
-    it('connect() with option.externalCatalogVersion should result in correct script.src', (done) => {
-        let expectedSrc = 'https://conn-url.example/ExternalCatalog.js?version=externalCatalogVersion';
-        let expectedDest = 'https://conn-url.example';
-
-        adapter.connect({
-            connectionUrl: 'https://conn-url.example',
-            externalCatalogVersion: 'externalCatalogVersion'
-        }).then(() => {
-            let scriptElement = documentHeadAppendChildSpy.calls.mostRecent().args[0];
-
-            expect(scriptElement.src).toBe(expectedSrc);
-            expect(NeoConnection.dest).toBe(expectedDest);
-            done();
-        }, (error) => {
-            done.fail(error);
-        });
-    });
-
-    it('connect() with URL parameter EXTERNAL_CATALOG_VERSION should result in correct script.src', (done) => {
-        let expectedSrc = 'https://conn-url.example/ExternalCatalog.js?version=url.catalogVersion';
-        let expectedDest = 'https://conn-url.example';
-
-        window.history.replaceState({}, '', '?EXTERNAL_CATALOG_VERSION=url.catalogVersion');
-
-        adapter.connect({connectionUrl: 'https://conn-url.example'}).then(() => {
-            let scriptElement = documentHeadAppendChildSpy.calls.mostRecent().args[0];
-
-            expect(scriptElement.src).toBe(expectedSrc);
-            expect(NeoConnection.dest).toBe(expectedDest);
-            done();
-        }, (error) => {
-            done.fail(error);
-        });
-    });
-
     it('connect() with auto detected URL', (done) => {
-        let expectedSrc = 'https://www.sellingplatformconnect.amadeus.com/ExternalCatalog.js';
-        let expectedDest = 'https://www.sellingplatformconnect.amadeus.com';
+        let expectedSrc = 'https://www.neo.go-suite.com/smartscripting/ExternalCatalog.js';
+        let expectedDest = 'https://www.neo.go-suite.com';
 
-        spyOn(adapter, 'getReferrer').and.returnValue('www.sellingplatformconnect.amadeus.com');
+        spyOn(adapter, 'getReferrer').and.returnValue('www.neo.go-suite.com');
 
         adapter.connect({connectionUrl: 'https://conn-url.example'}).then(() => {
             let scriptElement = documentHeadAppendChildSpy.calls.mostRecent().args[0];
@@ -117,7 +82,7 @@ describe('SchmetterlingNeoAdapter', () => {
         });
     });
 
-    describe('is connected with TOMA SPC -', () => {
+    describe('is connected with NEO -', () => {
         let crsData, responseError, responseWarnings, requestData, requestMethod;
 
         beforeEach(() => {
@@ -266,8 +231,6 @@ describe('SchmetterlingNeoAdapter', () => {
         });
 
         it('sendData() should trigger cancel', (done) => {
-            adapter.connectionOptions.popupId = 'popupId';
-
             adapter.sendData({}).then(() => {
                 expect(NeoConnection.requestService.calls.mostRecent().args[0]).toBe('popups.close');
                 done();
@@ -280,7 +243,7 @@ describe('SchmetterlingNeoAdapter', () => {
             adapter.sendData().then(() => {
                 done.fail('expectation error');
             }, (error) => {
-                expect(error.toString()).toBe('Error: No connection available - please connect to TOMA SPC first.');
+                expect(error.toString()).toBe('Error: No connection available - please connect to NEO first.');
                 done();
             });
         });
@@ -368,46 +331,13 @@ describe('SchmetterlingNeoAdapter', () => {
             expect(crsData.build).toEqual(build);
         });
 
-        it('cancel() should request to close the popup', (done) => {
-            adapter.connectionOptions.popupId = 'pId';
-
-            adapter.cancel().then(() => {
-                expect(requestData).toEqual({id: 'pId'});
-                done();
-            }, (error) => {
-                done.fail(error);
-            });
-        });
-
-        it('cancel() should request to close the popup with popup id from url parameter', (done) => {
-            window.history.replaceState({}, '', '/#/?POPUP_ID=url.pId');
-
-            adapter.cancel().then(() => {
-                expect(requestData).toEqual({id: 'url.pId'});
-                done();
-            }, (error) => {
-                done.fail(error);
-            });
-        });
-
-        it('cancel() should throw error if no popup id is available', (done) => {
-            adapter.cancel().then(() => {
-                done.fail('expectation error');
-            }, (error) => {
-                expect(error.toString()).toBe('Error: can not cancel - popupId is missing');
-                done();
-            });
-        });
-
         it('cancel() should throw error if connection failed', (done) => {
             NeoConnection.requestService = void 0;
 
-            adapter.connectionOptions.popupId = 'popupId';
-
             adapter.cancel().then(() => {
                 done.fail('expectation error');
             }, (error) => {
-                expect(error.toString()).toBe('Error: connection::popups.close: No connection available - please connect to TOMA SPC first.');
+                expect(error.toString()).toBe('Error: connection::popups.close: No connection available - please connect to NEO first.');
                 done();
             });
         });

@@ -80,20 +80,21 @@ $.when(
                 throw new Error('no CRS selected');
             }
 
+            const connectionOptions = {};
             crsData = {};
-
-            log(crsData, crsDataPreview);
 
             Object.keys(connectionOptionsForm).forEach(function(key) {
                 if (!connectionOptionsForm[key].name || connectionOptionsForm[key].value === '') return;
 
-                setValueToPropertyPath(crsData, connectionOptionsForm[key].name, connectionOptionsForm[key].value);
+                setValueToPropertyPath(connectionOptions, connectionOptionsForm[key].name, connectionOptionsForm[key].value);
             });
 
-            delete crsData.type;
+            delete connectionOptions.type;
+
+            log(connectionOptions, crsDataPreview);
 
             crsAdapter
-                .connect(connectionOptionsForm.type.value, crsData)
+                .connect(connectionOptionsForm.type.value, connectionOptions)
                 .then(function() {
                     setConnectionTypeToConnectButton(connectionOptionsForm.type.value);
                     selectTemplate(productBaseForm, 'base-product');
