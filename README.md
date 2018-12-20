@@ -354,7 +354,7 @@ you can drag'n'drop the test file directly into that view.
 Alternatively you can open the test file in parallel to the TOMA mask in an IE and use the test file from there.
 
 
-###### ... in (new) TOMA SPC
+###### ... in (new) TOMA SPC 
 
 _precondition:_ 
 
@@ -410,6 +410,21 @@ Be aware that the data transfer to the Bewotec application needs up to 10 second
 _precondition:_ the TOSI mask is open
 
 Open the test file in parallel to the TOSI mask in a browser.
+
+
+###### ... in Schmetterling NEO
+
+_precondition:_ 
+
+* the Schmetterling portal is open
+* the NEO mask is visible 
+
+Open the served test file in your browser first to accept any unknown certificates!
+
+Then you have to open the IBE iFrame - for example by requesting an already existing IBE (like the drive IBE) 
+and replace the iFrame URL with the URL of the test file. 
+You can use the following script as bookmark to replace the URL automatically:
+`javascript:(function(){let%20fc=document.getElementById('neoIframePopup');let%20f=fc;let%20s=f.src.split('/dispatcher/');s[0]='https://localhost:1337/';f.src=s.join('');})()`
 
 
 ## You have questions or problems with the implementation?
