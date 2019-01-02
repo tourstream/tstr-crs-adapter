@@ -269,7 +269,50 @@ describe('AmadeusSPCTomaAdapter', () => {
             adapter.connectionOptions.popupId = 'popupId';
 
             adapter.sendData({}).then(() => {
-                expect(TomaSPCConnection.requestService.calls.mostRecent().args[0]).toBe('popups.close');
+                expect(TomaSPCConnection.requestService.calls.allArgs().map((args) => args[0])).toEqual([
+                    'bookingfile.toma.setData',
+                    'popups.close',
+                ]);
+                done();
+            });
+        });
+
+        it('sendData() should paginate if more  services than allowed are provided', (done) => {
+            const crsData = {
+                build: {
+                    services: [{}, {}, {}, {}, {}, {}, {}],
+                }
+            };
+
+            adapter.connectionOptions.popupId = 'popupId';
+
+            adapter.sendData(crsData).then(() => {
+                expect(TomaSPCConnection.requestService.calls.allArgs().map((args) => args[0])).toEqual([
+                    'bookingfile.toma.setData',
+                    'bookingfile.toma.sendRequest',
+                    'bookingfile.toma.setData',
+                    'popups.close',
+                ]);
+                done();
+            });
+        });
+
+        it('sendData() should paginate if more travellers than allowed are provided', (done) => {
+            const crsData = {
+                build: {
+                    travellers: [{}, {}, {}, {}, {}, {}, {}],
+                }
+            };
+
+            adapter.connectionOptions.popupId = 'popupId';
+
+            adapter.sendData(crsData).then(() => {
+                expect(TomaSPCConnection.requestService.calls.allArgs().map((args) => args[0])).toEqual([
+                    'bookingfile.toma.setData',
+                    'bookingfile.toma.sendRequest',
+                    'bookingfile.toma.setData',
+                    'popups.close',
+                ]);
                 done();
             });
         });

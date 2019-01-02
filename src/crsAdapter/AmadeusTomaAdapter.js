@@ -11,33 +11,38 @@ class AmadeusTomaAdapter {
         this.config = {
             crs: {
                 activeXObjectName: 'Spice.Start',
-                    maxTravellers: 6,
+                maxServiceLines: 6,
+                maxTravellerLines: 6,
+                actions: {
+                    nextPage: '+',
+                    previousPage: '-',
+                },
             },
             parserOptions: {
                 attributeNamePrefix: '__attributes',
-                    textNodeName: '__textNode',
-                    ignoreAttributes: true,
-                    ignoreNameSpace: true,
-                    parseNodeValue: false,
-                    parseAttributeValue: false,
+                textNodeName: '__textNode',
+                ignoreAttributes: true,
+                ignoreNameSpace: true,
+                parseNodeValue: false,
+                parseAttributeValue: false,
             },
             builderOptions: {
                 attrkey: '__attributes',
-                    charkey: '__textNode',
-                    renderOpts: {
+                charkey: '__textNode',
+                renderOpts: {
                     pretty: false,
-                        indent: false,
-                        newline: false,
+                    indent: false,
+                    newline: false,
                 },
                 xmldec: {
                     version: '1.0',
-                        encoding: 'UTF-8',
-                        standalone: void 0,
+                    encoding: 'UTF-8',
+                    standalone: void 0,
                 },
                 doctype: null,
-                    headless: false,
-                    allowSurrogateChars: false,
-                    cdata: false,
+                headless: false,
+                allowSurrogateChars: false,
+                cdata: false,
             },
         };
 
@@ -153,7 +158,7 @@ class AmadeusTomaAdapter {
                 firstName: travellerNames.join (' '),
                 age: crsData['Reduction.' + lineNumber],
             });
-        } while (++lineNumber <= this.config.crs.maxTravellers);
+        } while (++lineNumber <= this.config.crs.maxTravellerLines);
 
         return travellers;
     }
@@ -172,6 +177,8 @@ class AmadeusTomaAdapter {
                 },
             };
 
+        this.cleanConverted(crsData);
+
         const crsDataObject = crsData.converted.Envelope.Body.TOM;
 
         crsDataObject.Action = crsData.normalized.action;
@@ -188,6 +195,20 @@ class AmadeusTomaAdapter {
         crsData.build = this.xmlBuilder.build(crsData.converted);
 
         return crsData;
+    }
+
+    cleanConverted(crsData) {
+        let fields2Remove = [
+            'Next', 'Page', 'Page.2',
+            'Position.1', 'Position.2', 'Position.3', 'Position.4', 'Position.5', 'Position.6',
+            'PassengerNo.1', 'PassengerNo.2', 'PassengerNo.3', 'PassengerNo.4', 'PassengerNo.5', 'PassengerNo.6',
+        ];
+
+        fields2Remove.forEach((field) => {
+            crsData.converted.Envelope.Body.TOM[field] = void 0;
+
+            delete crsData.converted.Envelope.Body.TOM[field];
+        });
     }
 
     assignServices(crsData) {
@@ -222,7 +243,33 @@ class AmadeusTomaAdapter {
 
     sendData(crsData) {
         try {
-            this.getConnection().FIFramePutData(crsData.build);
+            this.logger.info('closing iFrame');
+
+            this.getConnection().FIFrameCancel();
+
+            while (true) {
+                // fill mask with data
+                this.getConnection().PutXmlData(crsData.build);
+
+                if (!this.needToPaginate(crsData)) {
+                    break;
+                }
+
+                this.logger.info('Found more data than allowed - will paginate.');
+
+                this.paginate();
+
+                ((crsData.normalized || {}).services || []).splice(0, this.config.crs.maxServiceLines);
+                ((crsData.normalized || {}).travellers || []).splice(0, this.config.crs.maxTravellerLines);
+                ((((crsData.parsed || {}).Envelope || {}).Header || {}).Application || {}).Reset = '0';
+
+                crsData = this.convert(crsData);
+
+                this.logger.info('Will write the rest to the next page:');
+                this.logger.info(crsData.converted);
+                this.logger.info(crsData.build);
+            }
+
             return Promise.resolve();
         } catch (error) {
             return Promise.reject(error);
@@ -277,6 +324,49 @@ class AmadeusTomaAdapter {
         } catch (error) {
             this.logger.error(error);
             throw error;
+        }
+    }
+
+    /**
+     * @private
+     * @param crsData
+     * @returns {boolean}
+     */
+    needToPaginate(crsData) {
+        return ((crsData.normalized || {}).services || []).length > this.config.crs.maxServiceLines
+            || ((crsData.normalized || {}).travellers || []).length > this.config.crs.maxServiceLines;
+    }
+
+    /**
+     * @private
+     */
+    paginate() {
+        this.getConnection().PutXmlData(this.xmlBuilder.build(
+            {
+                Envelope: {
+                    Body: {
+                        TOM: {
+                            Action: this.config.crs.actions.nextPage,
+                        }
+                    }
+                }
+            }
+        ));
+        this.getConnection().PutActionKey(1);
+        this.sleep(1000);
+    }
+
+    /**
+     * @private
+     * @param milliseconds
+     */
+    sleep(milliseconds) {
+        let start = new window.Date().getTime();
+
+        while (true) {
+            if ((new window.Date().getTime() - start) > milliseconds){
+                break;
+            }
         }
     }
 }

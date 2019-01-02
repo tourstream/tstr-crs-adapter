@@ -11,6 +11,12 @@ class AmadeusSPCTomaAdapter {
                     [GENDER_TYPES.child]: 'K',
                     [GENDER_TYPES.infant]: 'K',
                 },
+                maxServiceLines: 6,
+                maxTravellerLines: 6,
+                actions: {
+                    nextPage: '+',
+                    previousPage: '-',
+                },
             }
         };
 
@@ -166,7 +172,7 @@ class AmadeusSPCTomaAdapter {
                 this.getConnection().requestService(
                     'popups.close',
                     { id: popupId },
-                    this.createCallbackObject(resolve, null, 'cancel error')
+                    this.createPromiseCallbackObject(resolve, null, 'cancel error')
                 );
             } catch (error) {
                 this.logger.error(error);
@@ -183,7 +189,7 @@ class AmadeusSPCTomaAdapter {
     createConnection(options = {}) {
         return new Promise((resolve) => {
             const connectToSPC = () => {
-                let callbackObject = this.createCallbackObject(
+                let callbackObject = this.createPromiseCallbackObject(
                     resolve,
                     () => {
                         this.logger.info('connected to TOMA Selling Platform Connect');
@@ -280,7 +286,11 @@ class AmadeusSPCTomaAdapter {
      */
     getCrsObject() {
         return new Promise((resolve) => {
-            this.getConnection().requestService('bookingfile.toma.getData', [], this.createCallbackObject(resolve, null, 'can not get data'));
+            this.getConnection().requestService(
+                'bookingfile.toma.getData',
+                [],
+                this.createPromiseCallbackObject(resolve, null, 'can not get data')
+            );
         });
     }
 
@@ -290,10 +300,54 @@ class AmadeusSPCTomaAdapter {
      * @param crsObject
      * @returns {Promise}
      */
-    sendCrsObject(crsObject) {
+    sendCrsObject(crsObject = {}) {
         return new Promise((resolve) => {
-            this.getConnection().requestService('bookingfile.toma.setData', [crsObject], this.createCallbackObject(resolve, null, 'sending data failed'));
+            let requestData = [crsObject];
+            let requestCallback = this.createPromiseCallbackObject(resolve, null, 'sending data failed');
+
+            if (this.needToPaginate(crsObject)) {
+                requestData = [Object.assign({}, crsObject, {action: this.config.crs.actions.nextPage})];
+                requestCallback = this.createCallbackObject(() => {
+                    this.getConnection().requestService(
+                        'bookingfile.toma.sendRequest', [], this.createCallbackObject(() => {
+                            (crsObject.services || []).splice(0, 6);
+                            (crsObject.travellers || []).splice(0, 6);
+
+                            this.sendCrsObject(crsObject).then(resolve);
+                        })
+                    );
+                });
+            }
+
+            this.getConnection().requestService(
+                'bookingfile.toma.setData',
+                requestData,
+                requestCallback
+            );
         });
+    }
+
+    /**
+     * @private
+     * @param crsObject
+     * @returns {boolean}
+     */
+    needToPaginate(crsObject) {
+        return (crsObject.services || []).length > this.config.crs.maxServiceLines
+            || (crsObject.travellers || []).length > this.config.crs.maxTravellerLines;
+    }
+
+    /**
+     * @private
+     * @param onSuccess
+     * @param onError
+     * @returns {{fn: {onSuccess: *, onError: *}}}
+     */
+    createCallbackObject(onSuccess, onError) {
+        return { fn: {
+            onSuccess: onSuccess || this.logger.info,
+            onError: onError || this.logger.error,
+        }};
     }
 
     /**
@@ -303,9 +357,9 @@ class AmadeusSPCTomaAdapter {
      * @param errorMessage string
      * @returns {{fn: {onSuccess: (function(*=)), onError: (function(*=))}}}
      */
-    createCallbackObject(resolve, callback, errorMessage = 'Error') {
-        return { fn: {
-            onSuccess: (response = {}) => {
+    createPromiseCallbackObject(resolve, callback, errorMessage = 'Error') {
+        return this.createCallbackObject(
+            (response = {}) => {
                 if (this.hasResponseErrors(response)) {
                     let message = errorMessage + ' - caused by faulty response';
 
@@ -320,14 +374,14 @@ class AmadeusSPCTomaAdapter {
 
                 resolve(response.data);
             },
-            onError: (response) => {
+            (response) => {
                 let message = errorMessage + ' - something went wrong with the request';
 
                 this.logger.error(message);
                 this.logger.error(response);
                 throw new Error(message);
             }
-        }};
+        );
     }
 
     /**

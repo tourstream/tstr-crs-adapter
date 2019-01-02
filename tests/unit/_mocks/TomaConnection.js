@@ -3,8 +3,9 @@ export default (() => jasmine.createSpyObj(
     [
         'CheckProviderKey',
         'GetXmlData',
-        'FIFramePutData',
+        'PutXmlData',
         'FIFrameCancel',
-        'GetLastError'
+        'GetLastError',
+        'PutActionKey',
     ]
 ));
