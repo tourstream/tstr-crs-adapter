@@ -40,12 +40,6 @@ See section above.
 Additionally you should allow popups to be opened.
 
 
-#### How does the data look like for the Booking Manager?
-
-The Booking Manager is a special "CRS" because the output data needs no mapping. 
-It gets the data directly as "raw" format.
-
-
 #### I get the error "ACCESS DENIED". What can I do?
 
 Unfortunately this is an issue of the IE. It prevents opening our debug window and other connections.
