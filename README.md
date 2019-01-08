@@ -113,6 +113,7 @@ CosmoNaut  | UbpCrsAdapter.CRS_TYPES.cosmonaut | dataSourceUrl              | 'e
 |          |                                   | environment                | 'test' or 'live'
 |          |                                   | exportId                   | '0123-456789-abcdef'
 TOSI       | UbpCrsAdapter.CRS_TYPES.tosi      | token                      | '0123456789abcdef'
+Neo        | UbpCrsAdapter.CRS_TYPES.neo       | connectionUrl              | 'https://url-to-schmetterling.neo'
 
 (*) optional
 
@@ -125,6 +126,8 @@ which you can set in the `connectionOptions`.
 The example code for this page is provided [here](/bewotec-bridge).
 
 **[Cosmo / CosmoNaut]** _dataSourceUrl_ is an url from where the CRS can get the IBE data from
+
+**[Neo]** _connectionUrl_ is needed, when the adapter is not directly used in the first child window of the Neo application
 
 
 ### `ServiceData` object structure
@@ -170,6 +173,7 @@ JackPlus   | X     | X     | X          | X      | X
 Cosmo      | X     | X     | X          | X      | X
 CosmoNaut  | X     | X     | X          | X      | X
 Tosi       | X     | X     | X          | X      | X
+Neo        | X     | X     | X          | X      | X
 
 
 ##### `ServiceData` structure
@@ -350,7 +354,7 @@ you can drag'n'drop the test file directly into that view.
 Alternatively you can open the test file in parallel to the TOMA mask in an IE and use the test file from there.
 
 
-###### ... in (new) TOMA SPC
+###### ... in (new) TOMA SPC 
 
 _precondition:_ 
 
@@ -406,6 +410,21 @@ Be aware that the data transfer to the Bewotec application needs up to 10 second
 _precondition:_ the TOSI mask is open
 
 Open the test file in parallel to the TOSI mask in a browser.
+
+
+###### ... in Schmetterling NEO
+
+_precondition:_ 
+
+* the Schmetterling portal is open
+* the NEO mask is visible 
+
+Open the served test file in your browser first to accept any unknown certificates!
+
+Then you have to open the IBE iFrame - for example by requesting an already existing IBE (like the drive IBE) 
+and replace the iFrame URL with the URL of the test file. 
+You can use the following script as bookmark to replace the URL automatically:
+`javascript:(function(){let%20fc=document.getElementById('neoIframePopup');let%20f=fc;let%20s=f.src.split('/dispatcher/');s[0]='https://localhost:1337/';f.src=s.join('');})()`
 
 
 ## You have questions or problems with the implementation?

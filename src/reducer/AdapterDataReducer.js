@@ -59,7 +59,7 @@ class AdapterDataReducer {
             }
 
             return {
-                title: traveller.salutation,
+                title: traveller.title,
                 name: [traveller.firstName, traveller.lastName].filter(Boolean).join(' '),
                 age: traveller.age,
             }

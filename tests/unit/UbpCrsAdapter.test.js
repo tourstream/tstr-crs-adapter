@@ -6,6 +6,7 @@ import BewotecExpertAdapter from '../../src/crsAdapter/BewotecExpertAdapter';
 import SabreMerlinAdapter from '../../src/crsAdapter/SabreMerlinAdapter';
 import TrafficsTbmAdapter from '../../src/crsAdapter/TrafficsTbmAdapter';
 import FtiTosiAdapter from '../../src/crsAdapter/FtiTosiAdapter';
+import SchmetterlingNeoAdapter from '../../src/crsAdapter/SchmetterlingNeoAdapter'
 
 describe('UbpCrsAdapter', () => {
     let UbpCrsAdapter, AnyCrsAdapter, LogService, CrsDataMapper, AdapterDataReducer;
@@ -33,6 +34,7 @@ describe('UbpCrsAdapter', () => {
             'crsAdapter/SabreMerlinAdapter': createCrsAdapterImport(SabreMerlinAdapter.type),
             'crsAdapter/TrafficsTbmAdapter': createCrsAdapterImport(TrafficsTbmAdapter.type),
             'crsAdapter/FtiTosiAdapter': createCrsAdapterImport(FtiTosiAdapter.type),
+            'crsAdapter/SchmetterlingNeoAdapter': createCrsAdapterImport(SchmetterlingNeoAdapter.type),
             './mapper/CrsDataMapper': jasmine.createSpy('CrsDataMapperSpy').and.returnValue(CrsDataMapper),
             './reducer/AdapterDataReducer': jasmine.createSpy('AdapterDataReducerSpy').and.returnValue(AdapterDataReducer),
         });
@@ -92,6 +94,7 @@ describe('UbpCrsAdapter', () => {
             cosmo: jasmine.anything(),
             cosmoNaut: jasmine.anything(),
             tosi: jasmine.anything(),
+            neo: jasmine.anything(),
         });
     });
 
