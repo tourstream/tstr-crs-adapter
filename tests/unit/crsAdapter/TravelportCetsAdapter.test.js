@@ -475,8 +475,8 @@ describe('TravelportCetsAdapter', () => {
                     '</Fah>' +
                     '<Faq ServiceType="Q">' +
                     '<Code>MISC</Code>' +
-                    '<Persons>1</Persons>' +
                     '<TextV>e1,e2;pick.up.hotel.address,799103116;drop.off.hotel.name,drop.off.hotel.address,799103115</TextV>' +
+                    '<Persons>1</Persons>' +
                     '</Faq>';
 
                 let expectedXml = createResponseXml(service);
@@ -529,8 +529,8 @@ describe('TravelportCetsAdapter', () => {
                     '</Fah>' +
                     '<Faq ServiceType="Q">' +
                     '<Code>MISC</Code>' +
-                    '<Persons>1</Persons>' +
                     '<TextV>drop.off.hotel.name,drop.off.hotel.address,799103115</TextV>' +
+                    '<Persons>1</Persons>' +
                     '</Faq>';
 
                 let expectedXml = createResponseXml(service);
@@ -583,8 +583,8 @@ describe('TravelportCetsAdapter', () => {
                     '</Fah>' +
                     '<Faq ServiceType="Q">' +
                     '<Code>MISC</Code>' +
-                    '<Persons>1</Persons>' +
                     '<TextV>pick.up.hotel.address,799103116</TextV>' +
+                    '<Persons>1</Persons>' +
                     '</Faq>';
 
                 let expectedXml = createResponseXml(service);
@@ -635,7 +635,7 @@ describe('TravelportCetsAdapter', () => {
                     '<Birth>3</Birth>' +
                     '</Fap>' +
 
-                    '<Catalog>360C</Catalog>' +
+                    '<Catalog>DCH</Catalog>' +
                     '<TOCode>FTI</TOCode>' +
                     '<Adults>1</Adults>' +
 
@@ -677,7 +677,7 @@ describe('TravelportCetsAdapter', () => {
                     '<Duration/>' +
                     '</Fah>';
 
-                let expectedXml = createResponseXml(service, '360C');
+                let expectedXml = createResponseXml(service);
 
                 adapter.sendData(data);
 
