@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="windows-1252"?>
+<Request Version="2.5" From="cets" To="FTI" TermId="CC1937" Window="A" Date="11012019" Time="162420" Type="BOOK" SubType="CHECK" Confirm="NO" Agent="549870" Lang="DE" LayoutLang="EN" UserCode="ceftst" UserType="M" UserName="Pan" UserFirstName="Peter" UserMail="peter.pan@fti.com" Source="DPL" SessionId="14ad3630-2ebb-4a75-8ad9-c8f9878a6ac3" Mode="Test" DeepLinkURL="YES">
+    <Fab Key="16:07,51_ACHECK_____RESPONSE_001_SESSIONID_2448C750EF7D5F1A_CC1937001824" Source="DPL">
+        <TOCode>FTI</TOCode>
+        <Catalog>DCH</Catalog>
+        <Creator>CTS</Creator>
+        <Fah ServiceType="C" Key="A/HAM-HAM" SegRef="000">
+            <StartDate>25012019</StartDate>
+            <Duration>7</Duration>
+            <Destination>HAM</Destination>
+            <Product>DEU86</Product>
+            <Room>A</Room>
+            <Norm>1</Norm>
+            <MaxAdults>1</MaxAdults>
+            <Meal>MIETW</Meal>
+            <Persons>1</Persons>
+            <CarDetails>
+                <PickUp Where="Walkin">
+                    <Time>0900</Time>
+                    <CarStation Code="HAM">
+                    </CarStation>
+                    <Info>WALK IN</Info>
+                </PickUp>
+                <DropOff>
+                    <Time>0900</Time>
+                    <CarStation Code="HAM">
+                    </CarStation>
+                </DropOff>
+            </CarDetails>
+        </Fah>
+        <Fap ID="1">
+            <PersonType>M</PersonType>
+            <Name>NTBAA</Name>
+            <FirstName>NN</FirstName>
+        </Fap>
+    </Fab>
+</Request>

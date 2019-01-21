@@ -51,11 +51,6 @@ const CONFIG = {
         '360C': 'BAUS',
         '360E': 'BAUS',
     },
-    catalogs2serviceType: {
-        DCH: 'C',
-        TCH: 'H',
-        '360C': 'R'
-    },
     serviceType2catalog: {
         C: 'DCH',
         H: 'TCH',
@@ -409,8 +404,6 @@ class TravelportCetsAdapter {
                     xmlObject.Request.Fab.Catalog = CONFIG.serviceType2catalog.M;
                 }
             });
-        } else if (xmlObject.Request.Fab.Fah[0][CONFIG.parserOptions.attributeNamePrefix].ServiceType !== CONFIG.catalogs2serviceType[xmlObject.Request.Fab.Catalog]) {
-            xmlObject.Request.Fab.Catalog = CONFIG.serviceType2catalog[xmlObject.Request.Fab.Fah[0][CONFIG.builderOptions.attrkey].ServiceType];
         }
     }
 
@@ -473,6 +466,7 @@ class TravelportCetsAdapter {
                     this.logger.warn('type "' + service.type + '" is not supported by the CETS adapter');
             }
         });
+
         this.detectCatalogChange(xmlObject);
     }
 
@@ -709,6 +703,7 @@ class TravelportCetsAdapter {
                 ServiceType: CONFIG.defaults.serviceType.customerRequest,
             },
             Code: CONFIG.defaults.serviceType.misc,
+            TextV: '',
             Persons: 1,
         };
 
