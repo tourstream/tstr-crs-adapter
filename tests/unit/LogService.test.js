@@ -49,6 +49,7 @@ describe('LogService', () => {
     it('should not log if popups are blocked', () => {
         let alertSpy = spyOn(window, 'alert');
 
+        console = void 0;
         windowOpenSpy.and.returnValue(void 0);
 
         expect(() => logger.log('log.text')).toThrowError('Can not create debug window - maybe your browser blocks popups?');
@@ -58,10 +59,11 @@ describe('LogService', () => {
     it('should not log if debug window is controlled by another instance', () => {
         let alertSpy = spyOn(window, 'alert');
 
+        console = void 0;
         debugDocument.writeln.and.throwError('permission denied - window is not under your control');
 
-        expect(() => logger.log('log.text')).toThrowError('permission denied - window is not under your control');
-        expect(alertSpy).toHaveBeenCalledWith('Can not access debug window - please close all debug windows first.');
+        expect(() => logger.log('log.text')).toThrowError('Can not access debug window - please close all debug windows first.');
+        expect(alertSpy).toHaveBeenCalledWith(new Error('permission denied - window is not under your control'));
     });
 
     it('should add styles into debug output', () => {
