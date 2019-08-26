@@ -189,6 +189,10 @@ describe('FtiTosiAdapter', () => {
                                                     '<name>bis</name>' +
                                                     '<value><string>toDate</string></value>' +
                                                 '</member>' +
+                                                '<member>' +
+                                                    '<name>ref_anixe</name>' +
+                                                    '<value><string>PNR</string></value>' +
+                                                '</member>' +
                                             '</struct>' +
                                         '</value>' +
                                     '</member>' +
@@ -208,6 +212,7 @@ describe('FtiTosiAdapter', () => {
                     operator: 'operator',
                     services: [
                         {
+                            _origin: { pnr: 'PNR' },
                             marker: 'marker',
                             type: 'type',
                             code: 'code',
