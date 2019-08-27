@@ -44,7 +44,9 @@ describe('CarServiceReducer', () => {
 
         expect(JSON.parse(JSON.stringify(crsData))).toEqual({
             normalized: {
-                services: [ {} ],
+                services: [ {
+                    _origin: adapterService
+                } ],
             },
             meta: {
                 serviceTypes: {},
@@ -90,6 +92,7 @@ describe('CarServiceReducer', () => {
         expect(JSON.parse(JSON.stringify(crsData)).normalized).toEqual({
             services: [
                 {
+                    _origin: adapterService,
                     type: 'carType',
                     marker: 'X',
                     code: 'service.code',
@@ -155,9 +158,10 @@ describe('CarServiceReducer', () => {
         reducer.reduceIntoCrsData(adapterService, crsData);
 
         expect(JSON.parse(JSON.stringify(crsData)).normalized).toEqual({
-            multiFunctionLine: 'pnr',
+            multiFunctionLine: 'REFANIXE:pnr',
             services: [
                 {
+                    _origin: adapterService,
                     type: 'carType',
                     marker: 'X',
                     code: 'service.code',
