@@ -479,6 +479,7 @@ class TravelportCetsAdapter {
     assignCarServiceFromAdapterObjectToXmlObject(service, xml) {
         const normalizeService = (service) => {
             service.vehicleCode = (service.vehicleCode || '').toUpperCase();
+            service.sipp = (service.sipp || '').toUpperCase();
             service.renterCode = (service.renterCode || '').toUpperCase();
             service.pickUpLocation = (service.pickUpLocation || '').toUpperCase();
             service.dropOffLocation = (service.dropOffLocation || '').toUpperCase();
@@ -492,13 +493,15 @@ class TravelportCetsAdapter {
         let xmlService = {
             [CONFIG.builderOptions.attrkey]: {
                 ServiceType: CONFIG.defaults.serviceType.car,
-                Key: service.vehicleCode + '/' + service.pickUpLocation + '-' + service.dropOffLocation,
+                Key: service.sipp
+                    ? ''
+                    : service.vehicleCode + '/' + service.pickUpLocation + '-' + service.dropOffLocation,
             },
             StartDate: pickUpDate.isValid() ? pickUpDate.format(CONFIG.crs.dateFormat) : service.pickUpDate,
             Duration: this.calculateDuration(service.pickUpDate, service.dropOffDate),
-            Destination: service.pickUpLocation,
+            Destination: service.pickUpLocation.substr(0, 3),
             Product: service.renterCode,
-            Room: service.vehicleCode,
+            Room: service.sipp || service.vehicleCode,
             Norm: CONFIG.defaults.personCount,
             MaxAdults: CONFIG.defaults.personCount,
             Meal: CONFIG.defaults.serviceCode.car,

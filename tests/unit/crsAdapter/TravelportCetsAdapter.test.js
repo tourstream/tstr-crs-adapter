@@ -366,9 +366,55 @@ describe('TravelportCetsAdapter', () => {
                 let service = '<Fah ServiceType="C" Key="VEHICLE.CODE/PICK.UP.LOCATION-DROP.OFF.LOCATION">' +
                     '<StartDate>01052017</StartDate>' +
                     '<Duration>4</Duration>' +
-                    '<Destination>PICK.UP.LOCATION</Destination>' +
+                    '<Destination>PIC</Destination>' +
                     '<Product>RENTER.CODE</Product>' +
                     '<Room>VEHICLE.CODE</Room>' +
+                    '<Norm>1</Norm>' +
+                    '<MaxAdults>1</MaxAdults>' +
+                    '<Meal>MIETW</Meal>' +
+                    '<Persons>1</Persons>' +
+                    '<CarDetails>' +
+                    '<PickUp Where="Walkin">' +
+                    '<Time>0820</Time>' +
+                    '<CarStation Code="PICK.UP.LOCATION"/>' +
+                    '<Info>WALK IN</Info>' +
+                    '</PickUp>' +
+                    '<DropOff>' +
+                    '<Time>0820</Time>' +
+                    '<CarStation Code="DROP.OFF.LOCATION"/>' +
+                    '</DropOff>' +
+                    '</CarDetails>' +
+                    '</Fah>';
+
+                let expectedXml = createResponseXml(service);
+
+                adapter.sendData(data);
+
+                expect(CetsConnection.returnBooking).toHaveBeenCalledWith(expectedXml);
+            });
+
+            it('sendData() should send car service with SIPP correct', () => {
+                let data = {
+                    services: [
+                        {
+                            sipp: 'sipp',
+                            pickUpLocation: 'pick.up.location',
+                            dropOffLocation: 'drop.off.location',
+                            pickUpDate: '01052017',
+                            pickUpTime: '0820',
+                            dropOffDate: '05052017',
+                            renterCode: 'renter.code',
+                            type: 'car',
+                        },
+                    ],
+                };
+
+                let service = '<Fah ServiceType="C" Key="">' +
+                    '<StartDate>01052017</StartDate>' +
+                    '<Duration>4</Duration>' +
+                    '<Destination>PIC</Destination>' +
+                    '<Product>RENTER.CODE</Product>' +
+                    '<Room>SIPP</Room>' +
                     '<Norm>1</Norm>' +
                     '<MaxAdults>1</MaxAdults>' +
                     '<Meal>MIETW</Meal>' +
@@ -454,7 +500,7 @@ describe('TravelportCetsAdapter', () => {
                 let service = '<Fah ServiceType="C" Key="VEHICLE.CODE/PICK.UP.LOCATION-DROP.OFF.LOCATION">' +
                     '<StartDate>08112017</StartDate>' +
                     '<Duration>4</Duration>' +
-                    '<Destination>PICK.UP.LOCATION</Destination>' +
+                    '<Destination>PIC</Destination>' +
                     '<Product>DEU81</Product>' +
                     '<Room>VEHICLE.CODE</Room>' +
                     '<Norm>1</Norm>' +
@@ -508,7 +554,7 @@ describe('TravelportCetsAdapter', () => {
                 let service = '<Fah ServiceType="C" Key="VEHICLE.CODE/PICK.UP.LOCATION-DROP.OFF.LOCATION">' +
                     '<StartDate>08112017</StartDate>' +
                     '<Duration>4</Duration>' +
-                    '<Destination>PICK.UP.LOCATION</Destination>' +
+                    '<Destination>PIC</Destination>' +
                     '<Product>DEU81</Product>' +
                     '<Room>VEHICLE.CODE</Room>' +
                     '<Norm>1</Norm>' +
@@ -562,7 +608,7 @@ describe('TravelportCetsAdapter', () => {
                 let service = '<Fah ServiceType="C" Key="VEHICLE.CODE/PICK.UP.LOCATION-DROP.OFF.LOCATION">' +
                     '<StartDate>08112017</StartDate>' +
                     '<Duration>4</Duration>' +
-                    '<Destination>PICK.UP.LOCATION</Destination>' +
+                    '<Destination>PIC</Destination>' +
                     '<Product>DEU81</Product>' +
                     '<Room>VEHICLE.CODE</Room>' +
                     '<Norm>1</Norm>' +
@@ -988,7 +1034,7 @@ describe('TravelportCetsAdapter', () => {
                     '<Fah ServiceType="C" Key="VEHICLE.CODE/PICK.UP.LOCATION-DROP.OFF.LOCATION">' +
                         '<StartDate>01052017</StartDate>' +
                         '<Duration>4</Duration>' +
-                        '<Destination>PICK.UP.LOCATION</Destination>' +
+                        '<Destination>PIC</Destination>' +
                         '<Product>RENTER.CODE</Product>' +
                         '<Room>VEHICLE.CODE</Room>' +
                         '<Norm>1</Norm>' +
@@ -1044,7 +1090,7 @@ describe('TravelportCetsAdapter', () => {
                     '<Fah ServiceType="C" Key="VEHICLE.CODE/PICK.UP.LOCATION-DROP.OFF.LOCATION">' +
                     '<StartDate>01052017</StartDate>' +
                     '<Duration>4</Duration>' +
-                    '<Destination>PICK.UP.LOCATION</Destination>' +
+                    '<Destination>PIC</Destination>' +
                     '<Product>RENTER.CODE</Product>' +
                     '<Room>VEHICLE.CODE</Room>' +
                     '<Norm>1</Norm>' +
