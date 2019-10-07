@@ -31,10 +31,12 @@ class CarServiceReducer {
         crsService.toDate = dropOffDate.isValid() ? dropOffDate.format(crsData.meta.formats.date) : adapterService.dropOffDate;
         crsService.accommodation = pickUpTime.isValid() ? pickUpTime.format(crsData.meta.formats.time) : adapterService.pickUpTime;
 
-        const dropOffService = this.helper.service.createEmptyService(crsData)
-        //CHECK WHERE TO DEFINE THIS VAR
-        dropOffService.code = 'WALKIN'
-        dropOffService.accommodation = dropOffTime.isValid() ? dropOffTime.format(crsData.meta.formats.time) : adapterService.dropOffTime;
+        if (adapterService.dropOffTime) {
+          const dropOffService = this.helper.service.createEmptyService(crsData)
+          //CHECK WHERE TO DEFINE THIS VAR
+          dropOffService.code = 'WALKIN'
+          dropOffService.accommodation = dropOffTime.isValid() ? dropOffTime.format(crsData.meta.formats.time) : adapterService.dropOffTime;
+        }
 
         let hotelName = adapterService.pickUpHotelName || adapterService.dropOffHotelName;
 
