@@ -107,7 +107,7 @@ describe('CarServiceReducer', () => {
         });
     });
 
-    fit('reduceIntoCrsData() should reduce adapterService', () => {
+    it('reduceIntoCrsData() should reduce adapterService', () => {
         const adapterService = {
             type: SERVICE_TYPES.car,
             pickUpDate: '16032018',
