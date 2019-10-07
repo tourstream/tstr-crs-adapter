@@ -107,12 +107,13 @@ describe('CarServiceReducer', () => {
         });
     });
 
-    it('reduceIntoCrsData() should reduce adapterService', () => {
+    fit('reduceIntoCrsData() should reduce adapterService', () => {
         const adapterService = {
             type: SERVICE_TYPES.car,
             pickUpDate: '16032018',
             dropOffDate: '21032018',
             pickUpTime: '0915',
+            dropOffTime: '1015',
             marked: true,
             renterCode: 'renterCode',
             vehicleCode: 'vehicleCode',
@@ -167,6 +168,10 @@ describe('CarServiceReducer', () => {
                 },
                 {
                     type: 'carType'
+                },
+                {
+                  code: 'WALKIN',
+                  accommodation: '10:15',
                 },
                 {
                     code: 'pu hname',

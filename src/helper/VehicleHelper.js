@@ -79,6 +79,18 @@ class VehicleHelper {
         } : void 0;
     }
 
+    setOfferDropoffTime(offer) {
+      const reformedOffer = []
+      offer.forEach( function (line, index) {
+        if(line.type === 'car' && offer[index + 1].type === 'E' && offer[index + 1].accommodation) {
+          line.dropOffTime = offer[index + 1].accommodation
+          delete offer[index + 1]
+        }
+        reformedOffer.push(line)
+      })
+      return reformedOffer
+    }
+
     createServiceCode(adapterService = {}) {
         if (adapterService.sipp) {
             return [

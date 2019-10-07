@@ -62,6 +62,51 @@ describe('VehicleHelper', () => {
         expect(helper.createServiceCode()).toBeUndefined();
     });
 
+    it('setOfferDropoffTime should set the dropofftime of a line type E for cars', () => {
+      expect(
+        helper.setOfferDropoffTime(
+          [
+            {
+              type: 'car',
+              pickUpTime: '1120',
+              travellers: []
+            },{
+              type: 'car',
+              pickUpTime: '0920',
+              travellers: []
+            },
+            {
+              type: 'E',
+              accommodation: '1010',
+              travellers: []
+            },{
+              type: 'E',
+              accommodation: '1210',
+              travellers: []
+            }
+          ]
+        )
+      )
+      .toEqual(
+        [
+          {
+            type: 'car',
+            pickUpTime: '1120',
+            travellers: []
+          },{
+            type: 'car',
+            pickUpTime: '0920',
+            dropOffTime: '1010',
+            travellers: []
+          },{
+            type: 'E',
+            accommodation: '1210',
+            travellers: []
+          }
+        ]
+      );
+    });
+
     it('createServiceCode() should return correct service code', () => {
         expect(helper.createServiceCode({renterCode: 'rc'})).toBe('rc');
         expect(helper.createServiceCode({vehicleCode: 'vtc'})).toBe('vtc');

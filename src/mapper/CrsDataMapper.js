@@ -45,7 +45,7 @@ class CrsDataMapper {
 
             adapterData.services.push(adapterService);
         });
-
+        adapterData.services = this.helpers.vehicle.setOfferDropoffTime(adapterData.services) 
         return adapterData;
     }
 }
