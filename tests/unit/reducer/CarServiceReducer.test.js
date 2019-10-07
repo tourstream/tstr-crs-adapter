@@ -170,6 +170,7 @@ describe('CarServiceReducer', () => {
                     type: 'carType'
                 },
                 {
+                  type: 'E',
                   code: 'WALKIN',
                   accommodation: '10:15',
                 },
