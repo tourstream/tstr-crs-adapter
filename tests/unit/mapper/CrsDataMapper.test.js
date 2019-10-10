@@ -26,7 +26,7 @@ describe('CrsDataMapper', () => {
                 services: [],
             },
         };
-        vehicleHelper.setOfferDropoffTime.and.returnValue([]);
+        vehicleHelper.mergeCarFlightService.and.returnValue([]);
         expect(JSON.parse(JSON.stringify(mapper.mapToAdapterData(crsData)))).toEqual({
             services: [],
         });
@@ -41,7 +41,7 @@ describe('CrsDataMapper', () => {
                 services: [{}],
             },
         };
-        vehicleHelper.setOfferDropoffTime.and.returnValue([]);
+        vehicleHelper.mergeCarFlightService.and.returnValue([]);
         expect(JSON.parse(JSON.stringify(mapper.mapToAdapterData(crsData)))).toEqual({
             services: [],
         });
@@ -74,7 +74,7 @@ describe('CrsDataMapper', () => {
 
       underlyingMapper.mapToAdapterService.and.returnValues(mappedCarService, mappedEService);
       travellerHelper.mapToAdapterTravellers.and.returnValue(mappedTravellers);
-      vehicleHelper.setOfferDropoffTime.and.returnValue([{
+      vehicleHelper.mergeCarFlightService.and.returnValue([{
         type: 'car',
         pickUpTime: '0920',
         dropOffTime: '1010',
@@ -123,7 +123,7 @@ describe('CrsDataMapper', () => {
 
         underlyingMapper.mapToAdapterService.and.returnValue(mappedService);
         travellerHelper.mapToAdapterTravellers.and.returnValue(mappedTravellers);
-        vehicleHelper.setOfferDropoffTime.and.returnValue([{
+        vehicleHelper.mergeCarFlightService.and.returnValue([{
           travellers: []
         }]);
 

@@ -35,6 +35,7 @@ const SERVICE_TYPES = {
     hotel: 'hotel',
     roundTrip: 'roundTrip',
     camper: 'camper',
+    e: 'E',
 };
 
 const CRS_TYPES = {
@@ -93,6 +94,10 @@ const GENDER_TYPES = {
     male: 'male',
     child: 'child',
     infant: 'infant',
+};
+
+const CODE_TYPES = {
+    walkIn: 'WALKIN',
 };
 
 const CRS_TYPE_2_ADAPTER_MAP = {
@@ -423,6 +428,7 @@ export {
     CRS_TYPES,
     GENDER_TYPES,
     CAMPER_EXTRA_TYPES,
+    CODE_TYPES,
     DEFAULT_OPTIONS,
     UbpCrsAdapter as default,
 };

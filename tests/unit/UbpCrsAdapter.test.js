@@ -78,6 +78,7 @@ describe('UbpCrsAdapter', () => {
             hotel: jasmine.anything(),
             roundTrip: jasmine.anything(),
             camper: jasmine.anything(),
+            e: jasmine.anything(),
         });
     });
 
@@ -102,6 +103,12 @@ describe('UbpCrsAdapter', () => {
             useTimeFormat: 'HHmm',
             onSetData: void 0,
         });
+    });
+
+    it('should return supported code types', () => {
+      expect(UbpCrsAdapter.CODE_TYPES).toEqual({
+          walkIn: jasmine.anything(),
+      });
     });
 
     it('connect() should throw exception if crsType not given', (done) => {

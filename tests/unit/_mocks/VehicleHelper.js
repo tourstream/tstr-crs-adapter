@@ -4,6 +4,6 @@ export default (() => jasmine.createSpyObj(
         'isServiceMarked',
         'splitServiceCode',
         'createServiceCode',
-        'setOfferDropoffTime',
+        'mergeCarFlightService',
     ]
 ));

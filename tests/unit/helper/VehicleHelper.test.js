@@ -62,9 +62,9 @@ describe('VehicleHelper', () => {
         expect(helper.createServiceCode()).toBeUndefined();
     });
 
-    it('setOfferDropoffTime should set the dropofftime of a line type E for cars', () => {
+    it('mergeCarFlightService should set the dropofftime of a line type E for cars', () => {
       expect(
-        helper.setOfferDropoffTime(
+        helper.mergeCarFlightService(
           [
             {
               type: 'car',

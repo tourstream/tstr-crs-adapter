@@ -1,4 +1,5 @@
 import moment from 'moment/moment';
+import {SERVICE_TYPES, CODE_TYPES} from '../UbpCrsAdapter';
 
 class CarServiceReducer {
     constructor(logger, config, helper) {
@@ -33,9 +34,8 @@ class CarServiceReducer {
 
         if (adapterService.dropOffTime) {
           const dropOffService = this.helper.service.createEmptyService(crsData)
-          //CHECK WHERE TO DEFINE THIS VAR
-          dropOffService.type = 'E'
-          dropOffService.code = 'WALKIN'
+          dropOffService.type = SERVICE_TYPES.e
+          dropOffService.code = CODE_TYPES.walkIn
           dropOffService.accommodation = dropOffTime.isValid() ? dropOffTime.format(crsData.meta.formats.time) : adapterService.dropOffTime;
         }
 

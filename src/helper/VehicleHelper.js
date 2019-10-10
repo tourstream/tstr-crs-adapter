@@ -1,3 +1,5 @@
+import {SERVICE_TYPES} from '../UbpCrsAdapter';
+
 const CONFIG = {
     serviceCodeRegEx: {
         // USA96A4/MIA0H-TPA
@@ -79,16 +81,16 @@ class VehicleHelper {
         } : void 0;
     }
 
-    setOfferDropoffTime(offer) {
-      const reformedOffer = []
-      offer.forEach( function (line, index) {
-        if(line.type === 'car' && offer[index + 1].type === 'E' && offer[index + 1].accommodation) {
-          line.dropOffTime = offer[index + 1].accommodation
-          delete offer[index + 1]
+    mergeCarFlightService(services) {
+      const reformedServices = []
+      services.forEach( function (line, index) {
+        if (line.type === SERVICE_TYPES.car && services[index + 1].type === SERVICE_TYPES.e && services[index + 1].accommodation) {
+          line.dropOffTime = services[index + 1].accommodation
+          delete services[index + 1]
         }
-        reformedOffer.push(line)
+        reformedServices.push(line)
       })
-      return reformedOffer
+      return reformedServices
     }
 
     createServiceCode(adapterService = {}) {
