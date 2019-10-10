@@ -1,4 +1,5 @@
 import moment from 'moment/moment';
+import {SERVICE_TYPES, CODE_TYPES} from '../UbpCrsAdapter';
 
 class CarServiceReducer {
     constructor(logger, config, helper) {
@@ -20,6 +21,7 @@ class CarServiceReducer {
         const pickUpDate = moment(adapterService.pickUpDate, this.config.useDateFormat);
         const dropOffDate = moment(adapterService.dropOffDate, this.config.useDateFormat);
         const pickUpTime = moment(adapterService.pickUpTime, this.config.useTimeFormat);
+        const dropOffTime = moment(adapterService.dropOffTime, this.config.useTimeFormat);
 
         crsData.normalized.multiFunctionLine = adapterService.pnr ? 'REFANIXE:' + adapterService.pnr : void 0;
 
@@ -30,6 +32,13 @@ class CarServiceReducer {
         crsService.fromDate = pickUpDate.isValid() ? pickUpDate.format(crsData.meta.formats.date) : adapterService.pickUpDate;
         crsService.toDate = dropOffDate.isValid() ? dropOffDate.format(crsData.meta.formats.date) : adapterService.dropOffDate;
         crsService.accommodation = pickUpTime.isValid() ? pickUpTime.format(crsData.meta.formats.time) : adapterService.pickUpTime;
+
+        if (adapterService.dropOffTime) {
+          const dropOffService = this.helper.service.createEmptyService(crsData)
+          dropOffService.type = SERVICE_TYPES.e
+          dropOffService.code = CODE_TYPES.walkIn
+          dropOffService.accommodation = dropOffTime.isValid() ? dropOffTime.format(crsData.meta.formats.time) : adapterService.dropOffTime;
+        }
 
         let hotelName = adapterService.pickUpHotelName || adapterService.dropOffHotelName;
 

@@ -116,6 +116,7 @@ describe('CarServiceReducer', () => {
             pickUpDate: '16032018',
             dropOffDate: '21032018',
             pickUpTime: '0915',
+            dropOffTime: '1015',
             marked: true,
             renterCode: 'renterCode',
             vehicleCode: 'vehicleCode',
@@ -171,6 +172,11 @@ describe('CarServiceReducer', () => {
                 },
                 {
                     type: 'carType'
+                },
+                {
+                  type: 'E',
+                  code: 'WALKIN',
+                  accommodation: '10:15',
                 },
                 {
                     code: 'pu hname',
