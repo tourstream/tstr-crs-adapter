@@ -9,6 +9,7 @@ import SabreMerlinAdapter from 'crsAdapter/SabreMerlinAdapter';
 import BewotecExpertAdapter from 'crsAdapter/BewotecExpertAdapter';
 import TrafficsTbmAdapter from 'crsAdapter/TrafficsTbmAdapter';
 import FtiTosiAdapter from 'crsAdapter/FtiTosiAdapter';
+import SchmetterlingNeoAdapter from 'crsAdapter/SchmetterlingNeoAdapter';
 
 import VehicleHelper from './helper/VehicleHelper';
 import HotelHelper from './helper/HotelHelper';
@@ -48,6 +49,7 @@ const CRS_TYPES = {
     cosmo: 'cosmo',
     cosmoNaut: 'cosmonaut',
     tosi: 'tosi',
+    neo: 'neo',
 };
 
 const CRS_OPTIONS = {
@@ -81,6 +83,9 @@ const CRS_OPTIONS = {
     [CRS_TYPES.tosi]: {
         token: '',
     },
+    [CRS_TYPES.neo]: {
+        connectionUrl: '',
+    },
 };
 
 const CAMPER_EXTRA_TYPES = {
@@ -110,6 +115,7 @@ const CRS_TYPE_2_ADAPTER_MAP = {
     [CRS_TYPES.cosmo]: TrafficsTbmAdapter,
     [CRS_TYPES.cosmoNaut]: TrafficsTbmAdapter,
     [CRS_TYPES.tosi]: FtiTosiAdapter,
+    [CRS_TYPES.neo]: SchmetterlingNeoAdapter,
 };
 
 const DEFAULT_OPTIONS = {

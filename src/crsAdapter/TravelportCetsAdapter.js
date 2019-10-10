@@ -51,11 +51,6 @@ const CONFIG = {
         '360C': 'BAUS',
         '360E': 'BAUS',
     },
-    catalogs2serviceType: {
-        DCH: 'C',
-        TCH: 'H',
-        '360C': 'R'
-    },
     serviceType2catalog: {
         C: 'DCH',
         H: 'TCH',
@@ -409,8 +404,6 @@ class TravelportCetsAdapter {
                     xmlObject.Request.Fab.Catalog = CONFIG.serviceType2catalog.M;
                 }
             });
-        } else if (xmlObject.Request.Fab.Fah[0][CONFIG.parserOptions.attributeNamePrefix].ServiceType !== CONFIG.catalogs2serviceType[xmlObject.Request.Fab.Catalog]) {
-            xmlObject.Request.Fab.Catalog = CONFIG.serviceType2catalog[xmlObject.Request.Fab.Fah[0][CONFIG.builderOptions.attrkey].ServiceType];
         }
     }
 
@@ -473,6 +466,7 @@ class TravelportCetsAdapter {
                     this.logger.warn('type "' + service.type + '" is not supported by the CETS adapter');
             }
         });
+
         this.detectCatalogChange(xmlObject);
     }
 
@@ -485,6 +479,7 @@ class TravelportCetsAdapter {
     assignCarServiceFromAdapterObjectToXmlObject(service, xml) {
         const normalizeService = (service) => {
             service.vehicleCode = (service.vehicleCode || '').toUpperCase();
+            service.sipp = (service.sipp || '').toUpperCase();
             service.renterCode = (service.renterCode || '').toUpperCase();
             service.pickUpLocation = (service.pickUpLocation || '').toUpperCase();
             service.dropOffLocation = (service.dropOffLocation || '').toUpperCase();
@@ -498,13 +493,15 @@ class TravelportCetsAdapter {
         let xmlService = {
             [CONFIG.builderOptions.attrkey]: {
                 ServiceType: CONFIG.defaults.serviceType.car,
-                Key: service.vehicleCode + '/' + service.pickUpLocation + '-' + service.dropOffLocation,
+                Key: service.sipp
+                    ? ''
+                    : service.vehicleCode + '/' + service.pickUpLocation + '-' + service.dropOffLocation,
             },
             StartDate: pickUpDate.isValid() ? pickUpDate.format(CONFIG.crs.dateFormat) : service.pickUpDate,
             Duration: this.calculateDuration(service.pickUpDate, service.dropOffDate),
-            Destination: service.pickUpLocation,
+            Destination: service.pickUpLocation.substr(0, 3),
             Product: service.renterCode,
-            Room: service.vehicleCode,
+            Room: service.sipp || service.vehicleCode,
             Norm: CONFIG.defaults.personCount,
             MaxAdults: CONFIG.defaults.personCount,
             Meal: CONFIG.defaults.serviceCode.car,
@@ -709,6 +706,7 @@ class TravelportCetsAdapter {
                 ServiceType: CONFIG.defaults.serviceType.customerRequest,
             },
             Code: CONFIG.defaults.serviceType.misc,
+            TextV: '',
             Persons: 1,
         };
 

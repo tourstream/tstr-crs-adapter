@@ -166,6 +166,11 @@ class FtiTosiAdapter {
                 service.toDate
             ));
 
+            convertedService.value.struct.member.push(this.createMember(
+                'ref_anixe',
+                (service._origin || {}).pnr
+            ));
+
             crsData.converted.methodCall.params.param.value.struct.member.push(convertedService);
         });
     }

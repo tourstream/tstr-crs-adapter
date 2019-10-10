@@ -33,6 +33,7 @@
                         <button type="button" data-toggle="button" class="btn btn-outline-primary" value="traffics">Cosmo</button>
                         <button type="button" data-toggle="button" class="btn btn-outline-primary" value="traffics">CosmoNaut</button>
                         <button type="button" data-toggle="button" class="btn btn-outline-primary" value="tosi">TOSI</button>
+                        <button type="button" data-toggle="button" class="btn btn-outline-primary" value="neo">Neo</button>
 
                         <form id="connect-options" class="form my-2"></form>
 
@@ -163,6 +164,14 @@
 
             <div>
                 <div data-form-field data-label="token" data-name="token"></div>
+            </div>
+        </div>
+
+        <div id="neo-form-fields">
+            <input type="hidden" name="type" value="neo"/>
+
+            <div>
+                <div data-form-field data-label="connectionUrl (leave blank for auto-detection)" data-name="connectionUrl" data-value="https://neo.go-suite.com"></div>
             </div>
         </div>
 
