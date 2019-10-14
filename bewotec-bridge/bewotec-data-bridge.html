@@ -196,16 +196,16 @@
         }
 
         function getUrlParams() {
-            var vars = {};
+            var params = {};
 
-            decodeURIComponent(window.location.search).replace(
-                /[?&]+([^=&]+)=([^&]*)/gi,
-                function(m,key,value) {
-                    vars[key] = value;
+            decodeURIComponent(window.location).replace(
+                /[?&]+([^=&]+)=([^&#]*)/gi,
+                function(m, key, value) {
+                    params[key] = value;
                 }
             );
 
-            return vars;
+            return params;
         }
     })()
 </script>

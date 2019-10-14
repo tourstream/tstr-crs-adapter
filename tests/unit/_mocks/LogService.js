@@ -1,4 +1,4 @@
-let instance = jasmine.createSpyObj(
+export default (() => jasmine.createSpyObj(
     'LogService',
     [
         'enable',
@@ -9,6 +9,4 @@ let instance = jasmine.createSpyObj(
         'warn',
         'error',
     ]
-);
-
-export default () => instance;
+));

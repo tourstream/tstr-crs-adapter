@@ -24,9 +24,9 @@ describe('UbpCrsAdapter', () => {
         AnyCrsAdapter = require('tests/unit/_mocks/AnyCrsAdapter')();
         CrsDataMapper = require('tests/unit/_mocks/CrsDataMapper')();
         AdapterDataReducer = require('tests/unit/_mocks/AdapterDataReducer')();
-        LogService = require('tests/unit/_mocks/LogService');
+        LogService = require('tests/unit/_mocks/LogService')();
         UbpCrsAdapter = injector({
-            'LogService': LogService,
+            'LogService': () => LogService,
             'crsAdapter/AmadeusTomaAdapter': createCrsAdapterImport(AmadeusTomaAdapter.type),
             'crsAdapter/AmadeusSPCTomaAdapter': createCrsAdapterImport(AmadeusSPCTomaAdapter.type),
             'crsAdapter/TravelportCetsAdapter': createCrsAdapterImport(TravelportCetsAdapter.type),
@@ -46,32 +46,53 @@ describe('UbpCrsAdapter', () => {
         onSetDataSpy = jasmine.createSpy('onSetDataSpy');
 
         adapter = new UbpCrsAdapter.default({onSetData: onSetDataSpy});
+
+        LogService.enable.calls.reset();
+        window.history.pushState({}, '', '');
     });
 
     afterEach(() => {
-        window.history.replaceState({}, '', 0);
+        window.history.pushState({}, '', '');
     });
 
     it('should enable logger by options', () => {
+        window.history.pushState({}, '', '');
+
         new UbpCrsAdapter.default({debug: true});
 
-        expect(LogService().enable).toHaveBeenCalled();
+        expect(LogService.enable).toHaveBeenCalled();
     });
 
     it('should enable logger by URL parameter', () => {
-        window.history.pushState({}, '', '?debug');
+        window.history.pushState({}, '', '?debug=1');
 
         new UbpCrsAdapter.default();
 
-        expect(LogService().enable).toHaveBeenCalled();
+        expect(LogService.enable).toHaveBeenCalled();
     });
 
     it('should enable logger by URL hash', () => {
-        window.location.hash = 'debug';
+        window.location.hash = '/?debug=on';
 
         new UbpCrsAdapter.default();
 
-        expect(LogService().enable).toHaveBeenCalled();
+        expect(LogService.enable).toHaveBeenCalled();
+    });
+
+    it('should disable logger by URL parameter', () => {
+        window.history.pushState({}, '', '?debug=off');
+
+        new UbpCrsAdapter.default({ debug: true });
+
+        expect(LogService.enable).not.toHaveBeenCalled();
+    });
+
+    it('should disable logger by URL hash', () => {
+        window.location.hash = '/?debug=false';
+
+        new UbpCrsAdapter.default({ debug: true });
+
+        expect(LogService.enable).not.toHaveBeenCalled();
     });
 
     it('should return supported service types', () => {

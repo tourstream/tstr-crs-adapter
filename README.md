@@ -297,9 +297,11 @@ Neo        | X     | X     | X          | X      | X
 
 ## Debugging
 
-Sadly the debugging in some CRS is not possible but the adapter nevertheless provides some debugging output - 
-either you set the adapter option `.debug` to `true` or you add the parameter "debug" to your URL.
+Sadly debugging in some CRS is not possible but the adapter nevertheless provides some debugging output - 
+either you set the adapter option `.debug` to `true` or you add the parameter "debug=1" to your URL.
 It will open an extra window for debug outputs.
+The other way around you can also prevent that the debug window is opened - via URL parameter "debug=0".
+The URL parameter has precedence before the adapter option. 
 
 
 ### How to test ...
