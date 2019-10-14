@@ -195,6 +195,7 @@ Neo        | X     | X     | X          | X      | X
   pickUpHotelPhoneNumber: '+49 172 678 0832 09', 
   dropOffLocation: 'MUC',
   dropOffDate: '04012018',
+  dropOffTime: '1000',
   dropOffHotelName: 'Very Best Hotel',
   dropOffHotelAddress: 'hotel drive 34a, famous place', 
   dropOffHotelPhoneNumber: '04031989213',
@@ -204,7 +205,7 @@ Neo        | X     | X     | X          | X      | X
 
 `.pickUpDate, .dropOffDate` format is changeable by setting `adapterOptions.useDateFormat`.
 
-`.pickUpTime` format is changeable by setting `adapterOptions.useTimeFormat`.
+`.pickUpTime, .dropOffTime` format is changeable by setting `adapterOptions.useTimeFormat`.
 
 `.sipp` is only needed, when a different service code should be generated for the CRS
 
