@@ -118,7 +118,7 @@ class FtiTosiAdapter {
     assignServices(crsData) {
         crsData.normalized.services.forEach((service, index) => {
             const convertedService = {
-                name: 'Data_' + index + 1,
+                name: 'Data_' + ( '0' + (parseInt(index || 0) + 1) ).slice(-2),
                 value: {
                     struct: {
                         member: [],
