@@ -340,7 +340,7 @@ describe('BewotecExpertAdapter', () => {
                             title: 'salutation',
                             firstName: 'my long',
                             lastName: 'name',
-                            age: 'age'
+                            dateOfBirth: 'age'
                         },
                     ],
                 });
@@ -418,7 +418,7 @@ describe('BewotecExpertAdapter', () => {
                 d0: 'travellerAssociation',
                 ta0: 'title',
                 tn0: 'name',
-                te0: 'age',
+                te0: 'dateOfBirth',
             };
 
             let data = {
@@ -447,7 +447,7 @@ describe('BewotecExpertAdapter', () => {
                         {
                             title: 'title',
                             name: 'name',
-                            age: 'age',
+                            dateOfBirth: 'dateOfBirth',
                         },
                     ],
                 }

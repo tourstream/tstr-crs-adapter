@@ -131,7 +131,7 @@ class TrafficsTbmAdapter {
                 title: traveller['$'].typ,
                 lastName: travellerNames.pop(),
                 firstName: travellerNames.join (' '),
-                age: traveller['$'].age,
+                dateOfBirth: traveller['$'].age,
             }
         });
     }
@@ -176,7 +176,7 @@ class TrafficsTbmAdapter {
         crsData.normalized.travellers.forEach((traveller, index) => {
             crsData.converted['TbmXml.admin.travellers.traveller.' + index + '.$.typ'] = traveller.title;
             crsData.converted['TbmXml.admin.travellers.traveller.' + index + '.$.sur'] = traveller.name;
-            crsData.converted['TbmXml.admin.travellers.traveller.' + index + '.$.age'] = traveller.age;
+            crsData.converted['TbmXml.admin.travellers.traveller.' + index + '.$.age'] = traveller.dateOfBirth;
         });
     }
 

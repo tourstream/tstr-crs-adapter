@@ -254,7 +254,7 @@ describe('AmadeusSPCTomaAdapter', () => {
                             title: 'title',
                             firstName: 'my long',
                             lastName: 'name',
-                            age: 'discount'
+                            dateOfBirth: 'discount'
                         }
                     ],
                 });
@@ -316,7 +316,7 @@ describe('AmadeusSPCTomaAdapter', () => {
                 travellers: [{
                     title:'title',
                     name: 'name',
-                    discount: 'age'
+                    discount: 'dateOfBirth'
                 }],
                 action: 'action',
                 agencyNumber: 'agencyNumber',
@@ -357,7 +357,7 @@ describe('AmadeusSPCTomaAdapter', () => {
                         {
                             title: 'title',
                             name: 'name',
-                            age: 'age',
+                            dateOfBirth: 'dateOfBirth',
                         },
                     ],
                 }

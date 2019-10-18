@@ -259,7 +259,7 @@ describe('TrafficsTbmAdapter', () => {
                             title: 'typ',
                             firstName: 'very long',
                             lastName: 'sur',
-                            age: 'age'
+                            dateOfBirth: 'age'
                         },
                         void 0,
                     ],
@@ -341,7 +341,7 @@ describe('TrafficsTbmAdapter', () => {
                 'TbmXml.admin.services.service.0.$.agn': 'travellerAssociation',
                 'TbmXml.admin.travellers.traveller.0.$.typ': 'title',
                 'TbmXml.admin.travellers.traveller.0.$.sur': 'name',
-                'TbmXml.admin.travellers.traveller.0.$.age': 'age'
+                'TbmXml.admin.travellers.traveller.0.$.age': 'dateOfBirth'
             };
 
             let data = {
@@ -374,7 +374,7 @@ describe('TrafficsTbmAdapter', () => {
                         {
                             title: 'title',
                             name: 'name',
-                            age: 'age',
+                            dateOfBirth: 'dateOfBirth',
                         },
                     ],
                 }

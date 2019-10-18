@@ -454,19 +454,19 @@ class TravelportCetsAdapter {
                 }
                 case SERVICE_TYPES.roundTrip: {
                     this.assignRoundTripServiceFromAdapterObjectToXmlObject(service, xmlRequest);
-                    this.assignRoundTripTravellers(service, xmlRequest);
 
                     break;
                 }
                 case SERVICE_TYPES.hotel: {
                     this.assignHotelServiceFromAdapterObjectToXmlObject(service, xmlRequest);
-                    this.assignHotelTravellers(service, xmlRequest);
 
                     break;
                 }
                 default:
                     this.logger.warn('type "' + service.type + '" is not supported by the CETS adapter');
             }
+
+            this.assignTravellers(service, xmlRequest);
         });
 
         this.detectCatalogChange(xmlObject);
@@ -609,28 +609,6 @@ class TravelportCetsAdapter {
         xml.Fah.push(xmlService);
     }
 
-    assignRoundTripTravellers(service, xml) {
-        if (!service.travellers) return;
-
-        xml.Fap = [];
-
-        service.travellers.forEach((serviceTraveller, index) => {
-            const traveller = this.helper.traveller.normalizeTraveller(serviceTraveller);
-
-            xml.Fap.push({
-                [CONFIG.builderOptions.attrkey]: {
-                    ID: index + 1,
-                },
-                PersonType: traveller.salutation,
-                Name: serviceTraveller.lastName,
-                FirstName: serviceTraveller.firstName,
-                Birth: traveller.age,
-            });
-
-            xml.Fah[xml.Fah.length - 1].Persons = (xml.Fah[xml.Fah.length - 1].Persons || '') + (index + 1);
-        });
-    }
-
     assignHotelServiceFromAdapterObjectToXmlObject(service, xml) {
         let startDate = moment(service.startDate, this.options.useDateFormat);
 
@@ -652,13 +630,14 @@ class TravelportCetsAdapter {
         xml.Fah.push(xmlService);
     }
 
-    assignHotelTravellers(service, xml) {
+    assignTravellers(service, xml) {
         if (!service.travellers) return;
 
         xml.Fap = [];
 
         service.travellers.forEach((serviceTraveller, index) => {
             const traveller = this.helper.traveller.normalizeTraveller(serviceTraveller);
+            const dateOfBirth = moment(traveller.dateOfBirth, this.options.useDateFormat);
 
             xml.Fap.push({
                 [CONFIG.builderOptions.attrkey]: {
@@ -667,6 +646,7 @@ class TravelportCetsAdapter {
                 PersonType: traveller.salutation,
                 Name: serviceTraveller.lastName,
                 FirstName: serviceTraveller.firstName,
+                Birth: dateOfBirth.isValid() ? dateOfBirth.format(CONFIG.crs.dateFormat) : traveller.dateOfBirth,
             });
 
             xml.Fah[xml.Fah.length - 1].Persons = (xml.Fah[xml.Fah.length - 1].Persons || '') + (index + 1);

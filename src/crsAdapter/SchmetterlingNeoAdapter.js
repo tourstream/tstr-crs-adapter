@@ -86,7 +86,7 @@ class SchmetterlingNeoAdapter {
                 title: traveller.title,
                 lastName: travellerNames.pop(),
                 firstName: travellerNames.join(' '),
-                age: traveller.discount,
+                dateOfBirth: traveller.discount,
             }
         });
     }
@@ -142,7 +142,7 @@ class SchmetterlingNeoAdapter {
 
             crsTravellerObject.title = traveller.title;
             crsTravellerObject.name = traveller.name;
-            crsTravellerObject.discount = traveller.age;
+            crsTravellerObject.discount = traveller.dateOfBirth;
 
             crsData.converted.travellers[index] = crsTravellerObject;
         });

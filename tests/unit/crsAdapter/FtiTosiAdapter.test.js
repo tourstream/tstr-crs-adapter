@@ -196,6 +196,24 @@ describe('FtiTosiAdapter', () => {
                                             '</struct>' +
                                         '</value>' +
                                     '</member>' +
+                                    '<member>' +
+                                        '<name>Anrede_01</name>' +
+                                        '<value>' +
+                                            '<string>title</string>' +
+                                        '</value>' +
+                                    '</member>' +
+                                    '<member>' +
+                                        '<name>Name_01</name>' +
+                                        '<value>' +
+                                            '<string>name</string>' +
+                                        '</value>' +
+                                    '</member>' +
+                                    '<member>' +
+                                        '<name>Alter_01</name>' +
+                                        '<value>' +
+                                            '<string>dateOfBirth</string>' +
+                                        '</value>' +
+                                    '</member>' +
                                 '</struct>' +
                             '</value>' +
                         '</param>' +
@@ -228,7 +246,7 @@ describe('FtiTosiAdapter', () => {
                         {
                             title: 'title',
                             name: 'name',
-                            age: 'age',
+                            dateOfBirth: 'dateOfBirth',
                         },
                     ],
                 }

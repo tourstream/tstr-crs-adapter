@@ -36,8 +36,18 @@ const SERVICE_TYPES = {
     hotel: 'hotel',
     roundTrip: 'roundTrip',
     camper: 'camper',
-    e: 'E',
 };
+
+const CRS_SERVICE_TYPES = {
+    [SERVICE_TYPES.car]: 'MW',
+    carHotelLocation: 'E',
+    [SERVICE_TYPES.hotel]: 'H',
+    [SERVICE_TYPES.roundTrip]: 'R',
+    [SERVICE_TYPES.camper]: 'WM',
+    camperExtra: 'TA',
+    insurance: 'V',
+    dropOffTime: 'E',
+}
 
 const CRS_TYPES = {
     toma: 'toma',
@@ -259,7 +269,7 @@ class UbpCrsAdapter {
                     return;
                 }
 
-                // in case of "german CRS"
+                // in case of "TOMA-like" CRS
                 this.fetchData().then((crsData) => {
                     adapterData.services = adapterData.services || [];
 
@@ -376,15 +386,7 @@ class UbpCrsAdapter {
                     date: 'DDMMYY',
                     time: 'HHmm',
                 },
-                serviceTypes: {
-                    [SERVICE_TYPES.car]: 'MW',
-                    carHotelLocation: 'E',
-                    [SERVICE_TYPES.hotel]: 'H',
-                    [SERVICE_TYPES.roundTrip]: 'R',
-                    [SERVICE_TYPES.camper]: 'WM',
-                    camperExtra: 'TA',
-                    insurance: 'V',
-                },
+                serviceTypes: CRS_SERVICE_TYPES,
                 genderTypes: {
                     [GENDER_TYPES.male]: 'H',
                     [GENDER_TYPES.female]: 'F',
@@ -431,6 +433,7 @@ class UbpCrsAdapter {
 
 export {
     SERVICE_TYPES,
+    CRS_SERVICE_TYPES,
     CRS_TYPES,
     GENDER_TYPES,
     CAMPER_EXTRA_TYPES,

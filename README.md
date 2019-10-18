@@ -139,18 +139,16 @@ Every service has following base fields:
   marked: true / false,
   travellers: [ 
     { 
-      gender: TravellerGender, 
+      gender: UbpCrsAdapter.GENDER_TYPES, 
       firstName: 'john', 
       lastName: 'doe', 
-      age: '32' 
+      dateOfBirth: '08111983' 
     }, 
     ...,
   ],
   ...,
 }
 ```
-
-Where `travellers[*].gender / TravellerGender` is one of **'female', 'male', 'child', 'infant'**.
 
 `.marked` is by default falsy. But if this service is either "marked" 
 or detected as "marked" (depends on the type) it will be `true`.

@@ -1,12 +1,19 @@
 import xml2js from 'xml2js';
 import axios from 'axios';
 import ObjectHelper from '../helper/ObjectHelper';
+import { GENDER_TYPES } from '../UbpCrsAdapter'
 
 class FtiTosiAdapter {
     constructor(logger, options = {}) {
         this.config = {
             crs: {
                 connectionUrl: '//xmlrpc.fti.de/xmlrpc',
+                genderTypes: {
+                    [GENDER_TYPES.male]: 'H',
+                    [GENDER_TYPES.female]: 'F',
+                    [GENDER_TYPES.child]: 'K',
+                    [GENDER_TYPES.infant]: 'B',
+                },
             },
             parserOptions: {
                 attributeNamePrefix: '__attributes',
@@ -76,6 +83,7 @@ class FtiTosiAdapter {
 
     convert(crsData) {
         crsData.normalized.services = crsData.normalized.services || [];
+        crsData.normalized.travellers = crsData.normalized.travellers || [];
 
         crsData.converted = this.normalizeCrsObject({});
         crsData.converted.methodCall.methodName = 'Toma.setData';
@@ -106,6 +114,7 @@ class FtiTosiAdapter {
         ));
 
         this.assignServices(crsData);
+        this.assignTravellers(crsData);
 
         crsData.converted.methodCall.params.param.value.struct.member =
             crsData.converted.methodCall.params.param.value.struct.member.filter(Boolean);
@@ -172,6 +181,27 @@ class FtiTosiAdapter {
             ));
 
             crsData.converted.methodCall.params.param.value.struct.member.push(convertedService);
+        });
+    }
+
+    assignTravellers(crsData) {
+        crsData.normalized.travellers.forEach((traveller, index) => {
+            const xmlIndex = ( '0' + (index + 1) ).slice(-2);
+
+            crsData.converted.methodCall.params.param.value.struct.member.push(this.createMember(
+                'Anrede_' + xmlIndex,
+                traveller.title
+            ));
+
+            crsData.converted.methodCall.params.param.value.struct.member.push(this.createMember(
+                'Name_' + xmlIndex,
+                traveller.name
+            ));
+
+            crsData.converted.methodCall.params.param.value.struct.member.push(this.createMember(
+                'Alter_' + xmlIndex,
+                traveller.dateOfBirth
+            ));
         });
     }
 

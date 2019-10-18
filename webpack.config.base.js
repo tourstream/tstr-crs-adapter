@@ -5,15 +5,6 @@ const path = require('path');
 module.exports = {
     module: {
         rules: [{
-            test: /\.ts$/,
-            exclude: [
-                /node_modules/
-            ],
-            use: [
-                'babel-loader',
-                'ts-loader',
-            ]
-        }, {
             test: /\.js$/,
             // fast-xml-parser from version 3.2.0 isn't compiled to es5, so it is done here.
             exclude: [
@@ -36,7 +27,6 @@ module.exports = {
             path.resolve(__dirname),
         ],
         extensions: [
-            '.ts',
             '.json',
             '.js'
         ]

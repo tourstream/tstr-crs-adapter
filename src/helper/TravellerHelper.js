@@ -1,4 +1,5 @@
 import {SERVICE_TYPES} from '../UbpCrsAdapter';
+import moment from 'moment'
 
 class TravellerHelper {
     constructor(config) {
@@ -11,7 +12,7 @@ class TravellerHelper {
         return JSON.parse(JSON.stringify({
             salutation: (this.config.gender2SalutationMap || {})[gender] || void 0,
             name: name.length ? name : void 0,
-            age: traveller.age,
+            dateOfBirth: traveller.dateOfBirth,
         }));
     }
 
@@ -43,10 +44,16 @@ class TravellerHelper {
                 return;
             }
 
+            const dateOfBirth = adapterTraveller.dateOfBirth
+                ? moment(adapterTraveller.dateOfBirth, this.config.useDateFormat)
+                : void 0;
+
             crsTraveller.title = crsData.meta.genderTypes[adapterTraveller.gender];
             crsTraveller.firstName = adapterTraveller.firstName;
             crsTraveller.lastName = adapterTraveller.lastName;
-            crsTraveller.age = adapterTraveller.age;
+            crsTraveller.dateOfBirth = dateOfBirth && dateOfBirth.isValid()
+                ? dateOfBirth.format(crsData.meta.formats.date)
+                : adapterTraveller.dateOfBirth;
         });
 
         // todo: separate from this function
@@ -126,16 +133,46 @@ class TravellerHelper {
 
         do {
             const traveller = (crsData.normalized.travellers || [])[startTravellerId + counter - 1] || {};
+            const isAge = (traveller.dateOfBirth || '').toString().length < 3;
+
+            if (traveller.dateOfBirth && isAge) {
+                traveller.dateOfBirth = this.calculateDateOfBirth(traveller.dateOfBirth, crsData);
+            }
+
+            const dateOfBirth = traveller.dateOfBirth
+                ? moment(traveller.dateOfBirth, crsData.meta.formats.date)
+                : void 0;
 
             travellers.push(JSON.parse(JSON.stringify({
                 gender: genderMap[traveller.title],
                 firstName: traveller.firstName,
                 lastName: traveller.lastName,
-                age: traveller.age,
+                dateOfBirth: dateOfBirth && dateOfBirth.isValid()
+                    ? dateOfBirth.format(this.config.useDateFormat)
+                    : traveller.dateOfBirth,
             })));
         } while (++counter + startTravellerId <= endTravellerId);
 
         return travellers;
+    }
+
+    /**
+     * private
+     *
+     * @param age string
+     * @param crsData
+     * @returns {string|*}
+     */
+    calculateDateOfBirth(age, crsData) {
+        const date = moment(crsData.normalized.services[0].fromDate, crsData.meta.formats.date);
+
+        if (date && date.isValid()) {
+            date.subtract(age, 'years');
+
+            return date.format(this.config.useDateFormat);
+        }
+
+        return age;
     }
 
     cleanUpTravellers(travellers = [], services = []) {

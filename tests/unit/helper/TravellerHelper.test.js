@@ -5,10 +5,13 @@ describe('TravellerHelper', () => {
     let helper;
 
     beforeEach(() => {
-        helper = new TravellerHelper({gender2SalutationMap: {
-            female: 'miss',
-            infant: 'baby',
-        }});
+        helper = new TravellerHelper({
+            gender2SalutationMap: {
+                female: 'miss',
+                infant: 'baby',
+            },
+            useDateFormat: 'DDMMYYYY'
+        });
     });
 
     it('normalizeTraveller() should return empty object if no information is given', () => {
@@ -17,9 +20,9 @@ describe('TravellerHelper', () => {
 
     it('normalizeTraveller() should return traveller object', () => {
         expect(helper.normalizeTraveller(
-            {gender: 'Female', firstName: 'jane', age: 25}
+            {gender: 'Female', firstName: 'jane', dateOfBirth: '08111983'}
         )).toEqual(
-            {salutation: 'miss', name: 'jane', age: 25}
+            {salutation: 'miss', name: 'jane', dateOfBirth: '08111983'}
         );
 
         expect(helper.normalizeTraveller(
@@ -29,39 +32,39 @@ describe('TravellerHelper', () => {
         );
 
         expect(helper.normalizeTraveller(
-            {gender: 'unknown', firstName: 'jane', age: 25}
+            {gender: 'unknown', firstName: 'jane', dateOfBirth: '08111983'}
         )).toEqual(
-            {name: 'jane', age: 25}
+            {name: 'jane', dateOfBirth: '08111983'}
         );
 
         expect(helper.normalizeTraveller(
-            {gender: 'unknown', lastName: 'doe', age: 25}
+            {gender: 'unknown', lastName: 'doe', dateOfBirth: '08111983'}
         )).toEqual(
-            {name: 'doe', age: 25}
+            {name: 'doe', dateOfBirth: '08111983'}
         );
 
         expect(helper.normalizeTraveller(
-            {gender: 'unknown', firstName: 'jane', lastName: 'doe', age: 25}
+            {gender: 'unknown', firstName: 'jane', lastName: 'doe', dateOfBirth: '08111983'}
         )).toEqual(
-            {name: 'jane doe', age: 25}
+            {name: 'jane doe', dateOfBirth: '08111983'}
         );
 
         expect(helper.normalizeTraveller(
-            {gender: 'unknown', firstName: 'jane', lastName: 'doe dean', age: 25}
+            {gender: 'unknown', firstName: 'jane', lastName: 'doe dean', dateOfBirth: '08111983'}
         )).toEqual(
-            {name: 'jane doe dean', age: 25}
+            {name: 'jane doe dean', dateOfBirth: '08111983'}
         );
 
         expect(helper.normalizeTraveller(
-            {gender: 'unknown', firstName: 'jane janice', lastName: 'dean', age: 25}
+            {gender: 'unknown', firstName: 'jane janice', lastName: 'dean', dateOfBirth: '08111983'}
         )).toEqual(
-            {name: 'jane janice dean', age: 25}
+            {name: 'jane janice dean', dateOfBirth: '08111983'}
         );
 
         expect(helper.normalizeTraveller(
-            {gender: 'unknown', firstName: 'jane janice', lastName: 'doe dean', age: 25}
+            {gender: 'unknown', firstName: 'jane janice', lastName: 'doe dean', dateOfBirth: '08111983'}
         )).toEqual(
-            {name: 'jane janice doe dean', age: 25}
+            {name: 'jane janice doe dean', dateOfBirth: '08111983'}
         );
     });
 
@@ -115,7 +118,7 @@ describe('TravellerHelper', () => {
                 gender: 'gender',
                 firstName: 'name1 name2',
                 lastName: 'name',
-                age: 'age',
+                dateOfBirth: '08111983',
             }],
         };
         const crsService = {};
@@ -123,6 +126,9 @@ describe('TravellerHelper', () => {
             meta: {
                 genderTypes: {
                     gender: 'mappedGenderType'
+                },
+                formats: {
+                    date: 'DD.MM.YY'
                 }
             },
         };
@@ -135,7 +141,7 @@ describe('TravellerHelper', () => {
                 title: 'mappedGenderType',
                 firstName: 'name1 name2',
                 lastName: 'name',
-                age: 'age'
+                dateOfBirth: '08.11.83'
             }
         ]);
     });
@@ -232,6 +238,9 @@ describe('TravellerHelper', () => {
             meta: {
                 genderTypes: {
                     gender: 'title'
+                },
+                formats: {
+                    date: 'YYYY-MM-DD'
                 }
             },
             normalized: {
@@ -240,7 +249,7 @@ describe('TravellerHelper', () => {
                         title: 'title',
                         firstName: 'name1 name2',
                         lastName: 'name',
-                        age: 'age',
+                        dateOfBirth: '1983-11-08',
                     }
                 ],
             },
@@ -251,7 +260,45 @@ describe('TravellerHelper', () => {
                 gender: 'gender',
                 firstName: 'name1 name2',
                 lastName: 'name',
-                age: 'age'
+                dateOfBirth: '08111983'
+            }
+        ]);
+    });
+
+    it('mapToAdapterTravellers() should return correct value for age value', () => {
+        const crsService = { travellerAssociation: '1' };
+        const crsData = {
+            meta: {
+                genderTypes: {
+                    gender: 'title'
+                },
+                formats: {
+                    date: 'YYYY-MM-DD'
+                }
+            },
+            normalized: {
+                services: [
+                    {
+                        fromDate: '2012-11-08'
+                    }
+                ],
+                travellers: [
+                    {
+                        title: 'title',
+                        firstName: 'name1 name2',
+                        lastName: 'name',
+                        dateOfBirth: '12',
+                    }
+                ],
+            },
+        };
+
+        expect(helper.mapToAdapterTravellers(crsService, crsData)).toEqual([
+            {
+                gender: 'gender',
+                firstName: 'name1 name2',
+                lastName: 'name',
+                dateOfBirth: '08112000'
             }
         ]);
     });

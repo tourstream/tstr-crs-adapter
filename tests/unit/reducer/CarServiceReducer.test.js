@@ -1,58 +1,58 @@
-import CarServiceReducer from '../../../src/reducer/CarServiceReducer';
-import {DEFAULT_OPTIONS, SERVICE_TYPES} from '../../../src/UbpCrsAdapter';
+import CarServiceReducer from '../../../src/reducer/CarServiceReducer'
+import { DEFAULT_OPTIONS, SERVICE_TYPES } from '../../../src/UbpCrsAdapter'
 
 describe('CarServiceReducer', () => {
-    let reducer, config, helper, vehicleHelper, serviceHelper;
+    let reducer, config, helper, vehicleHelper, serviceHelper
 
     beforeEach(() => {
-        vehicleHelper = require('tests/unit/_mocks/VehicleHelper')();
-        serviceHelper = require('tests/unit/_mocks/ServiceHelper')();
-        config = DEFAULT_OPTIONS;
+        vehicleHelper = require('tests/unit/_mocks/VehicleHelper')()
+        serviceHelper = require('tests/unit/_mocks/ServiceHelper')()
+        config = DEFAULT_OPTIONS
         helper = {
             traveller: require('tests/unit/_mocks/TravellerHelper')(),
             vehicle: vehicleHelper,
             service: serviceHelper,
-        };
+        }
 
-        serviceHelper.findEditableService.and.callFake((crsData) => crsData.normalized.services[0]);
+        serviceHelper.findEditableService.and.callFake((crsData) => crsData.normalized.services[0])
         serviceHelper.createEmptyService.and.callFake((crsData) => {
-            const service = {};
+            const service = {}
             crsData.normalized.services.push(service)
-            return service;
-        });
+            return service
+        })
 
         reducer = new CarServiceReducer(
             require('tests/unit/_mocks/LogService')(),
             config, helper
-        );
-    });
+        )
+    })
 
     it('reduceIntoCrsData() should reduce nothing', () => {
-        reducer.reduceIntoCrsData();
-    });
+        reducer.reduceIntoCrsData()
+    })
 
     it('reduceIntoCrsData() should reduce "empty" adapterService', () => {
-        const adapterService = {};
+        const adapterService = {}
         const crsData = {
             normalized: {},
             meta: {
                 serviceTypes: {},
             },
-        };
+        }
 
-        reducer.reduceIntoCrsData(adapterService, crsData);
+        reducer.reduceIntoCrsData(adapterService, crsData)
 
         expect(JSON.parse(JSON.stringify(crsData))).toEqual({
             normalized: {
-                services: [ {
+                services: [{
                     _origin: adapterService
-                } ],
+                }],
             },
             meta: {
                 serviceTypes: {},
             },
-        });
-    });
+        })
+    })
 
     it('reduceIntoCrsData() should reduce adapterService without pickUp hotel', () => {
         const adapterService = {
@@ -68,7 +68,7 @@ describe('CarServiceReducer', () => {
             dropOffHotelName: 'do hname',
             dropOffHotelAddress: 'do haddress',
             dropOffHotelPhoneNumber: 'do hphone',
-        };
+        }
         const crsData = {
             normalized: {
                 services: [],
@@ -76,18 +76,17 @@ describe('CarServiceReducer', () => {
             meta: {
                 serviceTypes: {
                     [SERVICE_TYPES.car]: 'carType',
-                    camperExtra: 'extraType',
                 },
                 formats: {
                     date: 'YYYY-MM-DD',
                     time: 'HH:mm',
                 },
             },
-        };
+        }
 
-        vehicleHelper.createServiceCode.and.returnValue('service.code');
+        vehicleHelper.createServiceCode.and.returnValue('service.code')
 
-        reducer.reduceIntoCrsData(adapterService, crsData);
+        reducer.reduceIntoCrsData(adapterService, crsData)
 
         expect(JSON.parse(JSON.stringify(crsData)).normalized).toEqual({
             services: [
@@ -101,14 +100,15 @@ describe('CarServiceReducer', () => {
                     accommodation: '09:15'
                 },
                 {
+                    type: 'E',
                     code: 'do hname',
                     fromDate: '2018-03-16',
                     toDate: '2018-03-21'
                 }
             ],
             remark: 'do haddress do hphone',
-        });
-    });
+        })
+    })
 
     it('reduceIntoCrsData() should reduce adapterService', () => {
         const adapterService = {
@@ -130,7 +130,7 @@ describe('CarServiceReducer', () => {
             dropOffHotelAddress: 'do haddress',
             dropOffHotelPhoneNumber: 'do hphone',
             extras: ['BS', 'GPS'],
-        };
+        }
         const crsData = {
             normalized: {
                 services: [
@@ -145,18 +145,17 @@ describe('CarServiceReducer', () => {
             meta: {
                 serviceTypes: {
                     [SERVICE_TYPES.car]: 'carType',
-                    camperExtra: 'extraType',
                 },
                 formats: {
                     date: 'YYYY-MM-DD',
                     time: 'HH:mm',
                 },
             },
-        };
+        }
 
-        vehicleHelper.createServiceCode.and.returnValue('service.code');
+        vehicleHelper.createServiceCode.and.returnValue('service.code')
 
-        reducer.reduceIntoCrsData(adapterService, crsData);
+        reducer.reduceIntoCrsData(adapterService, crsData)
 
         expect(JSON.parse(JSON.stringify(crsData)).normalized).toEqual({
             multiFunctionLine: 'REFANIXE:pnr',
@@ -174,17 +173,18 @@ describe('CarServiceReducer', () => {
                     type: 'carType'
                 },
                 {
-                  type: 'E',
-                  code: 'WALKIN',
-                  accommodation: '10:15',
+                    type: 'E',
+                    code: 'WALKIN',
+                    accommodation: '10:15',
                 },
                 {
+                    type: 'E',
                     code: 'pu hname',
                     fromDate: '2018-03-16',
                     toDate: '2018-03-21'
                 }
             ],
             remark: 'BS,GPS;pu haddress pu hphone;do hname;do haddress do hphone',
-        });
-    });
-});
+        })
+    })
+})
