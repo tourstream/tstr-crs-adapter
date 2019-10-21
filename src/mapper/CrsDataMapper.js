@@ -45,7 +45,9 @@ class CrsDataMapper {
 
             adapterData.services.push(adapterService);
         });
-        adapterData.services = this.helpers.vehicle.mergeCarFlightService(adapterData.services) 
+
+        adapterData.services = this.helpers.vehicle.mergeCarAndDropOffServiceLines(adapterData.services)
+
         return adapterData;
     }
 }

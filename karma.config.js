@@ -12,18 +12,20 @@ module.exports = function (config) {
         logLevel: config.LOG_INFO,
         autoWatch: true,
         singleRun: true,
+        coverageIstanbulReporter: {
+            reports: [
+                'html',
+                'text-summary'
+            ],
+            fixWebpackSourcePaths: true
+        },
         files: [
             'tests.js',
-            'src/**/*.ts',
         ],
         frameworks: [
             'jasmine',
-            'karma-typescript',
         ],
         preprocessors: {
-            'src/**/*.ts': [
-                'karma-typescript',
-            ],
             'tests.js': [
                 'webpack',
                 'sourcemap',
@@ -31,7 +33,7 @@ module.exports = function (config) {
         },
         reporters: [
             'progress',
-            'karma-typescript',
+            'coverage-istanbul',
         ],
         karmaTypescriptConfig: {
             compilerOptions: {
@@ -62,19 +64,6 @@ module.exports = function (config) {
             devtool: 'inline-source-map',
             module: {
                 rules: [{
-                    test: /\.ts$/,
-                    include: [
-                        path.resolve(__dirname, 'src'),
-                        path.resolve(__dirname, 'tests'),
-                    ],
-                    exclude: [
-                        path.resolve(__dirname, 'node_modules'),
-                    ],
-                    loader: [
-                        'babel-loader',
-                        'ts-loader',
-                    ],
-                }, {
                     test: /\.js$/,
                     include: [
                         path.resolve(__dirname, 'src'),
@@ -107,7 +96,6 @@ module.exports = function (config) {
                     path.resolve(__dirname, 'tests')
                 ],
                 extensions: [
-                    '.ts',
                     '.json',
                     '.js'
                 ]

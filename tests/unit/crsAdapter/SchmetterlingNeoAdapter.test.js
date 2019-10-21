@@ -219,7 +219,7 @@ describe('SchmetterlingNeoAdapter', () => {
                             title: 'title',
                             firstName: 'my long',
                             lastName: 'name',
-                            age: 'discount'
+                            dateOfBirth: 'discount'
                         }
                     ],
                 });
@@ -279,7 +279,7 @@ describe('SchmetterlingNeoAdapter', () => {
                 travellers: [{
                     title:'title',
                     name: 'name',
-                    discount: 'age'
+                    discount: 'dateOfBirth'
                 }],
                 action: 'action',
                 agencyNumber: 'agencyNumber',
@@ -320,7 +320,7 @@ describe('SchmetterlingNeoAdapter', () => {
                         {
                             title: 'title',
                             name: 'name',
-                            age: 'age',
+                            dateOfBirth: 'dateOfBirth',
                         },
                     ],
                 }

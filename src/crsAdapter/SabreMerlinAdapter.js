@@ -128,7 +128,7 @@ class SabreMerlinAdapter {
                 title: traveller.Salutation,
                 lastName: travellerNames.pop(),
                 firstName: travellerNames.join (' '),
-                age: traveller.Age,
+                dateOfBirth: traveller.Age,
             }
         });
     }
@@ -187,7 +187,7 @@ class SabreMerlinAdapter {
             };
             crsTravellerObject.Salutation = traveller.title;
             crsTravellerObject.Name = traveller.name;
-            crsTravellerObject.Age = traveller.age;
+            crsTravellerObject.Age = traveller.dateOfBirth;
 
             crsData.converted.GATE2MX.SendRequest.Import.TravellerBlock.PersonBlock.PersonRow[index] = crsTravellerObject;
         });

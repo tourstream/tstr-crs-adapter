@@ -80,7 +80,6 @@ describe('UbpCrsAdapter', () => {
             hotel: jasmine.anything(),
             roundTrip: jasmine.anything(),
             camper: jasmine.anything(),
-            e: jasmine.anything(),
         });
     });
 

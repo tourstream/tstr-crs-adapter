@@ -177,7 +177,7 @@ describe('SabreMerlinAdapter', () => {
                             title: 'Salutation',
                             firstName: 'My Long',
                             lastName: 'Name',
-                            age: 'Age'
+                            dateOfBirth: 'Age'
                         },
                         void 0,
                     ],
@@ -247,7 +247,7 @@ describe('SabreMerlinAdapter', () => {
                     '<PersonRow travellerNo="1">' +
                     '<Salutation>title</Salutation>' +
                     '<Name>name</Name>' +
-                    '<Age>age</Age>' +
+                    '<Age>dateOfBirth</Age>' +
                     '</PersonRow>' +
                     '</PersonBlock>' +
                     '</TravellerBlock>' +
@@ -305,7 +305,7 @@ describe('SabreMerlinAdapter', () => {
                         {
                             title: 'title',
                             name: 'name',
-                            age: 'age',
+                            dateOfBirth: 'dateOfBirth',
                         },
                     ],
                 }

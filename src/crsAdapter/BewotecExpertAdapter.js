@@ -153,7 +153,7 @@ class BewotecExpertAdapter {
                 title: travellerData.salutation,
                 lastName: travellerNames.pop(),
                 firstName: travellerNames.join (' '),
-                age: travellerData.age,
+                dateOfBirth: travellerData.age,
             }
         });
     }
@@ -202,7 +202,7 @@ class BewotecExpertAdapter {
 
             crsData.converted['ta' + lineNumber] = traveller.title;
             crsData.converted['tn' + lineNumber] = traveller.name;
-            crsData.converted['te' + lineNumber] = traveller.age;
+            crsData.converted['te' + lineNumber] = traveller.dateOfBirth;
         });
     }
 

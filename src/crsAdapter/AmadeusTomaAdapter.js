@@ -151,7 +151,7 @@ class AmadeusTomaAdapter {
                 title: crsData['Title.' + lineNumber],
                 lastName: travellerNames.pop(),
                 firstName: travellerNames.join (' '),
-                age: crsData['Reduction.' + lineNumber],
+                dateOfBirth: crsData['Reduction.' + lineNumber],
             });
         } while (++lineNumber <= this.config.crs.maxTravellers);
 
@@ -216,7 +216,7 @@ class AmadeusTomaAdapter {
 
             crsDataObject['Title.' + lineNumber] = traveller.title;
             crsDataObject['Name.' + lineNumber] = traveller.name;
-            crsDataObject['Reduction.' + lineNumber] = traveller.age;
+            crsDataObject['Reduction.' + lineNumber] = traveller.dateOfBirth;
         });
     }
 

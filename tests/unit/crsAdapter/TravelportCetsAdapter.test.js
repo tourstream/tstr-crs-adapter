@@ -660,13 +660,13 @@ describe('TravelportCetsAdapter', () => {
                                     gender: 'female',
                                     firstName: 'Jane',
                                     lastName: 'Doe Dean',
-                                    age: '32',
+                                    dateOfBirth: '08111983',
                                 },
                                 {
                                     gender: 'child',
                                     firstName: 'Joe',
                                     lastName: 'Doe',
-                                    age: '3',
+                                    dateOfBirth: '22112020',
                                 }
                             ],
                         },
@@ -677,14 +677,14 @@ describe('TravelportCetsAdapter', () => {
                     '<PersonType>F</PersonType>' +
                     '<Name>Doe Dean</Name>' +
                     '<FirstName>Jane</FirstName>' +
-                    '<Birth>32</Birth>' +
+                    '<Birth>08111983</Birth>' +
                     '</Fap>' +
 
                     '<Fap ID="2">' +
                     '<PersonType>C</PersonType>' +
                     '<Name>Doe</Name>' +
                     '<FirstName>Joe</FirstName>' +
-                    '<Birth>3</Birth>' +
+                    '<Birth>22112020</Birth>' +
                     '</Fap>' +
 
                     '<Catalog>DCH</Catalog>' +
@@ -780,12 +780,14 @@ describe('TravelportCetsAdapter', () => {
                     '<PersonType>F</PersonType>' +
                     '<Name>Doe</Name>' +
                     '<FirstName>Jane</FirstName>' +
+                    '<Birth/>' +
                     '</Fap>' +
 
                     '<Fap ID="2">' +
                     '<PersonType>C</PersonType>' +
                     '<Name>Doe</Name>' +
                     '<FirstName>Joe</FirstName>' +
+                    '<Birth/>' +
                     '</Fap>' +
 
                     '<Catalog>TCH</Catalog>' +

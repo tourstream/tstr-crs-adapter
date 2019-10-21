@@ -1,5 +1,5 @@
 import moment from 'moment/moment';
-import {SERVICE_TYPES, CODE_TYPES} from '../UbpCrsAdapter';
+import { CODE_TYPES, CRS_SERVICE_TYPES } from '../UbpCrsAdapter'
 
 class CarServiceReducer {
     constructor(logger, config, helper) {
@@ -34,9 +34,9 @@ class CarServiceReducer {
         crsService.accommodation = pickUpTime.isValid() ? pickUpTime.format(crsData.meta.formats.time) : adapterService.pickUpTime;
 
         if (adapterService.dropOffTime) {
-          const dropOffService = this.helper.service.createEmptyService(crsData)
-          dropOffService.type = SERVICE_TYPES.e
-          dropOffService.code = CODE_TYPES.walkIn
+          const dropOffService = this.helper.service.createEmptyService(crsData);
+          dropOffService.type = CRS_SERVICE_TYPES.dropOffTime;
+          dropOffService.code = CODE_TYPES.walkIn;
           dropOffService.accommodation = dropOffTime.isValid() ? dropOffTime.format(crsData.meta.formats.time) : adapterService.dropOffTime;
         }
 
@@ -45,7 +45,7 @@ class CarServiceReducer {
         if (hotelName) {
             let hotelService = this.helper.service.createEmptyService(crsData);
 
-            hotelService.type = crsData.meta.serviceTypes.carHotelLocation;
+            hotelService.type = CRS_SERVICE_TYPES.carHotelLocation;
             hotelService.code = hotelName;
             hotelService.fromDate = crsService.fromDate;
             hotelService.toDate = crsService.toDate;

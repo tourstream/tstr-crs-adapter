@@ -13,7 +13,8 @@ describe('AmadeusTomaAdapter', () => {
     });
 
     afterEach(() => {
-        delete window.ActiveXObject;
+        // noinspection JSAnnotator
+        delete window.ActiveXObject
     });
 
     it('connect() should throw error if ActiveX is not supported', () => {
@@ -198,7 +199,7 @@ describe('AmadeusTomaAdapter', () => {
                             title: 'Title',
                             firstName: 'My Long',
                             lastName: 'Name',
-                            age: 'Reduction'
+                            dateOfBirth: 'Reduction'
                         },
                         void 0,
                     ],
@@ -272,7 +273,7 @@ describe('AmadeusTomaAdapter', () => {
 
                 '<Title.1>title</Title.1>' +
                 '<Name.1>name</Name.1>' +
-                '<Reduction.1>age</Reduction.1>' +
+                '<Reduction.1>dateOfBirth</Reduction.1>' +
                 '</TOM>' +
                 '</Body>' +
                 '</Envelope>';
@@ -310,7 +311,7 @@ describe('AmadeusTomaAdapter', () => {
                         {
                             title: 'title',
                             name: 'name',
-                            age: 'age',
+                            dateOfBirth: 'dateOfBirth',
                         },
                     ],
                 }

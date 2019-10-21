@@ -1,4 +1,4 @@
-import {SERVICE_TYPES} from '../UbpCrsAdapter';
+import { SERVICE_TYPES, CRS_SERVICE_TYPES } from '../UbpCrsAdapter'
 
 const CONFIG = {
     serviceCodeRegEx: {
@@ -8,89 +8,92 @@ const CONFIG = {
         sipp: /^(.{5})(.{5})(.{4})(.{2})$/,
         // MUC10-BER
         // SFO
-        locationsOnly:/^([A-Z0-9]{3,5})-?([A-Z0-9]{3,5})?$/,
+        locationsOnly: /^([A-Z0-9]{3,5})-?([A-Z0-9]{3,5})?$/,
     },
-};
+}
 
 class VehicleHelper {
     constructor(config) {
-        this.config = config;
+        this.config = config
     }
 
     isServiceMarked(service) {
         if (service.marker) {
-            return true;
+            return true
         }
 
-        return !service.code || !!service.code.match(CONFIG.serviceCodeRegEx.locationsOnly);
+        return !service.code || !!service.code.match(CONFIG.serviceCodeRegEx.locationsOnly)
     }
 
     splitServiceCode(code) {
-        if (!code) return {};
+        if (!code) return {}
 
         return this.splitSippServiceCode(code)
             || this.splitOldServiceCode(code)
             || this.splitLocationsOnlyServiceCode(code)
-            || {};
+            || {}
     };
 
     splitOldServiceCode(code) {
-        const indexRentalCode = 1;
-        const indexVehicleTypeCode = 2;
-        const indexPickUpLocation = 3;
-        const indexDropOffLocation = 4;
+        const indexRentalCode = 1
+        const indexVehicleTypeCode = 2
+        const indexPickUpLocation = 3
+        const indexDropOffLocation = 4
 
-        let codeParts = code.match(CONFIG.serviceCodeRegEx.old);
+        let codeParts = code.match(CONFIG.serviceCodeRegEx.old)
 
         return codeParts ? {
             renterCode: codeParts[indexRentalCode],
             vehicleCode: codeParts[indexVehicleTypeCode],
             pickUpLocation: codeParts[indexPickUpLocation],
             dropOffLocation: codeParts[indexDropOffLocation],
-        } : void 0;
+        } : void 0
     }
 
     splitLocationsOnlyServiceCode(code) {
-        const indexPickUpLocation = 1;
-        const indexDropOffLocation = 2;
+        const indexPickUpLocation = 1
+        const indexDropOffLocation = 2
 
-        let codeParts = code.match(CONFIG.serviceCodeRegEx.locationsOnly);
+        let codeParts = code.match(CONFIG.serviceCodeRegEx.locationsOnly)
 
         return codeParts ? {
             pickUpLocation: codeParts[indexPickUpLocation],
             dropOffLocation: codeParts[indexDropOffLocation],
-        } : void 0;
+        } : void 0
     }
 
     splitSippServiceCode(code) {
         if (code.length !== 16) {
-            return;
+            return
         }
 
-        const indexPickUpLocation = 1;
-        const indexDropOffLocation = 2;
-        const indexSipp = 3;
-        const indexLastPartOfRenterCode = 4;
+        const indexPickUpLocation = 1
+        const indexDropOffLocation = 2
+        const indexSipp = 3
+        const indexLastPartOfRenterCode = 4
 
-        let codeParts = code.match(CONFIG.serviceCodeRegEx.sipp);
+        let codeParts = code.match(CONFIG.serviceCodeRegEx.sipp)
 
         return codeParts ? {
             pickUpLocation: codeParts[indexPickUpLocation],
             dropOffLocation: codeParts[indexDropOffLocation],
             sipp: codeParts[indexSipp],
-        } : void 0;
+        } : void 0
     }
 
-    mergeCarFlightService(services) {
-      const reformedServices = []
-      services.forEach( function (line, index) {
-        if (line.type === SERVICE_TYPES.car && services[index + 1].type === SERVICE_TYPES.e && services[index + 1].accommodation) {
-          line.dropOffTime = services[index + 1].accommodation
-          delete services[index + 1]
-        }
-        reformedServices.push(line)
-      })
-      return reformedServices
+    mergeCarAndDropOffServiceLines(services) {
+        const reformedServices = []
+
+        services.forEach(function (line, index) {
+            if (line.type === SERVICE_TYPES.car && services[index + 1].type === CRS_SERVICE_TYPES.dropOffTime && services[index + 1].accommodation) {
+                line.dropOffTime = services[index + 1].accommodation
+                delete services[index + 1]
+            }
+
+            reformedServices.push(line)
+        })
+
+        return reformedServices
     }
 
     createServiceCode(adapterService = {}) {
@@ -100,7 +103,7 @@ class VehicleHelper {
                 adapterService.dropOffLocation,
                 adapterService.sipp,
                 adapterService.renterCode.slice(-2),
-            ].join('') || void 0;
+            ].join('') || void 0
         }
 
         return [
@@ -110,8 +113,8 @@ class VehicleHelper {
             adapterService.pickUpLocation,
             '-',
             adapterService.dropOffLocation,
-        ].join('').replace(/^\/-|\/-$/, '') || void 0;
+        ].join('').replace(/^\/-|\/-$/, '') || void 0
     }
 }
 
-export default VehicleHelper;
+export default VehicleHelper

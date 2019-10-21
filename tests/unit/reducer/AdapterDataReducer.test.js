@@ -119,7 +119,7 @@ describe('AdapterDataReducer', () => {
                         title: 'title',
                         firstName: 'fn',
                         lastName: 'ln',
-                        age: 'age',
+                        dateOfBirth: 'dateOfBirth',
                     }
                 ]
             },
@@ -134,7 +134,7 @@ describe('AdapterDataReducer', () => {
                 {
                     title: 'title',
                     name: 'fn ln',
-                    age: 'age',
+                    dateOfBirth: 'dateOfBirth',
                 }
             ],
         });
