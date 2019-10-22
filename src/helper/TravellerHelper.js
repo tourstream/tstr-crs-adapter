@@ -8,7 +8,7 @@ class TravellerHelper {
 
     normalizeTraveller(traveller = {}) {
         const gender = (traveller.gender || '').toLowerCase();
-        const name = [traveller.firstName, traveller.lastName].filter(Boolean).join(' ');
+        const name = [traveller.lastName, traveller.firstName].filter(Boolean).join('/');
         return JSON.parse(JSON.stringify({
             salutation: (this.config.gender2SalutationMap || {})[gender] || void 0,
             name: name.length ? name : void 0,

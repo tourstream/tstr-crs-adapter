@@ -80,11 +80,11 @@ class SchmetterlingNeoAdapter {
                 return;
             }
 
-            const travellerNames = (traveller.name || '').split(' ');
+            const travellerNames = (traveller.name || '').split('/');
 
             return {
                 title: traveller.title,
-                lastName: travellerNames.pop(),
+                lastName: travellerNames.shift(),
                 firstName: travellerNames.join(' '),
                 dateOfBirth: traveller.discount,
             }

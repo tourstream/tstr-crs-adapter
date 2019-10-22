@@ -122,11 +122,11 @@ class SabreMerlinAdapter {
                 return;
             }
 
-            const travellerNames = (traveller.Name || '').split(' ');
+            const travellerNames = (traveller.Name || '').split('/');
 
             return {
                 title: traveller.Salutation,
-                lastName: travellerNames.pop(),
+                lastName: travellerNames.shift(),
                 firstName: travellerNames.join (' '),
                 dateOfBirth: traveller.Age,
             }

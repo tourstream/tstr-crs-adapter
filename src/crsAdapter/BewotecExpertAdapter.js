@@ -147,11 +147,11 @@ class BewotecExpertAdapter {
             }
 
             const travellerData = traveller[this.config.parserOptions.attributeNamePrefix];
-            const travellerNames = (travellerData.name || '').split(' ');
+            const travellerNames = (travellerData.name || '').split('/');
 
             return {
                 title: travellerData.salutation,
-                lastName: travellerNames.pop(),
+                lastName: travellerNames.shift(),
                 firstName: travellerNames.join (' '),
                 dateOfBirth: travellerData.age,
             }

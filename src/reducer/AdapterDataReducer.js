@@ -60,7 +60,7 @@ class AdapterDataReducer {
 
             return {
                 title: traveller.title,
-                name: [traveller.firstName, traveller.lastName].filter(Boolean).join(' '),
+                name: [traveller.lastName, traveller.firstName].filter(Boolean).join('/'),
                 dateOfBirth: traveller.dateOfBirth,
             }
         });

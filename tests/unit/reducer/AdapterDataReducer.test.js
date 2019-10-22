@@ -133,7 +133,7 @@ describe('AdapterDataReducer', () => {
                 {},
                 {
                     title: 'title',
-                    name: 'fn ln',
+                    name: 'ln/fn',
                     dateOfBirth: 'dateOfBirth',
                 }
             ],

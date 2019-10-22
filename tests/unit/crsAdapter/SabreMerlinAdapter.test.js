@@ -131,7 +131,7 @@ describe('SabreMerlinAdapter', () => {
                 '<PersonBlock>' +
                 '<PersonRow travellerNo="1">' +
                 '<Salutation>Salutation</Salutation>' +
-                '<Name>My Long Name</Name>' +
+                '<Name>My/Long/Name</Name>' +
                 '<Age>Age</Age>' +
                 '</PersonRow>' +
                 '<PersonRow travellerNo="2" />' +
@@ -175,8 +175,8 @@ describe('SabreMerlinAdapter', () => {
                     travellers: [
                         {
                             title: 'Salutation',
-                            firstName: 'My Long',
-                            lastName: 'Name',
+                            firstName: 'Long Name',
+                            lastName: 'My',
                             dateOfBirth: 'Age'
                         },
                         void 0,
