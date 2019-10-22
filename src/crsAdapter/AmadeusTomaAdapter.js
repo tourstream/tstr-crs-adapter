@@ -145,11 +145,11 @@ class AmadeusTomaAdapter {
                 continue;
             }
 
-            const travellerNames = (crsData['Name.' + lineNumber] || '').split(' ');
+            const travellerNames = (crsData['Name.' + lineNumber] || '').split('/');
 
             travellers.push({
                 title: crsData['Title.' + lineNumber],
-                lastName: travellerNames.pop(),
+                lastName: travellerNames.shift(),
                 firstName: travellerNames.join (' '),
                 dateOfBirth: crsData['Reduction.' + lineNumber],
             });

@@ -125,11 +125,11 @@ class TrafficsTbmAdapter {
                 return;
             }
 
-            const travellerNames = (traveller['$'].sur || '').split(' ');
+            const travellerNames = (traveller['$'].sur || '').split('/');
 
             return {
                 title: traveller['$'].typ,
-                lastName: travellerNames.pop(),
+                lastName: travellerNames.shift(),
                 firstName: travellerNames.join (' '),
                 dateOfBirth: traveller['$'].age,
             }

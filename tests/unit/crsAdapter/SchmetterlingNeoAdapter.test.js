@@ -172,7 +172,7 @@ describe('SchmetterlingNeoAdapter', () => {
                     {},
                     {
                         title:'title',
-                        name: 'my long name',
+                        name: 'my/long/name',
                         discount: 'discount'
                     }
                 ],
@@ -217,8 +217,8 @@ describe('SchmetterlingNeoAdapter', () => {
                         void 0,
                         {
                             title: 'title',
-                            firstName: 'my long',
-                            lastName: 'name',
+                            firstName: 'long name',
+                            lastName: 'my',
                             dateOfBirth: 'discount'
                         }
                     ],

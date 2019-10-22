@@ -46,25 +46,25 @@ describe('TravellerHelper', () => {
         expect(helper.normalizeTraveller(
             {gender: 'unknown', firstName: 'jane', lastName: 'doe', dateOfBirth: '08111983'}
         )).toEqual(
-            {name: 'jane doe', dateOfBirth: '08111983'}
+            {name: 'doe/jane', dateOfBirth: '08111983'}
         );
 
         expect(helper.normalizeTraveller(
             {gender: 'unknown', firstName: 'jane', lastName: 'doe dean', dateOfBirth: '08111983'}
         )).toEqual(
-            {name: 'jane doe dean', dateOfBirth: '08111983'}
+            {name: 'doe dean/jane', dateOfBirth: '08111983'}
         );
 
         expect(helper.normalizeTraveller(
             {gender: 'unknown', firstName: 'jane janice', lastName: 'dean', dateOfBirth: '08111983'}
         )).toEqual(
-            {name: 'jane janice dean', dateOfBirth: '08111983'}
+            {name: 'dean/jane janice', dateOfBirth: '08111983'}
         );
 
         expect(helper.normalizeTraveller(
             {gender: 'unknown', firstName: 'jane janice', lastName: 'doe dean', dateOfBirth: '08111983'}
         )).toEqual(
-            {name: 'jane janice doe dean', dateOfBirth: '08111983'}
+            {name: 'doe dean/jane janice', dateOfBirth: '08111983'}
         );
     });
 
