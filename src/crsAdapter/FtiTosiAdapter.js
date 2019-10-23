@@ -10,7 +10,7 @@ class FtiTosiAdapter {
                 connectionUrl: '//xmlrpc.fti.de/xmlrpc',
                 genderTypes: {
                     [GENDER_TYPES.male]: 'H',
-                    [GENDER_TYPES.female]: 'F',
+                    [GENDER_TYPES.female]: 'D',
                     [GENDER_TYPES.child]: 'K',
                     [GENDER_TYPES.infant]: 'B',
                 },
