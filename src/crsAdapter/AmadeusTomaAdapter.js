@@ -1,5 +1,6 @@
 import xml2js from 'xml2js';
 import * as fastXmlParser from 'fast-xml-parser';
+import TomaEngine from '../engine/TomaEngine'
 
 class AmadeusTomaAdapter {
     constructor(logger, options = {}) {
@@ -11,7 +12,8 @@ class AmadeusTomaAdapter {
         this.config = {
             crs: {
                 activeXObjectName: 'Spice.Start',
-                    maxTravellers: 6,
+                maxTravellers: 6,
+                genderTypes: {},
             },
             parserOptions: {
                 attributeNamePrefix: '__attributes',
@@ -51,6 +53,11 @@ class AmadeusTomaAdapter {
         this.xmlBuilder = {
             build: xmlObject => (new xml2js.Builder(this.config.builderOptions)).buildObject(JSON.parse(JSON.stringify(xmlObject)))
         };
+
+        this.engine = new TomaEngine(this.options);
+        this.engine.travellerTypes.forEach(type => this.config.crs.genderTypes[type.adapterType] = type.crsType);
+
+        this.config.crs.formats = this.engine.formats
     }
 
     /**
@@ -98,6 +105,8 @@ class AmadeusTomaAdapter {
                 },
                 meta: {
                     type: AmadeusTomaAdapter.type,
+                    genderTypes: this.config.crs.genderTypes,
+                    formats: this.config.crs.formats,
                 },
             });
         } catch(error) {

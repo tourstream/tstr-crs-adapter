@@ -1,5 +1,6 @@
 import injector from 'inject-loader!../../../src/crsAdapter/TrafficsTbmAdapter';
-import {DEFAULT_OPTIONS} from '../../../src/UbpCrsAdapter';
+import { DEFAULT_OPTIONS } from '../../../src/UbpCrsAdapter'
+import TomaEngine from '../../../src/engine/TomaEngine'
 
 describe('TrafficsTbmAdapter', () => {
     let adapter, TrafficsTbmAdapter, axios, requestUrl, requestParameter, logService, windowSpy;
@@ -234,6 +235,8 @@ describe('TrafficsTbmAdapter', () => {
             adapter.fetchData().then((result) => {
                 expect(result.meta).toEqual({
                     type: TrafficsTbmAdapter.type,
+                    genderTypes: { male: 'H', female: 'D', child: 'K', infant: 'B' },
+                    formats: { date: 'DDMMYY', time: 'HHmm' },
                 });
 
                 expect(result.normalized).toEqual({

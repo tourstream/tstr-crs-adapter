@@ -74,7 +74,9 @@ describe('FtiTosiAdapter', () => {
                 parsed: {},
                 normalized: {},
                 meta: {
-                    type: 'tosi',
+                    type: TosiAdapter.type,
+                    genderTypes: { male: 'H', female: 'D', child: 'K', infant: 'B' },
+                    formats: { date: 'DDMMYY', time: 'HHmm' },
                 }
             };
 

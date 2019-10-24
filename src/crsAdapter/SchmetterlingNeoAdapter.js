@@ -1,22 +1,23 @@
-import {GENDER_TYPES} from '../UbpCrsAdapter';
+import {TRAVELLER_TYPES} from '../UbpCrsAdapter';
+import TomaEngine from '../engine/TomaEngine'
 
 class SchmetterlingNeoAdapter {
     constructor(logger, options = {}) {
         this.config = {
             crs: {
                 catalogFilePath: 'smartscripting/ExternalCatalog.js',
-                genderTypes: {
-                    [GENDER_TYPES.male]: 'H',
-                    [GENDER_TYPES.female]: 'D',
-                    [GENDER_TYPES.child]: 'K',
-                    [GENDER_TYPES.infant]: 'K',
-                },
+                genderTypes: {},
             }
         };
 
         this.options = options;
         this.logger = logger;
         this.connectionOptions = {};
+
+        this.engine = new TomaEngine(this.options);
+        this.engine.travellerTypes.forEach(type => this.config.crs.genderTypes[type.adapterType] = type.crsType);
+
+        this.config.crs.formats = this.engine.formats
     }
 
     /**
@@ -51,8 +52,9 @@ class SchmetterlingNeoAdapter {
                     travellers: this.collectTravellers(parsed),
                 },
                 meta: {
-                    genderTypes: this.config.crs.genderTypes,
                     type: SchmetterlingNeoAdapter.type,
+                    genderTypes: this.config.crs.genderTypes,
+                    formats: this.config.crs.formats,
                 },
             };
         });

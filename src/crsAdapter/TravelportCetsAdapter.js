@@ -4,12 +4,12 @@ import moment from 'moment';
 import {SERVICE_TYPES} from '../UbpCrsAdapter';
 import TravellerHelper from '../helper/TravellerHelper';
 import ObjectHelper from '../helper/ObjectHelper';
+import CetsEngine from '../engine/CetsEngine'
 
 const CONFIG = {
     crs: {
-        dateFormat: 'DDMMYYYY',
-        timeFormat: 'HHmm',
         externalObjectName: 'cetsObject',
+        genderTypes: {},
     },
     defaults: {
         personCount: 1,
@@ -57,12 +57,6 @@ const CONFIG = {
         R: '360C',
         M: '360'
     },
-    gender2SalutationMap: {
-        male: 'M',
-        female: 'F',
-        child: 'C',
-        infant: 'I',
-    },
     limitedCatalogs: ['DCH', 'CCH', 'DRI', 'DRIV', 'CARS'],
     parserOptions: {
         attributeNamePrefix: '__attributes',
@@ -94,15 +88,9 @@ const CONFIG = {
 
 class TravelportCetsAdapter {
     constructor(logger, options = {}) {
+        this.config = CONFIG;
         this.options = options;
         this.logger = logger;
-        this.helper = {
-            traveller: new TravellerHelper(Object.assign({}, options, {
-                crsDateFormat: CONFIG.crs.dateFormat,
-                gender2SalutationMap: CONFIG.gender2SalutationMap,
-            })),
-            object: new ObjectHelper({attrPrefix: CONFIG.parserOptions.attributeNamePrefix}),
-        };
 
         this.xmlParser = {
             parse: (xmlString) => {
@@ -123,6 +111,19 @@ class TravelportCetsAdapter {
 
                 return builder.buildObject(xmlObject);
             }
+        };
+
+        this.engine = new CetsEngine(this.options);
+        this.engine.travellerTypes.forEach(type => this.config.crs.genderTypes[type.adapterType] = type.crsType);
+
+        this.config.crs.formats = this.engine.formats
+
+        this.helper = {
+            traveller: new TravellerHelper(Object.assign({}, options, {
+                crsDateFormat: this.config.crs.formats.date,
+                gender2SalutationMap: this.config.crs.genderTypes,
+            })),
+            object: new ObjectHelper({attrPrefix: CONFIG.parserOptions.attributeNamePrefix}),
         };
     }
 
@@ -290,7 +291,7 @@ class TravelportCetsAdapter {
      * @returns {{pickUpDate: *, dropOffDate: string, pickUpLocation: *, duration: *, renterCode: *, vehicleCode: *, type: string}}
      */
     mapCarServiceFromXmlObjectToAdapterObject(xmlService) {
-        let pickUpDate = moment(xmlService.StartDate, CONFIG.crs.dateFormat);
+        let pickUpDate = moment(xmlService.StartDate, this.config.crs.formats.date);
         let dropOffDate = pickUpDate.clone().add(xmlService.Duration, 'days');
 
         let service = {
@@ -303,8 +304,8 @@ class TravelportCetsAdapter {
         };
 
         if (xmlService.CarDetails) {
-            let pickUpTime = moment(xmlService.CarDetails.PickUp.Time, CONFIG.crs.timeFormat);
-            let dropOffTime = moment(xmlService.CarDetails.DropOff.Time, CONFIG.crs.timeFormat);
+            let pickUpTime = moment(xmlService.CarDetails.PickUp.Time, this.config.crs.formats.time);
+            let dropOffTime = moment(xmlService.CarDetails.DropOff.Time, this.config.crs.formats.time);
 
             service.pickUpLocation = xmlService.CarDetails.PickUp.CarStation[CONFIG.parserOptions.attributeNamePrefix].Code;
             service.dropOffLocation = xmlService.CarDetails.DropOff.CarStation[CONFIG.parserOptions.attributeNamePrefix].Code;
@@ -321,7 +322,7 @@ class TravelportCetsAdapter {
      * @returns {{type: string, bookingId: *, destination: *, startDate: string, endDate: string}}
      */
     mapRoundTripServiceFromXmlObjectToAdapterObject(xmlService) {
-        let startDate = moment(xmlService.StartDate, CONFIG.crs.dateFormat);
+        let startDate = moment(xmlService.StartDate, this.config.crs.formats.date);
         let endDate = startDate.clone().add(xmlService.Duration, 'days');
 
         return {
@@ -334,7 +335,7 @@ class TravelportCetsAdapter {
     }
 
     mapHotelServiceFromXmlObjectToAdapterObject(xmlService) {
-        let startDate = moment(xmlService.StartDate, CONFIG.crs.dateFormat);
+        let startDate = moment(xmlService.StartDate, this.config.crs.formats.date);
         let endDate = startDate.clone().add(xmlService.Duration, 'days');
 
         return {
@@ -500,7 +501,7 @@ class TravelportCetsAdapter {
                     ? ''
                     : service.vehicleCode + '/' + service.pickUpLocation + '-' + service.dropOffLocation,
             },
-            StartDate: pickUpDate.isValid() ? pickUpDate.format(CONFIG.crs.dateFormat) : service.pickUpDate,
+            StartDate: pickUpDate.isValid() ? pickUpDate.format(this.config.crs.formats.date) : service.pickUpDate,
             Duration: this.calculateDuration(service.pickUpDate, service.dropOffDate),
             Destination: service.pickUpLocation.substr(0, 3),
             Product: service.renterCode,
@@ -514,7 +515,7 @@ class TravelportCetsAdapter {
                     [CONFIG.builderOptions.attrkey]: {
                         Where: CONFIG.defaults.pickUp.walkIn.key,
                     },
-                    Time: pickUpTime.isValid() ? pickUpTime.format(CONFIG.crs.timeFormat) : service.pickUpTime,
+                    Time: pickUpTime.isValid() ? pickUpTime.format(this.config.crs.formats.time) : service.pickUpTime,
                     CarStation: {
                         [CONFIG.builderOptions.attrkey]: {
                             Code: service.pickUpLocation,
@@ -524,7 +525,7 @@ class TravelportCetsAdapter {
                     Info: CONFIG.defaults.pickUp.walkIn.info,
                 },
                 DropOff: {
-                    Time: dropOffTime.isValid() ? dropOffTime.format(CONFIG.crs.timeFormat) : service.dropOffTime,
+                    Time: dropOffTime.isValid() ? dropOffTime.format(this.config.crs.formats.time) : service.dropOffTime,
                     CarStation: {
                         [CONFIG.builderOptions.attrkey]: {
                             Code: service.dropOffLocation,
@@ -602,7 +603,7 @@ class TravelportCetsAdapter {
             Program: CONFIG.defaults.program.roundTrip,
             Destination: CONFIG.defaults.destination.roundTrip,
             Room: service.destination,
-            StartDate: startDate.isValid() ? startDate.format(CONFIG.crs.dateFormat) : service.startDate,
+            StartDate: startDate.isValid() ? startDate.format(this.config.crs.formats.date) : service.startDate,
             Duration: this.calculateDuration(service.startDate, service.endDate),
         };
 
@@ -623,7 +624,7 @@ class TravelportCetsAdapter {
             Norm: service.roomOccupancy,
             MaxAdults: service.roomQuantity,
             Meal: service.mealCode,
-            StartDate: startDate.isValid() ? startDate.format(CONFIG.crs.dateFormat) : service.dateFrom,
+            StartDate: startDate.isValid() ? startDate.format(this.config.crs.formats.date) : service.dateFrom,
             Duration: this.calculateDuration(service.dateFrom, service.dateTo),
         };
 
@@ -646,7 +647,7 @@ class TravelportCetsAdapter {
                 PersonType: traveller.salutation,
                 Name: serviceTraveller.lastName,
                 FirstName: serviceTraveller.firstName,
-                Birth: dateOfBirth.isValid() ? dateOfBirth.format(CONFIG.crs.dateFormat) : traveller.dateOfBirth,
+                Birth: dateOfBirth.isValid() ? dateOfBirth.format(this.config.crs.formats.date) : traveller.dateOfBirth,
             });
 
             xml.Fah[xml.Fah.length - 1].Persons = (xml.Fah[xml.Fah.length - 1].Persons || '') + (index + 1);

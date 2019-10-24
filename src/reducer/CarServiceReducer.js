@@ -35,7 +35,7 @@ class CarServiceReducer {
 
         if (adapterService.dropOffTime) {
           const dropOffService = this.helper.service.createEmptyService(crsData);
-          dropOffService.type = CRS_SERVICE_TYPES.dropOffTime;
+          dropOffService.type = CRS_SERVICE_TYPES.carDropOffTime;
           dropOffService.code = CODE_TYPES.walkIn;
           dropOffService.accommodation = dropOffTime.isValid() ? dropOffTime.format(crsData.meta.formats.time) : adapterService.dropOffTime;
         }

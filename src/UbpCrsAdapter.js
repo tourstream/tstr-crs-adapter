@@ -41,12 +41,12 @@ const SERVICE_TYPES = {
 const CRS_SERVICE_TYPES = {
     [SERVICE_TYPES.car]: 'MW',
     carHotelLocation: 'E',
+    carDropOffTime: 'E',
     [SERVICE_TYPES.hotel]: 'H',
     [SERVICE_TYPES.roundTrip]: 'R',
     [SERVICE_TYPES.camper]: 'WM',
     camperExtra: 'TA',
     insurance: 'V',
-    dropOffTime: 'E',
 }
 
 const CRS_TYPES = {
@@ -104,7 +104,7 @@ const CAMPER_EXTRA_TYPES = {
     insurance: 'insurance',
 };
 
-const GENDER_TYPES = {
+const TRAVELLER_TYPES = {
     female: 'female',
     male: 'male',
     child: 'child',
@@ -382,17 +382,7 @@ class UbpCrsAdapter {
             this.logger.info(crsData.parsed);
 
             const defaultMetadata = {
-                formats: {
-                    date: 'DDMMYY',
-                    time: 'HHmm',
-                },
                 serviceTypes: CRS_SERVICE_TYPES,
-                genderTypes: {
-                    [GENDER_TYPES.male]: 'H',
-                    [GENDER_TYPES.female]: 'F',
-                    [GENDER_TYPES.child]: 'K',
-                    [GENDER_TYPES.infant]: 'K',
-                },
             };
 
             crsData.meta = Object.assign({}, defaultMetadata, crsData.meta);
@@ -435,7 +425,7 @@ export {
     SERVICE_TYPES,
     CRS_SERVICE_TYPES,
     CRS_TYPES,
-    GENDER_TYPES,
+    TRAVELLER_TYPES,
     CAMPER_EXTRA_TYPES,
     CODE_TYPES,
     DEFAULT_OPTIONS,

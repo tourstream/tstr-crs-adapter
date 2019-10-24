@@ -186,13 +186,9 @@ describe('SchmetterlingNeoAdapter', () => {
 
             adapter.fetchData().then((result) => {
                 expect(result.meta).toEqual({
-                    genderTypes: {
-                        male: 'H',
-                        female: 'D',
-                        child: 'K',
-                        infant: 'K'
-                    },
                     type: SchmetterlingNeoAdapter.type,
+                    genderTypes: { male: 'H', female: 'D', child: 'K', infant: 'B' },
+                    formats: { date: 'DDMMYY', time: 'HHmm' },
                 });
 
                 expect(result.normalized).toEqual({

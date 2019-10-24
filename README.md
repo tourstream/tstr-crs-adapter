@@ -139,7 +139,7 @@ Every service has following base fields:
   marked: true / false,
   travellers: [ 
     { 
-      gender: UbpCrsAdapter.GENDER_TYPES, 
+      type: UbpCrsAdapter.TRAVELLER_TYPES, 
       firstName: 'john', 
       lastName: 'doe', 
       dateOfBirth: '08111983' 

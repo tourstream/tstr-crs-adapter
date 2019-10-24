@@ -85,7 +85,7 @@ class VehicleHelper {
         const reformedServices = []
 
         services.forEach(function (line, index) {
-            if (line.type === SERVICE_TYPES.car && services[index + 1].type === CRS_SERVICE_TYPES.dropOffTime && services[index + 1].accommodation) {
+            if (line.type === SERVICE_TYPES.car && services[index + 1].type === CRS_SERVICE_TYPES.carDropOffTime && services[index + 1].accommodation) {
                 line.dropOffTime = services[index + 1].accommodation
                 delete services[index + 1]
             }
