@@ -6,7 +6,7 @@ describe('TravellerHelper', () => {
 
     beforeEach(() => {
         helper = new TravellerHelper({
-            gender2SalutationMap: {
+            adapterType2crsTypeMap: {
                 female: 'miss',
                 infant: 'baby',
             },
@@ -20,49 +20,49 @@ describe('TravellerHelper', () => {
 
     it('normalizeTraveller() should return traveller object', () => {
         expect(helper.normalizeTraveller(
-            {gender: 'Female', firstName: 'jane', dateOfBirth: '08111983'}
+            {type: 'Female', firstName: 'jane', dateOfBirth: '08111983'}
         )).toEqual(
-            {salutation: 'miss', name: 'jane', dateOfBirth: '08111983'}
+            {type: 'miss', name: 'jane', dateOfBirth: '08111983'}
         );
 
         expect(helper.normalizeTraveller(
-            {gender: 'inFant', firstName: 'jake'}
+            {type: 'inFant', firstName: 'jake'}
         )).toEqual(
-            {salutation: 'baby', name: 'jake'}
+            {type: 'baby', name: 'jake'}
         );
 
         expect(helper.normalizeTraveller(
-            {gender: 'unknown', firstName: 'jane', dateOfBirth: '08111983'}
+            {type: 'unknown', firstName: 'jane', dateOfBirth: '08111983'}
         )).toEqual(
             {name: 'jane', dateOfBirth: '08111983'}
         );
 
         expect(helper.normalizeTraveller(
-            {gender: 'unknown', lastName: 'doe', dateOfBirth: '08111983'}
+            {type: 'unknown', lastName: 'doe', dateOfBirth: '08111983'}
         )).toEqual(
             {name: 'doe', dateOfBirth: '08111983'}
         );
 
         expect(helper.normalizeTraveller(
-            {gender: 'unknown', firstName: 'jane', lastName: 'doe', dateOfBirth: '08111983'}
+            {type: 'unknown', firstName: 'jane', lastName: 'doe', dateOfBirth: '08111983'}
         )).toEqual(
             {name: 'doe/jane', dateOfBirth: '08111983'}
         );
 
         expect(helper.normalizeTraveller(
-            {gender: 'unknown', firstName: 'jane', lastName: 'doe dean', dateOfBirth: '08111983'}
+            {type: 'unknown', firstName: 'jane', lastName: 'doe dean', dateOfBirth: '08111983'}
         )).toEqual(
             {name: 'doe dean/jane', dateOfBirth: '08111983'}
         );
 
         expect(helper.normalizeTraveller(
-            {gender: 'unknown', firstName: 'jane janice', lastName: 'dean', dateOfBirth: '08111983'}
+            {type: 'unknown', firstName: 'jane janice', lastName: 'dean', dateOfBirth: '08111983'}
         )).toEqual(
             {name: 'dean/jane janice', dateOfBirth: '08111983'}
         );
 
         expect(helper.normalizeTraveller(
-            {gender: 'unknown', firstName: 'jane janice', lastName: 'doe dean', dateOfBirth: '08111983'}
+            {type: 'unknown', firstName: 'jane janice', lastName: 'doe dean', dateOfBirth: '08111983'}
         )).toEqual(
             {name: 'doe dean/jane janice', dateOfBirth: '08111983'}
         );
@@ -115,7 +115,7 @@ describe('TravellerHelper', () => {
     it('reduceTravellersIntoCrsData() should reduce for adapterService.travellers', () => {
         const adapterService = {
             travellers: [{
-                gender: 'gender',
+                type: 'adapterType',
                 firstName: 'name1 name2',
                 lastName: 'name',
                 dateOfBirth: '08111983',
@@ -125,7 +125,7 @@ describe('TravellerHelper', () => {
         const crsData = {
             meta: {
                 genderTypes: {
-                    gender: 'mappedGenderType'
+                    adapterType: 'crsType'
                 },
                 formats: {
                     date: 'DD.MM.YY'
@@ -138,7 +138,7 @@ describe('TravellerHelper', () => {
         expect(crsService.travellerAssociation).toBe('1');
         expect(crsData.normalized.travellers).toEqual([
             {
-                title: 'mappedGenderType',
+                title: 'crsType',
                 firstName: 'name1 name2',
                 lastName: 'name',
                 dateOfBirth: '08.11.83'

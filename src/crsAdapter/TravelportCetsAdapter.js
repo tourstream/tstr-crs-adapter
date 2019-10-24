@@ -121,7 +121,7 @@ class TravelportCetsAdapter {
         this.helper = {
             traveller: new TravellerHelper(Object.assign({}, options, {
                 crsDateFormat: this.config.crs.formats.date,
-                gender2SalutationMap: this.config.crs.genderTypes,
+                adapterType2crsTypeMap: this.config.crs.genderTypes,
             })),
             object: new ObjectHelper({attrPrefix: CONFIG.parserOptions.attributeNamePrefix}),
         };
@@ -644,7 +644,7 @@ class TravelportCetsAdapter {
                 [CONFIG.builderOptions.attrkey]: {
                     ID: index + 1,
                 },
-                PersonType: traveller.salutation,
+                PersonType: traveller.type,
                 Name: serviceTraveller.lastName,
                 FirstName: serviceTraveller.firstName,
                 Birth: dateOfBirth.isValid() ? dateOfBirth.format(this.config.crs.formats.date) : traveller.dateOfBirth,

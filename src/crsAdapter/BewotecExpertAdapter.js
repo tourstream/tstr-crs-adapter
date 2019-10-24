@@ -152,7 +152,7 @@ class BewotecExpertAdapter {
             const travellerNames = (travellerData.name || '').split('/');
 
             return {
-                title: travellerData.salutation,
+                title: travellerData.type,
                 lastName: travellerNames.shift(),
                 firstName: travellerNames.join (' '),
                 dateOfBirth: travellerData.age,
