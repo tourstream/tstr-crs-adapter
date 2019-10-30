@@ -1,6 +1,7 @@
 import axios from 'axios';
 import querystring from 'querystring';
 import WindowHelper from '../helper/WindowHelper';
+import TomaEngine from '../engine/TomaEngine'
 
 class TrafficsTbmAdapter {
     constructor(logger, options = {}) {
@@ -10,7 +11,8 @@ class TrafficsTbmAdapter {
                 exportUrls: {
                     live: 'https://tbm.traffics.de',
                     test: 'https://cosmo-staging.traffics-switch.de',
-                }
+                },
+                genderTypes: {},
             },
             supportedConnectionOptions: {
                 dataSourceUrl: void 0,
@@ -25,6 +27,11 @@ class TrafficsTbmAdapter {
         this.helper = {
             window: new WindowHelper(),
         };
+
+        this.engine = new TomaEngine(this.options);
+        this.engine.travellerTypes.forEach(type => this.config.crs.genderTypes[type.adapterType] = type.crsType);
+
+        this.config.crs.formats = this.engine.formats
     }
 
     connect(options = {}) {
@@ -95,6 +102,8 @@ class TrafficsTbmAdapter {
                     },
                     meta: {
                         type: TrafficsTbmAdapter.type,
+                        genderTypes: this.config.crs.genderTypes,
+                        formats: this.config.crs.formats,
                     },
                 };
             });

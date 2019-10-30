@@ -300,20 +300,16 @@ describe('BewotecExpertAdapter', () => {
                 '</Services>' +
                 '<Travellers>' +
                 '<Traveller/>' +
-                '<Traveller name="my/long/name" salutation="salutation" age="age" />' +
+                '<Traveller name="my/long/name" type="type" age="age" />' +
                 '</Travellers>' +
                 '</ExpertModel>',
             }));
 
             adapter.fetchData().then((result) => {
                 expect(result.meta).toEqual({
-                    genderTypes: {
-                        male: 'H',
-                        female: 'D',
-                        child: 'K',
-                        infant: 'B'
-                    },
                     type: BewotecExpertAdapter.type,
+                    genderTypes: { male: 'H', female: 'D', child: 'K', infant: 'B' },
+                    formats: { date: 'DDMMYY', time: 'HHmm' },
                 });
 
                 expect(result.normalized).toEqual({
@@ -337,7 +333,7 @@ describe('BewotecExpertAdapter', () => {
                     travellers: [
                         void 0,
                         {
-                            title: 'salutation',
+                            title: 'type',
                             firstName: 'long name',
                             lastName: 'my',
                             dateOfBirth: 'age'

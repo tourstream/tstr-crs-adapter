@@ -1,19 +1,15 @@
 import xml2js from 'xml2js';
 import axios from 'axios';
 import ObjectHelper from '../helper/ObjectHelper';
-import { GENDER_TYPES } from '../UbpCrsAdapter'
+import TomaEngine from '../engine/TomaEngine'
 
 class FtiTosiAdapter {
     constructor(logger, options = {}) {
         this.config = {
             crs: {
                 connectionUrl: '//xmlrpc.fti.de/xmlrpc',
-                genderTypes: {
-                    [GENDER_TYPES.male]: 'H',
-                    [GENDER_TYPES.female]: 'D',
-                    [GENDER_TYPES.child]: 'K',
-                    [GENDER_TYPES.infant]: 'B',
-                },
+                // deprecated
+                genderTypes: {},
             },
             parserOptions: {
                 attributeNamePrefix: '__attributes',
@@ -54,6 +50,11 @@ class FtiTosiAdapter {
         this.xmlBuilder = {
             build: (xmlObject) => (new xml2js.Builder(this.config.builderOptions)).buildObject(JSON.parse(JSON.stringify(xmlObject)))
         };
+
+        this.engine = new TomaEngine(this.options);
+        this.engine.travellerTypes.forEach(type => this.config.crs.genderTypes[type.adapterType] = type.crsType);
+
+        this.config.crs.formats = this.engine.formats
     }
 
     connect(connectionOptions) {
@@ -77,6 +78,8 @@ class FtiTosiAdapter {
             normalized: {},
             meta: {
                 type: FtiTosiAdapter.type,
+                genderTypes: this.config.crs.genderTypes,
+                formats: this.config.crs.formats,
             },
         });
     }

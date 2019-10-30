@@ -7,10 +7,10 @@ class TravellerHelper {
     }
 
     normalizeTraveller(traveller = {}) {
-        const gender = (traveller.gender || '').toLowerCase();
+        const type = (traveller.type || '').toLowerCase();
         const name = [traveller.lastName, traveller.firstName].filter(Boolean).join('/');
         return JSON.parse(JSON.stringify({
-            salutation: (this.config.gender2SalutationMap || {})[gender] || void 0,
+            type: (this.config.adapterType2crsTypeMap || {})[type] || void 0,
             name: name.length ? name : void 0,
             dateOfBirth: traveller.dateOfBirth,
         }));
@@ -48,7 +48,7 @@ class TravellerHelper {
                 ? moment(adapterTraveller.dateOfBirth, this.config.useDateFormat)
                 : void 0;
 
-            crsTraveller.title = crsData.meta.genderTypes[adapterTraveller.gender];
+            crsTraveller.title = crsData.meta.genderTypes[adapterTraveller.type];
             crsTraveller.firstName = adapterTraveller.firstName;
             crsTraveller.lastName = adapterTraveller.lastName;
             crsTraveller.dateOfBirth = dateOfBirth && dateOfBirth.isValid()

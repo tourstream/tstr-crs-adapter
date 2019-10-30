@@ -657,13 +657,13 @@ describe('TravelportCetsAdapter', () => {
                             endDate: '19122017',
                             travellers: [
                                 {
-                                    gender: 'female',
+                                    type: 'female',
                                     firstName: 'Jane',
                                     lastName: 'Doe Dean',
                                     dateOfBirth: '08111983',
                                 },
                                 {
-                                    gender: 'child',
+                                    type: 'child',
                                     firstName: 'Joe',
                                     lastName: 'Doe',
                                     dateOfBirth: '22112020',
@@ -762,12 +762,12 @@ describe('TravelportCetsAdapter', () => {
                             dateTo: '19122017',
                             travellers: [
                                 {
-                                    gender: 'female',
+                                    type: 'female',
                                     firstName: 'Jane',
                                     lastName: 'Doe',
                                 },
                                 {
-                                    gender: 'child',
+                                    type: 'child',
                                     firstName: 'Joe',
                                     lastName: 'Doe',
                                 }

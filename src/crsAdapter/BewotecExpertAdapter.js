@@ -1,20 +1,16 @@
 import axios from 'axios';
-import {CRS_TYPES, GENDER_TYPES} from '../UbpCrsAdapter';
+import {CRS_TYPES, TRAVELLER_TYPES} from '../UbpCrsAdapter';
 import querystring from 'querystring';
 import WindowHelper from '../helper/WindowHelper';
 import * as fastXmlParser from 'fast-xml-parser';
+import TomaEngine from '../engine/TomaEngine'
 
 class BewotecExpertAdapter {
     constructor(logger, options = {}) {
         this.config = {
             crs: {
                 connectionUrl: 'http://localhost:7354/airob',
-                genderTypes: {
-                    [GENDER_TYPES.male]: 'H',
-                    [GENDER_TYPES.female]: 'D',
-                    [GENDER_TYPES.child]: 'K',
-                    [GENDER_TYPES.infant]: 'B',
-                },
+                genderTypes: {},
                 lineNumberMap: ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'],
             },
             parserOptions: {
@@ -69,6 +65,11 @@ class BewotecExpertAdapter {
                 return crsObject;
             }
         };
+
+        this.engine = new TomaEngine(this.options);
+        this.engine.travellerTypes.forEach(type => this.config.crs.genderTypes[type.adapterType] = type.crsType);
+
+        this.config.crs.formats = this.engine.formats
     }
 
     connect(options = {}) {
@@ -115,8 +116,9 @@ class BewotecExpertAdapter {
                     travellers: this.collectTravellers(crsData),
                 },
                 meta: {
-                    genderTypes: this.config.crs.genderTypes,
                     type: BewotecExpertAdapter.type,
+                    genderTypes: this.config.crs.genderTypes,
+                    formats: this.config.crs.formats,
                 },
             };
         });
@@ -150,7 +152,7 @@ class BewotecExpertAdapter {
             const travellerNames = (travellerData.name || '').split('/');
 
             return {
-                title: travellerData.salutation,
+                title: travellerData.type,
                 lastName: travellerNames.shift(),
                 firstName: travellerNames.join (' '),
                 dateOfBirth: travellerData.age,

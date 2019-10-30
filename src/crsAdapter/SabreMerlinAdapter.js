@@ -2,12 +2,14 @@ import xml2js from 'xml2js';
 import axios from 'axios';
 import ObjectHelper from '../helper/ObjectHelper';
 import * as fastXmlParser from 'fast-xml-parser';
+import TomaEngine from '../engine/TomaEngine'
 
 class SabreMerlinAdapter {
     constructor(logger, options = {}) {
         this.config = {
             crs: {
                 connectionUrl: 'https://localhost:12771/',
+                genderTypes: {},
             },
             parserOptions: {
                 attributeNamePrefix: '__attributes',
@@ -58,6 +60,11 @@ class SabreMerlinAdapter {
         this.xmlBuilder = {
             build: (xmlObject) => (new xml2js.Builder(this.config.builderOptions)).buildObject(JSON.parse(JSON.stringify(xmlObject)))
         };
+
+        this.engine = new TomaEngine(this.options);
+        this.engine.travellerTypes.forEach(type => this.config.crs.genderTypes[type.adapterType] = type.crsType);
+
+        this.config.crs.formats = this.engine.formats
     }
 
     connect() {
@@ -95,6 +102,8 @@ class SabreMerlinAdapter {
                 },
                 meta: {
                     type: SabreMerlinAdapter.type,
+                    genderTypes: this.config.crs.genderTypes,
+                    formats: this.config.crs.formats,
                 },
             };
         });
