@@ -300,7 +300,7 @@ describe('BewotecExpertAdapter', () => {
                 '</Services>' +
                 '<Travellers>' +
                 '<Traveller/>' +
-                '<Traveller name="my/long/name" type="type" age="age" />' +
+                '<Traveller name="my/long/name" salutation="salutation" age="age" />' +
                 '</Travellers>' +
                 '</ExpertModel>',
             }));
@@ -333,7 +333,7 @@ describe('BewotecExpertAdapter', () => {
                     travellers: [
                         void 0,
                         {
-                            title: 'type',
+                            title: 'salutation',
                             firstName: 'long name',
                             lastName: 'my',
                             dateOfBirth: 'age'
