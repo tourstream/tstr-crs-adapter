@@ -16,6 +16,7 @@ import HotelHelper from './helper/HotelHelper';
 import RoundTripHelper from './helper/RoundTripHelper';
 import TravellerHelper from './helper/TravellerHelper';
 import ServiceHelper from './helper/ServiceHelper'
+import UrlHelper from './helper/UrlHelper'
 
 import CrsDataMapper from './mapper/CrsDataMapper';
 import CarServiceMapper from './mapper/CarServiceMapper';
@@ -153,12 +154,17 @@ class UbpCrsAdapter {
      * @private
      */
     initDebugging() {
-        let isDebugUrl = window.location && (
-            (window.location.search && window.location.search.indexOf('debug') !== -1) ||
-            (window.location.hash && window.location.hash.indexOf('debug') !== -1)
-        );
+        const urlHelper = new UrlHelper();
+        const onValues = ['1', 'true', 'on'];
+        const offValues = ['0', 'false', 'off'];
+        const params = urlHelper.getUrlParams();
+        const debug = onValues.includes(params.debug)
+            ? true
+            : (offValues.includes(params.debug) ? false : void 0);
 
-        this.options.debug = this.options.debug || isDebugUrl;
+        this.options.debug = debug !== void 0
+            ? debug
+            : this.options.debug;
 
         if (this.options.debug) {
             this.logger.enable();

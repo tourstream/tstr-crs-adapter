@@ -1,4 +1,5 @@
 import TomaEngine from '../engine/TomaEngine'
+import UrlHelper from '../helper/UrlHelper';
 
 class AmadeusSPCTomaAdapter {
     constructor(logger, options = {}) {
@@ -11,6 +12,9 @@ class AmadeusSPCTomaAdapter {
 
         this.options = options;
         this.logger = logger;
+        this.helper = {
+            url: new UrlHelper(),
+        };
         this.connectionOptions = {};
 
         this.engine = new TomaEngine(this.options);
@@ -157,7 +161,7 @@ class AmadeusSPCTomaAdapter {
 
     cancel() {
         return new Promise((resolve) => {
-            let popupId = this.getUrlParameter('POPUP_ID') || this.connectionOptions.popupId;
+            let popupId = this.helper.url.getUrlParameter('POPUP_ID') || this.connectionOptions.popupId;
 
             if (!popupId) {
                 throw new Error('can not cancel - popupId is missing');
@@ -228,7 +232,7 @@ class AmadeusSPCTomaAdapter {
 
             this.logger.info('use ' + connectionUrl + ' for connection to Amadeus');
 
-            let catalogVersion = this.getUrlParameter('EXTERNAL_CATALOG_VERSION') || options.externalCatalogVersion;
+            let catalogVersion = this.helper.url.getUrlParameter('EXTERNAL_CATALOG_VERSION') || options.externalCatalogVersion;
             let filePath = connectionUrl + '/' + this.config.crs.catalogFilePath + (catalogVersion ? '?version=' + catalogVersion : '');
             let script = document.createElement('script');
 
@@ -248,20 +252,6 @@ class AmadeusSPCTomaAdapter {
     getReferrer() {
         return document.referrer;
     }
-
-    /**
-     * @private
-     * @param name string
-     * @returns {string}
-     */
-    getUrlParameter(name) {
-        name = name.replace(/[\[]/, '\\[').replace(/[\]]/, '\\]');
-
-        let regex = new RegExp('[\\?&]' + name + '=([^&#]*)');
-        let results = regex.exec(window.location);
-
-        return results === null ? void 0 : decodeURIComponent(results[1].replace(/\+/g, ' '));
-    };
 
     /**
      * @private
