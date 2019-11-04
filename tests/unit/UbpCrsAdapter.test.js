@@ -52,6 +52,7 @@ describe('UbpCrsAdapter', () => {
     });
 
     afterEach(() => {
+        LogService.enable.calls.reset();
         window.history.pushState({}, '', '');
     });
 
