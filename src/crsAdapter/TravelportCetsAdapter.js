@@ -520,7 +520,7 @@ class TravelportCetsAdapter {
             Norm: CONFIG.defaults.personCount,
             MaxAdults: CONFIG.defaults.personCount,
             Meal: CONFIG.defaults.serviceCode.car,
-            Persons: 1,
+            Persons: '1',
             CarDetails: {
                 PickUp: {
                     [CONFIG.builderOptions.attrkey]: {
@@ -645,7 +645,10 @@ class TravelportCetsAdapter {
     assignTravellers(service, xml) {
         if (!service.travellers) return;
 
+        const lineNumber = xml.Fah.length - 1;
+
         xml.Fap = [];
+        xml.Fah[lineNumber].Persons = '';
 
         service.travellers.forEach((serviceTraveller, index) => {
             const traveller = this.helper.traveller.normalizeTraveller(serviceTraveller);
@@ -661,7 +664,7 @@ class TravelportCetsAdapter {
                 Birth: dateOfBirth.isValid() ? dateOfBirth.format(this.config.crs.formats.date) : traveller.dateOfBirth,
             });
 
-            xml.Fah[xml.Fah.length - 1].Persons = (xml.Fah[xml.Fah.length - 1].Persons || '') + (index + 1);
+            xml.Fah[lineNumber].Persons += String(index + 1);
         });
     }
 
@@ -700,7 +703,7 @@ class TravelportCetsAdapter {
             },
             Code: CONFIG.defaults.serviceType.misc,
             TextV: '',
-            Persons: 1,
+            Persons: '1',
         };
 
         xml.Faq.push(newFaq);
