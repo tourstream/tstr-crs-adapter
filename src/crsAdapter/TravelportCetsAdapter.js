@@ -147,22 +147,28 @@ class TravelportCetsAdapter {
 
     sendData(dataObject) {
         let xmlObject = this.xmlParser.parse(this.getCrsXml());
+
+        this.logger.info('PARSED CRS DATA:');
+        this.logger.info(xmlObject);
+
         let normalizedXmlObject = this.normalizeParsedData(xmlObject);
 
         if (normalizedXmlObject.Request.Avl) {
             delete normalizedXmlObject.Request.Avl;
         }
 
-        this.assignAdapterObjectToXmlObject(normalizedXmlObject, dataObject);
+        this.logger.info('NORMALIZED CRS DATA:');
+        this.logger.info(normalizedXmlObject);
 
+        this.assignAdapterObjectToXmlObject(normalizedXmlObject, dataObject);
         this.cleanUpXmlObject(normalizedXmlObject);
 
-        this.logger.info('XML OBJECT:');
+        this.logger.info('TRANSFER DATA:');
         this.logger.info(normalizedXmlObject);
 
         let xml = this.xmlBuilder.build(normalizedXmlObject);
 
-        this.logger.info('XML:');
+        this.logger.info('TRANSFER XML:');
         this.logger.info(xml);
 
         try {
@@ -200,7 +206,12 @@ class TravelportCetsAdapter {
 
     getCrsXml() {
         try {
-            return this.getConnection().getXmlRequest();
+            const xml = this.getConnection().getXmlRequest();
+
+            this.logger.info('CRS XML:');
+            this.logger.info(xml);
+
+            return xml;
         } catch (error) {
             this.logger.error(error);
             throw new Error('connection::getXmlRequest: ' + error.message);
