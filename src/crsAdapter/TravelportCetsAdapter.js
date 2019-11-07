@@ -147,22 +147,28 @@ class TravelportCetsAdapter {
 
     sendData(dataObject) {
         let xmlObject = this.xmlParser.parse(this.getCrsXml());
+
+        this.logger.info('PARSED CRS DATA:');
+        this.logger.info(xmlObject);
+
         let normalizedXmlObject = this.normalizeParsedData(xmlObject);
 
         if (normalizedXmlObject.Request.Avl) {
             delete normalizedXmlObject.Request.Avl;
         }
 
-        this.assignAdapterObjectToXmlObject(normalizedXmlObject, dataObject);
+        this.logger.info('NORMALIZED CRS DATA:');
+        this.logger.info(normalizedXmlObject);
 
+        this.assignAdapterObjectToXmlObject(normalizedXmlObject, dataObject);
         this.cleanUpXmlObject(normalizedXmlObject);
 
-        this.logger.info('XML OBJECT:');
+        this.logger.info('TRANSFER DATA:');
         this.logger.info(normalizedXmlObject);
 
         let xml = this.xmlBuilder.build(normalizedXmlObject);
 
-        this.logger.info('XML:');
+        this.logger.info('TRANSFER XML:');
         this.logger.info(xml);
 
         try {
@@ -200,7 +206,12 @@ class TravelportCetsAdapter {
 
     getCrsXml() {
         try {
-            return this.getConnection().getXmlRequest();
+            const xml = this.getConnection().getXmlRequest();
+
+            this.logger.info('CRS XML:');
+            this.logger.info(xml);
+
+            return xml;
         } catch (error) {
             this.logger.error(error);
             throw new Error('connection::getXmlRequest: ' + error.message);
@@ -509,7 +520,7 @@ class TravelportCetsAdapter {
             Norm: CONFIG.defaults.personCount,
             MaxAdults: CONFIG.defaults.personCount,
             Meal: CONFIG.defaults.serviceCode.car,
-            Persons: 1,
+            Persons: '1',
             CarDetails: {
                 PickUp: {
                     [CONFIG.builderOptions.attrkey]: {
@@ -634,7 +645,10 @@ class TravelportCetsAdapter {
     assignTravellers(service, xml) {
         if (!service.travellers) return;
 
+        const lineNumber = xml.Fah.length - 1;
+
         xml.Fap = [];
+        xml.Fah[lineNumber].Persons = '';
 
         service.travellers.forEach((serviceTraveller, index) => {
             const traveller = this.helper.traveller.normalizeTraveller(serviceTraveller);
@@ -650,7 +664,7 @@ class TravelportCetsAdapter {
                 Birth: dateOfBirth.isValid() ? dateOfBirth.format(this.config.crs.formats.date) : traveller.dateOfBirth,
             });
 
-            xml.Fah[xml.Fah.length - 1].Persons = (xml.Fah[xml.Fah.length - 1].Persons || '') + (index + 1);
+            xml.Fah[lineNumber].Persons += String(index + 1);
         });
     }
 
@@ -689,7 +703,7 @@ class TravelportCetsAdapter {
             },
             Code: CONFIG.defaults.serviceType.misc,
             TextV: '',
-            Persons: 1,
+            Persons: '1',
         };
 
         xml.Faq.push(newFaq);

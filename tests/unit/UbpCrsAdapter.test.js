@@ -47,16 +47,16 @@ describe('UbpCrsAdapter', () => {
 
         adapter = new UbpCrsAdapter.default({onSetData: onSetDataSpy});
 
-        LogService.enable.calls.reset();
         window.history.pushState({}, '', '');
     });
 
     afterEach(() => {
-        LogService.enable.calls.reset();
         window.history.pushState({}, '', '');
     });
 
     it('should enable logger by options', () => {
+        LogService.enable.calls.reset();
+
         window.history.pushState({}, '', '');
 
         new UbpCrsAdapter.default({debug: true});
@@ -65,6 +65,8 @@ describe('UbpCrsAdapter', () => {
     });
 
     it('should enable logger by URL parameter', () => {
+        LogService.enable.calls.reset();
+
         window.history.pushState({}, '', '?debug=1');
 
         new UbpCrsAdapter.default();
@@ -73,6 +75,8 @@ describe('UbpCrsAdapter', () => {
     });
 
     it('should enable logger by URL hash', () => {
+        LogService.enable.calls.reset();
+
         window.location.hash = '/?debug=on';
 
         new UbpCrsAdapter.default();
@@ -81,6 +85,8 @@ describe('UbpCrsAdapter', () => {
     });
 
     it('should disable logger by URL parameter', () => {
+        LogService.enable.calls.reset();
+
         window.history.pushState({}, '', '?debug=off');
 
         new UbpCrsAdapter.default({ debug: true });
@@ -89,6 +95,8 @@ describe('UbpCrsAdapter', () => {
     });
 
     it('should disable logger by URL hash', () => {
+        LogService.enable.calls.reset();
+
         window.location.hash = '/?debug=false';
 
         new UbpCrsAdapter.default({ debug: true });
