@@ -2,7 +2,7 @@ import { SERVICE_TYPES, CRS_SERVICE_TYPES } from '../UbpCrsAdapter'
 
 const CONFIG = {
     serviceCodeRegEx: {
-        // USA96A4/MIA0H-TPA
+        // USA96A4/MIA0-TPA
         old: /^([A-Z]*[0-9]*)([A-Z]*[0-9]*)\/(.*)-(.*)$/,
         // MIA03SFO0HMBMN81
         sipp: /^(.{5})(.{5})(.{4})(.{2})$/,
@@ -39,8 +39,7 @@ class VehicleHelper {
         const indexVehicleTypeCode = 2
         const indexPickUpLocation = 3
         const indexDropOffLocation = 4
-
-        let codeParts = code.match(CONFIG.serviceCodeRegEx.old)
+        const codeParts = code.match(CONFIG.serviceCodeRegEx.old)
 
         return codeParts ? {
             renterCode: codeParts[indexRentalCode],
@@ -53,8 +52,7 @@ class VehicleHelper {
     splitLocationsOnlyServiceCode(code) {
         const indexPickUpLocation = 1
         const indexDropOffLocation = 2
-
-        let codeParts = code.match(CONFIG.serviceCodeRegEx.locationsOnly)
+        const codeParts = code.match(CONFIG.serviceCodeRegEx.locationsOnly)
 
         return codeParts ? {
             pickUpLocation: codeParts[indexPickUpLocation],
@@ -63,7 +61,9 @@ class VehicleHelper {
     }
 
     splitSippServiceCode(code) {
-        if (code.length !== 16) {
+        const wordsAndDigitsOnlyRegex = /^[\w\d]+$/
+
+        if (code.length !== 16 || !code.match(wordsAndDigitsOnlyRegex)) {
             return
         }
 
@@ -71,8 +71,7 @@ class VehicleHelper {
         const indexDropOffLocation = 2
         const indexSipp = 3
         const indexLastPartOfRenterCode = 4
-
-        let codeParts = code.match(CONFIG.serviceCodeRegEx.sipp)
+        const codeParts = code.match(CONFIG.serviceCodeRegEx.sipp)
 
         return codeParts ? {
             pickUpLocation: codeParts[indexPickUpLocation],

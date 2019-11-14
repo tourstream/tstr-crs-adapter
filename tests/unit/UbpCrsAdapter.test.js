@@ -26,7 +26,7 @@ describe('UbpCrsAdapter', () => {
         AdapterDataReducer = require('tests/unit/_mocks/AdapterDataReducer')();
         LogService = require('tests/unit/_mocks/LogService')();
         UbpCrsAdapter = injector({
-            'LogService': () => LogService,
+            'LogService': jasmine.createSpy('LogService').and.returnValue(LogService),
             'crsAdapter/AmadeusTomaAdapter': createCrsAdapterImport(AmadeusTomaAdapter.type),
             'crsAdapter/AmadeusSPCTomaAdapter': createCrsAdapterImport(AmadeusSPCTomaAdapter.type),
             'crsAdapter/TravelportCetsAdapter': createCrsAdapterImport(TravelportCetsAdapter.type),
@@ -47,16 +47,16 @@ describe('UbpCrsAdapter', () => {
 
         adapter = new UbpCrsAdapter.default({onSetData: onSetDataSpy});
 
-        window.history.pushState({}, '', '');
+        window.history.replaceState({}, '', '/');
+        window.location.hash = '';
     });
 
     afterEach(() => {
-        window.history.pushState({}, '', '');
+        window.history.replaceState({}, '', '/');
+        window.location.hash = '';
     });
 
     it('should enable logger by options', () => {
-        LogService.enable.calls.reset();
-
         window.history.pushState({}, '', '');
 
         new UbpCrsAdapter.default({debug: true});
@@ -65,8 +65,6 @@ describe('UbpCrsAdapter', () => {
     });
 
     it('should enable logger by URL parameter', () => {
-        LogService.enable.calls.reset();
-
         window.history.pushState({}, '', '?debug=1');
 
         new UbpCrsAdapter.default();
@@ -75,8 +73,6 @@ describe('UbpCrsAdapter', () => {
     });
 
     it('should enable logger by URL hash', () => {
-        LogService.enable.calls.reset();
-
         window.location.hash = '/?debug=on';
 
         new UbpCrsAdapter.default();
@@ -85,8 +81,6 @@ describe('UbpCrsAdapter', () => {
     });
 
     it('should disable logger by URL parameter', () => {
-        LogService.enable.calls.reset();
-
         window.history.pushState({}, '', '?debug=off');
 
         new UbpCrsAdapter.default({ debug: true });
@@ -95,8 +89,6 @@ describe('UbpCrsAdapter', () => {
     });
 
     it('should disable logger by URL hash', () => {
-        LogService.enable.calls.reset();
-
         window.location.hash = '/?debug=false';
 
         new UbpCrsAdapter.default({ debug: true });

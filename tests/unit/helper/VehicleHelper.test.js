@@ -41,10 +41,19 @@ describe('VehicleHelper', () => {
         })
     })
 
-    it('splitServiceCode() returns object for complete old .code', () => {
+    it('splitServiceCode() returns object for shorter old .code', () => {
         expect(helper.splitServiceCode('US81A4/LAX-SFO')).toEqual({
             pickUpLocation: 'LAX',
             dropOffLocation: 'SFO',
+            renterCode: 'US81',
+            vehicleCode: 'A4',
+        })
+    })
+
+    it('splitServiceCode() returns object for complete old .code', () => {
+        expect(helper.splitServiceCode('US81A4/LAX01-SFOT2')).toEqual({
+            pickUpLocation: 'LAX01',
+            dropOffLocation: 'SFOT2',
             renterCode: 'US81',
             vehicleCode: 'A4',
         })

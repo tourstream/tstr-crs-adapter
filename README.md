@@ -304,6 +304,18 @@ The other way around you can also prevent that the debug window is opened - via 
 The URL parameter has precedence before the adapter option. 
 
 
+## Architecture
+
+Under the hood sending data to a CRS works as follows:
+
+1. receive adapter data
+2. request current CRS data
+3. parse CRS data into adapter base structure
+4. merge adapter and parsed CRS data
+5. build CRS data from merged data
+6. sending date to CRS
+
+
 ### How to test ...
 
 #### ... the code
