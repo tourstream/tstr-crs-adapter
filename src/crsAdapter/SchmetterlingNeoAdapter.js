@@ -24,10 +24,10 @@ class SchmetterlingNeoAdapter {
      * @param options <{connectionUrl?: string}>
      * @returns {Promise}
      */
-    connect(options) {
+    connect(options = {}) {
         this.connectionOptions = options;
 
-        return this.createConnection(options);
+        return this.createConnection();
     }
 
     fetchData() {
@@ -176,13 +176,13 @@ class SchmetterlingNeoAdapter {
      * @param options object
      * @returns {Promise}
      */
-    createConnection(options = {}) {
+    createConnection() {
         return new Promise((resolve) => {
             const connectToCRS = () => {
                 let callbackObject = this.createCallbackObject(
                     resolve,
                     () => {
-                        this.logger.info('connected to Schmetterling NEO');
+                        this.logger.info('connected to NEO');
                         this.connection = window.catalog;
                     },
                     'connection not possible'
@@ -197,22 +197,22 @@ class SchmetterlingNeoAdapter {
             const cleanUrl = (url = '') => {
                 if (!url) return;
 
-                return 'https://' + url.replace("https://", '').split('/')[0];
+                return 'https://' + url.replace('https://', '').split('/')[0];
             };
 
             const getConnectionUrlFromReferrer = () => {
                 let url = this.getReferrer() || '';
 
                 if (url.indexOf('neo.go-suite.com') > -1 || url.indexOf('app.schmetterling-neo.de') > -1) {
-                    this.logger.info('detected Schmetterling URL: ' + url);
+                    this.logger.info('auto detected NEO URL: ' + url);
 
                     return url;
                 }
 
-                this.logger.info('could not detect any Schmetterling URL');
+                this.logger.info('could not detect any NEO URL');
             };
 
-            let connectionUrl = cleanUrl(getConnectionUrlFromReferrer() || options.connectionUrl);
+            let connectionUrl = cleanUrl(getConnectionUrlFromReferrer() || this.connectionOptions.connectionUrl);
 
             if (!connectionUrl) {
                 const message = 'no connection URL found';
@@ -221,7 +221,7 @@ class SchmetterlingNeoAdapter {
                 throw new Error(message);
             }
 
-            this.logger.info('use ' + connectionUrl + ' for connection to Schmetterling');
+            this.logger.info('use ' + connectionUrl + ' for connection to NEO');
 
             let filePath = connectionUrl + '/' + this.config.crs.catalogFilePath;
             let script = document.createElement('script');

@@ -101,10 +101,10 @@ describe('AmadeusSPCTomaAdapter', () => {
     });
 
     it('connect() with auto detected URL', (done) => {
-        let expectedSrc = 'https://www.sellingplatformconnect.amadeus.com/ExternalCatalog.js';
-        let expectedDest = 'https://www.sellingplatformconnect.amadeus.com';
+        let expectedSrc = 'https://www.auto.sellingplatformconnect.amadeus.com/ExternalCatalog.js';
+        let expectedDest = 'https://www.auto.sellingplatformconnect.amadeus.com';
 
-        spyOn(adapter, 'getReferrer').and.returnValue('www.sellingplatformconnect.amadeus.com');
+        spyOn(adapter, 'getReferrer').and.returnValue('www.auto.sellingplatformconnect.amadeus.com');
 
         adapter.connect({connectionUrl: 'https://conn-url.example'}).then(() => {
             let scriptElement = documentHeadAppendChildSpy.calls.mostRecent().args[0];

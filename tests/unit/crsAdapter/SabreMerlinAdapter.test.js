@@ -40,15 +40,44 @@ describe('SabreMerlinAdapter', () => {
         });
     });
 
-    it('connect() should create connection on success', (done) => {
-        axios.get.and.returnValue(Promise.resolve());
-
+    it('connect() should result in error when no connection url is detected', (done) => {
         adapter.connect().then(() => {
-            expect(adapter.connection).toBeTruthy();
+            done.fail('unexpected result');
+        }, (error) => {
+            expect(error.toString()).toBe('Error: no connection URL found');
+            done();
+        });
+    });
+
+    it('connect() with option.connectionUrl should result in correct import url', (done) => {
+        let expectedPortDetectionUrl = 'https://conn-url.example/Portal/rest/importInterfacePort';
+        let expectedImportUrl = 'https://import-url.example';
+
+        axios.get.and.returnValue(Promise.resolve(expectedImportUrl));
+
+        adapter.connect({connectionUrl: 'https://conn-url.example'}).then(() => {
+            expect(axios.get).toHaveBeenCalledWith(expectedPortDetectionUrl);
+            expect(axios.get).toHaveBeenCalledWith(expectedImportUrl + 'gate2mx');
             done();
         }, (error) => {
-            console.log(error.message);
-            done.fail('unexpected result');
+            done.fail(error);
+        });
+    });
+
+    it('connect() with auto detected URL', (done) => {
+        let expectedPortDetectionUrl = 'https://www.auto.shopholidays.de/Portal/rest/importInterfacePort';
+        let expectedImportUrl = 'https://import-url.example';
+
+        axios.get.and.returnValue(Promise.resolve(expectedImportUrl));
+
+        spyOn(adapter, 'getReferrer').and.returnValue('www.auto.shopholidays.de');
+
+        adapter.connect({connectionUrl: 'https://conn-url.example'}).then(() => {
+            expect(axios.get).toHaveBeenCalledWith(expectedPortDetectionUrl);
+            expect(axios.get).toHaveBeenCalledWith(expectedImportUrl + 'gate2mx');
+            done();
+        }, (error) => {
+            done.fail(error);
         });
     });
 
@@ -76,7 +105,10 @@ describe('SabreMerlinAdapter', () => {
 
     describe('is connected', () => {
         beforeEach(() => {
+            axios.get.and.returnValues(Promise.resolve('https://import-url.example'));
             axios.get.and.returnValue(Promise.resolve());
+
+            spyOn(adapter, 'getReferrer').and.returnValue('www.auto.shopholidays.de');
 
             adapter.connect();
 
