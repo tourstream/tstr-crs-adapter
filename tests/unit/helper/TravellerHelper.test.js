@@ -164,7 +164,7 @@ describe('TravellerHelper', () => {
 
         helper.reduceTravellersIntoCrsData(adapterService, crsService, crsData);
 
-        expect(crsService.travellerAssociation).toBe('1-3');
+        expect(crsService.travellerAssociation).toBe('1,2,3');
     });
 
     it('calculateStartAssociation() should return correct value for "empty" parameters', () => {

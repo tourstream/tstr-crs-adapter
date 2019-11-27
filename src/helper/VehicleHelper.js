@@ -82,18 +82,19 @@ class VehicleHelper {
     }
 
     mergeCarAndDropOffServiceLines(services) {
-        const reformedServices = []
+        return services.reduce((mergedServices, line) => {
+            const lastMergedLine = mergedServices[mergedServices.length - 1] || {}
+            const lineIsValidDropOffTime = line.type === CRS_SERVICE_TYPES.carDropOffTime && line.accommodation
+            const lastLineIsValidCar = lastMergedLine.type === SERVICE_TYPES.car && !lastMergedLine.dropOffTime
 
-        services.forEach(function (line, index) {
-            if (line.type === SERVICE_TYPES.car && services[index + 1].type === CRS_SERVICE_TYPES.carDropOffTime && services[index + 1].accommodation) {
-                line.dropOffTime = services[index + 1].accommodation
-                delete services[index + 1]
+            if (lineIsValidDropOffTime && lastLineIsValidCar) {
+                lastMergedLine.dropOffTime = line.accommodation
+            } else {
+                mergedServices.push(line)
             }
 
-            reformedServices.push(line)
-        })
-
-        return reformedServices
+            return mergedServices
+        }, [])
     }
 
     createServiceCode(adapterService = {}) {

@@ -18,14 +18,8 @@ class TomaEngine extends CrsEngine {
         ]
     }
 
-    parseAdapterTravellers(travellers = []) {
-        return travellers.map(traveller => {
-            const type = this.findCrsTravellerType(traveller.type)
-            const name = [traveller.lastName, traveller.firstName].filter(Boolean).join('/') || void 0
-            const dateOfBirth = this.createCrsTravellerDateOfBirth(traveller.dateOfBirth)
-
-            return { type, name, dateOfBirth }
-        });
+    parseAdapterTravellerName({ firstName, lastName }) {
+        return { name: [lastName, firstName].filter(Boolean).join('/') || void 0 };
     }
 }
 

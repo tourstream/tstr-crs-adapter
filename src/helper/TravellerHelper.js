@@ -17,11 +17,11 @@ class TravellerHelper {
     }
 
     extractLastTravellerAssociation(travellerAssociation = '') {
-        return travellerAssociation.toString().split('-').pop();
+        return travellerAssociation.toString().split(/[-,]/).pop();
     }
 
     extractFirstTravellerAssociation(travellerAssociation = '') {
-        return travellerAssociation.toString().split('-').shift();
+        return travellerAssociation.toString().split(/[-,]/).shift();
     }
 
     reduceTravellersIntoCrsData(adapterService = {}, crsService = {}, crsData = {}) {
@@ -33,15 +33,30 @@ class TravellerHelper {
         crsData.normalized.services = crsData.normalized.services || [];
         crsData.normalized.travellers = crsData.normalized.travellers || [];
 
-        let startAssociation = crsData.normalized.travellers.length + 1;
+        const travellerAssociations = [];
 
         adapterService.travellers.forEach((adapterTraveller) => {
-            const crsTraveller = {};
-
-            crsData.normalized.travellers.push(crsTraveller);
-
             if (!adapterTraveller) {
+                this.createEmptyTraveller(crsData);
+
+                travellerAssociations.push(crsData.normalized.travellers.length);
+
                 return;
+            }
+
+            const existingTraveller = this.findExistingTraveller(crsData, adapterTraveller);
+
+            let crsTraveller;
+
+            if (existingTraveller) {
+                const index = crsData.normalized.travellers.findIndex(traveller => traveller === existingTraveller)
+
+                crsTraveller = existingTraveller
+
+                travellerAssociations.push(index + 1);
+            } else {
+                crsTraveller = this.createEmptyTraveller(crsData);
+                travellerAssociations.push(crsData.normalized.travellers.length);
             }
 
             const dateOfBirth = adapterTraveller.dateOfBirth
@@ -56,19 +71,35 @@ class TravellerHelper {
                 : adapterTraveller.dateOfBirth;
         });
 
-        // todo: separate from this function
-        startAssociation = Math.max(this.calculateStartAssociation(crsService, crsData), startAssociation);
+        while (travellerAssociations.length < this.calculateServiceTravellersCount(adapterService)) {
+            this.createEmptyTraveller(crsData);
 
-        const endAssociation = Math.max(
-            +this.extractLastTravellerAssociation(crsService.travellerAssociation),
-            startAssociation + this.calculateServiceTravellersCount(adapterService) - 1
-        ) || 1;
+            travellerAssociations.push(crsData.normalized.travellers.length);
+        }
 
-        crsData.normalized.travellers.length = Math.max(crsData.normalized.travellers.length, endAssociation);
+        travellerAssociations.sort();
 
-        crsService.travellerAssociation = [startAssociation, endAssociation].filter(
-            (value, index, array) => array.indexOf(value) === index
-        ).join('-');
+        crsData.normalized.travellers.length = Math.max(
+            travellerAssociations[travellerAssociations.length - 1] || 1,
+            crsData.normalized.travellers.length
+        );
+        crsService.travellerAssociation = travellerAssociations.join(',') || '1';
+    }
+
+    findExistingTraveller(crsData, adapterTraveller) {
+        return crsData.normalized.travellers.find((crsDataTraveller) => {
+            const fullName = [crsDataTraveller.firstName, crsDataTraveller.lastName].join(' ').toLowerCase();
+
+            return fullName.includes(adapterTraveller.firstName.toLowerCase()) && fullName.includes(adapterTraveller.lastName.toLowerCase())
+        })
+    }
+
+    createEmptyTraveller(crsData) {
+        const emptyTraveller = {};
+
+        crsData.normalized.travellers.push(emptyTraveller);
+
+        return emptyTraveller;
     }
 
     calculateStartAssociation(crsService, crsData = {}) {
