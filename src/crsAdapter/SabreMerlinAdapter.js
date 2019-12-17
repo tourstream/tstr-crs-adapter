@@ -222,8 +222,9 @@ class SabreMerlinAdapter {
         return this.getCrsData()
             .then((response) => this.getConnection().post((response || {}).data))
             .catch((error) => {
-                this.logger.info(error);
-                this.logger.error('error during cancel');
+                this.logger.error(error.toString());
+                this.logger.info('error during cancel');
+
                 throw new Error('[.cancel] ' + error.message);
             });
     }
@@ -283,13 +284,13 @@ class SabreMerlinAdapter {
 
         this.logger.info('use ' + portDetectionUrl + ' to detect import url');
 
-        return axios.get(portDetectionUrl).then((url) => {
-            this.logger.info('received ' + url + ' as import url');
-            this.connectionOptions.importUrl = url;
+        return axios.get(portDetectionUrl).then((response) => {
+            this.logger.info('received ' + response.data + ' as import url');
+            this.connectionOptions.importUrl = response.data;
 
             return this.connectionOptions.importUrl;
         }).catch(error => {
-            this.logger.error(error)
+            this.logger.error(error.toString());
             this.logger.info('requesting import url failed - will use fallback import url: ' + this.config.crs.fallbackImportUrl);
             this.connectionOptions.importUrl = this.config.crs.fallbackImportUrl;
 

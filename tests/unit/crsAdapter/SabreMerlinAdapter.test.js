@@ -53,7 +53,7 @@ describe('SabreMerlinAdapter', () => {
         let expectedPortDetectionUrl = 'https://conn-url.example/Portal/rest/importInterfacePort';
         let expectedImportUrl = 'https://import-url.example';
 
-        axios.get.and.returnValue(Promise.resolve(expectedImportUrl));
+        axios.get.and.returnValue(Promise.resolve({ data: expectedImportUrl }));
 
         adapter.connect({connectionUrl: 'https://conn-url.example'}).then(() => {
             expect(axios.get).toHaveBeenCalledWith(expectedPortDetectionUrl);
@@ -68,7 +68,7 @@ describe('SabreMerlinAdapter', () => {
         let expectedPortDetectionUrl = 'https://www.auto.shopholidays.de/Portal/rest/importInterfacePort';
         let expectedImportUrl = 'https://import-url.example';
 
-        axios.get.and.returnValue(Promise.resolve(expectedImportUrl));
+        axios.get.and.returnValue(Promise.resolve({ data: expectedImportUrl }));
 
         spyOn(adapter, 'getReferrer').and.returnValue('www.auto.shopholidays.de');
 

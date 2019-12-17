@@ -218,8 +218,9 @@ class BewotecExpertAdapter {
 
     cancel() {
         return this.getConnection().send({}).catch((error) => {
-            this.logger.info(error);
             this.logger.error('error during cancel');
+            this.logger.info(error.toString());
+
             throw error;
         });
     }
