@@ -8,7 +8,8 @@ class SabreMerlinAdapter {
     constructor(logger, options = {}) {
         this.config = {
             crs: {
-                importInterfacePortPath: 'Portal/rest/importInterfacePort',
+                fallbackImportUrl: 'https://localhost:12771/',
+                portDetectionPath: 'Portal/rest/importInterfacePort',
                 genderTypes: {},
             },
             parserOptions: {
@@ -278,13 +279,19 @@ class SabreMerlinAdapter {
 
         this.logger.info('use ' + connectionUrl + ' for connection to ShopHolidays');
 
-        const importInterfacePortUrl = connectionUrl + '/' + this.config.crs.importInterfacePortPath;
+        const portDetectionUrl = connectionUrl + '/' + this.config.crs.portDetectionPath;
 
-        this.logger.info('use ' + importInterfacePortUrl + ' to detect import url');
+        this.logger.info('use ' + portDetectionUrl + ' to detect import url');
 
-        return axios.get(importInterfacePortUrl).then((url) => {
-            this.logger.info('received ' + url + ' as importUrl');
+        return axios.get(portDetectionUrl).then((url) => {
+            this.logger.info('received ' + url + ' as import url');
             this.connectionOptions.importUrl = url;
+
+            return this.connectionOptions.importUrl;
+        }).catch(error => {
+            this.logger.error(error)
+            this.logger.info('requesting import url failed - will use fallback import url: ' + this.config.crs.fallbackImportUrl);
+            this.connectionOptions.importUrl = this.config.crs.fallbackImportUrl;
 
             return this.connectionOptions.importUrl;
         });
