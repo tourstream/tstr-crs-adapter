@@ -8,7 +8,7 @@ class SabreMerlinAdapter {
     constructor(logger, options = {}) {
         this.config = {
             crs: {
-                fallbackImportUrl: 'https://localhost:12771/',
+                fallbackImportUrl: 'https://localhost:12771',
                 portDetectionPath: 'Portal/rest/importInterfacePort',
                 genderTypes: {},
             },
@@ -237,8 +237,8 @@ class SabreMerlinAdapter {
         axios.defaults.headers.post['Content-Type'] = 'application/xml';
 
         return {
-            get: () => this.findImportUrl().then((url) => axios.get(url + 'gate2mx')),
-            post: (data = '') => this.findImportUrl().then((url) => axios.post(url + 'httpImport', data)),
+            get: () => this.findImportUrl().then((url) => axios.get(url + '/gate2mx')),
+            post: (data = '') => this.findImportUrl().then((url) => axios.post(url + '/httpImport', data)),
         };
     }
 

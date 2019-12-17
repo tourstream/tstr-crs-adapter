@@ -57,7 +57,7 @@ describe('SabreMerlinAdapter', () => {
 
         adapter.connect({connectionUrl: 'https://conn-url.example'}).then(() => {
             expect(axios.get).toHaveBeenCalledWith(expectedPortDetectionUrl);
-            expect(axios.get).toHaveBeenCalledWith(expectedImportUrl + 'gate2mx');
+            expect(axios.get).toHaveBeenCalledWith(expectedImportUrl + '/gate2mx');
             done();
         }, (error) => {
             done.fail(error);
@@ -74,7 +74,7 @@ describe('SabreMerlinAdapter', () => {
 
         adapter.connect({connectionUrl: 'https://conn-url.example'}).then(() => {
             expect(axios.get).toHaveBeenCalledWith(expectedPortDetectionUrl);
-            expect(axios.get).toHaveBeenCalledWith(expectedImportUrl + 'gate2mx');
+            expect(axios.get).toHaveBeenCalledWith(expectedImportUrl + '/gate2mx');
             done();
         }, (error) => {
             done.fail(error);
