@@ -29,16 +29,16 @@ class LogService {
             return;
         }
 
+        this.writeToConsole(message, type)
+
         try {
             this.openExternalOutput();
             this.writeToExternalOutput(message, type);
         } catch (error) {
-            if (console && console.log) {
-                console.log(type, message);
-            } else {
-                window.alert(error);
+            this.writeToConsole(error, 'error');
 
-                throw error;
+            if (!this.isConsoleAvailable()) {
+                window.alert(error);
             }
         }
     }
@@ -141,6 +141,18 @@ class LogService {
 
             return '<span class="' + cls + '">' + match + '</span>';
         });
+    }
+
+    isConsoleAvailable() {
+        return !!(console && console.log)
+    }
+
+    writeToConsole(message, type) {
+        if (!this.isConsoleAvailable()) {
+            return false;
+        }
+
+        console.log(type.toUpperCase(), (new Date()).toUTCString() + '@v' + this.adapterVersion, message);
     }
 }
 
