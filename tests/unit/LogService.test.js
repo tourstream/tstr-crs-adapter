@@ -3,6 +3,7 @@ import LogService from '../../src/LogService';
 describe('LogService', () => {
     let logger, debugWindow, debugDocument;
     let originAlert = window.alert;
+    let originConsoleLog = console.log;
     let windowOpenSpy;
 
     beforeEach(() => {
@@ -17,10 +18,13 @@ describe('LogService', () => {
 
         windowOpenSpy = spyOn(window, 'open');
         windowOpenSpy.and.returnValue(debugWindow);
+
+        console.log = void 0;
     });
 
     afterEach(() => {
         window.alert = originAlert;
+        console.log = originConsoleLog;
     });
 
     it('should be disabled by default', () => {
@@ -49,10 +53,11 @@ describe('LogService', () => {
     it('should not log if popups are blocked', () => {
         let alertSpy = spyOn(window, 'alert');
 
-        windowOpenSpy.and.returnValue(void 0);
+        windowOpenSpy.and.throwError('Can not create debug window - maybe your browser blocks popups?')
 
-        expect(() => logger.log('log.text')).toThrowError('Can not create debug window - maybe your browser blocks popups?');
-        expect(alertSpy).toHaveBeenCalled();
+        logger.log('log.text')
+
+        expect(alertSpy).toHaveBeenCalledWith(new Error('Can not create debug window - maybe your browser blocks popups?'));
     });
 
     it('should not log if debug window is controlled by another instance', () => {
@@ -60,8 +65,10 @@ describe('LogService', () => {
 
         debugDocument.writeln.and.throwError('permission denied - window is not under your control');
 
-        expect(() => logger.log('log.text')).toThrowError('permission denied - window is not under your control');
-        expect(alertSpy).toHaveBeenCalledWith('Can not access debug window - please close all debug windows first.');
+        logger.log('log.text')
+
+        expect(alertSpy).toHaveBeenCalledWith(new Error('Can not access debug window - please close all debug windows first.'));
+        expect(alertSpy).toHaveBeenCalledWith(new Error('permission denied - window is not under your control'));
     });
 
     it('should add styles into debug output', () => {

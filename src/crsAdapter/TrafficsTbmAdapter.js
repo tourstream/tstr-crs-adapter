@@ -72,7 +72,7 @@ class TrafficsTbmAdapter {
                     throw new Error(rawData.error);
                 }
 
-                const crsData = rawData.admin || {
+                const crsData = Object.assign({}, {
                     operator: {
                         $: {}
                     },
@@ -85,7 +85,7 @@ class TrafficsTbmAdapter {
                     travellers: {
                         traveller: [],
                     },
-                };
+                }, rawData.admin);
 
                 return {
                     raw: rawData,

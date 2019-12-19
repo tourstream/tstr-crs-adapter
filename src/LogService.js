@@ -29,8 +29,18 @@ class LogService {
             return;
         }
 
-        this.openExternalOutput();
-        this.writeToExternalOutput(message, type);
+        this.writeToConsole(message, type)
+
+        try {
+            this.openExternalOutput();
+            this.writeToExternalOutput(message, type);
+        } catch (error) {
+            this.writeToConsole(error, 'error');
+
+            if (!this.isConsoleAvailable()) {
+                window.alert(error);
+            }
+        }
     }
 
     /**
@@ -47,8 +57,6 @@ class LogService {
 
         if (!this.debugWindow) {
             let message = 'Can not create debug window - maybe your browser blocks popups?';
-
-            window.alert(message);
 
             throw new Error(message);
         }
@@ -78,10 +86,9 @@ class LogService {
         } catch (error) {
             let message = 'Can not access debug window - please close all debug windows first.';
 
-            window.alert(message);
             window.alert(error);
 
-            throw error;
+            throw new Error(message);
         }
     }
 
@@ -134,6 +141,18 @@ class LogService {
 
             return '<span class="' + cls + '">' + match + '</span>';
         });
+    }
+
+    isConsoleAvailable() {
+        return !!(console && console.log)
+    }
+
+    writeToConsole(message, type) {
+        if (!this.isConsoleAvailable()) {
+            return false;
+        }
+
+        console.log(type.toUpperCase(), (new Date()).toUTCString() + '@v' + this.adapterVersion, message);
     }
 }
 

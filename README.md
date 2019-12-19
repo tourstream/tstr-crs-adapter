@@ -95,25 +95,25 @@ onSetData     | `void 0`      | callback which is invoked with the CrsDataObject
 You can check the currently supported CRSs with `UbpCrsAdapter.CRS_TYPES`.
 Currently this module supports the connection to following CRS masks:
 
-CRS        | connectionType                    | connectionOptions          | example
-:---       | :---                              | :---                       | :---
-CETS       | UbpCrsAdapter.CRS_TYPES.cets      |                            | 
-TOMA (old) | UbpCrsAdapter.CRS_TYPES.toma      | providerKey                | 'ABC'
-TOMA (new) | UbpCrsAdapter.CRS_TYPES.toma2     | externalCatalogVersion (*) | 'catalogue.version'
-|          |                                   | connectionUrl              | 'https://url-to-amadeus-selling.plattform'
-|          |                                   | popupId                    | 'popup_id0123456789abcdef'
-Merlin     | UbpCrsAdapter.CRS_TYPES.merlin    |                            | 
-MyJack     | UbpCrsAdapter.CRS_TYPES.myjack    | token                      | '0123456789abcdef'
-|          |                                   | dataBridgeUrl              | 'example://url.where-the-adapter/can-get-the-crs-data/when-not-in-http-context'
-Jack+      | UbpCrsAdapter.CRS_TYPES.jackplus  | token                      | '0123456789abcdef'
-Cosmo      | UbpCrsAdapter.CRS_TYPES.cosmo     | dataSourceUrl              | 'example://url.where-the-crs/can-get-the-adapter-data'
-|          |                                   | environment                | 'test' or 'live'
-|          |                                   | exportId                   | '0123-456789-abcdef'
-CosmoNaut  | UbpCrsAdapter.CRS_TYPES.cosmonaut | dataSourceUrl              | 'example://url.where-the-crs/can-get-the-adapter-data'
-|          |                                   | environment                | 'test' or 'live'
-|          |                                   | exportId                   | '0123-456789-abcdef'
-TOSI       | UbpCrsAdapter.CRS_TYPES.tosi      | token                      | '0123456789abcdef'
-Neo        | UbpCrsAdapter.CRS_TYPES.neo       | connectionUrl              | 'https://url-to-schmetterling.neo'
+CRS                | connectionType                    | connectionOptions          | example
+:---               | :---                              | :---                       | :---
+Travelport CETS    | UbpCrsAdapter.CRS_TYPES.cets      |                            | 
+Amadeus TOMA (old) | UbpCrsAdapter.CRS_TYPES.toma      | providerKey                | 'ABC'
+Amadeus TOMA (new) | UbpCrsAdapter.CRS_TYPES.toma2     | externalCatalogVersion (*) | 'catalogue.version'
+|                  |                                   | connectionUrl              | 'https://url-to-amadeus-selling.plattform'
+|                  |                                   | popupId                    | 'popup_id0123456789abcdef'
+Sabre Merlin       | UbpCrsAdapter.CRS_TYPES.merlin    |                            | 
+Bewotec MyJack     | UbpCrsAdapter.CRS_TYPES.myjack    | token                      | '0123456789abcdef'
+|                  |                                   | dataBridgeUrl              | 'example://url.where-the-adapter/can-get-the-crs-data/when-not-in-http-context'
+Bewotec Jack+      | UbpCrsAdapter.CRS_TYPES.jackplus  | token                      | '0123456789abcdef'
+Traffics Cosmo     | UbpCrsAdapter.CRS_TYPES.cosmo     | dataSourceUrl              | 'example://url.where-the-crs/can-get-the-adapter-data'
+|                  |                                   | environment                | 'test' or 'live'
+|                  |                                   | exportId                   | '0123-456789-abcdef'
+Traffics CosmoNaut | UbpCrsAdapter.CRS_TYPES.cosmonaut | dataSourceUrl              | 'example://url.where-the-crs/can-get-the-adapter-data'
+|                  |                                   | environment                | 'test' or 'live'
+|                  |                                   | exportId                   | '0123-456789-abcdef'
+AS400 TOSI         | UbpCrsAdapter.CRS_TYPES.tosi      | token                      | '0123456789abcdef'
+Schmetterling Neo  | UbpCrsAdapter.CRS_TYPES.neo       | connectionUrl              | 'https://url-to-schmetterling.neo'
 
 (*) optional
 
@@ -426,6 +426,32 @@ Then you have to open the IBE iFrame - for example by requesting an already exis
 and replace the iFrame URL with the URL of the test file. 
 You can use the following script as bookmark to replace the URL automatically:
 `javascript:(function(){let%20fc=document.getElementById('neoIframePopup');let%20f=fc;let%20s=f.src.split('/dispatcher/');s[0]='https://localhost:1337/';f.src=s.join('');})()`
+
+
+###### ... in CosmoNaut/Cosmo TBM
+
+_precondition:_ 
+
+* the Cosmonaut app is open
+* the TBM mask is visible 
+* chrome browser
+
+Open the served test file in your chrome browser.
+
+_alternative:_ 
+
+* get the CosmoNaut Dev App
+* open the dev app
+* click on the TBM tab
+
+To open the test file directly in cosmonaut, execute in the dev console:
+```
+Ext.create('Cosmo.view.tbm.window.ExternalLinkFrame', {
+    width: '90%',
+    url: 'https://localhost:1337/'
+})
+```
+
 
 
 ## You have questions or problems with the implementation?
