@@ -2,6 +2,7 @@ class LogService {
     constructor() {
         this.debugWindow = null;
         this.adapterVersion = require('package.json').version;
+        this.alreadyThrownErrors = [];
     }
 
     enable() {
@@ -35,11 +36,15 @@ class LogService {
             this.openExternalOutput();
             this.writeToExternalOutput(message, type);
         } catch (error) {
+            if (this.alreadyThrownErrors.includes(error.toString())) {
+                return
+            }
+
+            this.alreadyThrownErrors.push(error.toString())
+
             this.writeToConsole(error, 'error');
 
-            if (!this.isConsoleAvailable()) {
-                window.alert(error);
-            }
+            window.alert(error);
         }
     }
 
@@ -84,9 +89,7 @@ class LogService {
 
             this.debugWindow.document.writeln('<h2>CRS Debug Mode</h2>');
         } catch (error) {
-            let message = 'Can not access debug window - please close all debug windows first.';
-
-            window.alert(error);
+            let message = 'Can not access debug window - please close all debug windows first. [' + error.toString() + ']';
 
             throw new Error(message);
         }
