@@ -96,17 +96,14 @@ class LogService {
     }
 
     writeToExternalOutput(message, type) {
-        let additionalProperties = void 0;
-        let stringified = JSON.stringify(message, additionalProperties, 2);
+        let stringified = JSON.stringify(message, void 0, 2);
 
         if (stringified === void 0) {
-            stringified = message.toString();
+            stringified = String(message);
         }
 
         if (stringified === '{}') {
-            additionalProperties = Object.getOwnPropertyNames(message);
-
-            stringified = JSON.stringify(message, additionalProperties, 2);
+            stringified = JSON.stringify(message, Object.getOwnPropertyNames(message), 2);
         }
 
         this.debugWindow.document.writeln([
