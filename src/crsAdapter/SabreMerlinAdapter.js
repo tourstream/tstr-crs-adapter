@@ -222,8 +222,8 @@ class SabreMerlinAdapter {
         return this.getCrsData()
             .then((response) => this.getConnection().post((response || {}).data))
             .catch((error) => {
-                this.logger.error(error.toString());
                 this.logger.info('error during cancel');
+                this.logger.error(error.toString());
 
                 throw new Error('[.cancel] ' + error.message);
             });
@@ -237,8 +237,18 @@ class SabreMerlinAdapter {
         axios.defaults.headers.post['Content-Type'] = 'application/xml';
 
         return {
-            get: () => this.findImportUrl().then((url) => axios.get(url + '/gate2mx')),
-            post: (data = '') => this.findImportUrl().then((url) => axios.post(url + '/httpImport', data)),
+            get: () => this.findImportUrl().then((url) => axios.get(url + '/gate2mx').catch((error) => {
+                this.logger.info('getting data from merlin mask failed');
+                this.logger.error(error.toString());
+
+                throw error;
+            })),
+            post: (data = '') => this.findImportUrl().then((url) => axios.post(url + '/httpImport', data).catch((error) => {
+                this.logger.info('sending data to merlin failed');
+                this.logger.error(error.toString());
+
+                throw error;
+            })),
         };
     }
 
@@ -257,32 +267,32 @@ class SabreMerlinAdapter {
             return 'https://' + url.replace('https://', '').split('/')[0];
         };
 
-        const getConnectionUrlFromReferrer = () => {
+        const detectCrsUrlFromReferrer = () => {
             let url = this.getReferrer() || '';
 
-            if (url.indexOf('.shopholidays.de') > -1) {
-                this.logger.info('auto detected ShopHolidays URL: ' + url);
+            this.logger.info('try to detect CRS url - referrer is: ' + url);
+
+            if (url.toLowerCase().indexOf('.shopholidays.de') > -1) {
+                this.logger.info('detected CRS url in referrer');
 
                 return url;
             }
 
-            this.logger.info('could not auto detect any ShopHolidays URL');
+            this.logger.info('could not detect CRS url in referrer');
         };
 
-        let connectionUrl = cleanUrl(getConnectionUrlFromReferrer() || this.connectionOptions.connectionUrl);
+        let crsUrl = cleanUrl(detectCrsUrlFromReferrer() || this.connectionOptions.connectionUrl);
 
-        if (!connectionUrl) {
-            const message = 'no connection URL found';
+        if (!crsUrl) {
+            const message = 'no CRS url found';
 
             this.logger.error(message);
             throw new Error(message);
         }
 
-        this.logger.info('use ' + connectionUrl + ' for connection to ShopHolidays');
+        const portDetectionUrl = crsUrl + '/' + this.config.crs.portDetectionPath;
 
-        const portDetectionUrl = connectionUrl + '/' + this.config.crs.portDetectionPath;
-
-        this.logger.info('use ' + portDetectionUrl + ' to detect import url');
+        this.logger.info('use ' + portDetectionUrl + ' to detect import url / port');
 
         return axios.get(portDetectionUrl).then((response) => {
             this.logger.info('received ' + response.data + ' as import url');
@@ -290,8 +300,9 @@ class SabreMerlinAdapter {
 
             return this.connectionOptions.importUrl;
         }).catch(error => {
+            this.logger.info('requesting import url failed - possible CORS issue?');
             this.logger.error(error.toString());
-            this.logger.info('requesting import url failed - will use fallback import url: ' + this.config.crs.fallbackImportUrl);
+            this.logger.info('will use fallback import url: ' + this.config.crs.fallbackImportUrl);
             this.connectionOptions.importUrl = this.config.crs.fallbackImportUrl;
 
             return this.connectionOptions.importUrl;

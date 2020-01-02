@@ -44,7 +44,7 @@ describe('SabreMerlinAdapter', () => {
         adapter.connect().then(() => {
             done.fail('unexpected result');
         }, (error) => {
-            expect(error.toString()).toBe('Error: no connection URL found');
+            expect(error.toString()).toBe('Error: no CRS url found');
             done();
         });
     });

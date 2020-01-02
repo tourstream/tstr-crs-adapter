@@ -152,7 +152,7 @@ class LogService {
             return false;
         }
 
-        console.log(type.toUpperCase(), (new Date()).toUTCString() + '@v' + this.adapterVersion, message);
+        console.log((new Date()).toUTCString() + '@v' + this.adapterVersion, '[' + type.toUpperCase() + ']', message);
     }
 }
 
