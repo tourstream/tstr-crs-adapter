@@ -8,7 +8,9 @@ class SabreMerlinAdapter {
     constructor(logger, options = {}) {
         this.config = {
             crs: {
-                fallbackImportUrl: 'https://localhost:12771',
+                fallbackImportPort: '12771',
+                importUriPortPattern: /importInterfacePort=(\d*)/,
+                importUrl: 'https://localhost',
                 portDetectionPath: 'Portal/rest/importInterfacePort',
                 genderTypes: {},
             },
@@ -257,8 +259,8 @@ class SabreMerlinAdapter {
      * @return Promise
      */
     findImportUrl() {
-        if (this.connectionOptions.importUrl) {
-            return Promise.resolve(this.connectionOptions.importUrl);
+        if (this.connectionOptions.importUri) {
+            return Promise.resolve(this.connectionOptions.importUri);
         }
 
         const cleanUrl = (url = '') => {
@@ -281,6 +283,26 @@ class SabreMerlinAdapter {
             this.logger.info('could not detect CRS url in referrer');
         };
 
+        const detectImportPort = (uri = '') => {
+            const matches = uri.match(this.config.crs.importUriPortPattern)
+
+            if (matches) {
+                this.logger.info('detected import port in uri: ' + uri);
+
+                return matches[1]
+            }
+        }
+
+        const importPort = detectImportPort(this.getReferrer()) || detectImportPort(this.connectionOptions.connectionUrl)
+
+        if (importPort) {
+            this.connectionOptions.importUri = this.config.crs.importUrl + ':' + importPort
+
+            this.logger.info('use ' + this.connectionOptions.importUri + ' as import uri');
+
+            return Promise.resolve(this.connectionOptions.importUri)
+        }
+
         let crsUrl = cleanUrl(detectCrsUrlFromReferrer() || this.connectionOptions.connectionUrl);
 
         if (!crsUrl) {
@@ -292,20 +314,23 @@ class SabreMerlinAdapter {
 
         const portDetectionUrl = crsUrl + '/' + this.config.crs.portDetectionPath;
 
-        this.logger.info('use ' + portDetectionUrl + ' to detect import url / port');
+        this.logger.info('use ' + portDetectionUrl + ' to detect import uri');
 
         return axios.get(portDetectionUrl).then((response) => {
-            this.logger.info('received ' + response.data + ' as import url');
-            this.connectionOptions.importUrl = response.data;
+            this.connectionOptions.importUri = response.data;
 
-            return this.connectionOptions.importUrl;
+            this.logger.info('received ' + this.connectionOptions.importUri + ' as import uri');
+
+            return this.connectionOptions.importUri;
         }).catch(error => {
-            this.logger.info('requesting import url failed - possible CORS issue?');
+            this.logger.info('requesting import uri failed - possible CORS issue?');
             this.logger.error(error.toString());
-            this.logger.info('will use fallback import url: ' + this.config.crs.fallbackImportUrl);
-            this.connectionOptions.importUrl = this.config.crs.fallbackImportUrl;
 
-            return this.connectionOptions.importUrl;
+            this.connectionOptions.importUri = this.config.crs.importUrl + ':' + this.config.crs.fallbackImportPort;
+
+            this.logger.info('will use fallback import uri: ' + this.connectionOptions.importUri);
+
+            return this.connectionOptions.importUri;
         });
     }
 

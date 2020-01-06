@@ -81,6 +81,30 @@ describe('SabreMerlinAdapter', () => {
         });
     });
 
+    it('connect() with auto detected port from referrer', (done) => {
+        axios.get.and.returnValue(Promise.resolve({}));
+
+        spyOn(adapter, 'getReferrer').and.returnValue('www.shopholidays.de?importInterfacePort=12001');
+
+        adapter.connect({connectionUrl: 'https://conn-url.example'}).then(() => {
+            expect(axios.get).toHaveBeenCalledWith('https://localhost:12001/gate2mx');
+            done();
+        }, (error) => {
+            done.fail(error);
+        });
+    });
+
+    it('connect() with auto detected port from connectionUrl', (done) => {
+        axios.get.and.returnValue(Promise.resolve({}));
+
+        adapter.connect({connectionUrl: 'www.shopholidays.de?importInterfacePort=12002'}).then(() => {
+            expect(axios.get).toHaveBeenCalledWith('https://localhost:12002/gate2mx');
+            done();
+        }, (error) => {
+            done.fail(error);
+        });
+    });
+
     it('fetchData() should throw error if no connection is available', (done) => {
         adapter.fetchData().then(() => {
             done.fail('unexpected result');
