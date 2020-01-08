@@ -27,10 +27,10 @@ class AmadeusSPCTomaAdapter {
      * @param options <{externalCatalogVersion?: string, connectionUrl?: string, popupId?: string}>
      * @returns {Promise}
      */
-    connect(options) {
+    connect(options = {}) {
         this.connectionOptions = options;
 
-        return this.createConnection(options);
+        return this.createConnection();
     }
 
     fetchData() {
@@ -182,10 +182,9 @@ class AmadeusSPCTomaAdapter {
 
     /**
      * @private
-     * @param options object
      * @returns {Promise}
      */
-    createConnection(options = {}) {
+    createConnection() {
         return new Promise((resolve) => {
             const connectToCRS = () => {
                 let callbackObject = this.createCallbackObject(
@@ -206,22 +205,22 @@ class AmadeusSPCTomaAdapter {
             const cleanUrl = (url = '') => {
                 if (!url) return;
 
-                return 'https://' + url.replace("https://", '').split('/')[0];
+                return 'https://' + url.replace('https://', '').split('/')[0];
             };
 
             const getConnectionUrlFromReferrer = () => {
                 let url = this.getReferrer() || '';
 
                 if (url.indexOf('.sellingplatformconnect.amadeus.com') > -1) {
-                    this.logger.info('detected Amadeus URL: ' + url);
+                    this.logger.info('auto detected Amadeus URL: ' + url);
 
                     return url;
                 }
 
-                this.logger.info('could not detect any Amadeus URL');
+                this.logger.info('could not auto detect any Amadeus URL');
             };
 
-            let connectionUrl = cleanUrl(getConnectionUrlFromReferrer() || options.connectionUrl);
+            let connectionUrl = cleanUrl(getConnectionUrlFromReferrer() || this.connectionOptions.connectionUrl);
 
             if (!connectionUrl) {
                 const message = 'no connection URL found';
@@ -232,7 +231,7 @@ class AmadeusSPCTomaAdapter {
 
             this.logger.info('use ' + connectionUrl + ' for connection to Amadeus');
 
-            let catalogVersion = this.helper.url.getUrlParameter('EXTERNAL_CATALOG_VERSION') || options.externalCatalogVersion;
+            let catalogVersion = this.helper.url.getUrlParameter('EXTERNAL_CATALOG_VERSION') || this.connectionOptions.externalCatalogVersion;
             let filePath = connectionUrl + '/' + this.config.crs.catalogFilePath + (catalogVersion ? '?version=' + catalogVersion : '');
             let script = document.createElement('script');
 

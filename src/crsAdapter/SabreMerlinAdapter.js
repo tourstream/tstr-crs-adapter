@@ -8,7 +8,10 @@ class SabreMerlinAdapter {
     constructor(logger, options = {}) {
         this.config = {
             crs: {
-                connectionUrl: 'https://localhost:12771/',
+                fallbackImportPort: '12771',
+                importUriPortPattern: /importInterfacePort=(\d*)/,
+                importUrl: 'https://localhost',
+                portDetectionPath: 'Portal/rest/importInterfacePort',
                 genderTypes: {},
             },
             parserOptions: {
@@ -61,13 +64,20 @@ class SabreMerlinAdapter {
             build: (xmlObject) => (new xml2js.Builder(this.config.builderOptions)).buildObject(JSON.parse(JSON.stringify(xmlObject)))
         };
 
+        this.connectionOptions = {};
+
         this.engine = new TomaEngine(this.options);
         this.engine.travellerTypes.forEach(type => this.config.crs.genderTypes[type.adapterType] = type.crsType);
 
         this.config.crs.formats = this.engine.formats
     }
 
-    connect() {
+    /**
+     * @param options <{connectionUrl?: string}>
+     * @returns {Promise}
+     */
+    connect(options = {}) {
+        this.connectionOptions = options;
         this.connection = this.createConnection();
 
         return this.getCrsData().then(() => {
@@ -211,16 +221,14 @@ class SabreMerlinAdapter {
     }
 
     cancel() {
-        return this.getCrsData().then((response) => {
-            return this.getConnection().post((response || {}).data).catch((error) => {
-                this.logger.info(error);
-                this.logger.error('error during cancel');
-                throw error;
+        return this.getCrsData()
+            .then((response) => this.getConnection().post((response || {}).data))
+            .catch((error) => {
+                this.logger.info('error during cancel');
+                this.logger.error(error.toString());
+
+                throw new Error('[.cancel] ' + error.message);
             });
-        }).then(null, (error) => {
-            this.logger.error(error);
-            throw new Error('[.cancel] ' + error.message);
-        });
     }
 
     /**
@@ -231,9 +239,109 @@ class SabreMerlinAdapter {
         axios.defaults.headers.post['Content-Type'] = 'application/xml';
 
         return {
-            get: () => axios.get(this.config.crs.connectionUrl + 'gate2mx'),
-            post: (data = '') => axios.post(this.config.crs.connectionUrl + 'httpImport', data),
+            get: () => this.findImportUrl().then((url) => axios.get(url + '/gate2mx').catch((error) => {
+                this.logger.info('getting data from merlin mask failed');
+                this.logger.error(error.toString());
+
+                throw error;
+            })),
+            post: (data = '') => this.findImportUrl().then((url) => axios.post(url + '/httpImport', data).catch((error) => {
+                this.logger.info('sending data to merlin failed');
+                this.logger.error(error.toString());
+
+                throw error;
+            })),
         };
+    }
+
+    /**
+     * @private
+     * @return Promise
+     */
+    findImportUrl() {
+        if (this.connectionOptions.importUri) {
+            return Promise.resolve(this.connectionOptions.importUri);
+        }
+
+        const cleanUrl = (url = '') => {
+            if (!url) return;
+
+            return 'https://' + url.replace('https://', '').split('/')[0];
+        };
+
+        const detectCrsUrlFromReferrer = () => {
+            let url = this.getReferrer() || '';
+
+            this.logger.info('try to detect CRS url - referrer is: ' + url);
+
+            if (url.toLowerCase().indexOf('.shopholidays.de') > -1) {
+                this.logger.info('detected CRS url in referrer');
+
+                return url;
+            }
+
+            this.logger.info('could not detect CRS url in referrer');
+        };
+
+        const detectImportPort = (uri = '') => {
+            const matches = uri.match(this.config.crs.importUriPortPattern)
+
+            if (matches) {
+                this.logger.info('detected import port in uri: ' + uri);
+
+                return matches[1]
+            }
+        }
+
+        const importPort = detectImportPort(this.getReferrer()) || detectImportPort(this.connectionOptions.connectionUrl)
+
+        if (importPort) {
+            this.connectionOptions.importUri = this.config.crs.importUrl + ':' + importPort
+
+            this.logger.info('use ' + this.connectionOptions.importUri + ' as import uri');
+
+            return Promise.resolve(this.connectionOptions.importUri)
+        }
+
+        let crsUrl = cleanUrl(detectCrsUrlFromReferrer() || this.connectionOptions.connectionUrl);
+
+        if (!crsUrl) {
+            const message = 'no CRS url found';
+
+            this.logger.error(message);
+            throw new Error(message);
+        }
+
+        const portDetectionUrl = crsUrl + '/' + this.config.crs.portDetectionPath;
+
+        this.logger.info('use ' + portDetectionUrl + ' to detect import uri');
+
+        return axios.get(portDetectionUrl).then((response) => {
+            this.connectionOptions.importUri = response.data;
+
+            this.logger.info('received ' + this.connectionOptions.importUri + ' as import uri');
+
+            return this.connectionOptions.importUri;
+        }).catch(error => {
+            this.logger.info('requesting import uri failed - possible CORS issue?');
+            this.logger.error(error.toString());
+
+            this.connectionOptions.importUri = this.config.crs.importUrl + ':' + this.config.crs.fallbackImportPort;
+
+            this.logger.info('will use fallback import uri: ' + this.connectionOptions.importUri);
+
+            return this.connectionOptions.importUri;
+        });
+    }
+
+    /**
+     * for testing purposes
+     *
+     * @private
+     * @returns {string}
+     */
+    getReferrer() {
+        return document.referrer;
     }
 
     /**

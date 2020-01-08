@@ -2,6 +2,7 @@ class LogService {
     constructor() {
         this.debugWindow = null;
         this.adapterVersion = require('package.json').version;
+        this.alreadyThrownErrors = [];
     }
 
     enable() {
@@ -35,11 +36,15 @@ class LogService {
             this.openExternalOutput();
             this.writeToExternalOutput(message, type);
         } catch (error) {
+            if (this.alreadyThrownErrors.includes(error.toString())) {
+                return
+            }
+
+            this.alreadyThrownErrors.push(error.toString())
+
             this.writeToConsole(error, 'error');
 
-            if (!this.isConsoleAvailable()) {
-                window.alert(error);
-            }
+            window.alert(error);
         }
     }
 
@@ -84,26 +89,21 @@ class LogService {
 
             this.debugWindow.document.writeln('<h2>CRS Debug Mode</h2>');
         } catch (error) {
-            let message = 'Can not access debug window - please close all debug windows first.';
-
-            window.alert(error);
+            let message = 'Can not access debug window - please close all debug windows first. [' + error.toString() + ']';
 
             throw new Error(message);
         }
     }
 
     writeToExternalOutput(message, type) {
-        let additionalProperties = void 0;
-        let stringified = JSON.stringify(message, additionalProperties, 2);
+        let stringified = JSON.stringify(message, void 0, 2);
 
         if (stringified === void 0) {
-            stringified = message.toString();
+            stringified = String(message);
         }
 
         if (stringified === '{}') {
-            additionalProperties = Object.getOwnPropertyNames(message);
-
-            stringified = JSON.stringify(message, additionalProperties, 2);
+            stringified = JSON.stringify(message, Object.getOwnPropertyNames(message), 2);
         }
 
         this.debugWindow.document.writeln([
@@ -152,7 +152,7 @@ class LogService {
             return false;
         }
 
-        console.log(type.toUpperCase(), (new Date()).toUTCString() + '@v' + this.adapterVersion, message);
+        console.log((new Date()).toUTCString() + '@v' + this.adapterVersion, '[' + type.toUpperCase() + ']', message);
     }
 }
 
