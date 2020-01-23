@@ -77,7 +77,7 @@ class SabreMerlinAdapter {
      * @returns {Promise}
      */
     connect(options = {}) {
-        this.connectionOptions = options;
+        this.connectionOptions = Object.assign({}, options);
         this.connection = this.createConnection();
 
         return this.getCrsData().then(() => {
@@ -260,6 +260,8 @@ class SabreMerlinAdapter {
      */
     findImportUrl() {
         if (this.connectionOptions.importUri) {
+            this.logger.info('import URI already detected: ' + this.connectionOptions.importUri);
+
             return Promise.resolve(this.connectionOptions.importUri);
         }
 
