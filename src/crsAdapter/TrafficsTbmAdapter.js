@@ -219,6 +219,8 @@ class TrafficsTbmAdapter {
 
                     this.logger.info('data transfer url: ');
                     this.logger.info(dataUrl);
+                    this.logger.info('length: ');
+                    this.logger.info(dataUrl.length);
 
                     this.helper.window.location = dataUrl;
 
