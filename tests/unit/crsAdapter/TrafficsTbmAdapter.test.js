@@ -220,7 +220,8 @@ describe('TrafficsTbmAdapter', () => {
                             {
                                 $: {
                                     typ: 'typ',
-                                    sur: 'very/long/sur',
+                                    sur: 'sur',
+                                    pre: 'very/long',
                                     age: 'age',
                                 },
                             },
@@ -260,8 +261,8 @@ describe('TrafficsTbmAdapter', () => {
                     travellers: [
                         {
                             title: 'typ',
-                            firstName: 'long sur',
-                            lastName: 'very',
+                            firstName: 'very/long',
+                            lastName: 'sur',
                             dateOfBirth: 'age'
                         },
                         void 0,
@@ -343,7 +344,8 @@ describe('TrafficsTbmAdapter', () => {
                 'TbmXml.admin.services.service.0.$.bsd': 'toDate',
                 'TbmXml.admin.services.service.0.$.agn': 'travellerAssociation',
                 'TbmXml.admin.travellers.traveller.0.$.typ': 'title',
-                'TbmXml.admin.travellers.traveller.0.$.sur': 'name',
+                'TbmXml.admin.travellers.traveller.0.$.sur': 'surname',
+                'TbmXml.admin.travellers.traveller.0.$.pre': 'prename',
                 'TbmXml.admin.travellers.traveller.0.$.age': 'dateOfBirth'
             };
 
@@ -376,7 +378,7 @@ describe('TrafficsTbmAdapter', () => {
                     travellers: [
                         {
                             title: 'title',
-                            name: 'name',
+                            name: 'surname/prename',
                             dateOfBirth: 'dateOfBirth',
                         },
                     ],
