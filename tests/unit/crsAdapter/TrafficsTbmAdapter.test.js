@@ -3,7 +3,7 @@ import { DEFAULT_OPTIONS } from '../../../src/UbpCrsAdapter'
 import TomaEngine from '../../../src/engine/TomaEngine'
 
 describe('TrafficsTbmAdapter', () => {
-    let adapter, TrafficsTbmAdapter, axios, requestUrl, requestParameter, logService, windowSpy;
+    let adapter, TrafficsTbmAdapter, axios, requestUrl, requestParameter, requestData, logService, windowSpy;
 
     beforeEach(() => {
         logService = require('tests/unit/_mocks/LogService')();
@@ -16,6 +16,12 @@ describe('TrafficsTbmAdapter', () => {
         axios.get.and.callFake((url, parameter) => {
             requestUrl = url;
             requestParameter = parameter;
+
+            return Promise.reject(new Error('network.error'));
+        });
+        axios.post.and.callFake((url, data) => {
+            requestUrl = url;
+            requestData = data;
 
             return Promise.reject(new Error('network.error'));
         });
@@ -287,11 +293,13 @@ describe('TrafficsTbmAdapter', () => {
         });
 
         it('sendData() should encrypt data correct', (done) => {
+            axios.post.and.returnValue(Promise.resolve());
+
             sendSpy.and.callThrough();
 
             adapter.sendData({}).then(() => {
                 expect(windowSpy.location).toBe(
-                    'cosmonaut://params/I3RibSZmaWxlPWRhdGFTb3VyY2VVcmw/'
+                    'cosmonaut://params/I3RibSZmaWxlPWRhdGFTb3VyY2VVcmw/aWQ9ZXhwb3J0SWQ='
                 );
                 done();
             }, (error) => {
@@ -301,6 +309,8 @@ describe('TrafficsTbmAdapter', () => {
         });
 
         it('sendData() should reject if btoa conversion fails', (done) => {
+            axios.post.and.returnValue(Promise.resolve());
+
             sendSpy.and.callThrough();
 
             spyOn(window, 'btoa').and.throwError('btoa broken');

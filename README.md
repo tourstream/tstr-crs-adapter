@@ -82,8 +82,8 @@ ubpCrsAdapter.cancel()
 You can check the default options with `UbpCrsAdapter.DEFAULT_OPTIONS`.
 This options will be applied on every underlying adapter.
 
-name          | default value | description 
-:---          | :---          | :--- 
+name          | default value | description
+:---          | :---          | :---
 debug         | `false`       | whether or not showing the debug output
 useDateFormat | `'DDMMYYYY'`  | date format which you want to use on the `setData` object (according to [momentjs date format](https://momentjs.com/docs/#/displaying/))
 useTimeFormat | `'HHmm'`      | time format which you want to use on the `setData` object (according to [momentjs date format](https://momentjs.com/docs/#/displaying/))
@@ -97,12 +97,12 @@ Currently this module supports the connection to following CRS masks:
 
 CRS                | connectionType                    | connectionOptions          | example
 :---               | :---                              | :---                       | :---
-Travelport CETS    | UbpCrsAdapter.CRS_TYPES.cets      |                            | 
+Travelport CETS    | UbpCrsAdapter.CRS_TYPES.cets      |                            |
 Amadeus TOMA (old) | UbpCrsAdapter.CRS_TYPES.toma      | providerKey                | 'ABC'
 Amadeus TOMA (new) | UbpCrsAdapter.CRS_TYPES.toma2     | externalCatalogVersion (*) | 'catalogue.version'
 |                  |                                   | connectionUrl              | 'https://url-to-amadeus-selling.plattform'
 |                  |                                   | popupId                    | 'popup_id0123456789abcdef'
-Sabre Merlin       | UbpCrsAdapter.CRS_TYPES.merlin    |                            | 
+Sabre Merlin       | UbpCrsAdapter.CRS_TYPES.merlin    |                            |
 Bewotec MyJack     | UbpCrsAdapter.CRS_TYPES.myjack    | token                      | '0123456789abcdef'
 |                  |                                   | dataBridgeUrl              | 'example://url.where-the-adapter/can-get-the-crs-data/when-not-in-http-context'
 Bewotec Jack+      | UbpCrsAdapter.CRS_TYPES.jackplus  | token                      | '0123456789abcdef'
@@ -122,10 +122,10 @@ which you can set in the `connectionOptions`.
 
 **[TOMA 2]** _connectionUrl_ is needed, when the adapter is not directly used in the first child window of the TOMA application
 
-**[MyJack]** _dataBridgeUrl_ is needed, if the adapter is used in a non HTTP context. 
+**[MyJack]** _dataBridgeUrl_ is needed, if the adapter is used in a non HTTP context.
 The example code for this page is provided [here](/bewotec-bridge).
 
-**[Cosmo / CosmoNaut]** _dataSourceUrl_ is an url from where the CRS can get the IBE data from
+**[Cosmo / CosmoNaut]** _dataSourceUrl_ is an url where the adapter can "park" data (via POST) and where the CRS will GET the parked data from
 
 **[Neo]** _connectionUrl_ is needed, when the adapter is not directly used in the first child window of the Neo application
 
@@ -137,20 +137,20 @@ Every service has following base fields:
 ```
 {
   marked: true / false,
-  travellers: [ 
-    { 
-      type: UbpCrsAdapter.TRAVELLER_TYPES, 
-      firstName: 'john', 
-      lastName: 'doe', 
-      dateOfBirth: '08111983' 
-    }, 
+  travellers: [
+    {
+      type: UbpCrsAdapter.TRAVELLER_TYPES,
+      firstName: 'john',
+      lastName: 'doe',
+      dateOfBirth: '08111983'
+    },
     ...,
   ],
   ...,
 }
 ```
 
-`.marked` is by default falsy. But if this service is either "marked" 
+`.marked` is by default falsy. But if this service is either "marked"
 or detected as "marked" (depends on the type) it will be `true`.
 
 Depending on the `ServiceData.type` the structure of a `ServiceData` object differs.
@@ -189,13 +189,13 @@ Neo        | X     | X     | X          | X      | X
   pickUpDate: '28122017',
   pickUpTime: '0915',
   pickUpHotelName: 'Best Hotel',
-  pickUpHotelAddress: 'hotel street 1, 12345 hotel city', 
-  pickUpHotelPhoneNumber: '+49 172 678 0832 09', 
+  pickUpHotelAddress: 'hotel street 1, 12345 hotel city',
+  pickUpHotelPhoneNumber: '+49 172 678 0832 09',
   dropOffLocation: 'MUC',
   dropOffDate: '04012018',
   dropOffTime: '1000',
   dropOffHotelName: 'Very Best Hotel',
-  dropOffHotelAddress: 'hotel drive 34a, famous place', 
+  dropOffHotelAddress: 'hotel drive 34a, famous place',
   dropOffHotelPhoneNumber: '04031989213',
   extras: ['GPS', 'CS3YRS', 'BS', '...'],
 }
@@ -213,12 +213,12 @@ Neo        | X     | X     | X          | X      | X
 ```
 {
   type: 'hotel',
-  roomCode: 'DZ', 
+  roomCode: 'DZ',
   mealCode: 'U',
   roomQuantity: '2',
   roomOccupancy: '4',
-  destination: 'LAX20S', 
-  dateFrom: '20092017', 
+  destination: 'LAX20S',
+  dateFrom: '20092017',
   dateTo: '20092017',
 }
 ```
@@ -231,9 +231,9 @@ Neo        | X     | X     | X          | X      | X
 ```
 {
   type: 'roundTrip',
-  bookingId: 'E2784NQXTHEN', 
-  destination: 'YYZ', 
-  startDate: '05122017', 
+  bookingId: 'E2784NQXTHEN',
+  destination: 'YYZ',
+  startDate: '05122017',
   endDate: '16122017',
 }
 ```
@@ -253,24 +253,24 @@ Neo        | X     | X     | X          | X      | X
   pickUpTime: '0915',
   dropOffLocation: 'LIS2',
   dropOffDate: '17102017',
-  milesIncludedPerDay: '300', 
+  milesIncludedPerDay: '300',
   milesPackagesIncluded: '3',
-  extras: [ 
-    { 
+  extras: [
+    {
       type: 'equipment',
-      code: 'ECX0001', 
+      code: 'ECX0001',
       amount: '2',
-    }, 
-    { 
+    },
+    {
       type: 'special',
-      code: 'USA740', 
+      code: 'USA740',
       amount: '1',
     },
-    { 
+    {
       type: 'insurance',
-      code: '13361', 
-    },  
-    ..., 
+      code: '13361',
+    },
+    ...,
   ],
 }
 ```
@@ -287,7 +287,7 @@ Neo        | X     | X     | X          | X      | X
   type: 'TY',
   code: 'CODE',
   accommodation: '42',
-  occupancy: '300', 
+  occupancy: '300',
   quantity: '3',
   fromDate: '10102017',
   toDate: '20102017',
@@ -297,18 +297,18 @@ Neo        | X     | X     | X          | X      | X
 
 ## Debugging
 
-Sadly debugging in some CRS is not possible but the adapter nevertheless provides some debugging output - 
+Sadly debugging in some CRS is not possible but the adapter nevertheless provides some debugging output -
 either you set the adapter option `.debug` to `true` or you add the parameter "debug=1" to your URL.
 It will open an extra window for debug outputs.
 The other way around you can also prevent that the debug window is opened - via URL parameter "debug=0".
-The URL parameter has precedence before the adapter option. 
+The URL parameter has precedence before the adapter option.
 
 
 ### How to test ...
 
 #### ... the code
 
-Write a test and execute `npm run test` - the unit tests will tell you, if everything is fine. 
+Write a test and execute `npm run test` - the unit tests will tell you, if everything is fine.
 Personal goal: Try to increase the test coverage to ~100%.
 
 
@@ -319,7 +319,7 @@ The file is located in __test/manual__: *[crsTest.html](tests/manual/crsTest.htm
 For serving the test file locally we provide a command for it: `npm run serve`
 The test file is than available via [https://localhost:1337](https://localhost:1337).
 
-If you want to define test data by your own, you can create a file named *"testData.json"* and place it into the 
+If you want to define test data by your own, you can create a file named *"testData.json"* and place it into the
 __tests/manual__ folder. The structure of the file has to be an array with [`<CrsData>`](#interface) elements.
 The elements should also include a property `._description` which is than shown in the test file.
 
@@ -345,36 +345,36 @@ It depends on the CRS how to use the test file.
 
 ###### ... in (old) TOMA
 
-_precondition:_ 
+_precondition:_
 
-* the (old) Amadeus application is started 
+* the (old) Amadeus application is started
 * the TOMA mask is visible
 
-If you already have an "browser view" open (basically after an external search), 
+If you already have an "browser view" open (basically after an external search),
 you can drag'n'drop the test file directly into that view.
 Alternatively you can open the test file in parallel to the TOMA mask in an IE and use the test file from there.
 
 
-###### ... in (new) TOMA SPC 
+###### ... in (new) TOMA SPC
 
-_precondition:_ 
+_precondition:_
 
 * the Amadeus portal is open
-* the TOMA mask is visible 
+* the TOMA mask is visible
 * the test file is served under a whitelisted domain
 
-The served test file is already whitelisted by Amadeus for their test system. 
+The served test file is already whitelisted by Amadeus for their test system.
 But you should open this URL in your browser first to accept any unknown certificates!
 
-Then you have to open the IBE iFrame - for example by requesting an already existing IBE (like the drive IBE) 
-and replace the iFrame URL with the URL of the test file. 
+Then you have to open the IBE iFrame - for example by requesting an already existing IBE (like the drive IBE)
+and replace the iFrame URL with the URL of the test file.
 You can use the following script as bookmark to replace the URL automatically:
 `javascript:(function(){let%20fc=document.getElementsByTagName('iframe');let%20f=fc[fc.length-1];let%20s=f.src.split('/dispatcher/');s[0]='https://localhost:1337/';f.src=s.join('');})()`
 
 
 ###### ... in CETS
 
-_precondition:_ 
+_precondition:_
 
 * the CETS application is started
 
@@ -384,10 +384,10 @@ than you can drag'n'drop the test file directly into that view.
 
 ###### ... in Merlin
 
-_precondition:_ 
+_precondition:_
 
 * the Sabre portal "ShopHolidays" is open
-* the Merlin mask is visible 
+* the Merlin mask is visible
 * the import is enabled
 
 Open the test file in parallel to the Merlin mask in another Tab.
@@ -395,7 +395,7 @@ Open the test file in parallel to the Merlin mask in another Tab.
 
 ###### ... in myJack / Jack+
 
-_precondition:_ 
+_precondition:_
 
 * the Bewotec application (myJack/Jack+) is open
 * the Expert mask is visible
@@ -415,30 +415,30 @@ Open the test file in parallel to the TOSI mask in a browser.
 
 ###### ... in Schmetterling NEO
 
-_precondition:_ 
+_precondition:_
 
 * the Schmetterling portal is open
-* the NEO mask is visible 
+* the NEO mask is visible
 
 Open the served test file in your browser first to accept any unknown certificates!
 
-Then you have to open the IBE iFrame - for example by requesting an already existing IBE (like the drive IBE) 
-and replace the iFrame URL with the URL of the test file. 
+Then you have to open the IBE iFrame - for example by requesting an already existing IBE (like the drive IBE)
+and replace the iFrame URL with the URL of the test file.
 You can use the following script as bookmark to replace the URL automatically:
 `javascript:(function(){let%20fc=document.getElementById('neoIframePopup');let%20f=fc;let%20s=f.src.split('/dispatcher/');s[0]='https://localhost:1337/';f.src=s.join('');})()`
 
 
 ###### ... in CosmoNaut/Cosmo TBM
 
-_precondition:_ 
+_precondition:_
 
 * the Cosmonaut app is open
-* the TBM mask is visible 
+* the TBM mask is visible
 * chrome browser
 
 Open the served test file in your chrome browser.
 
-_alternative:_ 
+_alternative:_
 
 * get the CosmoNaut Dev App
 * open the dev app
