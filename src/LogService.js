@@ -78,7 +78,7 @@ class LogService {
             this.debugWindow.document.writeln(
                 '<style>' +
                 'pre { outline: 1px solid #ccc; padding: 5px; margin: 5px; }' +
-                '.string { color: green; }' +
+                '.string { color: green; white-space: normal; word-break: break-word; }' +
                 '.number { color: darkorange; }' +
                 '.boolean { color: blue; }' +
                 '.null { color: magenta; }' +
@@ -152,7 +152,11 @@ class LogService {
             return false;
         }
 
-        console.log((new Date()).toUTCString() + '@v' + this.adapterVersion, '[' + type.toUpperCase() + ']', message);
+        console.log(
+            (new Date()).toUTCString() + '@v' + this.adapterVersion,
+            '[' + type.toUpperCase() + ']',
+            JSON.stringify(message, null, 2)
+        );
     }
 }
 

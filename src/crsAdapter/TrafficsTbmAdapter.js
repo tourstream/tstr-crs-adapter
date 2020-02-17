@@ -130,16 +130,14 @@ class TrafficsTbmAdapter {
 
     collectTravellers(crsData) {
         return crsData.travellers.traveller.map((traveller) => {
-            if (!traveller['$'].typ && !traveller['$'].sur) {
+            if (!traveller['$'].typ && !traveller['$'].sur && !traveller['$'].pre) {
                 return;
             }
 
-            const travellerNames = (traveller['$'].sur || '').split('/');
-
             return {
                 title: traveller['$'].typ,
-                lastName: travellerNames.shift(),
-                firstName: travellerNames.join (' '),
+                lastName: traveller['$'].sur,
+                firstName: traveller['$'].pre,
                 dateOfBirth: traveller['$'].age,
             }
         });
@@ -183,8 +181,11 @@ class TrafficsTbmAdapter {
 
     assignTravellers(crsData) {
         crsData.normalized.travellers.forEach((traveller, index) => {
+            const travellerNameParts = (traveller.name || '').split('/').filter(Boolean)
+
             crsData.converted['TbmXml.admin.travellers.traveller.' + index + '.$.typ'] = traveller.title;
-            crsData.converted['TbmXml.admin.travellers.traveller.' + index + '.$.sur'] = traveller.name;
+            crsData.converted['TbmXml.admin.travellers.traveller.' + index + '.$.sur'] = travellerNameParts[0];
+            crsData.converted['TbmXml.admin.travellers.traveller.' + index + '.$.pre'] = travellerNameParts[1];
             crsData.converted['TbmXml.admin.travellers.traveller.' + index + '.$.age'] = traveller.dateOfBirth;
         });
     }
@@ -212,19 +213,15 @@ class TrafficsTbmAdapter {
 
         return {
             send: (data = {}) => {
-                try {
+                return axios.post(options.dataSourceUrl + '?id=' + options.exportId, data).then(() => {
                     const dataUrl = this.config.crs.connectionUrl
-                        + btoa('#tbm&file=' + options.dataSourceUrl + '?' + querystring.stringify(data));
+                        + btoa('#tbm&file=' + options.dataSourceUrl + '?id=' + options.exportId);
 
                     this.logger.info('data transfer url: ');
                     this.logger.info(dataUrl);
 
                     this.helper.window.location = dataUrl;
-
-                    return Promise.resolve();
-                } catch (e) {
-                    return Promise.reject(e);
-                }
+                })
             },
             get: () => {
                 const exportUrl = this.config.crs.exportUrls[options.environment] + '/tbmExport?id=' + options.exportId;
