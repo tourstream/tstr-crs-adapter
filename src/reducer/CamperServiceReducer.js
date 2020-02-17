@@ -43,7 +43,7 @@ class CamperServiceReducer {
                 : crsData.meta.serviceTypes.camperExtra;
             service.code = extra.code;
             service.fromDate = crsService.fromDate;
-            service.toDate = crsService.fromDate;
+            service.toDate = extra.type === CAMPER_EXTRA_TYPES.special ? crsService.fromDate : crsService.toDate;
             service.travellerAssociation = [startAssociation, startAssociation + +extra.amount - 1].filter(
                 (value, index, array) => array.indexOf(value) === index
             ).join('-');

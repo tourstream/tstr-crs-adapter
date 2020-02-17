@@ -79,6 +79,10 @@ describe('CamperServiceReducer', () => {
                     type: CAMPER_EXTRA_TYPES.insurance,
                     code: 'insuranceCode',
                 },
+                {
+                    type: CAMPER_EXTRA_TYPES.special,
+                    code: 'specialCode',
+                },
             ],
             travellers: [
                 {}
@@ -133,19 +137,26 @@ describe('CamperServiceReducer', () => {
                     type: 'extraType',
                     code: 'extraCodeWithoutAmount',
                     fromDate: '2018-03-16',
-                    toDate: '2018-03-16',
+                    toDate: '2018-03-21',
                     travellerAssociation: '1',
                 },
                 {
                     type: 'extraType',
                     code: 'extraCode',
                     fromDate: '2018-03-16',
-                    toDate: '2018-03-16',
+                    toDate: '2018-03-21',
                     travellerAssociation: '1-3',
                 },
                 {
                     type: 'insuranceType',
                     code: 'insuranceCode',
+                    fromDate: '2018-03-16',
+                    toDate: '2018-03-21',
+                    travellerAssociation: '1',
+                },
+                {
+                    type: 'extraType',
+                    code: 'specialCode',
                     fromDate: '2018-03-16',
                     toDate: '2018-03-16',
                     travellerAssociation: '1',
