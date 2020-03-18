@@ -83,7 +83,8 @@ class TravellerHelper {
             travellerAssociations[travellerAssociations.length - 1] || 1,
             crsData.normalized.travellers.length
         );
-        crsService.travellerAssociation = travellerAssociations.join(',') || '1';
+
+        crsService.travellerAssociation = [...(new Set(travellerAssociations))].join(',') || '1';
     }
 
     findExistingTraveller(crsData, adapterTraveller) {
