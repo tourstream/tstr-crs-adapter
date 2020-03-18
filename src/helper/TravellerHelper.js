@@ -224,7 +224,7 @@ class TravellerHelper {
             }
         }
 
-        return travellers;
+        return travellers.filter(Boolean);
     }
 }
 
