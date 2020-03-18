@@ -88,9 +88,9 @@ class TravellerHelper {
 
     findExistingTraveller(crsData, adapterTraveller) {
         return crsData.normalized.travellers.find((crsDataTraveller) => {
-            const fullName = [crsDataTraveller.firstName, crsDataTraveller.lastName].join(' ').toLowerCase();
+            const fullName = [crsDataTraveller.firstName, crsDataTraveller.lastName].filter(Boolean).join(' ').toLowerCase();
 
-            return fullName.includes(adapterTraveller.firstName.toLowerCase()) && fullName.includes(adapterTraveller.lastName.toLowerCase())
+            return fullName.includes((adapterTraveller.firstName || '').toLowerCase()) && fullName.includes((adapterTraveller.lastName || '').toLowerCase())
         })
     }
 
