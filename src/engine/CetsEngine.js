@@ -18,14 +18,8 @@ class CetsEngine extends CrsEngine {
         ]
     }
 
-    parseAdapterTravellers(travellers = []) {
-        return travellers.map(traveller => {
-            const type = this.findCrsTravellerType(traveller.type)
-            const { firstName, lastName } = traveller
-            const dateOfBirth = this.createCrsTravellerDateOfBirth(traveller.dateOfBirth)
-
-            return { type, firstName, lastName, dateOfBirth }
-        });
+    parseAdapterTravellerName({ firstName, lastName }) {
+        return { firstName, lastName };
     }
 }
 

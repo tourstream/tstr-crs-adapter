@@ -217,7 +217,7 @@ class UbpCrsAdapter {
                     return;
                 }
 
-                // in case of "german CRS"
+                // in case of "TOMA-like" CRS
                 this.fetchData().then((crsData) => {
                     const helper = {
                         vehicle: new VehicleHelper(this.options),
