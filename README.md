@@ -258,16 +258,19 @@ Neo        | X     | X     | X          | X      | X
   extras: [
     {
       type: 'equipment',
+      name: 'extra towels',
       code: 'ECX0001',
       amount: '2',
     },
     {
       type: 'special',
+      name: 'Early Pickup',
       code: 'USA740',
       amount: '1',
     },
     {
       type: 'insurance',
+      name: 'Insurance 360+',
       code: '13361',
     },
     ...,

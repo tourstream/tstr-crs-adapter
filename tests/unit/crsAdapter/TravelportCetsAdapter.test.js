@@ -324,6 +324,103 @@ describe('TravelportCetsAdapter', () => {
             expect(adapter.fetchData()).toEqual(expectation);
         });
 
+        it('fetchData() should return camper model', () => {
+            let xml = createRequestXml(
+                '<Avl ServiceType="C">' +
+                '<TOCode>FTI</TOCode>' +
+                '<Catalog>TCH</Catalog>' +
+                '<StartDate>08052020</StartDate>' +
+                '<Duration>10</Duration>' +
+                '<Destination>MIA</Destination>' +
+                '<Adults>1</Adults>' +
+                '</Avl>' +
+                '<Fah ServiceType="C" Key="_CRUISE/*/*MH_LARGE_/_" SegRef="000">' +
+                '<StartDate>08052020</StartDate>' +
+                '<Duration>10</Duration>' +
+                '<Destination>MIA</Destination>' +
+                '<Program>HOTEL</Program>' +
+                '<Product>USA12</Product>' +
+                '<Room>C30</Room>' +
+                '<Norm>1</Norm>' +
+                '<Meal>WOHNM</Meal>' +
+                '<Persons>1</Persons>' +
+                '<CarDetails>' +
+                '<PickUp Where="Walkin">' +
+                '<Time>1200</Time>' +
+                '<CarStation Code="MIA">' +
+                '</CarStation>' +
+                '</PickUp>' +
+                '<DropOff Where="Airport">' +
+                '<Time>1500</Time>' +
+                '<CarStation Code="MIA">' +
+                '</CarStation>' +
+                '</DropOff>' +
+                '</CarDetails>' +
+                '</Fah>' +
+                '<Fah SegRef="001" ServiceType="S">' +
+                '<StartDate>08052020</StartDate>' +
+                '<Duration>1</Duration>' +
+                '<Destination>MIA</Destination>' +
+                '<Program>PAUSCHAL</Program>' +
+                '<Product>USA740</Product>' +
+                '<Room>Early Pickup</Room>' +
+                '<Persons>1</Persons>' +
+                '</Fah>' +
+                '<Fah SegRef="001" ServiceType="S">' +
+                '<StartDate>08052020</StartDate>' +
+                '<Duration>1</Duration>' +
+                '<Destination>MIA</Destination>' +
+                '<Program>PAUSCHAL</Program>' +
+                '<Product>ECX0001</Product>' +
+                '<Room>Extra Towels</Room>' +
+                '<Persons>1</Persons>' +
+                '</Fah>'
+            );
+
+            let expectation = {
+                operator: 'FTI',
+                agencyNumber: '549870',
+                travelType: 'BAUS',
+                numberOfTravellers: '1',
+                services: [
+                    {
+                        pickUpDate: '08052020',
+                        pickUpTime: '1200',
+                        renterCode: 'USA12',
+                        vehicleCode: 'C30',
+                        pickUpLocation: 'MIA',
+                        dropOffLocation: 'MIA',
+                        dropOffDate: '18052020',
+                        dropOffTime: '1500',
+                        type: 'camper',
+                        extras: [
+                            {
+                                name: 'Early Pickup',
+                                code: 'USA740',
+                                amount: 1,
+                            },
+                            {
+                                name: 'Extra Towels',
+                                code: 'ECX0001',
+                                amount: 1,
+                            },
+                        ],
+                    },
+                    {
+                        pickUpDate: '08052020',
+                        dropOffDate: '18052020',
+                        pickUpLocation: 'MIA',
+                        type: 'camper',
+                        marked: true,
+                    },
+                ],
+            };
+
+            CetsConnection.getXmlRequest.and.returnValue(xml);
+
+            expect(adapter.fetchData()).toEqual(expectation);
+        });
+
         it('sendData() should throw error if connection can not put data', () => {
             CetsConnection.getXmlRequest.and.throwError('error');
 
@@ -917,6 +1014,128 @@ describe('TravelportCetsAdapter', () => {
                     '</Fah>';
 
                 let expectedXml = createCustomResponseXml(service);
+
+                adapter.sendData(data);
+
+                expect(CetsConnection.returnBooking).toHaveBeenCalledWith(expectedXml);
+            });
+
+            it('sendData() should send camper service correct', () => {
+                let data = {
+                    services: [
+                        {
+                            vehicleCode: 'vehicle.code',
+                            pickUpLocation: 'pick.up.location',
+                            dropOffLocation: 'drop.off.location',
+                            pickUpDate: '01052017',
+                            pickUpTime: '0820',
+                            dropOffDate: '05052017',
+                            dropOffTime: '1000',
+                            renterCode: 'renter.code',
+                            type: 'camper',
+                        },
+                    ],
+                };
+
+                let service = '<Fah ServiceType="C">' +
+                    '<StartDate>01052017</StartDate>' +
+                    '<Duration>4</Duration>' +
+                    '<Destination>PIC</Destination>' +
+                    '<Program>HOTEL</Program>' +
+                    '<Product>RENTER.CODE</Product>' +
+                    '<Room>VEHICLE.CODE</Room>' +
+                    '<Norm>1</Norm>' +
+                    '<Meal>WOHNM</Meal>' +
+                    '<Persons>1</Persons>' +
+                    '<CarDetails>' +
+                    '<PickUp Where="Walkin">' +
+                    '<Time>0820</Time>' +
+                    '<CarStation Code="PICK.UP.LOCATION"/>' +
+                    '</PickUp>' +
+                    '<DropOff Where="Walkin">' +
+                    '<Time>1000</Time>' +
+                    '<CarStation Code="DROP.OFF.LOCATION"/>' +
+                    '</DropOff>' +
+                    '</CarDetails>' +
+                    '</Fah>';
+
+                let expectedXml = createResponseXml(service);
+
+                adapter.sendData(data);
+
+                expect(CetsConnection.returnBooking).toHaveBeenCalledWith(expectedXml);
+            });
+
+            it('sendData() should send camper service with extras correct', () => {
+                let data = {
+                    services: [
+                        {
+                            vehicleCode: 'vehicle.code',
+                            pickUpLocation: 'pick.up.location',
+                            dropOffLocation: 'drop.off.location',
+                            pickUpDate: '01052017',
+                            pickUpTime: '0820',
+                            dropOffDate: '05052017',
+                            dropOffTime: '1000',
+                            renterCode: 'renter.code',
+                            type: 'camper',
+                            extras: [
+                                {
+                                    name: 'extra 1',
+                                    code: 'code 1',
+                                    amount: 1
+                                },
+                                {
+                                    name: 'extra 2',
+                                    code: 'code 2',
+                                    amount: 2
+                                },
+                            ],
+                        },
+                    ],
+                };
+
+                let service = '<Fah ServiceType="C">' +
+                    '<StartDate>01052017</StartDate>' +
+                    '<Duration>4</Duration>' +
+                    '<Destination>PIC</Destination>' +
+                    '<Program>HOTEL</Program>' +
+                    '<Product>RENTER.CODE</Product>' +
+                    '<Room>VEHICLE.CODE</Room>' +
+                    '<Norm>1</Norm>' +
+                    '<Meal>WOHNM</Meal>' +
+                    '<Persons>1</Persons>' +
+                    '<CarDetails>' +
+                    '<PickUp Where="Walkin">' +
+                    '<Time>0820</Time>' +
+                    '<CarStation Code="PICK.UP.LOCATION"/>' +
+                    '</PickUp>' +
+                    '<DropOff Where="Walkin">' +
+                    '<Time>1000</Time>' +
+                    '<CarStation Code="DROP.OFF.LOCATION"/>' +
+                    '</DropOff>' +
+                    '</CarDetails>' +
+                    '</Fah>' +
+                    '<Fah ServiceType="S">' +
+                    '<StartDate>01052017</StartDate>' +
+                    '<Duration>1</Duration>' +
+                    '<Destination>PIC</Destination>' +
+                    '<Program>PAUSCHAL</Program>' +
+                    '<Product>code 1</Product>' +
+                    '<Room>extra 1</Room>' +
+                    '<Persons>1</Persons>' +
+                    '</Fah>' +
+                    '<Fah ServiceType="S">' +
+                    '<StartDate>01052017</StartDate>' +
+                    '<Duration>1</Duration>' +
+                    '<Destination>PIC</Destination>' +
+                    '<Program>PAUSCHAL</Program>' +
+                    '<Product>code 2</Product>' +
+                    '<Room>extra 2</Room>' +
+                    '<Persons>1</Persons>' +
+                    '</Fah>';
+
+                let expectedXml = createResponseXml(service, '360');
 
                 adapter.sendData(data);
 

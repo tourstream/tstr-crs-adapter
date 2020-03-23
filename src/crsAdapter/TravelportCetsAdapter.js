@@ -12,16 +12,20 @@ const CONFIG = {
         genderTypes: {},
     },
     defaults: {
-        personCount: 1,
-        serviceCode: {car: 'MIETW'},
+        personCount: '1',
+        serviceCode: {
+            car: 'MIETW',
+            camper: 'WOHNM',
+        },
         serviceType: {
             misc: 'MISC',
-            car: 'C',
+            vehicle: 'C',
             customerRequest: 'Q',
             roundTrip: 'R',
-            hotel: 'H'
+            hotel: 'H',
+            special: 'S',
         },
-        pickUp: {
+        transfer: {
             walkIn: {
                 key: 'Walkin',
                 info: 'WALK IN',
@@ -36,6 +40,7 @@ const CONFIG = {
         program: {
             roundTrip: 'BAUSTEIN',
             hotel: 'HOTEL',
+            paus: 'PAUSCHAL',
         },
         destination: {
             roundTrip: 'NEZ',
@@ -52,10 +57,11 @@ const CONFIG = {
         '360E': 'BAUS',
     },
     serviceType2catalog: {
-        C: 'DCH',
-        H: 'TCH',
-        R: '360C',
-        M: '360'
+        car: 'DCH',
+        camper: 'TCH',
+        hotel: 'TCH',
+        roundTrip: '360C',
+        multi: '360',
     },
     limitedCatalogs: ['DCH', 'CCH', 'DRI', 'DRIV', 'CARS'],
     parserOptions: {
@@ -245,8 +251,15 @@ class TravelportCetsAdapter {
             let service;
 
             switch (xmlService[CONFIG.parserOptions.attributeNamePrefix].ServiceType) {
-                case CONFIG.defaults.serviceType.car: {
-                    service = this.mapCarServiceFromXmlObjectToAdapterObject(xmlService);
+                case CONFIG.defaults.serviceType.vehicle: {
+                    if (xmlService.Meal === CONFIG.defaults.serviceCode.car) {
+                        service = this.mapCarServiceFromXmlObjectToAdapterObject(xmlService);
+                    }
+
+                    if (xmlService.Meal === CONFIG.defaults.serviceCode.camper) {
+                        service = this.mapCamperServiceFromXmlObjectToAdapterObject(xmlService);
+                    }
+
                     break;
                 }
                 case CONFIG.defaults.serviceType.roundTrip: {
@@ -255,6 +268,15 @@ class TravelportCetsAdapter {
                 }
                 case CONFIG.defaults.serviceType.hotel: {
                     service = this.mapHotelServiceFromXmlObjectToAdapterObject(xmlService);
+                    break;
+                }
+                case CONFIG.defaults.serviceType.special: {
+                    const camperService = dataObject.services.filter(dataObjectService => dataObjectService.type === SERVICE_TYPES.camper).pop()
+
+                    if (camperService) {
+                        this.mapCamperExtraFromXmlObjectToAdapterObject(xmlService, camperService);
+                    }
+
                     break;
                 }
                 default:
@@ -275,8 +297,14 @@ class TravelportCetsAdapter {
             let service;
 
             switch (xmlRequest.Avl[CONFIG.parserOptions.attributeNamePrefix].ServiceType) {
-                case CONFIG.defaults.serviceType.car: {
-                    service = this.mapCarServiceFromXmlObjectToAdapterObject(xmlRequest.Avl);
+                case CONFIG.defaults.serviceType.vehicle: {
+                    if (xmlRequest.Avl.Catalog === CONFIG.serviceType2catalog.car) {
+                        service = this.mapCarServiceFromXmlObjectToAdapterObject(xmlRequest.Avl);
+                    }
+
+                    if (xmlRequest.Avl.Catalog === CONFIG.serviceType2catalog.camper) {
+                        service = this.mapCamperServiceFromXmlObjectToAdapterObject(xmlRequest.Avl);
+                    }
                     break;
                 }
                 case CONFIG.defaults.serviceType.roundTrip: {
@@ -330,6 +358,51 @@ class TravelportCetsAdapter {
     /**
      * @private
      * @param xmlService
+     * @returns {{pickUpDate: *, dropOffDate: string, pickUpLocation: *, duration: *, renterCode: *, vehicleCode: *, type: string}}
+     */
+    mapCamperServiceFromXmlObjectToAdapterObject(xmlService) {
+        let pickUpDate = moment(xmlService.StartDate, this.config.crs.formats.date);
+        let dropOffDate = pickUpDate.clone().add(xmlService.Duration, 'days');
+
+        let service = {
+            pickUpDate: pickUpDate.isValid() ? pickUpDate.format(this.options.useDateFormat) : xmlService.StartDate,
+            dropOffDate: dropOffDate.isValid() ? dropOffDate.format(this.options.useDateFormat) : '',
+            pickUpLocation: xmlService.Destination,
+            renterCode: xmlService.Product,
+            vehicleCode: xmlService.Room,
+            type: SERVICE_TYPES.camper,
+        };
+
+        if (xmlService.CarDetails) {
+            let pickUpTime = moment(xmlService.CarDetails.PickUp.Time, this.config.crs.formats.time);
+            let dropOffTime = moment(xmlService.CarDetails.DropOff.Time, this.config.crs.formats.time);
+
+            service.pickUpLocation = xmlService.CarDetails.PickUp.CarStation[CONFIG.parserOptions.attributeNamePrefix].Code;
+            service.dropOffLocation = xmlService.CarDetails.DropOff.CarStation[CONFIG.parserOptions.attributeNamePrefix].Code;
+            service.pickUpTime = pickUpTime.isValid() ? pickUpTime.format(this.options.useTimeFormat) : xmlService.CarDetails.PickUp.Time;
+            service.dropOffTime = dropOffTime.isValid() ? dropOffTime.format(this.options.useTimeFormat) : xmlService.CarDetails.DropOff.Time;
+        }
+
+        return service;
+    }
+
+    /**
+     * @private
+     * @param xmlService
+     * @param camperService
+     */
+    mapCamperExtraFromXmlObjectToAdapterObject(xmlService, camperService) {
+        camperService.extras = camperService.extras || [];
+        camperService.extras.push({
+            name: xmlService.Room,
+            code: xmlService.Product,
+            amount: xmlService.Persons.split('').length || 1,
+        });
+    }
+
+    /**
+     * @private
+     * @param xmlService
      * @returns {{type: string, bookingId: *, destination: *, startDate: string, endDate: string}}
      */
     mapRoundTripServiceFromXmlObjectToAdapterObject(xmlService) {
@@ -345,6 +418,11 @@ class TravelportCetsAdapter {
         };
     }
 
+    /**
+     * @private
+     * @param xmlService
+     * @returns {{type: string, bookingId: *, destination: *, startDate: string, endDate: string}}
+     */
     mapHotelServiceFromXmlObjectToAdapterObject(xmlService) {
         let startDate = moment(xmlService.StartDate, this.config.crs.formats.date);
         let endDate = startDate.clone().add(xmlService.Duration, 'days');
@@ -410,14 +488,10 @@ class TravelportCetsAdapter {
     }
 
     detectCatalogChange(xmlObject) {
-        if (!Array.isArray(xmlObject.Request.Fab.Fah) || xmlObject.Request.Fab.Fah.length === 0) return;
+        const serviceTypes = (xmlObject.Request.Fab.Fah || []).map(service => service[CONFIG.parserOptions.attributeNamePrefix].ServiceType)
 
-        if (xmlObject.Request.Fab.Fah.length > 1) {
-            xmlObject.Request.Fab.Fah.reduce((previousService, currentService) => {
-                if (currentService[CONFIG.parserOptions.attributeNamePrefix].ServiceType !== previousService[CONFIG.parserOptions.attributeNamePrefix].ServiceType) {
-                    xmlObject.Request.Fab.Catalog = CONFIG.serviceType2catalog.M;
-                }
-            });
+        if ([...(new Set(serviceTypes))].length > 1) {
+            xmlObject.Request.Fab.Catalog = CONFIG.serviceType2catalog.multi;
         }
     }
 
@@ -434,7 +508,7 @@ class TravelportCetsAdapter {
                     if (CONFIG.limitedCatalogs.includes(xmlRequest.Catalog)) {
                         try {
                             xmlRequest.Fah = xmlRequest.Fah.filter((compareService) => {
-                                return CONFIG.defaults.serviceType.car !== compareService[CONFIG.builderOptions.attrkey].ServiceType;
+                                return CONFIG.defaults.serviceType.vehicle !== compareService[CONFIG.builderOptions.attrkey].ServiceType;
                             });
                         } catch (ignore) {
                         }
@@ -461,6 +535,12 @@ class TravelportCetsAdapter {
                 case SERVICE_TYPES.car: {
                     this.assignCarServiceFromAdapterObjectToXmlObject(service, xmlRequest);
                     this.assignHotelData(service, xmlRequest);
+
+                    break;
+                }
+                case SERVICE_TYPES.camper: {
+                    this.assignCamperServiceFromAdapterObjectToXmlObject(service, xmlRequest);
+                    this.assignCamperExtrasData(service, xmlRequest);
 
                     break;
                 }
@@ -491,15 +571,7 @@ class TravelportCetsAdapter {
      * @param xml object
      */
     assignCarServiceFromAdapterObjectToXmlObject(service, xml) {
-        const normalizeService = (service) => {
-            service.vehicleCode = (service.vehicleCode || '').toUpperCase();
-            service.sipp = (service.sipp || '').toUpperCase();
-            service.renterCode = (service.renterCode || '').toUpperCase();
-            service.pickUpLocation = (service.pickUpLocation || '').toUpperCase();
-            service.dropOffLocation = (service.dropOffLocation || '').toUpperCase();
-        };
-
-        normalizeService(service);
+        this.normalizeService(service);
 
         let pickUpDate = moment(service.pickUpDate, this.options.useDateFormat);
         let pickUpTime = moment(service.pickUpTime, this.options.useTimeFormat);
@@ -507,7 +579,7 @@ class TravelportCetsAdapter {
 
         let xmlService = {
             [CONFIG.builderOptions.attrkey]: {
-                ServiceType: CONFIG.defaults.serviceType.car,
+                ServiceType: CONFIG.defaults.serviceType.vehicle,
                 Key: service.sipp
                     ? ''
                     : service.vehicleCode + '/' + service.pickUpLocation + '-' + service.dropOffLocation,
@@ -520,11 +592,11 @@ class TravelportCetsAdapter {
             Norm: CONFIG.defaults.personCount,
             MaxAdults: CONFIG.defaults.personCount,
             Meal: CONFIG.defaults.serviceCode.car,
-            Persons: '1',
+            Persons: CONFIG.defaults.personCount,
             CarDetails: {
                 PickUp: {
                     [CONFIG.builderOptions.attrkey]: {
-                        Where: CONFIG.defaults.pickUp.walkIn.key,
+                        Where: CONFIG.defaults.transfer.walkIn.key,
                     },
                     Time: pickUpTime.isValid() ? pickUpTime.format(this.config.crs.formats.time) : service.pickUpTime,
                     CarStation: {
@@ -533,7 +605,7 @@ class TravelportCetsAdapter {
                         },
                         [CONFIG.builderOptions.charkey]: '',
                     },
-                    Info: CONFIG.defaults.pickUp.walkIn.info,
+                    Info: CONFIG.defaults.transfer.walkIn.info,
                 },
                 DropOff: {
                     Time: dropOffTime.isValid() ? dropOffTime.format(this.config.crs.formats.time) : service.dropOffTime,
@@ -570,7 +642,7 @@ class TravelportCetsAdapter {
         const faq = this.findOrCreateQMiscLine(xml);
 
         if (service.pickUpHotelName) {
-            xmlService.CarDetails.PickUp[CONFIG.builderOptions.attrkey].Where = CONFIG.defaults.pickUp.hotel.key;
+            xmlService.CarDetails.PickUp[CONFIG.builderOptions.attrkey].Where = CONFIG.defaults.transfer.hotel.key;
             xmlService.CarDetails.PickUp.Info = service.pickUpHotelName;
 
             faq.TextV = [
@@ -601,6 +673,85 @@ class TravelportCetsAdapter {
 
             faq.TextV = [faq.TextV, dropOffString].filter(Boolean).join(';');
         }
+    }
+
+    /**
+     * @private
+     *
+     * @param service object
+     * @param xml object
+     */
+    assignCamperServiceFromAdapterObjectToXmlObject(service, xml) {
+        this.normalizeService(service);
+
+        const pickUpDate = moment(service.pickUpDate, this.options.useDateFormat);
+        const pickUpTime = moment(service.pickUpTime, this.options.useTimeFormat);
+        const dropOffTime = moment(service.dropOffTime, this.options.useTimeFormat);
+
+        const xmlService = {
+            [CONFIG.builderOptions.attrkey]: {
+                ServiceType: CONFIG.defaults.serviceType.vehicle,
+            },
+            StartDate: pickUpDate.isValid() ? pickUpDate.format(this.config.crs.formats.date) : service.pickUpDate,
+            Duration: this.calculateDuration(service.pickUpDate, service.dropOffDate),
+            Destination: service.pickUpLocation.substr(0, 3),
+            Program: CONFIG.defaults.program.hotel,
+            Product: service.renterCode,
+            Room: service.vehicleCode,
+            Norm: CONFIG.defaults.personCount,
+            Meal: CONFIG.defaults.serviceCode.camper,
+            Persons: CONFIG.defaults.personCount,
+            CarDetails: {
+                PickUp: {
+                    [CONFIG.builderOptions.attrkey]: {
+                        Where: CONFIG.defaults.transfer.walkIn.key,
+                    },
+                    Time: pickUpTime.isValid() ? pickUpTime.format(this.config.crs.formats.time) : service.pickUpTime,
+                    CarStation: {
+                        [CONFIG.builderOptions.attrkey]: {
+                            Code: service.pickUpLocation,
+                        },
+                        [CONFIG.builderOptions.charkey]: '',
+                    },
+                },
+                DropOff: {
+                    [CONFIG.builderOptions.attrkey]: {
+                        Where: CONFIG.defaults.transfer.walkIn.key,
+                    },
+                    Time: dropOffTime.isValid() ? dropOffTime.format(this.config.crs.formats.time) : service.dropOffTime,
+                    CarStation: {
+                        [CONFIG.builderOptions.attrkey]: {
+                            Code: service.dropOffLocation,
+                        },
+                        [CONFIG.builderOptions.charkey]: '',
+                    },
+                },
+            },
+        };
+
+        xml.Fah.push(xmlService);
+    }
+
+    assignCamperExtrasData(service, xml) {
+        const extras = (service.extras || []).filter(Boolean);
+        const pickUpDate = moment(service.pickUpDate, this.options.useDateFormat);
+
+        extras.forEach(extra => {
+            const xmlService = {
+                [CONFIG.builderOptions.attrkey]: {
+                    ServiceType: CONFIG.defaults.serviceType.special,
+                },
+                StartDate: pickUpDate.isValid() ? pickUpDate.format(this.config.crs.formats.date) : service.pickUpDate,
+                Duration: 1,
+                Destination: service.pickUpLocation.substr(0, 3),
+                Program: CONFIG.defaults.program.paus,
+                Product: extra.code,
+                Room: extra.name,
+                Persons: CONFIG.defaults.personCount,
+            };
+
+            xml.Fah.push(xmlService);
+        })
     }
 
     assignRoundTripServiceFromAdapterObjectToXmlObject(service, xml) {
@@ -668,6 +819,14 @@ class TravelportCetsAdapter {
         });
     }
 
+    normalizeService(service) {
+        service.vehicleCode = (service.vehicleCode || '').toUpperCase();
+        service.sipp = (service.sipp || '').toUpperCase();
+        service.renterCode = (service.renterCode || '').toUpperCase();
+        service.pickUpLocation = (service.pickUpLocation || '').toUpperCase();
+        service.dropOffLocation = (service.dropOffLocation || '').toUpperCase();
+    };
+
     cleanUpXmlObject(xmlObject) {
         ['Fah', 'Faq', 'Fap'].forEach((node) => {
             if (!xmlObject.Request.Fab[node].length) {
@@ -703,7 +862,7 @@ class TravelportCetsAdapter {
             },
             Code: CONFIG.defaults.serviceType.misc,
             TextV: '',
-            Persons: '1',
+            Persons: CONFIG.defaults.personCount,
         };
 
         xml.Faq.push(newFaq);
