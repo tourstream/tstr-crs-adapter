@@ -328,7 +328,7 @@ describe('TravelportCetsAdapter', () => {
             let xml = createRequestXml(
                 '<Avl ServiceType="C">' +
                 '<TOCode>FTI</TOCode>' +
-                '<Catalog>TCH</Catalog>' +
+                '<Catalog>MCH</Catalog>' +
                 '<StartDate>08052020</StartDate>' +
                 '<Duration>10</Duration>' +
                 '<Destination>MIA</Destination>' +
@@ -1132,7 +1132,7 @@ describe('TravelportCetsAdapter', () => {
                     '<Program>PAUSCHAL</Program>' +
                     '<Product>code 2</Product>' +
                     '<Room>extra 2</Room>' +
-                    '<Persons>1</Persons>' +
+                    '<Persons>12</Persons>' +
                     '</Fah>';
 
                 let expectedXml = createResponseXml(service, '360');

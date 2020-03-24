@@ -13,6 +13,7 @@ const CONFIG = {
     },
     defaults: {
         personCount: '1',
+        assignedPerson: '1',
         serviceCode: {
             car: 'MIETW',
             camper: 'WOHNM',
@@ -48,21 +49,24 @@ const CONFIG = {
     },
     catalog2TravelTypeMap: {
         DCH: 'DRIV',
-        CCH: 'CARS',
         DRI: 'DRIV',
+        DRIV: 'DRIV',
+        CCH: 'CARS',
+        CARS: 'CARS',
         TCH: 'BAUS',
+        MCH: 'BAUS',
         TEU: 'BAUS',
         '360': 'BAUS',
         '360C': 'BAUS',
         '360E': 'BAUS',
     },
-    serviceType2catalog: {
-        car: 'DCH',
-        camper: 'TCH',
-        hotel: 'TCH',
-        roundTrip: '360C',
-        multi: '360',
+    serviceDefinition: {
+        car: { serviceType: 'C', catalogs: ['TCH', 'DCH', 'CCH', 'DRI', 'DRIV', 'CARS'] },
+        camper: { serviceType: 'C', catalogs: ['MCH'] },
+        hotel: { serviceType: 'H', catalogs: ['TCH'] },
+        roundTrip: { serviceType: 'R', catalogs: ['360', '360C', '360E'] },
     },
+    multiCatalog: '360',
     limitedCatalogs: ['DCH', 'CCH', 'DRI', 'DRIV', 'CARS'],
     parserOptions: {
         attributeNamePrefix: '__attributes',
@@ -298,11 +302,11 @@ class TravelportCetsAdapter {
 
             switch (xmlRequest.Avl[CONFIG.parserOptions.attributeNamePrefix].ServiceType) {
                 case CONFIG.defaults.serviceType.vehicle: {
-                    if (xmlRequest.Avl.Catalog === CONFIG.serviceType2catalog.car) {
+                    if (CONFIG.serviceDefinition.car.catalogs.includes(xmlRequest.Avl.Catalog)) {
                         service = this.mapCarServiceFromXmlObjectToAdapterObject(xmlRequest.Avl);
                     }
 
-                    if (xmlRequest.Avl.Catalog === CONFIG.serviceType2catalog.camper) {
+                    if (CONFIG.serviceDefinition.camper.catalogs.includes(xmlRequest.Avl.Catalog)) {
                         service = this.mapCamperServiceFromXmlObjectToAdapterObject(xmlRequest.Avl);
                     }
                     break;
@@ -491,7 +495,7 @@ class TravelportCetsAdapter {
         const serviceTypes = (xmlObject.Request.Fab.Fah || []).map(service => service[CONFIG.parserOptions.attributeNamePrefix].ServiceType)
 
         if ([...(new Set(serviceTypes))].length > 1) {
-            xmlObject.Request.Fab.Catalog = CONFIG.serviceType2catalog.multi;
+            xmlObject.Request.Fab.Catalog = CONFIG.multiCatalog;
         }
     }
 
@@ -592,7 +596,7 @@ class TravelportCetsAdapter {
             Norm: CONFIG.defaults.personCount,
             MaxAdults: CONFIG.defaults.personCount,
             Meal: CONFIG.defaults.serviceCode.car,
-            Persons: CONFIG.defaults.personCount,
+            Persons: CONFIG.defaults.assignedPerson,
             CarDetails: {
                 PickUp: {
                     [CONFIG.builderOptions.attrkey]: {
@@ -701,7 +705,7 @@ class TravelportCetsAdapter {
             Room: service.vehicleCode,
             Norm: CONFIG.defaults.personCount,
             Meal: CONFIG.defaults.serviceCode.camper,
-            Persons: CONFIG.defaults.personCount,
+            Persons: CONFIG.defaults.assignedPerson,
             CarDetails: {
                 PickUp: {
                     [CONFIG.builderOptions.attrkey]: {
@@ -748,7 +752,10 @@ class TravelportCetsAdapter {
                 Program: CONFIG.defaults.program.paus,
                 Product: extra.code,
                 Room: extra.name,
-                Persons: CONFIG.defaults.personCount,
+                Persons: Array(extra.amount || CONFIG.defaults.assignedPerson)
+                    .fill('')
+                    .map((ignore, key) => key + 1)
+                    .join(''),
             };
 
             xml.Fah.push(xmlService);
@@ -863,7 +870,7 @@ class TravelportCetsAdapter {
             },
             Code: CONFIG.defaults.serviceType.misc,
             TextV: '',
-            Persons: CONFIG.defaults.personCount,
+            Persons: CONFIG.defaults.assignedPerson,
         };
 
         xml.Faq.push(newFaq);
