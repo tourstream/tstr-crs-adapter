@@ -691,6 +691,7 @@ class TravelportCetsAdapter {
         const xmlService = {
             [CONFIG.builderOptions.attrkey]: {
                 ServiceType: CONFIG.defaults.serviceType.vehicle,
+                Key: `${service.renterCode}/${service.vehicleCode}`,
             },
             StartDate: pickUpDate.isValid() ? pickUpDate.format(this.config.crs.formats.date) : service.pickUpDate,
             Duration: this.calculateDuration(service.pickUpDate, service.dropOffDate),

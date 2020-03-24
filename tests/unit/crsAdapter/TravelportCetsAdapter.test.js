@@ -1037,7 +1037,7 @@ describe('TravelportCetsAdapter', () => {
                     ],
                 };
 
-                let service = '<Fah ServiceType="C">' +
+                let service = '<Fah ServiceType="C" Key="RENTER.CODE/VEHICLE.CODE">' +
                     '<StartDate>01052017</StartDate>' +
                     '<Duration>4</Duration>' +
                     '<Destination>PIC</Destination>' +
@@ -1095,7 +1095,7 @@ describe('TravelportCetsAdapter', () => {
                     ],
                 };
 
-                let service = '<Fah ServiceType="C">' +
+                let service = '<Fah ServiceType="C" Key="RENTER.CODE/VEHICLE.CODE">' +
                     '<StartDate>01052017</StartDate>' +
                     '<Duration>4</Duration>' +
                     '<Destination>PIC</Destination>' +
