@@ -253,21 +253,24 @@ Neo        | X     | X     | X          | X      | X
   pickUpTime: '0915',
   dropOffLocation: 'LIS2',
   dropOffDate: '17102017',
-  milesIncludedPerDay: '300',
-  milesPackagesIncluded: '3',
+  milesPerPackage: '300',
+  milesPackages: '3',
   extras: [
     {
       type: 'equipment',
+      name: 'extra towels',
       code: 'ECX0001',
       amount: '2',
     },
     {
       type: 'special',
+      name: 'Early Pickup',
       code: 'USA740',
       amount: '1',
     },
     {
       type: 'insurance',
+      name: 'Insurance 360+',
       code: '13361',
     },
     ...,
