@@ -25,8 +25,8 @@ class CamperServiceReducer {
         crsService.type = crsData.meta.serviceTypes.camper;
         crsService.marker = adapterService.marked ? 'X' : void 0;
         crsService.code = this.helper.vehicle.createServiceCode(adapterService);
-        crsService.quantity = adapterService.milesIncludedPerDay;
-        crsService.occupancy = adapterService.milesPackagesIncluded;
+        crsService.quantity = adapterService.milesPerPackage;
+        crsService.occupancy = adapterService.milesPackages;
         crsService.fromDate = pickUpDate.isValid() ? pickUpDate.format(crsData.meta.formats.date) : adapterService.pickUpDate;
         crsService.toDate = dropOffDate.isValid() ? dropOffDate.format(crsData.meta.formats.date) : adapterService.dropOffDate;
         crsService.accommodation = pickUpTime.isValid() ? pickUpTime.format(crsData.meta.formats.time) : adapterService.pickUpTime;

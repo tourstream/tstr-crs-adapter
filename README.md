@@ -253,8 +253,8 @@ Neo        | X     | X     | X          | X      | X
   pickUpTime: '0915',
   dropOffLocation: 'LIS2',
   dropOffDate: '17102017',
-  milesIncludedPerDay: '300',
-  milesPackagesIncluded: '3',
+  milesPerPackage: '300',
+  milesPackages: '3',
   extras: [
     {
       type: 'equipment',

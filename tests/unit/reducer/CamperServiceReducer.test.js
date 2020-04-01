@@ -64,8 +64,8 @@ describe('CamperServiceReducer', () => {
             vehicleCode: 'vehicleCode',
             pickUpLocation: 'pickUpLocation',
             dropOffLocation: 'dropOffLocation',
-            milesIncludedPerDay: 'milesIncludedPerDay',
-            milesPackagesIncluded: 'milesPackagesIncluded',
+            milesPerPackage: 'milesPerPackage',
+            milesPackages: 'milesPackages',
             extras: [
                 {
                     code: 'extraCodeWithoutAmount',
@@ -124,8 +124,8 @@ describe('CamperServiceReducer', () => {
                     marker: 'X',
                     code: 'service.code',
                     accommodation: '09:40',
-                    quantity: 'milesIncludedPerDay',
-                    occupancy: 'milesPackagesIncluded',
+                    quantity: 'milesPerPackage',
+                    occupancy: 'milesPackages',
                     fromDate: '2018-03-16',
                     toDate: '2018-03-21',
                     travellerAssociation: '1',

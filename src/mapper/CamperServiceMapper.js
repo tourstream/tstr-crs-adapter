@@ -20,8 +20,8 @@ class CamperServiceMapper {
             pickUpDate: pickUpDate && pickUpDate.isValid() ? pickUpDate.format(this.config.useDateFormat) : crsService.fromDate,
             dropOffDate: dropOffDate && dropOffDate.isValid() ? dropOffDate.format(this.config.useDateFormat) : crsService.toDate,
             pickUpTime: pickUpTime && pickUpTime.isValid() ? pickUpTime.format(this.config.useTimeFormat) : crsService.accommodation,
-            milesIncludedPerDay: crsService.quantity,
-            milesPackagesIncluded: crsService.occupancy,
+            milesPerPackage: crsService.quantity,
+            milesPackages: crsService.occupancy,
         };
 
         const serviceCodeDetails = this.helper.splitServiceCode(crsService.code);
