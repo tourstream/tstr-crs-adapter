@@ -702,12 +702,16 @@ class TravelportCetsAdapter {
         const dropOffTime = moment(service.dropOffTime, this.options.useTimeFormat);
         const milesData = {};
 
-        if (service.milesPackages) {
+        if (service.milesPerPackage) {
+            const milesPackages = String(service.milesPerPackage) === '999'
+                ? '99'
+                : service.milesPackages;
+
             milesData.Adults = 1;
             milesData.Item = {
                 [CONFIG.builderOptions.attrkey]: {
                     Code: [
-                        ('00' + service.milesPackages).substr(-2),
+                        ('00' + milesPackages).substr(-2),
                         ('000' + service.milesPerPackage).substr(-3),
                     ].join(CONFIG.milesSeparator)
                 }

@@ -1036,6 +1036,7 @@ describe('TravelportCetsAdapter', () => {
                             dropOffDate: '05052017',
                             dropOffTime: '1000',
                             renterCode: 'renter.code',
+                            milesPerPackage: '999',
                             type: 'camper',
                         },
                     ],
@@ -1060,6 +1061,8 @@ describe('TravelportCetsAdapter', () => {
                     '<Time>1000</Time>' +
                     '<CarStation Code="DROP.OFF.LOCATION"/>' +
                     '</DropOff>' +
+                    '<Adults>1</Adults>' +
+                    '<Item Code="99X999"/>' +
                     '</CarDetails>' +
                     '</Fah>';
 
