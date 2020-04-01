@@ -355,6 +355,8 @@ describe('TravelportCetsAdapter', () => {
                 '<CarStation Code="MIA">' +
                 '</CarStation>' +
                 '</DropOff>' +
+                '<Adults>1</Adults>' +
+                '<Item Code="02x080" />' +
                 '</CarDetails>' +
                 '</Fah>' +
                 '<Fah SegRef="001" ServiceType="S">' +
@@ -392,6 +394,8 @@ describe('TravelportCetsAdapter', () => {
                         dropOffLocation: 'MIA',
                         dropOffDate: '18052020',
                         dropOffTime: '1500',
+                        milesPackages: 2,
+                        milesPerPackage: 80,
                         type: 'camper',
                         extras: [
                             {
@@ -1079,6 +1083,8 @@ describe('TravelportCetsAdapter', () => {
                             dropOffTime: '1000',
                             renterCode: 'renter.code',
                             type: 'camper',
+                            milesPackages: 3,
+                            milesPerPackage: 60,
                             extras: [
                                 {
                                     name: 'extra 1',
@@ -1114,6 +1120,8 @@ describe('TravelportCetsAdapter', () => {
                     '<Time>1000</Time>' +
                     '<CarStation Code="DROP.OFF.LOCATION"/>' +
                     '</DropOff>' +
+                    '<Adults>1</Adults>' +
+                    '<Item Code="03X060"/>' +
                     '</CarDetails>' +
                     '</Fah>' +
                     '<Fah ServiceType="S">' +

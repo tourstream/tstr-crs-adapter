@@ -66,6 +66,7 @@ const CONFIG = {
         hotel: { serviceType: 'H', catalogs: ['TCH'] },
         roundTrip: { serviceType: 'R', catalogs: ['360', '360C', '360E'] },
     },
+    milesSeparator: 'X',
     multiCatalog: '360',
     limitedCatalogs: ['DCH', 'CCH', 'DRI', 'DRIV', 'CARS'],
     parserOptions: {
@@ -378,13 +379,21 @@ class TravelportCetsAdapter {
         };
 
         if (xmlService.CarDetails) {
-            let pickUpTime = moment(xmlService.CarDetails.PickUp.Time, this.config.crs.formats.time);
-            let dropOffTime = moment(xmlService.CarDetails.DropOff.Time, this.config.crs.formats.time);
+            const pickUpTime = moment(xmlService.CarDetails.PickUp.Time, this.config.crs.formats.time);
+            const dropOffTime = moment(xmlService.CarDetails.DropOff.Time, this.config.crs.formats.time);
+            const [milesPackages, milesPerPackage] = xmlService.CarDetails.Item
+                ? xmlService.CarDetails.Item[CONFIG.parserOptions.attributeNamePrefix].Code
+                    .toUpperCase()
+                    .split(CONFIG.milesSeparator)
+                    .filter(Boolean)
+                : [];
 
             service.pickUpLocation = xmlService.CarDetails.PickUp.CarStation[CONFIG.parserOptions.attributeNamePrefix].Code;
             service.dropOffLocation = xmlService.CarDetails.DropOff.CarStation[CONFIG.parserOptions.attributeNamePrefix].Code;
             service.pickUpTime = pickUpTime.isValid() ? pickUpTime.format(this.options.useTimeFormat) : xmlService.CarDetails.PickUp.Time;
             service.dropOffTime = dropOffTime.isValid() ? dropOffTime.format(this.options.useTimeFormat) : xmlService.CarDetails.DropOff.Time;
+            service.milesPackages = milesPackages && Number.parseInt(milesPackages);
+            service.milesPerPackage = milesPerPackage && Number.parseInt(milesPerPackage);
         }
 
         return service;
@@ -691,6 +700,19 @@ class TravelportCetsAdapter {
         const pickUpDate = moment(service.pickUpDate, this.options.useDateFormat);
         const pickUpTime = moment(service.pickUpTime, this.options.useTimeFormat);
         const dropOffTime = moment(service.dropOffTime, this.options.useTimeFormat);
+        const milesData = {};
+
+        if (service.milesPackages) {
+            milesData.Adults = 1;
+            milesData.Item = {
+                [CONFIG.builderOptions.attrkey]: {
+                    Code: [
+                        ('00' + service.milesPackages).substr(-2),
+                        ('000' + service.milesPerPackage).substr(-3),
+                    ].join(CONFIG.milesSeparator)
+                }
+            };
+        }
 
         const xmlService = {
             [CONFIG.builderOptions.attrkey]: {
@@ -706,7 +728,7 @@ class TravelportCetsAdapter {
             Norm: CONFIG.defaults.personCount,
             Meal: CONFIG.defaults.serviceCode.camper,
             Persons: CONFIG.defaults.assignedPerson,
-            CarDetails: {
+            CarDetails: Object.assign({
                 PickUp: {
                     [CONFIG.builderOptions.attrkey]: {
                         Where: CONFIG.defaults.transfer.walkIn.key,
@@ -731,7 +753,7 @@ class TravelportCetsAdapter {
                         [CONFIG.builderOptions.charkey]: '',
                     },
                 },
-            },
+            }, milesData),
         };
 
         xml.Fah.push(xmlService);
