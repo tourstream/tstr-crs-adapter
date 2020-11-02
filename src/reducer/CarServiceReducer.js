@@ -44,11 +44,19 @@ class CarServiceReducer {
 
         if (hotelName) {
             let hotelService = this.helper.service.createEmptyService(crsData);
-
             hotelService.type = CRS_SERVICE_TYPES.carHotelLocation;
             hotelService.code = hotelName;
             hotelService.fromDate = crsService.fromDate;
             hotelService.toDate = crsService.toDate;
+        }
+
+        if (adapterService.flightNumber) {
+            let flightService = this.helper.service.createEmptyService(crsData);
+            flightService.type =  CRS_SERVICE_TYPES.flight;
+            flightService.code = adapterService.flightNumber;
+            flightService.fromDate = crsService.fromDate;
+            flightService.toDate = crsService.toDate;            
+            flightService.accommodation = crsService.accommodation;
         }
 
         crsData.normalized.remark = [

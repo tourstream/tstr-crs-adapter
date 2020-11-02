@@ -130,6 +130,7 @@ describe('CarServiceReducer', () => {
             dropOffHotelAddress: 'do haddress',
             dropOffHotelPhoneNumber: 'do hphone',
             extras: ['BS', 'GPS'],
+            flightNumber: 'LH 1234',
         }
         const crsData = {
             normalized: {
@@ -182,6 +183,13 @@ describe('CarServiceReducer', () => {
                     code: 'pu hname',
                     fromDate: '2018-03-16',
                     toDate: '2018-03-21'
+                },
+                {
+                    type: 'E',
+                    code: 'LH 1234',
+                    fromDate: '2018-03-16',
+                    toDate: '2018-03-21',
+                    accommodation: '09:15'
                 }
             ],
             remark: 'BS,GPS;pu haddress pu hphone;do hname;do haddress do hphone',
