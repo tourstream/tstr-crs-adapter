@@ -533,7 +533,7 @@ class TravelportCetsAdapter {
                         },
                         [CONFIG.builderOptions.charkey]: '',
                     },
-                    Info: CONFIG.defaults.pickUp.walkIn.info,
+                    Info: service.flightNumber ? service.flightNumber : CONFIG.defaults.pickUp.walkIn.info,
                 },
                 DropOff: {
                     Time: dropOffTime.isValid() ? dropOffTime.format(this.config.crs.formats.time) : service.dropOffTime,

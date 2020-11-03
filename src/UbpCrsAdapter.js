@@ -43,6 +43,7 @@ const CRS_SERVICE_TYPES = {
     [SERVICE_TYPES.car]: 'MW',
     carHotelLocation: 'E',
     carDropOffTime: 'E',
+    flight: 'E',
     [SERVICE_TYPES.hotel]: 'H',
     [SERVICE_TYPES.roundTrip]: 'R',
     [SERVICE_TYPES.camper]: 'WM',

@@ -591,6 +591,63 @@ describe('TravelportCetsAdapter', () => {
                 expect(CetsConnection.returnBooking).toHaveBeenCalledWith(expectedXml);
             });
 
+            
+            it('sendData() should send car service with flight number', () => {
+                let data = {
+                    services: [
+                        {
+                            'type': 'car',
+                            'vehicleCode': 'vehicle.code',
+                            'renterCode': 'DEU81',
+                            'pickUpLocation': 'pick.up.location',
+                            'dropOffLocation': 'drop.off.location',
+                            'pickUpTime': '0940',
+                            'pickUpDate': '08112017',
+                            'dropOffTime': '1000',
+                            'dropOffDate': '12112017',
+                            'dropOffHotelName': 'drop.off.hotel.name',
+                            'dropOffHotelAddress': 'drop.off.hotel.address',
+                            'dropOffHotelPhoneNumber': '799103115',
+                            'flightNumber': 'LH 1234',
+                        },
+                    ],
+                };
+
+                let service = '<Fah ServiceType="C" Key="VEHICLE.CODE/PICK.UP.LOCATION-DROP.OFF.LOCATION">' +
+                    '<StartDate>08112017</StartDate>' +
+                    '<Duration>4</Duration>' +
+                    '<Destination>PIC</Destination>' +
+                    '<Product>DEU81</Product>' +
+                    '<Room>VEHICLE.CODE</Room>' +
+                    '<Norm>1</Norm>' +
+                    '<MaxAdults>1</MaxAdults>' +
+                    '<Meal>MIETW</Meal>' +
+                    '<Persons>1</Persons>' +
+                    '<CarDetails>' +
+                    '<PickUp Where="Walkin">' +
+                    '<Time>0940</Time>' +
+                    '<CarStation Code="PICK.UP.LOCATION"/>' +
+                    '<Info>LH 1234</Info>' +
+                    '</PickUp>' +
+                    '<DropOff>' +
+                    '<Time>1000</Time>' +
+                    '<CarStation Code="DROP.OFF.LOCATION"/>' +
+                    '</DropOff>' +
+                    '</CarDetails>' +
+                    '</Fah>' +
+                    '<Faq ServiceType="Q">' +
+                    '<Code>MISC</Code>' +
+                    '<TextV>drop.off.hotel.name,drop.off.hotel.address,799103115</TextV>' +
+                    '<Persons>1</Persons>' +
+                    '</Faq>';
+
+                let expectedXml = createResponseXml(service);
+
+                adapter.sendData(data);
+
+                expect(CetsConnection.returnBooking).toHaveBeenCalledWith(expectedXml);
+            });
+
             it('sendData() should send car service with hotel pick up', () => {
                 let data = {
                     services: [
