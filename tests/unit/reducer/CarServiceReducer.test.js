@@ -175,11 +175,6 @@ describe('CarServiceReducer', () => {
                 },
                 {
                     type: 'E',
-                    code: 'WALKIN',
-                    accommodation: '10:15',
-                },
-                {
-                    type: 'E',
                     code: 'pu hname',
                     fromDate: '2018-03-16',
                     toDate: '2018-03-21'

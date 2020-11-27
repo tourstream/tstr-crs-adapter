@@ -33,13 +33,6 @@ class CarServiceReducer {
         crsService.toDate = dropOffDate.isValid() ? dropOffDate.format(crsData.meta.formats.date) : adapterService.dropOffDate;
         crsService.accommodation = pickUpTime.isValid() ? pickUpTime.format(crsData.meta.formats.time) : adapterService.pickUpTime;
 
-        if (adapterService.dropOffTime) {
-          const dropOffService = this.helper.service.createEmptyService(crsData);
-          dropOffService.type = CRS_SERVICE_TYPES.carDropOffTime;
-          dropOffService.code = CODE_TYPES.walkIn;
-          dropOffService.accommodation = dropOffTime.isValid() ? dropOffTime.format(crsData.meta.formats.time) : adapterService.dropOffTime;
-        }
-
         let hotelName = adapterService.pickUpHotelName || adapterService.dropOffHotelName;
 
         if (hotelName) {
@@ -56,8 +49,14 @@ class CarServiceReducer {
             flightService.code = adapterService.flightNumber;
             flightService.fromDate = crsService.fromDate;
             flightService.toDate = crsService.toDate;            
-            flightService.accommodation = crsService.accommodation;
+            flightService.accommodation = crsService.accommodation;            
+        } else if (adapterService.dropOffTime) {
+            const dropOffService = this.helper.service.createEmptyService(crsData);
+            dropOffService.type = CRS_SERVICE_TYPES.carDropOffTime;
+            dropOffService.code = CODE_TYPES.walkIn;
+            dropOffService.accommodation = dropOffTime.isValid() ? dropOffTime.format(crsData.meta.formats.time) : adapterService.dropOffTime;
         }
+  
 
         crsData.normalized.remark = [
             crsData.normalized.remark,
