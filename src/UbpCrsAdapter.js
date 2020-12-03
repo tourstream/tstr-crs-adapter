@@ -304,7 +304,8 @@ class UbpCrsAdapter {
                     this.logger.info('BUILD CRS DATA:');
                     this.logger.info(convertedData.build);
 
-                    const convertedTosiData = new CRS_TYPE_2_ADAPTER_MAP[CRS_TYPES.tosi](this.logger, this.options).convert(reducedData);
+                    const tosiAdapter = new CRS_TYPE_2_ADAPTER_MAP[CRS_TYPES.tosi](this.logger, this.options);
+                    const convertedTosiData = tosiAdapter.convert(reducedData);
 
                     this.logger.info('CONVERTED TOSI CRS DATA:');
                     this.logger.info(convertedTosiData.converted);
