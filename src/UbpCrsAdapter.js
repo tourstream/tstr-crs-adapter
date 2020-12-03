@@ -304,6 +304,14 @@ class UbpCrsAdapter {
                     this.logger.info('BUILD CRS DATA:');
                     this.logger.info(convertedData.build);
 
+                    const convertedTosiData = FtiTosiAdapter(this.logger, this.options).convert(reducedData);
+
+                    this.logger.info('CONVERTED TOSI CRS DATA:');
+                    this.logger.info(convertedTosiData.converted);
+
+                    this.logger.info('BUILD TOSI CRS DATA:');
+                    this.logger.info(convertedTosiData.build);
+
                     try {
                         this.options.onSetData && this.options.onSetData(convertedData);
                     } catch (ignore) {}
