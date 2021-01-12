@@ -213,14 +213,13 @@ class AmadeusSPCTomaAdapter {
 
                 if (url.indexOf('.sellingplatformconnect.amadeus.com') > -1) {
                     this.logger.info('auto detected Amadeus URL: ' + url);
-
-                    // return url;
+                     return url;
                 }
 
                 this.logger.info('could not auto detect any Amadeus URL');
             };
 
-            let connectionUrl = cleanUrl(getConnectionUrlFromReferrer() || this.connectionOptions.connectionUrl);
+            let connectionUrl = cleanUrl(this.connectionOptions.connectionUrl || getConnectionUrlFromReferrer());
 
             if (!connectionUrl) {
                 const message = 'no connection URL found';
