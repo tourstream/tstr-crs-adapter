@@ -116,6 +116,11 @@ class FtiTosiAdapter {
             crsData.normalized.numberOfTravellers
         ));
 
+        crsData.converted.methodCall.params.param.value.struct.member.push(this.createMember(
+            'update',
+            'V'
+        ));
+
         this.assignServices(crsData);
         this.assignTravellers(crsData);
 
