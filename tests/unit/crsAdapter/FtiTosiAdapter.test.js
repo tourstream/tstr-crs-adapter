@@ -112,6 +112,10 @@ describe('FtiTosiAdapter', () => {
                                         '<name>TOSI_Key</name>' +
                                         '<value><string>token</string></value>' +
                                     '</member>' +
+                                    '<member>' +
+                                        '<name>update</name>' +
+                                        '<value><string>V</string></value>' +
+                                    '</member>' +
                                 '</struct>' +
                             '</value>' +
                         '</param>' +
@@ -154,6 +158,10 @@ describe('FtiTosiAdapter', () => {
                                     '<member>' +
                                         '<name>Pers</name>' +
                                         '<value><string>numberOfTravellers</string></value>' +
+                                    '</member>' +
+                                    '<member>' +
+                                        '<name>update</name>' +
+                                        '<value><string>V</string></value>' +
                                     '</member>' +
                                     '<member>' +
                                         '<name>Data_01</name>' +
