@@ -43,8 +43,8 @@ class CarServiceReducer {
             hotelService.toDate = crsService.toDate;
         }
 
-        console.log('adapterService.dropOffTime in CarServiceReducer:')
-        console.log(adapterService.dropOffTime)
+        this.logger.info('adapterService.dropOffTime in CarServiceReducer:')
+        this.logger.info(adapterService.dropOffTime)
 
         if (adapterService.flightNumber) {
             let flightService = this.helper.service.createEmptyService(crsData);
@@ -58,8 +58,8 @@ class CarServiceReducer {
             dropOffService.type = CRS_SERVICE_TYPES.carDropOffTime;
             dropOffService.code = CODE_TYPES.walkIn;
             dropOffService.accommodation = dropOffTime.isValid() ? dropOffTime.format(crsData.meta.formats.time) : adapterService.dropOffTime;
-            console.log(dropOffService.accommodation)
-            console.log(dropOffTime.isValid())
+            this.logger.info(dropOffService.accommodation)
+            this.logger.info(dropOffTime.isValid())
         }
 
         crsData.normalized.remark = [
