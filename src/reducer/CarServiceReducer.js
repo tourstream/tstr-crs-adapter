@@ -49,7 +49,7 @@ class CarServiceReducer {
             flightService.code = adapterService.flightNumber;
             flightService.fromDate = crsService.fromDate;
             flightService.toDate = crsService.toDate;            
-            flightService.accommodation = crsService.accommodation;            
+            flightService.accommodation = dropOffTime.isValid() ? dropOffTime.format(crsData.meta.formats.time) : adapterService.dropOffTime;
         } else if (adapterService.dropOffTime) {
             const dropOffService = this.helper.service.createEmptyService(crsData);
             dropOffService.type = CRS_SERVICE_TYPES.carDropOffTime;
