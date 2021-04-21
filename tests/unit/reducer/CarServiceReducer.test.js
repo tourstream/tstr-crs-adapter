@@ -184,7 +184,7 @@ describe('CarServiceReducer', () => {
                     code: 'LH 1234',
                     fromDate: '2018-03-16',
                     toDate: '2018-03-21',
-                    accommodation: '09:15'
+                    accommodation: '10:15'
                 }
             ],
             remark: 'BS,GPS;pu haddress pu hphone;do hname;do haddress do hphone',
