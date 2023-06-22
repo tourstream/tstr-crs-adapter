@@ -33,7 +33,6 @@ class SabreMerlin2Adapter {
                 clearScreen: false,
                 mask: {
                     touroperator: this.connectionOptions.op,
-                    action: "G",
                     travelType: crsData.travelType,
                     noOfPersons: crsData.numberOfTravellers,
                     agencyNoTouroperator: this.connectionOptions.ag,
