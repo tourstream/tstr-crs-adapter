@@ -12,7 +12,7 @@ class SabreMerlin2Adapter {
             },
         };
 
-        this.connectOptions = null;
+        this.connectionOptions = {};
         this.options = options;
         this.logger = logger;
     }
