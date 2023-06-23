@@ -36,7 +36,7 @@ class SabreMerlin2Adapter {
                     travelType: crsData.travelType,
                     noOfPersons: crsData.numberOfTravellers,
                     agencyNoTouroperator: this.connectionOptions.ag,
-                    transactionKey: "",
+                    transactionKey: firstService.pnr,
                     moduleNo: "",
                     consultant: "",
                     remark: "",
