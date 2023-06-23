@@ -20,61 +20,90 @@ class SabreMerlin2Adapter {
     /**
      * @public
      * @param {object} crsData
+     * @returns {Promise<void>}
      */
     sendData(crsData = {}) {
-        const [firstService] = crsData.services;
-        const travellers = firstService.travellers;
-        const origin = this.connectionOptions.origin || this.config.crs.origin;
+        try {
+            const services = crsData.services || [];
+            const firstService = services[0] || {};
+            const travellers = firstService.travellers || [];
+            const firstTraveller = travellers[0] || {};
+            const origin =
+                this.connectionOptions.origin || this.config.crs.origin;
 
-        const message = {
-            action: "sabre-merlin-mask-handover",
-            data: {
-                autoSend: false,
-                clearScreen: false,
-                mask: {
-                    touroperator: this.connectionOptions.op,
-                    travelType: crsData.travelType,
-                    noOfPersons: crsData.numberOfTravellers,
-                    agencyNoTouroperator: this.connectionOptions.ag,
-                    transactionKey: firstService.pnr,
-                    moduleNo: "",
-                    consultant: "",
-                    remark: "",
-                    multifunctionalLine: "",
-                    services: this.mapServices(crsData.services),
-                    customer: {
-                        firstName: travellers[0].firstName,
-                        lastName: travellers[0].lastName,
-                        additional: "",
-                        street: "",
-                        zipCode: "",
-                        location: "",
-                        email: "",
-                        telephone: "",
-                        bookingChannelFlag: "",
-                        mobilePhoneNumber: "",
-                        sosFlag: "",
+            const message = {
+                action: "sabre-merlin-mask-handover",
+                data: {
+                    autoSend: false,
+                    clearScreen: false,
+                    mask: {
+                        touroperator: this.connectionOptions.op,
+                        travelType: crsData.travelType,
+                        noOfPersons: crsData.numberOfTravellers,
+                        agencyNoTouroperator: this.connectionOptions.ag,
+                        transactionKey: firstService.pnr,
+                        moduleNo: "",
+                        consultant: "",
+                        remark: "",
+                        multifunctionalLine: "",
+                        services: this.mapServices(services),
+                        customer: {
+                            firstName: firstTraveller.firstName,
+                            lastName: firstTraveller.lastName,
+                            additional: "",
+                            street: "",
+                            zipCode: "",
+                            location: "",
+                            email: "",
+                            telephone: "",
+                            bookingChannelFlag: "",
+                            mobilePhoneNumber: "",
+                            sosFlag: "",
+                        },
+                        persons: this.mapPersons(travellers),
                     },
-                    persons: this.mapPersons(travellers),
                 },
-            },
-        };
+            };
 
-        parent.postMessage(message, origin);
+            window.parent.postMessage(message, origin);
 
-        this.logger.log({
-            "parent.postMessage(message, origin)": JSON.parse(
-                JSON.stringify({ message, origin })
-            ),
-        });
+            this.logger.log({
+                "parent.postMessage(message, origin)": JSON.parse(
+                    JSON.stringify({ message, origin })
+                ),
+            });
+        } catch (err) {
+            return Promise.reject(err);
+        }
+
+        return Promise.resolve();
     }
 
     /**
      * @public
      * @param {{ origin: string }} options
+     * @returns {Promise<void>}
      */
     connect(options = {}) {
         this.connectionOptions = Object.assign({}, options);
+
+        return Promise.resolve();
+    }
+
+    /**
+     * @public
+     * @returns {Promise<{}>}
+     */
+    fetchData() {
+        return Promise.resolve({});
+    }
+
+    /**
+     * @public
+     * @returns {Promise<void>}
+     */
+    cancel() {
+        return Promise.resolve();
     }
 
     /**
@@ -82,7 +111,7 @@ class SabreMerlin2Adapter {
      * @param {{ type: string }} traveller
      * @returns {string}
      */
-    getGender(traveller) {
+    getGender(traveller = {}) {
         return this.config.crs.genderTypes[traveller.type];
     }
 
@@ -91,7 +120,7 @@ class SabreMerlin2Adapter {
      * @param {string} date
      * @returns {string}
      */
-    getDate(date) {
+    getDate(date = "") {
         return date
             .split("-")
             .reverse()
@@ -104,7 +133,7 @@ class SabreMerlin2Adapter {
      * @param {string} birthDate
      * @returns {number}
      */
-    getAge(birthDate) {
+    getAge(birthDate = "") {
         const today = new Date();
         const birthDateObj = new Date(birthDate);
 
@@ -123,7 +152,7 @@ class SabreMerlin2Adapter {
      * @param {{ firstName?: string, lastName?: string }} traveller
      * @returns {string}
      */
-    getName(traveller) {
+    getName(traveller = {}) {
         return [traveller.firstName, traveller.lastName]
             .filter(Boolean)
             .join("/");
@@ -134,7 +163,7 @@ class SabreMerlin2Adapter {
      * @param {CrsService[]} services
      * @returns {Merlin2Service[]}
      */
-    mapServices(services) {
+    mapServices(services = []) {
         return services.map((service, index) => ({
             no: index + 1,
             kindOfService: this.connectionOptions.st,
@@ -155,7 +184,7 @@ class SabreMerlin2Adapter {
      * @param {CrsTraveller[]} travellers
      * @returns {Merlin2Person[]}
      */
-    mapPersons(travellers) {
+    mapPersons(travellers = []) {
         return travellers.map((traveller, index) => ({
             no: index + 1,
             salutation: this.getGender(traveller),

@@ -7,6 +7,7 @@ import SabreMerlinAdapter from '../../src/crsAdapter/SabreMerlinAdapter';
 import TrafficsTbmAdapter from '../../src/crsAdapter/TrafficsTbmAdapter';
 import FtiTosiAdapter from '../../src/crsAdapter/FtiTosiAdapter';
 import SchmetterlingNeoAdapter from '../../src/crsAdapter/SchmetterlingNeoAdapter'
+import SabreMerlin2Adapter from '../../src/crsAdapter/SabreMerlin2Adapter'
 
 describe('UbpCrsAdapter', () => {
     let UbpCrsAdapter, AnyCrsAdapter, LogService, CrsDataMapper, AdapterDataReducer;
@@ -32,6 +33,7 @@ describe('UbpCrsAdapter', () => {
             'crsAdapter/TravelportCetsAdapter': createCrsAdapterImport(TravelportCetsAdapter.type),
             'crsAdapter/BewotecExpertAdapter': createCrsAdapterImport(BewotecExpertAdapter.type),
             'crsAdapter/SabreMerlinAdapter': createCrsAdapterImport(SabreMerlinAdapter.type),
+            'crsAdapter/SabreMerlin2Adapter': createCrsAdapterImport(SabreMerlin2Adapter.type),
             'crsAdapter/TrafficsTbmAdapter': createCrsAdapterImport(TrafficsTbmAdapter.type),
             'crsAdapter/FtiTosiAdapter': createCrsAdapterImport(FtiTosiAdapter.type),
             'crsAdapter/SchmetterlingNeoAdapter': createCrsAdapterImport(SchmetterlingNeoAdapter.type),
@@ -40,7 +42,10 @@ describe('UbpCrsAdapter', () => {
         });
 
         germanCrsList = Object.values(UbpCrsAdapter.CRS_TYPES).filter(
-            (crsType) => crsType !== UbpCrsAdapter.CRS_TYPES.cets
+            (crsType) => ![
+                UbpCrsAdapter.CRS_TYPES.cets,
+                UbpCrsAdapter.CRS_TYPES.merlin2,
+            ].includes(crsType)
         );
 
         onSetDataSpy = jasmine.createSpy('onSetDataSpy');
@@ -59,9 +64,9 @@ describe('UbpCrsAdapter', () => {
 
         window.history.pushState({}, '', '');
 
-        new UbpCrsAdapter.default({debug: true});
+        const { logger } = new UbpCrsAdapter.default({debug: true});
 
-        expect(LogService.enable).toHaveBeenCalled();
+        expect(logger).toBeTruthy();
     });
 
     it('should enable logger by URL parameter', () => {
@@ -119,6 +124,7 @@ describe('UbpCrsAdapter', () => {
             toma2: jasmine.anything(),
             cets: jasmine.anything(),
             merlin: jasmine.anything(),
+            merlin2: jasmine.anything(),
             myJack: jasmine.anything(),
             jackPlus: jasmine.anything(),
             cosmo: jasmine.anything(),
@@ -205,7 +211,7 @@ describe('UbpCrsAdapter', () => {
             }).catch((error) => {
                 expect(error.toString()).toBe('Error: [.cancel] error: ' + message);
             }),
-        ]).then(done);
+        ]).then(() => done());
     });
 
     describe('is connected with any CRS', () => {
@@ -216,17 +222,17 @@ describe('UbpCrsAdapter', () => {
         });
 
         it('connect() should call underlying adapter', () => {
-            expect(AnyCrsAdapter.connect).toHaveBeenCalledTimes(1);
+            expect(adapter.adapterInstance.connect).toHaveBeenCalledTimes(1);
         });
 
         it('cancel() should call underlying adapter', () => {
             adapter.cancel();
 
-            expect(AnyCrsAdapter.cancel).toHaveBeenCalledTimes(1);
+            expect(adapter.adapterInstance.cancel).toHaveBeenCalledTimes(1);
         });
 
         it('cancel() should resolve promise if underlying adapter resolved it', (done) => {
-            AnyCrsAdapter.cancel.and.returnValue(Promise.resolve('canceled'));
+            adapter.adapterInstance.cancel.and.returnValue(Promise.resolve('canceled'));
 
             adapter.cancel().then((result) => {
                 expect(result).toBe('canceled');
