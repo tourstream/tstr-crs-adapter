@@ -27,10 +27,16 @@ describe("SabreMerlin2Adapter", () => {
     });
 
     it("fetchData() should resolve an empty object (for compatibility with other adapters)", (done) => {
-        adapter.fetchData().then((result) => {
-            expect(result).toEqual({});
-            done();
-        });
+        adapter.fetchData().then(
+            (result) => {
+                expect(result).toEqual({});
+                done();
+            },
+            (error) => {
+                console.log(error.message);
+                done.fail("unexpected result");
+            }
+        );
     });
 
     describe("is connected", () => {
@@ -42,19 +48,6 @@ describe("SabreMerlin2Adapter", () => {
                 sc: "Service",
                 st: "ServiceKind",
             });
-        });
-
-        it("fetchData() should resolve an empty object (for compatibility with other adapters)", (done) => {
-            adapter.fetchData().then(
-                (result) => {
-                    expect(JSON.parse(JSON.stringify(result))).toEqual({});
-                    done();
-                },
-                (error) => {
-                    console.log(error.message);
-                    done.fail("unexpected result");
-                }
-            );
         });
 
         it("sendData() should map correct values", (done) => {
