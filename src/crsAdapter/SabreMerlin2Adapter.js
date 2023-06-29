@@ -145,7 +145,7 @@ class SabreMerlin2Adapter {
         return date
             .split("-")
             .reverse()
-            .map((str) => ("0" + str).substring(-2))
+            .map((str) => ("0" + str).substr(-2))
             .join("");
     }
 
@@ -188,8 +188,8 @@ class SabreMerlin2Adapter {
      */
     getHours(accomodation = "") {
         const date = new Date(accomodation);
-        const hour = ("0" + date.getHours()).substring(-2);
-        const minutes = ("0" + date.getMinutes()).substring(-2);
+        const hour = ("0" + date.getHours()).substr(-2);
+        const minutes = ("0" + date.getMinutes()).substr(-2);
 
         return `${hour}${minutes}`;
     }
