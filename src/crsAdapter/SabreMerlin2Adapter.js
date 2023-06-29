@@ -145,27 +145,8 @@ class SabreMerlin2Adapter {
         return date
             .split("-")
             .reverse()
-            .map((str) => str.substring(-2))
+            .map((str) => ("0" + str).substring(-2))
             .join("");
-    }
-
-    /**
-     * @private
-     * @param {string} birthDate
-     * @returns {number}
-     */
-    getAge(birthDate = "") {
-        const today = new Date();
-        const birthDateObj = new Date(birthDate);
-
-        let age = today.getFullYear() - birthDateObj.getFullYear();
-        const m = today.getMonth() - birthDateObj.getMonth();
-
-        if (m < 0 || (m === 0 && today.getDate() < birthDateObj.getDate())) {
-            age--;
-        }
-
-        return age;
     }
 
     /**
@@ -223,7 +204,7 @@ class SabreMerlin2Adapter {
             no: index + 1,
             salutation: this.getGender(traveller),
             name: this.getName(traveller),
-            age: this.getAge(traveller.dateOfBirth),
+            age: this.getDate(traveller.dateOfBirth),
         }));
     }
 }

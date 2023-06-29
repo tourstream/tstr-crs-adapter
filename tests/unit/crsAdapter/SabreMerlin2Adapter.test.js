@@ -126,7 +126,7 @@ describe("SabreMerlin2Adapter", () => {
                                 no: 1,
                                 salutation: "H",
                                 name: "FirstName/LastName",
-                                age: adapter.getAge(
+                                age: adapter.getDate(
                                     exampleData.services[0].travellers[0]
                                         .dateOfBirth
                                 ),
