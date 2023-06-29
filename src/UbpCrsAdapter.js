@@ -205,13 +205,6 @@ class UbpCrsAdapter {
         });
     }
 
-    isNotTomaLikeCrs() {
-        return [
-            TravelportCetsAdapter.type,
-            SabreMerlin2Adapter.type
-        ].includes(this.options.crsType)
-    }
-
     getData() {
         return new Promise((resolve, reject) => {
             this.logger.info('Try to get data');
@@ -219,7 +212,7 @@ class UbpCrsAdapter {
             try {
                 const adapterInstance = this.getAdapterInstance();
 
-                if (this.isNotTomaLikeCrs()) {
+                if (this.options.crsType === TravelportCetsAdapter.type) {
                     try {
                         resolve(adapterInstance.fetchData());
                     } catch (error) {
@@ -276,7 +269,7 @@ class UbpCrsAdapter {
 
                 const adapterInstance = this.getAdapterInstance();
 
-                if (this.isNotTomaLikeCrs()) {
+                if (this.options.crsType === TravelportCetsAdapter.type) {
                     try {
                         adapterInstance.sendData(adapterData);
                         resolve();

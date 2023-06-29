@@ -50,6 +50,15 @@ describe("SabreMerlin2Adapter", () => {
             });
         });
 
+        it("convert() should return correct values", () => {
+            const testData = { normalized: "123" };
+
+            expect(adapter.convert(testData)).toBe({
+                converted: "123",
+                build: "123",
+            });
+        });
+
         it("sendData() should map correct values", (done) => {
             const postMessageSpy = spyOn(window.parent, "postMessage");
             const exampleData = {

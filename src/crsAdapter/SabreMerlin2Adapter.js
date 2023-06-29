@@ -3,6 +3,9 @@ class SabreMerlin2Adapter {
         this.config = {
             crs: {
                 origin: "https://de.cert.sabrevacations.com",
+                formats: {
+                    date: "YYYY-MM-DD",
+                },
                 genderTypes: {
                     male: "H",
                     female: "D",
@@ -22,12 +25,11 @@ class SabreMerlin2Adapter {
      * @param {object} crsData
      * @returns {Promise<void>}
      */
-    sendData(crsData = {}) {
+    sendData({ converted: crsData } = {}) {
         try {
             const services = crsData.services || [];
             const firstService = services[0] || {};
-            const travellers = firstService.travellers || [];
-            const firstTraveller = travellers[0] || {};
+            const travellers = (firstService._origin || {}).travellers || [];
             const origin =
                 this.connectionOptions.origin || this.config.crs.origin;
 
@@ -38,18 +40,19 @@ class SabreMerlin2Adapter {
                     clearScreen: false,
                     mask: {
                         touroperator: this.connectionOptions.op,
+                        action: crsData.action,
                         travelType: crsData.travelType,
                         noOfPersons: crsData.numberOfTravellers,
-                        agencyNoTouroperator: this.connectionOptions.ag,
+                        agencyNoTouroperator: "",
                         transactionKey: firstService.pnr,
                         moduleNo: "",
                         consultant: "",
                         remark: "",
-                        multifunctionalLine: "",
-                        services: this.mapServices(services),
+                        multifunctionalLine: crsData.multiFunctionLine,
+                        services: this.mapServices(crsData.services),
                         customer: {
-                            firstName: firstTraveller.firstName,
-                            lastName: firstTraveller.lastName,
+                            firstName: "",
+                            lastName: "",
                             additional: "",
                             street: "",
                             zipCode: "",
@@ -94,8 +97,26 @@ class SabreMerlin2Adapter {
      * @public
      * @returns {Promise<{}>}
      */
+    convert(data = {}) {
+        return {
+            converted: data.normalized,
+            build: data.normalized,
+        };
+    }
+
+    /**
+     * @public
+     * @returns {Promise<{}>}
+     */
     fetchData() {
-        return Promise.resolve({});
+        return Promise.resolve({
+            meta: {
+                type: SabreMerlin2Adapter.type,
+                formats: this.config.crs.formats,
+                genderTypes: this.config.crs.genderTypes,
+            },
+            normalized: {},
+        });
     }
 
     /**
@@ -124,7 +145,7 @@ class SabreMerlin2Adapter {
         return date
             .split("-")
             .reverse()
-            .map((str) => str.substr(-2))
+            .map((str) => str.substring(-2))
             .join("");
     }
 
@@ -166,17 +187,30 @@ class SabreMerlin2Adapter {
     mapServices(services = []) {
         return services.map((service, index) => ({
             no: index + 1,
-            kindOfService: this.connectionOptions.st,
-            service: this.connectionOptions.sc,
+            kindOfService: service.type,
+            service: service.code,
             markField: "",
-            accommodation: "",
+            accommodation: this.getHours(service.accommodation),
             mealType: "",
             occupancy: "",
             noOfServices: "",
-            personAllocation: "",
-            fromDate: this.getDate(service.pickUpDate),
-            untilDate: this.getDate(service.dropOffDate),
+            personAllocation: service.travellerAssociation,
+            fromDate: this.getDate(service.fromDate),
+            untilDate: this.getDate(service.toDate),
         }));
+    }
+
+    /**
+     * @private
+     * @param {string} accomodation
+     * @returns {string}
+     */
+    getHours(accomodation = "") {
+        const date = new Date(accomodation);
+        const hour = ("0" + date.getHours()).substring(-2);
+        const minutes = ("0" + date.getMinutes()).substring(-2);
+
+        return `${hour}${minutes}`;
     }
 
     /**
