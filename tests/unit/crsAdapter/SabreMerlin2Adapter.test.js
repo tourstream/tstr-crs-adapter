@@ -26,10 +26,17 @@ describe("SabreMerlin2Adapter", () => {
             );
     });
 
-    it("fetchData() should resolve an empty object (for compatibility with other adapters)", (done) => {
+    it("fetchData() should resolve an correct object", (done) => {
         adapter.fetchData().then(
             (result) => {
-                expect(result).toEqual({});
+                expect(result).toEqual({
+                    meta: {
+                        type: "merlin2",
+                        formats: adapter.config.crs.formats,
+                        genderTypes: adapter.config.crs.genderTypes,
+                    },
+                    normalized: {},
+                });
                 done();
             },
             (error) => {
@@ -53,7 +60,7 @@ describe("SabreMerlin2Adapter", () => {
         it("convert() should return correct values", () => {
             const testData = { normalized: "123" };
 
-            expect(adapter.convert(testData)).toBe({
+            expect(adapter.convert(testData)).toEqual({
                 converted: "123",
                 build: "123",
             });
@@ -62,19 +69,28 @@ describe("SabreMerlin2Adapter", () => {
         it("sendData() should map correct values", (done) => {
             const postMessageSpy = spyOn(window.parent, "postMessage");
             const exampleData = {
+                action: "TestAction",
                 travelType: "TravelType",
                 numberOfTravellers: 1,
+                multiFunctionLine: "MultiFunctionLine",
                 services: [
                     {
                         pnr: "Ref",
-                        travellers: [
-                            {
-                                firstName: "FirstName",
-                                lastName: "LastName",
-                                dateOfBirth: "10-10-1985",
-                                type: "male",
-                            },
-                        ],
+                        type: "ServiceKind",
+                        code: "Service",
+                        travellerAssociation: "",
+                        fromDate: "1985-10-10",
+                        toDate: "2016-10-10",
+                        _origin: {
+                            travellers: [
+                                {
+                                    firstName: "FirstName",
+                                    lastName: "LastName",
+                                    dateOfBirth: "1985-10-10",
+                                    type: "male",
+                                },
+                            ],
+                        },
                     },
                 ],
             };
@@ -84,15 +100,16 @@ describe("SabreMerlin2Adapter", () => {
                     autoSend: false,
                     clearScreen: false,
                     mask: {
+                        action: "TestAction",
                         touroperator: "TourOperator",
                         travelType: "TravelType",
                         noOfPersons: 1,
-                        agencyNoTouroperator: "Agency",
+                        agencyNoTouroperator: "",
                         transactionKey: "Ref",
                         moduleNo: "",
                         consultant: "",
                         remark: "",
-                        multifunctionalLine: "",
+                        multifunctionalLine: "MultiFunctionLine",
                         services: [
                             {
                                 no: 1,
@@ -104,13 +121,13 @@ describe("SabreMerlin2Adapter", () => {
                                 occupancy: "",
                                 noOfServices: "",
                                 personAllocation: "",
-                                fromDate: "",
-                                untilDate: "",
+                                fromDate: "101085",
+                                untilDate: "101016",
                             },
                         ],
                         customer: {
-                            firstName: "FirstName",
-                            lastName: "LastName",
+                            firstName: "",
+                            lastName: "",
                             additional: "",
                             street: "",
                             zipCode: "",
@@ -125,17 +142,14 @@ describe("SabreMerlin2Adapter", () => {
                             {
                                 no: 1,
                                 salutation: "H",
-                                name: "FirstName/LastName",
-                                age: adapter.getDate(
-                                    exampleData.services[0].travellers[0]
-                                        .dateOfBirth
-                                ),
+                                name: "LastName/FirstName",
+                                age: "101085",
                             },
                         ],
                     },
                 },
             };
-            adapter.sendData(exampleData).then(() => {
+            adapter.sendData({ converted: exampleData }).then(() => {
                 expect(postMessageSpy).toHaveBeenCalledWith(
                     mockResponse,
                     "https://example.com"

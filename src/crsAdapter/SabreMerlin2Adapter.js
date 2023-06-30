@@ -155,7 +155,7 @@ class SabreMerlin2Adapter {
      * @returns {string}
      */
     getName(traveller = {}) {
-        return [traveller.firstName, traveller.lastName]
+        return [traveller.lastName, traveller.firstName]
             .filter(Boolean)
             .join("/");
     }
@@ -171,7 +171,9 @@ class SabreMerlin2Adapter {
             kindOfService: service.type,
             service: service.code,
             markField: "",
-            accommodation: this.getHours(service.accommodation),
+            accommodation: service.accommodation
+                ? this.getHours(service.accommodation)
+                : "",
             mealType: "",
             occupancy: "",
             noOfServices: "",
