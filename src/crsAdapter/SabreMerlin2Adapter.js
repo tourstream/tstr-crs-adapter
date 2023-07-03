@@ -31,7 +31,8 @@ class SabreMerlin2Adapter {
             const firstService = services[0] || {};
             const travellers = (firstService._origin || {}).travellers || [];
             const origin =
-                this.connectionOptions.origin || this.config.crs.origin;
+                this.connectionOptions.origin_referrer ||
+                this.config.crs.origin;
 
             const message = {
                 action: "sabre-merlin-mask-handover",
