@@ -3,7 +3,7 @@ npm-debug.log
 package-lock.json
 
 /coverage/
-/dist*/
+/dist-*/
 /node_modules/
 
 /tests/manual/assets/ubpCrsAdapter.*
