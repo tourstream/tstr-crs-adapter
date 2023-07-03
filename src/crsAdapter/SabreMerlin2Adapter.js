@@ -175,8 +175,8 @@ class SabreMerlin2Adapter {
                 ? this.getHours(service.accommodation)
                 : "",
             mealType: "",
-            occupancy: "",
-            noOfServices: "",
+            occupancy: service.occupancy,
+            noOfServices: service.quantity,
             personAllocation: service.travellerAssociation,
             fromDate: this.getDate(service.fromDate),
             untilDate: this.getDate(service.toDate),
