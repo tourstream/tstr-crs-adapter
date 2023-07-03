@@ -77,10 +77,13 @@ describe("SabreMerlin2Adapter", () => {
                     {
                         pnr: "Ref",
                         type: "ServiceKind",
-                        code: "Service",
-                        travellerAssociation: "",
+                        code: "ServiceCode",
+                        travellerAssociation: "Association",
                         fromDate: "1985-10-10",
                         toDate: "2016-10-10",
+                        accommodation: "1985-10-10T09:00:00",
+                        occupancy: "Occupancy",
+                        quantity: 999,
                         _origin: {
                             travellers: [
                                 {
@@ -114,13 +117,13 @@ describe("SabreMerlin2Adapter", () => {
                             {
                                 no: 1,
                                 kindOfService: "ServiceKind",
-                                service: "Service",
+                                service: "ServiceCode",
                                 markField: "",
-                                accommodation: "",
+                                accommodation: "0900",
                                 mealType: "",
-                                occupancy: "",
-                                noOfServices: "",
-                                personAllocation: "",
+                                occupancy: "Occupancy",
+                                noOfServices: 999,
+                                personAllocation: "Association",
                                 fromDate: "101085",
                                 untilDate: "101016",
                             },
