@@ -6,6 +6,7 @@ import AmadeusTomaAdapter from 'crsAdapter/AmadeusTomaAdapter';
 import AmadeusSPCTomaAdapter from 'crsAdapter/AmadeusSPCTomaAdapter';
 import TravelportCetsAdapter from 'crsAdapter/TravelportCetsAdapter';
 import SabreMerlinAdapter from 'crsAdapter/SabreMerlinAdapter';
+import SabreMerlin2Adapter from 'crsAdapter/SabreMerlin2Adapter';
 import BewotecExpertAdapter from 'crsAdapter/BewotecExpertAdapter';
 import TrafficsTbmAdapter from 'crsAdapter/TrafficsTbmAdapter';
 import FtiTosiAdapter from 'crsAdapter/FtiTosiAdapter';
@@ -56,6 +57,7 @@ const CRS_TYPES = {
     toma2: 'toma2',
     cets: 'cets',
     merlin: 'merlin',
+    merlin2: 'merlin2',
     myJack: 'myjack',
     jackPlus: 'jackplus',
     cosmo: 'cosmo',
@@ -75,6 +77,7 @@ const CRS_OPTIONS = {
     },
     [CRS_TYPES.cets]: void 0,
     [CRS_TYPES.merlin]: void 0,
+    [CRS_TYPES.merlin2]: void 0,
     [CRS_TYPES.myJack]: {
         token: '',
         dataBridgeUrl: '',
@@ -122,6 +125,7 @@ const CRS_TYPE_2_ADAPTER_MAP = {
     [CRS_TYPES.toma2]: AmadeusSPCTomaAdapter,
     [CRS_TYPES.cets]: TravelportCetsAdapter,
     [CRS_TYPES.merlin]: SabreMerlinAdapter,
+    [CRS_TYPES.merlin2]: SabreMerlin2Adapter,
     [CRS_TYPES.myJack]: BewotecExpertAdapter,
     [CRS_TYPES.jackPlus]: BewotecExpertAdapter,
     [CRS_TYPES.cosmo]: TrafficsTbmAdapter,
