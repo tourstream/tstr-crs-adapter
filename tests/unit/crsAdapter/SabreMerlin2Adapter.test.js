@@ -49,7 +49,7 @@ describe("SabreMerlin2Adapter", () => {
     describe("is connected", () => {
         beforeEach(() => {
             adapter.connect({
-                origin: "https://example.com",
+                origin_referrer: "https://example.com",
                 op: "TourOperator",
                 ag: "Agency",
                 sc: "Service",
